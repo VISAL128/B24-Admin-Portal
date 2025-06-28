@@ -19,7 +19,8 @@ export default defineNuxtConfig({
     public: {
       keycloakUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
       keycloakRealm: process.env.KEYCLOAK_REALM || 'your-realm',
-      keycloakClientId: process.env.KEYCLOAK_CLIENT_ID || 'your-client-id'
+      keycloakClientId: process.env.KEYCLOAK_CLIENT_ID || 'your-client-id',
+      appVersion: process.env.APP_VERSION || 'v1.0.0'
     }
   },
   ssr: false, // Important: Keycloak works better with SPA mode
