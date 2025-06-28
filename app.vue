@@ -1,9 +1,11 @@
 <template>
-  <div>
-    <h1><a href="/get-started">Get Started</a></h1>
+  <!-- <div>
     <NuxtRouteAnnouncer />
+    <NuxtWelcome />
+  </div> -->
+  <NuxtLayout>
     <NuxtPage />
-  </div>
+  </NuxtLayout>
 </template>
 
 <style>
