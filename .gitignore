@@ -23,5 +23,8 @@ logs
 .env.*
 !.env.example
 
+# Chrome Debug Profile
+.chrome-dev-profile/
+
 # Github Instructions
 .github
