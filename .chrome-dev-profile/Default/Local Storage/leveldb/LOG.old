@@ -1,8 +1,0 @@
-2025/06/29-15:40:37.600 2f14 Reusing MANIFEST D:\Bill24\b24managementportal\.chrome-dev-profile\Default\Local Storage\leveldb/MANIFEST-000001
-2025/06/29-15:40:37.615 2f14 Recovering log #7
-2025/06/29-15:40:37.618 2f14 Level-0 table #9: started
-2025/06/29-15:40:37.626 2f14 Level-0 table #9: 13391 bytes OK
-2025/06/29-15:40:37.627 2f14 Recovering log #9
-2025/06/29-15:40:37.629 2f14 Reusing old log D:\Bill24\b24managementportal\.chrome-dev-profile\Default\Local Storage\leveldb/000009.log 
-2025/06/29-15:40:37.631 2f14 Delete type=0 #7
-2025/06/29-15:40:37.631 2f14 Delete type=2 #10
