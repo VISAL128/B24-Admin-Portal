@@ -15,6 +15,10 @@ export default defineNuxtConfig({
       ]
     },
   },
+  sourcemap: {
+    server: true,
+    client: true
+  },
   runtimeConfig: {
     public: {
       keycloakUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
@@ -28,4 +32,12 @@ export default defineNuxtConfig({
     { src: '~/plugins/keycloak.client.ts', mode: 'client' },
     { src: '~/plugins/keycloak-api.client.ts', mode: 'client' }
   ],
+  // build: {
+  //   transpile: ['@nuxtjs/keycloak'],
+  //   extend (config: any, ctx: any) {
+  //       if (ctx.isDev) {
+  //         config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
+  //       }
+  //   }
+  // },
 })
