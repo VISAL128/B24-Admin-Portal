@@ -91,8 +91,8 @@ export default defineNuxtConfig({
   },
   ssr: false, // Important: OIDC works better with SPA mode
   plugins: [
-    { src: '~/plugins/keycloak.client.ts', mode: 'client' },
-    { src: '~/plugins/keycloak-api.client.ts', mode: 'client' }
+    // { src: '~/plugins/keycloak.client.ts', mode: 'client' },
+    // { src: '~/plugins/keycloak-api.client.ts', mode: 'client' }
   ],
   // i18n config moved to i18n.config.ts
   // build: {

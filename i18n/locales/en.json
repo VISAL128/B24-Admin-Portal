@@ -7,5 +7,27 @@
   },
   "user_profile": "User Profile",
   "settings": "Settings",
-  "logout": "Logout"
+  "logout": "Logout",
+  "settlement": {
+    "generate": {
+      "steps": {
+        "supplier": {
+          "title": "Suppliers Selection",
+          "description": "Select the suppliers for which you want to generate the settlement."
+        },
+        "reconciliation": {
+          "title": "Reconciliation",
+          "description": "Review and reconcile the provided information."
+        },
+        "confirmation": {
+          "title": "Confirmation",
+          "description": "Confirm the accuracy of the information."
+        }
+      },
+      "navigation": {
+        "prev": "Previous",
+        "next": "Next"
+      }
+    }
+  }
 }
