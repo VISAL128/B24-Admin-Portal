@@ -1,0 +1,11 @@
+{
+  "hello": "Hello",
+  "welcome": "Welcome to B24 Management Portal",
+  "lang": {
+    "english": "English",
+    "khmer": "Khmer"
+  },
+  "user_profile": "User Profile",
+  "settings": "Settings",
+  "logout": "Logout"
+}

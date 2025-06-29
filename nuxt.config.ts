@@ -5,7 +5,14 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss'],
+  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
+   i18n: {
+    defaultLocale: 'en',
+    locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'km', name: 'Khmer', file: 'km.json' }
+    ]
+  },
   css: ['~/assets/css/main.css'],
   app: {
     head: {
@@ -28,4 +35,5 @@ export default defineNuxtConfig({
     { src: '~/plugins/keycloak.client.ts', mode: 'client' },
     { src: '~/plugins/keycloak-api.client.ts', mode: 'client' }
   ],
+  // i18n config moved to i18n.config.ts
 })

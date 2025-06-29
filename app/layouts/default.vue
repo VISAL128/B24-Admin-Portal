@@ -6,7 +6,35 @@
           <B24header />
         </div>
         <div class="flex flex-row items-center justify-end gap-4 h-full">
-          <UPopover placement="bottom-end" :offset="[0, 10]" class="z-50">
+          <div class="flex items-center gap-2">
+            <UPopover placement="bottom-end" :offset="[0, 10]">
+              <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2">
+                <span class="ml-1 font-medium">{{ locale === 'en' ? 'EN' : 'KM' }}</span>
+              </UButton>
+              <template #content>
+                <div class="flex flex-col gap-1 p-2 w-28">
+                  <UButton
+                    variant="ghost"
+                    class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                    @click="() => { setLocale('en') }"
+                    block size="sm"
+                  >🇬🇧 <span class="text-left w-full">{{ t('lang.english') }}</span></UButton>
+                  <UButton
+                    variant="ghost"
+                    class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                    @click="() => { setLocale('km') }"
+                    block size="sm"
+                  >🇰🇭 <span class="text-left w-full">{{ t('lang.khmer') }}</span></UButton>
+                </div>
+              </template>
+            </UPopover>
+            <!-- Theme Switcher -->
+            <UButton icon="heroicons:moon" variant="ghost" size="sm" class="px-2" @click="toggleTheme">
+              <span class="sr-only">Toggle Theme</span>
+            </UButton>
+          </div>
+          <!-- User Popover -->
+          <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
             <UAvatar
               :src="user?.picture"
               size="xl"
@@ -47,7 +75,7 @@
                     class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
-                    User Profile
+                    {{ t('user_profile') }}
                   </UButton>
 
                   <UButton
@@ -57,7 +85,7 @@
                     class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
-                    Settings
+                    {{ t('settings') }}
                   </UButton>
 
                   <UDivider class="my-2" />
@@ -69,7 +97,7 @@
                     class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
-                    Logout
+                    {{ t('logout') }}
                   </UButton>
                 </div>
               </div>
@@ -115,10 +143,23 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+const { locale, t, setLocale } = useI18n()
+const popoverRef = ref<{ close: () => void } | null>(null)
+
 const isNavExpanded = ref(true);
 
 const auth = useAuth();
+
 const user = auth.user;
+
+
+const colorMode = useColorMode ? useColorMode() : null;
+const toggleTheme = () => {
+  if (!colorMode) return;
+  colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark';
+};
 
 const toggleNavigation = () => {
   isNavExpanded.value = !isNavExpanded.value;
