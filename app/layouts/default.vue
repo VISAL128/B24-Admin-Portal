@@ -177,7 +177,7 @@ const handleSettings = () => {
 const handleLogout = async () => {
   try {
     await auth.logout();
-    await navigateTo('/login');
+    await navigateTo('/get-started', { replace: true });
   } catch (error) {
     console.error('Logout failed:', error);
   }
