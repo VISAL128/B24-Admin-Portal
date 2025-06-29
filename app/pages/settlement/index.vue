@@ -9,12 +9,15 @@
   </div>
 </template>
 
-<!-- <script setup>
-const { data: settlements } = await useFetch('/api/settlement/list')
-</script> -->
-
-<!-- <script setup>
+<script setup>
 definePageMeta({
-  middleware: () => navigateTo('/settlement')
+  auth: true
 })
-</script> -->
+
+useHead({
+  title: 'Settlement Dashboard - Bill24 Admin Portal'
+})
+
+// const { data: settlements } = await useFetch('/api/settlement/list')
+const settlements = ref([])
+</script>

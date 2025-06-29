@@ -4,8 +4,20 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   compatibilityDate: '2025-05-15',
+  debug: true,
   devtools: { enabled: true },
-  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss'],
+  devServer: {
+    host: 'localhost',
+    port: 3000
+  },
+  modules: [
+    '@nuxt/fonts',
+    '@nuxt/ui',
+    '@nuxt/icon',
+    'nuxt-charts',
+    '@nuxtjs/tailwindcss',
+    'nuxt-openid-connect',
+  ],
   css: ['~/assets/css/main.css'],
   app: {
     head: {
@@ -15,17 +27,56 @@ export default defineNuxtConfig({
       ]
     },
   },
+  openidConnect: {
+    addPlugin: true,
+    op: {
+      issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
+      clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
+      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
+      callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/oidc/callback`,
+      scope: ["openid", "email", "profile", "address"],
+    },
+    config: {
+      debug: process.env.NODE_ENV === 'development',
+      response_type: "code",
+      secret: "oidc._sessionid",
+      cookie: { loginName: "" },
+      cookiePrefix: "oidc._",
+      cookieEncrypt: true,
+      cookieEncryptKey: process.env.KEYCLOAK_COOKIE_ENCRYPT_KEY || "bfnuxt9c2470cb477d907b1e0917oidc",
+      cookieEncryptIV: process.env.KEYCLOAK_COOKIE_ENCRYPT_IV || "ab83667c72eec9e4",
+      cookieEncryptALGO: process.env.KEYCLOAK_COOKIE_ENCRYPT_ALGO || "aes-256-cbc",
+      cookieMaxAge: process.env.KEYCLOAK_COOKIE_MAX_AGE ? Number(process.env.KEYCLOAK_COOKIE_MAX_AGE) : 24 * 60 * 60,
+      cookieFlags: {
+        access_token: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+        },
+      },
+    },
+  },
   runtimeConfig: {
+    // Server-side runtime config
+    openidConnect: {
+      op: {
+        issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
+        clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
+        clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
+        callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/oidc/callback`,
+      },
+      config: {
+        cookieFlags: {
+          access_token: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+          }
+        }
+      }
+    },
+    // Public runtime config
     public: {
-      keycloakUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
-      keycloakRealm: process.env.KEYCLOAK_REALM || 'your-realm',
-      keycloakClientId: process.env.KEYCLOAK_CLIENT_ID || 'your-client-id',
       appVersion: process.env.APP_VERSION || 'v1.0.0'
     }
   },
-  ssr: false, // Important: Keycloak works better with SPA mode
-  plugins: [
-    { src: '~/plugins/keycloak.client.ts', mode: 'client' },
-    { src: '~/plugins/keycloak-api.client.ts', mode: 'client' }
-  ],
+  ssr: false, // Important: OIDC works better with SPA mode
 })

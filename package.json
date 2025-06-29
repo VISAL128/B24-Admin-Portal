@@ -4,9 +4,12 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
+    "build:docker": "NODE_OPTIONS='--experimental-global-webcrypto' nuxt build",
     "dev": "nuxt dev",
+    "dev:https": "HTTPS=true nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "preview:docker": "NODE_OPTIONS='--experimental-global-webcrypto' nuxt preview",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -14,9 +17,9 @@
     "@nuxt/icon": "1.14.0",
     "@nuxt/ui": "3.2.0",
     "@nuxtjs/tailwindcss": "^7.0.0-beta.0",
-    "keycloak-js": "^26.2.0",
     "nuxt": "^3.17.5",
     "nuxt-charts": "0.1.11",
+    "nuxt-openid-connect": "^0.8.1",
     "typescript": "^5.6.3",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
