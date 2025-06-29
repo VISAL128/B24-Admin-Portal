@@ -17,7 +17,15 @@ export default defineNuxtConfig({
     'nuxt-charts',
     '@nuxtjs/tailwindcss',
     'nuxt-openid-connect',
+    '@nuxtjs/i18n'
   ],
+  i18n: {
+    defaultLocale: 'en',
+    locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'km', name: 'Khmer', file: 'km.json' }
+    ]
+  },
   css: ['~/assets/css/main.css'],
   app: {
     head: {
@@ -53,7 +61,10 @@ export default defineNuxtConfig({
           secure: process.env.NODE_ENV === 'production',
         },
       },
-    },
+    },},
+  sourcemap: {
+    server: true,
+    client: true
   },
   runtimeConfig: {
     // Server-side runtime config
@@ -79,4 +90,17 @@ export default defineNuxtConfig({
     }
   },
   ssr: false, // Important: OIDC works better with SPA mode
+  plugins: [
+    { src: '~/plugins/keycloak.client.ts', mode: 'client' },
+    { src: '~/plugins/keycloak-api.client.ts', mode: 'client' }
+  ],
+  // i18n config moved to i18n.config.ts
+  // build: {
+  //   transpile: ['@nuxtjs/keycloak'],
+  //   extend (config: any, ctx: any) {
+  //       if (ctx.isDev) {
+  //         config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
+  //       }
+  //   }
+  // },
 })

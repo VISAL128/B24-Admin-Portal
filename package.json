@@ -10,18 +10,31 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "preview:docker": "NODE_OPTIONS='--experimental-global-webcrypto' nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "debug": "npx --node-arg=--inspect-brk nuxi dev"
   },
   "dependencies": {
     "@nuxt/fonts": "0.11.4",
     "@nuxt/icon": "1.14.0",
     "@nuxt/ui": "3.2.0",
+    "@nuxtjs/i18n": "^9.5.6",
     "@nuxtjs/tailwindcss": "^7.0.0-beta.0",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "keycloak-js": "^26.2.0",
     "nuxt": "^3.17.5",
     "nuxt-charts": "0.1.11",
     "nuxt-openid-connect": "^0.8.1",
     "typescript": "^5.6.3",
     "vue": "^3.5.17",
+    "vue-i18n": "^11.1.7",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/date-fns": "^2.6.3",
+    "tailwindcss": "^4.1.11"
   }
 }
