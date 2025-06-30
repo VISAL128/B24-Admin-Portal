@@ -50,9 +50,7 @@ const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<Supplier[]>([]);
 const cpoList = ref<Cpo[]>([]);
 
-
-const columns:TableColumn<Cpo>[] = [
-
+const columns: TableColumn<Cpo>[] = [
   { accessorKey: "supplierCode", header: "Supplier Code" },
   { accessorKey: "supplierName", header: "Supplier Name" },
   { accessorKey: "cpoCode", header: "CPO Code" },
@@ -61,7 +59,6 @@ const columns:TableColumn<Cpo>[] = [
   { accessorKey: "email", header: "Email" },
   { accessorKey: "address", header: "Address" },
 ];
-
 
 const expanded = ref({ 1: true });
 
@@ -99,7 +96,9 @@ const fetchCpos = async () => {
   if (selectedSuppliers.value.length === 0) return;
   try {
     const request: CpoBySupplierRequest = {
-      supplier_ids: selectedSuppliers.value.map((supplier) => supplier.value.id),
+      supplier_ids: selectedSuppliers.value.map(
+        (supplier) => supplier.value.id
+      ),
     };
 
     cpoList.value = await supplierApi.getListCPOApi(request);
@@ -119,105 +118,109 @@ definePageMeta({
   <div
     class="w-full h-full bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex flex-col"
   >
-    <UStepper ref="stepper" disabled :items="items">
+    <UStepper ref="stepper" disabled :items="items" class="flex-1">
       <template #content="{ item }">
-        <!-- Selection -->
-        <UCard variant="subtle">
-          <template
-            #header
+        <div class="flex flex-col h-full justify-between">
+          <!-- Selection -->
+          <UCard
+            variant="subtle"
+            class="flex-1"
             v-if="item.title === t('settlement.generate.steps.supplier.title')"
           >
-            <h1 class="text-sm mb-5 font-semibold">
-              Select Suppliers for Settlement
-            </h1>
-            <div
-              class="flex flex-row gap-4 justify-start"
-              v-if="
-                item.title === t('settlement.generate.steps.supplier.title')
-              "
-            >
-              <USelectMenu
-                v-model="selectedSuppliers"
-                :items="
-                  supplierKeys.map((supplier) => ({
-                    label: supplier.name,
-                    value: supplier,
-                  }))
+            <template #header>
+              <h1 class="text-sm mb-5 font-semibold">
+                Select Suppliers for Settlement
+              </h1>
+              <!-- Header -->
+              <div
+                class="flex flex-row gap-4 justify-start"
+                v-if="
+                  item.title === t('settlement.generate.steps.supplier.title')
                 "
-                icon="i-lucide-user"
-                label="Select Suppliers"
-                placeholder="Choose suppliers..."
-                multiple
-                class="w-1/2"
               >
-                <template #leading="{ modelValue, ui }">
-                  <!-- Display icon and count of selected suppliers -->
-                    <UIcon
-                    name="i-lucide-users"
-                    class="mr-2 text-gray-500"
-                    />
-                </template>
-              </USelectMenu>
-              <UPopover>
-                <UButton
-                  color="neutral"
-                  variant="subtle"
-                  icon="i-lucide-calendar"
+                <USelectMenu
+                  v-model="selectedSuppliers"
+                  :items="
+                    supplierKeys.map((supplier) => ({
+                      label: supplier.name,
+                      value: supplier,
+                    }))
+                  "
+                  icon="i-lucide-user"
+                  label="Select Suppliers"
+                  placeholder="Choose suppliers..."
+                  multiple
+                  class="w-1/2"
                 >
-                  {{
-                    modelValue
-                      ? df.format(modelValue.toDate(getLocalTimeZone()))
-                      : "Select a date"
-                  }}
-                </UButton>
-                <template #content>
-                  <UCalendar v-model="modelValue" class="p-2" />
-                </template>
-              </UPopover>
-            </div>
-          </template>
-          <h1 class="text-sm font-semibold mb-5">
-            Selected Suppliers ({{ selectedSuppliers.length }})
-          </h1>
-          <UButton v-on:click="fetchCpos" color="primary" class="mb-4">
-            Fetch CPOs
-          </UButton>
-          <UTable
-            v-model:expanded="expanded"
-            :data="cpoList"
-            :columns="columns"
-            :ui="{ tr: 'data-[expanded=true]:bg-elevated/50' }"
-            class="flex-1"
-          >
-            <template #expanded="{ row }">
-              <pre>{{ row.original }}</pre>
+                  <template #leading="{ modelValue, ui }">
+                    <!-- Display icon and count of selected suppliers -->
+                    <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
+                  </template>
+                </USelectMenu>
+                <UPopover>
+                  <UButton
+                    color="neutral"
+                    variant="subtle"
+                    icon="i-lucide-calendar"
+                  >
+                    {{
+                      modelValue
+                        ? df.format(modelValue.toDate(getLocalTimeZone()))
+                        : "Select a date"
+                    }}
+                  </UButton>
+                  <template #content>
+                    <UCalendar v-model="modelValue" class="p-2" />
+                  </template>
+                </UPopover>
+              </div>
             </template>
-          </UTable>
+            <h1 class="text-sm font-semibold mb-5">
+              Selected Suppliers ({{ selectedSuppliers.length }})
+            </h1>
+            <UButton v-on:click="fetchCpos" color="primary" class="mb-4">
+              Fetch CPOs
+            </UButton>
+            <UTable
+                v-model:expanded="expanded"
+                :data="cpoList"
+                :columns="columns"
+                sticky
+                class="flex-1 h-96"
+              >
+                <template #expanded="{ row }">
+                  <pre>{{ row.original }}</pre>
+                </template>
+              </UTable>
+            <!-- <div class="overflow-auto max-h-96 rounded-lg border border-gray-200">
+              
+            </div> -->
 
-          <!-- <template #footer>
+            <!-- <template #footer>
             <Placeholder class="h-8" />
           </template> -->
-        </UCard>
+          </UCard>
 
-        <!-- Reconciliation -->
+          <!-- Reconciliation -->
 
-        <!-- Navigation buttons moved to bottom -->
-        <div class="mt-4 flex justify-between items-center">
-          <UButton
-            leading-icon="i-lucide-arrow-left"
-            :disabled="!stepper?.hasPrev"
-            @click="stepper?.prev()"
-          >
-            {{ t("settlement.generate.navigation.prev") }}
-          </UButton>
+          <!-- Navigation buttons moved to bottom -->
+          <div class="mt-4 flex justify-between items-center">
+            <UButton
+              leading-icon="i-lucide-arrow-left"
+              :disabled="!stepper?.hasPrev"
+              @click="stepper?.prev()"
+            >
+              {{ t("settlement.generate.navigation.prev") }}
+            </UButton>
 
-          <UButton
-            trailing-icon="i-lucide-arrow-right"
-            :disabled="!stepper?.hasNext || !canProceedToNext"
-            @click="stepper?.next()"
-          >
-            {{ t("settlement.generate.navigation.next") }}
-          </UButton>
+            <UButton
+              trailing-icon="i-lucide-arrow-right"
+              :disabled="!stepper?.hasNext || !canProceedToNext"
+              @click="stepper?.next()"
+            >
+              {{ t("settlement.generate.navigation.next") }}
+            </UButton>
+          </div>
         </div>
       </template>
     </UStepper>
