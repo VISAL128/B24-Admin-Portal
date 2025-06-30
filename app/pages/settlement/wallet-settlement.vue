@@ -29,9 +29,9 @@
         <UButton color="primary" icon="i-lucide-play" @click="onGenerateSettlement">
           Generate Settlement
         </UButton>
-        <UDropdownMenu :items="exportItems" :content="{ align: 'end' }">
+        <!-- <UDropdownMenu :items="exportItems" :content="{ align: 'end' }">
           <UButton icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">Export</UButton>
-        </UDropdownMenu>
+        </UDropdownMenu> -->
       </div>
     </div>
 
@@ -57,10 +57,10 @@ import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { TableColumn } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
-import {
-  exportSettlementToPDF,
-  exportSettlementToExcel
-} from '~/composables/utils/exportUtils'
+// import {
+//   exportSettlementToPDF,
+//   exportSettlementToExcel
+// } from '~/composables/utils/exportUtils'
 
 const { getSettlementHistory, getSuppliers } = useSupplierApi()
 const { execute } = useApiExecutor()
@@ -126,13 +126,13 @@ onMounted(() => {
 })
 
 const onGenerateSettlement = () => {
-  router.push('/settlement/generatereport')
+  router.push('/settlement/generate')
 }
 
-const exportItems = [
-  { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
-  { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
-]
+// const exportItems = [
+//   { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
+//   { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
+// ]
 
 const columns: TableColumn<SettlementHistoryRecord>[] = [
   {
