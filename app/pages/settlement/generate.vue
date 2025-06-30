@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { StepperItem, AvatarProps, TableColumn } from "@nuxt/ui";
 import type { Cpo, Supplier, CpoBySupplierRequest } from "~/models/settlement";
+import type { CurrencyConfig, CurrencyFormatOptions } from "~/composables/utils/useCurrency";
 import {
   CalendarDate,
   DateFormatter,
   getLocalTimeZone,
 } from "@internationalized/date";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
+import { useCurrency } from "~/composables/utils/useCurrency";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
@@ -49,6 +51,14 @@ const items: StepperItem[] = [
 const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<Supplier[]>([]);
 const cpoList = ref<Cpo[]>([]);
+const selectedCurrency = ref<CurrencyConfig | null>(null);
+const defaultCurrency: CurrencyConfig = {
+  code: "KHR",
+  symbol: "៛",
+  name: "Cambodian Riel",
+  decimals: 0,
+  locale: "km-KH",
+};
 
 const columns: TableColumn<Cpo>[] = [
   { accessorKey: "supplierCode", header: "Supplier Code" },
@@ -81,6 +91,8 @@ const canProceedToNext = computed(() => {
 onMounted(() => {
   // Fetch suppliers when the component is mounted
   fetchSuppliers();
+  // Set default currency
+  selectedCurrency.value = defaultCurrency;
 });
 
 const fetchSuppliers = async () => {
@@ -109,6 +121,14 @@ const fetchCpos = async () => {
   }
 };
 
+// Add this method after fetchCpos function
+const handleSupplierMenuChanged = async () => {
+  // The selectedSuppliers is already updated by v-model
+  cpoList.value = await supplierApi.getListCPOApi({
+    supplier_ids: selectedSuppliers.value.map(supplier => supplier.id),
+  });
+};
+
 definePageMeta({
   auth: false,
 });
@@ -121,77 +141,95 @@ definePageMeta({
     <UStepper ref="stepper" disabled :items="items" class="flex-1">
       <template #content="{ item }">
         <div class="flex flex-col h-full justify-between">
-          <!-- Selection -->
           <UCard
             variant="subtle"
             class="flex-1"
             v-if="item.title === t('settlement.generate.steps.supplier.title')"
           >
             <template #header>
-              <h1 class="text-sm mb-5 font-semibold">
-                Select Suppliers for Settlement
-              </h1>
               <!-- Header -->
-              <div
-                class="flex flex-row gap-4 justify-start"
-                v-if="
-                  item.title === t('settlement.generate.steps.supplier.title')
-                "
-              >
-                <USelectMenu
-                  v-model="selectedSuppliers"
-                  :items="
-                    supplierKeys.map((supplier) => ({
-                      label: supplier.name,
-                      value: supplier,
-                    }))
-                  "
-                  icon="i-lucide-user"
-                  label="Select Suppliers"
-                  placeholder="Choose suppliers..."
-                  multiple
-                  class="w-1/2"
-                >
-                  <template #leading="{ modelValue, ui }">
-                    <!-- Display icon and count of selected suppliers -->
-                    <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
-                  </template>
-                </USelectMenu>
-                <UPopover>
-                  <UButton
-                    color="neutral"
-                    variant="subtle"
-                    icon="i-lucide-calendar"
+              <div class="flex flex-row gap-4 justify-start">
+                <div class="w-1/2">
+                  <h1 class="text-sm mb-2 font-semibold">
+                    Select Suppliers for Settlement
+                  </h1>
+                  <USelectMenu
+                    v-model="selectedSuppliers"
+                    :items="
+                      supplierKeys.map((supplier) => ({
+                        label: supplier.name,
+                        value: supplier,
+                      }))
+                    "
+                    icon="i-lucide-user"
+                    label="Select Suppliers"
+                    placeholder="Choose suppliers..."
+                    multiple
+                    required
+                    class="w-full"
+                    @change="handleSupplierMenuChanged"
                   >
-                    {{
-                      modelValue
-                        ? df.format(modelValue.toDate(getLocalTimeZone()))
-                        : "Select a date"
-                    }}
-                  </UButton>
-                  <template #content>
-                    <UCalendar v-model="modelValue" class="p-2" />
-                  </template>
-                </UPopover>
+                    <template #leading="{ modelValue, ui }">
+                      <!-- Display icon and count of selected suppliers -->
+                      <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
+                    </template>
+                  </USelectMenu>
+                </div>
+                <!-- Select Cut of Date -->
+                <div class="w-50">
+                  <h1 class="text-sm mb-2 font-semibold">
+                    Select Cut of Date
+                  </h1>
+                  <UPopover class="w-full">
+                    <UButton
+                      color="neutral"
+                      variant="subtle"
+                      icon="i-lucide-calendar"
+                    >
+                      {{
+                        modelValue
+                          ? df.format(modelValue.toDate(getLocalTimeZone()))
+                          : "Select a date"
+                      }}
+                    </UButton>
+                    <template #content>
+                      <UCalendar v-model="modelValue" class="p-2" />
+                    </template>
+                  </UPopover>
+                </div>
+                <!-- Select Currency -->
+                 <div class="w-50">
+                  <h1 class="text-sm mb-2 font-semibold">
+                    Select Currency
+                  </h1>
+                  <USelectMenu
+                    v-model="selectedCurrency"
+                    :items="useCurrency().getAllCurrencies.value.map((currency) => ({
+                      label: currency.name,
+                      value: currency.code,
+                    }))"
+                    icon="i-lucide-dollar-sign"
+                    label="Select Currency"
+                    placeholder="Choose a currency..."
+                    class="w-full"
+                  />
+                 </div>
               </div>
             </template>
-            <h1 class="text-sm font-semibold mb-5">
+            <h1 class="text-sm font-semibold mb-2">
               Selected Suppliers ({{ selectedSuppliers.length }})
             </h1>
-            <UButton v-on:click="fetchCpos" color="primary" class="mb-4">
-              Fetch CPOs
-            </UButton>
             <UTable
-                v-model:expanded="expanded"
-                :data="cpoList"
-                :columns="columns"
-                sticky
-                class="flex-1 h-96"
-              >
-                <template #expanded="{ row }">
-                  <pre>{{ row.original }}</pre>
-                </template>
-              </UTable>
+              v-model:expanded="expanded"
+              :data="cpoList"
+              :columns="columns"
+              sticky
+              class="flex-1 h-96"
+            >
+              <template #expanded="{ row }">
+                <pre>{{ row.original }}</pre>
+              </template>
+            </UTable>
             <!-- <div class="overflow-auto max-h-96 rounded-lg border border-gray-200">
               
             </div> -->
