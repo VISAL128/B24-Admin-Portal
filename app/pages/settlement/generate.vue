@@ -61,14 +61,60 @@ const defaultCurrency: CurrencyConfig = {
 };
 
 const columns: TableColumn<Cpo>[] = [
-  { accessorKey: "supplierCode", header: "Supplier Code" },
-  { accessorKey: "supplierName", header: "Supplier Name" },
-  { accessorKey: "cpoCode", header: "CPO Code" },
-  { accessorKey: "cpoName", header: "CPO Name" },
+  {
+    id: 'select',
+    header: ({ table }) =>
+      h(resolveComponent('UCheckbox'), {
+        'modelValue': table.getIsSomePageRowsSelected()
+          ? 'indeterminate'
+          : table.getIsAllPageRowsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+          table.toggleAllPageRowsSelected(!!value),
+        'aria-label': 'Select all'
+      }),
+    cell: ({ row }) =>
+      h(resolveComponent('UCheckbox'), {
+        'modelValue': row.getIsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+          row.toggleSelected(!!value),
+        'aria-label': 'Select row'
+      }),
+    enableSorting: false,
+    enableHiding: false
+  },
+  { accessorKey: "supplier.code", header: "Supplier Code" },
+  { accessorKey: "supplier.name", header: "Supplier Name" },
+  { accessorKey: "code", header: "CPO Code" },
+  { accessorKey: "name", header: "CPO Name" },
   { accessorKey: "phone", header: "Phone" },
   { accessorKey: "email", header: "Email" },
   { accessorKey: "address", header: "Address" },
 ];
+
+const cpoSettlementColumns:TableColumn<Cpo>[] = [
+  { accessorKey: "supplier.code", header: "CPO Code" },
+  { accessorKey: "supplier.name", header: "CPO Name" },
+  { accessorKey: "code", header: "Amount" },
+  { accessorKey: "name", header: "Currency" },
+  { accessorKey: "phone", header: "Settle To Bank" },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) =>
+      h(
+        resolveComponent('UButton'),
+        {
+          size: 'xs',
+          color: 'primary',
+          onClick: () => handleViewCpo(row.original)
+        },
+        { default: () => 'View' }
+      ),
+    enableSorting: false,
+    enableHiding: false
+  }
+];
+
 
 const expanded = ref({ 1: true });
 
@@ -87,6 +133,12 @@ const canProceedToNext = computed(() => {
   }
   return true; // Allow proceeding for other steps
 });
+
+// Add this method in your <script setup>
+function handleViewCpo(cpo: Cpo) {
+  // Replace with your logic, e.g., open a modal or navigate
+  alert(`View CPO: ${cpo.name} (${cpo.code})`);
+}
 
 onMounted(() => {
   // Fetch suppliers when the component is mounted
@@ -219,17 +271,7 @@ definePageMeta({
             <h1 class="text-sm font-semibold mb-2">
               Selected Suppliers ({{ selectedSuppliers.length }})
             </h1>
-            <UTable
-              v-model:expanded="expanded"
-              :data="cpoList"
-              :columns="columns"
-              sticky
-              class="flex-1 h-96"
-            >
-              <template #expanded="{ row }">
-                <pre>{{ row.original }}</pre>
-              </template>
-            </UTable>
+            <UTable ref="table" :data="cpoList" :columns="columns" sticky class="flex-1 overflow-auto" />
             <!-- <div class="overflow-auto max-h-96 rounded-lg border border-gray-200">
               
             </div> -->
@@ -240,11 +282,67 @@ definePageMeta({
           </UCard>
 
           <!-- Reconciliation -->
+<!-- Reconciliation -->
+          <UCard
+            variant="subtle"
+            class="flex-1"
+            v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
+          >
+            <template>
+              <!-- Header -->
+              <div
+                class="flex flex-row gap-4 justify-start"
+                v-if="
+                  item.title === t('settlement.generate.steps.supplier.title')
+                "
+              >
+                <USelectMenu
+                  v-model="selectedSuppliers"
+                  :items="
+                    supplierKeys.map((supplier) => ({
+                      label: supplier.name,
+                      value: supplier,
+                    }))
+                  "
+                  icon="i-lucide-user"
+                  label="Select Suppliers"
+                  placeholder="Choose suppliers..."
+                  multiple
+                  class="w-1/2"
+                >
+                  <template #leading="{ modelValue, ui }">
+                    <!-- Display icon and count of selected suppliers -->
+                    <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
+                  </template>
+                </USelectMenu>
+                <UPopover>
+                  <UButton
+                    color="neutral"
+                    variant="subtle"
+                    icon="i-lucide-calendar"
+                  >
+                    {{
+                      modelValue
+                        ? df.format(modelValue.toDate(getLocalTimeZone()))
+                        : "Select a date"
+                    }}
+                  </UButton>
+                  <template #content>
+                    <UCalendar v-model="modelValue" class="p-2" />
+                  </template>
+                </UPopover>
+              </div>
+            </template>
+            <h1 class="text-sm font-semibold mb-5">
+              List settlement CPOs
+            </h1>
+  
+            <UTable ref="table" :data="cpoList" :columns="cpoSettlementColumns" sticky class="flex-1 overflow-auto" />
+            </UCard>
 
           <!-- Navigation buttons moved to bottom -->
           <div class="mt-4 flex justify-between items-center">
             <UButton
-              leading-icon="i-lucide-arrow-left"
               :disabled="!stepper?.hasPrev"
               @click="stepper?.prev()"
             >
@@ -252,11 +350,11 @@ definePageMeta({
             </UButton>
 
             <UButton
-              trailing-icon="i-lucide-arrow-right"
               :disabled="!stepper?.hasNext || !canProceedToNext"
               @click="stepper?.next()"
             >
-              {{ t("settlement.generate.navigation.next") }}
+            Reconciliation Settlement
+              <!-- {{ t("settlement.generate.navigation.next") }} -->
             </UButton>
           </div>
         </div>
