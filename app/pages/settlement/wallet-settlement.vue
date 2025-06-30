@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow">
       <div class="flex flex-wrap items-center gap-2">
-        <UInput v-model="search" placeholder="Search by settler..." class="w-64" />
+        <UInput v-model="search" :placeholder="t('search_by_settler')" class="w-64" />
         <UPopover>
           <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
             <template v-if="modelValue.start">
@@ -16,7 +16,7 @@
               </template>
             </template>
             <template v-else>
-              Pick a date
+              {{ t('pick_a_date') }}
             </template>
           </UButton>
 
@@ -27,10 +27,11 @@
       </div>
       <div class="flex items-center gap-2">
         <UButton color="primary" icon="i-lucide-play" @click="onGenerateSettlement">
-          Generate Settlement
+          {{ t('generate_settlement') }}
         </UButton>
-        <UDropdownMenu :items="exportItems" :content="{ align: 'end' }">
-          <UButton icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">Export</UButton>
+
+        <UDropdownMenu :items="exportItems" :content="{ align: 'end' }" @select="handleExport">
+          <UButton icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">{{ t('export') }}</UButton>
         </UDropdownMenu>
       </div>
     </div>
@@ -39,6 +40,9 @@
     <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto" />
 
     <!-- Table Footer -->
+    <div class="px-4 py-3.5 text-sm text-muted">
+      {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} {{ t('of') }}
+      {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t('row_selected') }}
     <!-- <div class="px-4 py-3.5 text-sm text-muted">
       {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
       {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
@@ -64,6 +68,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -74,9 +79,13 @@ import { useRouter } from 'vue-router'
 import { useClipboard } from '@vueuse/core'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
-import type { TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
+import { exportToExcelStyled, exportToPDF } from '~/composables/utils/exportUtils'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 // import {
 //   exportSettlementToPDF,
 //   exportSettlementToExcel
@@ -163,10 +172,102 @@ const onGenerateSettlement = () => {
   router.push('/settlement/generate')
 }
 
-const exportItems: any[] = [
+const exportHeaders = [
+  { key: 'settlementId', label: t('settlement_id') },
+  { key: 'settlementDate', label: t('settlement_date') },
+  { key: 'totalSupplier', label: t('total_supplier') },
+  { key: 'totalAmount', label: t('total_amount') },
+  { key: 'settledBy', label: t('settled_by') },
+  { key: 'status', label: t('status') }
+// const exportItems: any[] = [
   // { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
   // { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
 ]
+
+const exportToExcelHandler = async () => {
+  try {
+    const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
+    const dataToExport = selectedRows.length > 0 ? selectedRows.map(row => row.original) : filteredData.value
+    if (dataToExport.length === 0) {
+      toast.add({
+        title: t('no_data_to_export'),
+        description: t('please_ensure_there_is_data_to_export'),
+        color: 'warning'
+      })
+      return
+    }
+    await exportToExcelStyled(
+      dataToExport,
+      exportHeaders,
+      'settlement-history.xlsx',
+      t('settlement_history_title'),
+      t('settlement_history_subtitle', { date: new Date().toLocaleDateString() })
+    )
+    toast.add({
+      title: t('export_successful'),
+      description: t('exported_records_to_excel', { count: dataToExport.length, selected: selectedRows.length > 0 ? t('selected') : '' }),
+      color: 'success'
+    })
+  } catch (error) {
+    console.error('Excel export error:', error)
+    toast.add({
+      title: t('export_failed'),
+      description: t('failed_to_export_to_excel'),
+      color: 'error'
+    })
+  }
+}
+
+const exportToPDFHandler = async () => {
+  try {
+    const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
+    const dataToExport = selectedRows.length > 0 ? selectedRows.map(row => row.original) : filteredData.value
+    if (dataToExport.length === 0) {
+      toast.add({
+        title: t('no_data_to_export'),
+        description: t('please_ensure_there_is_data_to_export'),
+        color: 'warning'
+      })
+      return
+    }
+    await exportToPDF(dataToExport, exportHeaders, 'settlement-history.pdf')
+    toast.add({
+      title: t('export_successful'),
+      description: t('exported_records_to_pdf', { count: dataToExport.length, selected: selectedRows.length > 0 ? t('selected') : '' }),
+      color: 'success'
+    })
+  } catch (error) {
+    console.error('PDF export error:', error)
+    toast.add({
+      title: t('export_failed'),
+      description: t('failed_to_export_to_pdf'),
+      color: 'error'
+    })
+  }
+}
+
+const exportItems = ref<DropdownMenuItem[]>([
+  { label: t('pdf'),
+    icon: 'i-lucide-file-text',
+    onSelect(){
+      exportToPDFHandler()
+    }
+  },
+  { 
+    label: t('excel'),
+    icon: 'i-lucide-file-spreadsheet',
+    onSelect(){
+      exportToExcelHandler()
+    }
+  }
+])
+
+
+const handleExport = (item: { click: () => void }) => {
+  if (item.click) {
+    item.click();
+  }
+}
 
 const columns: TableColumn<SettlementHistoryRecord>[] = [
   {
@@ -190,14 +291,14 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     enableSorting: false,
     enableHiding: false
   },
-  { accessorKey: 'settlement_id', header: 'Settlement ID' },
+  { accessorKey: 'settlementId', header: t('settlement_id') },
   {
-    accessorKey: 'settlement_date',
-    header: 'Settlement Date',
+    accessorKey: 'settlementDate',
+    header: t('settlement_date'),
     cell: ({ row }) =>
-      new Date(row.getValue('settlement_date')).toLocaleDateString()
+      new Date(row.getValue('settlementDate')).toLocaleDateString()
   },
-  { accessorKey: 'totalSupplier', header: 'Total Supplier' },
+  { accessorKey: 'totalSupplier', header: t('total_supplier') },
   {
     accessorKey: 'total_amount',
     header: 'Total Amount',
