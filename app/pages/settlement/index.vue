@@ -9,9 +9,9 @@
   </div>
 </template>
 
-<!-- <script setup>
+<script setup>
 const { data: settlements } = await useFetch('/api/settlement/list')
-</script> -->
+</script>
 
 <!-- <script setup>
 definePageMeta({

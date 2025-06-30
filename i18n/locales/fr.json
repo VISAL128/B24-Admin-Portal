@@ -1,4 +1,8 @@
 {
   "hello": "Bonjour",
-  "welcome": "Bienvenue sur le portail de gestion B24"
+  "welcome": "Bienvenue sur le portail de gestion B24",
+  "lang": {
+    "english": "Anglais",
+    "french": "Français"
+  }
 }
