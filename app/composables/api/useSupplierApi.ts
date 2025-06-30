@@ -1,10 +1,11 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
   Supplier, Cpo, CpoBySupplierRequest, CpoBalance,
-  BalanceQueryRequest, TransactionHistory,
+  BalanceQueryRequest,
   ConfirmSettlementRequest, ConfirmSettlementResponse,
   SettlementHistoryQuery, SettlementHistoryResponse
 } from '~/models/settlement'
+// import type { TransactionHistory } from '~/models/transactionHistory'
 import type { ApiResponse } from '~/models/baseModel'
 
 const baseUrl = ''//'http://localhost:3005'
@@ -23,11 +24,11 @@ export const useSupplierApi = () => {
     return rep.data
   }
 
-  const getCPOsBySuppliers = async (
+  const getListCPOApi = async (
     payload: CpoBySupplierRequest
   ): Promise<Cpo[]> => {
     var rep = await execute(() =>
-      $fetch(`${baseUrl}/api/getcpo`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<Cpo[]>>(`${baseUrl}/api/getcpo`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPOs:', rep.message)
@@ -40,7 +41,7 @@ export const useSupplierApi = () => {
     payload: BalanceQueryRequest
   ): Promise<CpoBalance[]> => {
     var rep = await execute(() =>
-      $fetch(`${baseUrl}/api/balance`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<CpoBalance[]>>(`${baseUrl}/api/balance`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPO balances:', rep.message)
@@ -49,18 +50,18 @@ export const useSupplierApi = () => {
     return rep.data 
   }
 
-  const getTransactionHistory = async (
-    cpoId: string
-  ): Promise<TransactionHistory[]> => {
-    var rep = await execute(() =>
-      $fetch<ApiResponse<TransactionHistory[]>>(`${baseUrl}/api/transaction-logs/${cpoId}`)
-    )
-    if (rep.code !== 'SUCCESS') { 
-      console.error('Failed to fetch transaction history:', rep.message)
-      return []
-    }
-    return rep.data
-  }
+  // const getTransactionHistory = async (
+  //   cpoId: string
+  // ): Promise<TransactionHistory[]> => {
+  //   var rep = await execute(() =>
+  //     $fetch<ApiResponse<TransactionHistory[]>>(`${baseUrl}/api/transaction-logs/${cpoId}`)
+  //   )
+  //   if (rep.code !== 'SUCCESS') { 
+  //     console.error('Failed to fetch transaction history:', rep.message)
+  //     return []
+  //   }
+  //   return rep.data
+  // }
 
   const confirmSettlement = async (
     payload: ConfirmSettlementRequest
@@ -85,9 +86,9 @@ export const useSupplierApi = () => {
 
   return {
     getSuppliers,
-    getCPOsBySuppliers,
+    getListCPOApi,
     getCpoBalances,
-    getTransactionHistory,
+    // getTransactionHistory,
     confirmSettlement,
     getSettlementHistory
   }

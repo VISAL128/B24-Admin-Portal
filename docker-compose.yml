@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  admin_portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "23055:3000"
+    environment:
+      - NODE_ENV=development
+      # Enable experimental WebCrypto API support
+      # - NODE_OPTIONS=--experimental-global-webcrypto
+      - KEYCLOAK_URL=https://ids.oone.bz
+      - KEYCLOAK_REALM=EP-Staging-ids
+      - KEYCLOAK_CLIENT_ID=b24-admin-portal
+      - KEYCLOAK_CLIENT_SECRET=yxPl1d1zSHTi2oeYkh6gpJApPQEMzlIw
+      - KEYCLOAK_CALLBACK_URL=0.0.0.0:23055/get-started
+      - APP_VERSION=1.0.0

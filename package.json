@@ -4,9 +4,12 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
+    "build:docker": "NODE_OPTIONS='--experimental-global-webcrypto' nuxt build",
     "dev": "nuxt dev",
+    "dev:https": "HTTPS=true nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "preview:docker": "NODE_OPTIONS='--experimental-global-webcrypto' nuxt preview",
     "postinstall": "nuxt prepare",
     "debug": "npx --node-arg=--inspect-brk nuxi dev"
   },
@@ -26,6 +29,7 @@
     "keycloak-js": "^26.2.0",
     "nuxt": "^3.17.5",
     "nuxt-charts": "0.1.11",
+    "nuxt-openid-connect": "^0.8.1",
     "typescript": "^5.6.3",
     "vue": "^3.5.17",
     "vue-i18n": "^11.1.7",
@@ -35,6 +39,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/date-fns": "^2.6.3",
+    "@types/xlsx": "^0.0.35",
     "tailwindcss": "^4.1.11"
   }
 }

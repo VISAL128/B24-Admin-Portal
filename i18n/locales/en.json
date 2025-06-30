@@ -33,5 +33,27 @@
   "failed_to_export_to_excel": "Failed to export to Excel",
   "failed_to_export_to_pdf": "Failed to export to PDF",
   "settlement_history_title": "Settlement History",
-  "settlement_history_subtitle": "Settlement history is a record of settlements made by suppliers"
+  "settlement_history_subtitle": "Settlement history is a record of settlements made by suppliers",
+  "settlement": {
+    "generate": {
+      "steps": {
+        "supplier": {
+          "title": "Suppliers Selection",
+          "description": "Select the suppliers for which you want to generate the settlement."
+        },
+        "reconciliation": {
+          "title": "Reconciliation",
+          "description": "Review and reconcile the provided information."
+        },
+        "confirmation": {
+          "title": "Confirmation",
+          "description": "Confirm the accuracy of the information."
+        }
+      },
+      "navigation": {
+        "prev": "Previous",
+        "next": "Next"
+      }
+    }
+  }
 }

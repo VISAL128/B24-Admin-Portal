@@ -1,3 +1,20 @@
+/**
+ * Authentication composable for Bill24 Admin Portal
+ * 
+ * This composable provides a clean interface for authentication operations
+ * using the nuxt-openid-connect module. It bridges the gap between the
+ * OIDC module and the application's authentication needs.
+ * 
+ * Key features:
+ * - Reactive authentication state
+ * - User information management
+ * - Role-based access control
+ * - Backward compatibility with localStorage (optional)
+ * - Automatic token management via OIDC
+ */
+
+import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
+
 interface UserInfo {
   id: string
   username: string
@@ -6,231 +23,221 @@ interface UserInfo {
   lastName: string
   roles: string[]
   fullName: string
+  picture?: string
+}
+
+interface StoredAuthData {
+  user: UserInfo | null
+  authenticated: boolean
+  lastSync: number
 }
 
 export const useAuth = () => {
-  const nuxtApp = useNuxtApp()
-  const { 
-    getStoredKeycloakData, 
-    clearKeycloakData, 
-    getStoredToken,
-    storeKeycloakData,
-    updateStoredTokens
-  } = useLocalStorage()
+  const oidc = useOidc()
   
-  // Handle case where Keycloak plugin hasn't loaded yet
-  const keycloak = computed(() => nuxtApp.$keycloak)
-  const isAuthenticated = computed(() => nuxtApp.$isAuthenticated?.value ?? false)
-  const isInitialized = computed(() => nuxtApp.$isKeycloakInitialized?.value ?? false)
-  const initError = computed(() => nuxtApp.$keycloakInitError?.value ?? null)
-  
+  // Core reactive state
   const user = ref<UserInfo | null>(null)
-  const token = ref<string | null>(null)
-  const refreshToken = ref<string | null>(null)
+  
+  // Computed properties derived from OIDC state
+  const isAuthenticated = computed(() => oidc.isLoggedIn)
+  const isInitialized = computed(() => true) // OIDC is always initialized
+  const initError = computed(() => null) // OIDC handles errors internally
 
-  // Initialize user data if authenticated
-  const initializeUserData = () => {
-    const keycloakInstance = keycloak.value
-    if (keycloakInstance && keycloakInstance.authenticated) {
-      user.value = getUserInfo()
-      token.value = keycloakInstance.token || null
-      refreshToken.value = keycloakInstance.refreshToken || null
+  /**
+   * Extract user information from OIDC user object
+   */
+  const extractUserInfo = (): UserInfo | null => {
+    if (!oidc.user) return null
+
+    const oidcUser = oidc.user
+    return {
+      id: oidcUser.sub || '',
+      username: oidcUser.preferred_username || oidcUser.email || '',
+      email: oidcUser.email || '',
+      firstName: oidcUser.given_name || '',
+      lastName: oidcUser.family_name || '',
+      fullName: `${oidcUser.given_name || ''} ${oidcUser.family_name || ''}`.trim() || 
+                oidcUser.preferred_username || oidcUser.email || '',
+      roles: oidcUser.realm_access?.roles || oidcUser.roles || [],
+      picture: oidcUser.picture || ''
+    }
+  }
+
+  /**
+   * Initialize user data from OIDC
+   */
+  const initializeUserData = async () => {
+    if (oidc.isLoggedIn && oidc.user) {
+      user.value = extractUserInfo()
       
-      // Store in localStorage
-      storeKeycloakData(keycloakInstance)
+      // Optional: Store in localStorage for backward compatibility
+      if (user.value) {
+        const authData: StoredAuthData = {
+          user: user.value,
+          authenticated: true,
+          lastSync: Date.now()
+        }
+        
+        const storage = useStorage<StoredAuthData>()
+        storage.setItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA, authData, 24 * 60 * 60) // 24 hours
+      }
     } else {
-      // Try to load from localStorage if Keycloak is not ready yet
-      const storedData = getStoredKeycloakData()
-      if (storedData && storedData.authenticated) {
-        user.value = storedData.user
-        token.value = storedData.token
-        refreshToken.value = storedData.refreshToken
-      } else {
-        user.value = null
-        token.value = null
-        refreshToken.value = null
-      }
+      user.value = null
+      
+      // Clear localStorage when not authenticated
+      const storage = useStorage()
+      storage.removeItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA)
     }
   }
 
-  // Authentication methods
-  const login = async (): Promise<void> => {
-    const keycloakInstance = keycloak.value
-    if (!keycloakInstance) throw new Error('Keycloak not initialized')
-    
+  /**
+   * Initiate login flow
+   */
+  const login = async (redirectTo?: string): Promise<void> => {
     try {
-      await keycloakInstance.login({
-        redirectUri: window.location.origin
-      })
+      const returnUrl = redirectTo || '/'
+      oidc.login(returnUrl)
     } catch (error) {
-      console.error('Login failed:', error)
+      console.error('❌ Login failed:', error)
       throw error
     }
   }
 
+  /**
+   * Logout and clean up all authentication data
+   */
   const logout = async (): Promise<void> => {
-    const keycloakInstance = keycloak.value
-    if (!keycloakInstance) throw new Error('Keycloak not initialized')
-    
     try {
-      // Clear session state before logout
-      const { clearKeycloakState } = useKeycloakGuard()
-      clearKeycloakState()
-      
       // Clear localStorage data
-      clearKeycloakData()
+      const storage = useStorage()
+      storage.removeItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA)
       
-      await keycloakInstance.logout({
-        redirectUri: window.location.origin
+      // Clear legacy authentication data
+      Object.values(LOCAL_STORAGE_KEYS).forEach(key => {
+        if (key.toLowerCase().includes('keycloak')) {
+          storage.removeItem(key)
+        }
       })
+      
+      // Clear user state
+      user.value = null
+      
+      // Perform OIDC logout
+      oidc.logout('/') // Redirect to home after logout
+      
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error('❌ Logout failed:', error)
       throw error
     }
   }
 
+  /**
+   * Registration - redirects to login as OIDC doesn't handle direct registration
+   */
   const register = async (): Promise<void> => {
-    const keycloakInstance = keycloak.value
-    if (!keycloakInstance) throw new Error('Keycloak not initialized')
-    
     try {
-      await keycloakInstance.register({
-        redirectUri: window.location.origin
-      })
+      await login()
     } catch (error) {
-      console.error('Registration failed:', error)
+      console.error('❌ Registration failed:', error)
       throw error
     }
   }
 
-  const getToken = (): string | null => {
-    // Try to get token from Keycloak instance first
-    const keycloakToken = keycloak.value?.token || null
-    if (keycloakToken) return keycloakToken
-    
-    // Fallback to localStorage
-    return getStoredToken()
+  /**
+   * Get current user information
+   */
+  const getUserInfo = (): UserInfo | null => {
+    return user.value || extractUserInfo()
   }
 
-  const refreshAuthToken = async (): Promise<string | null> => {
-    const keycloakInstance = keycloak.value
-    if (!keycloakInstance) return null
+  /**
+   * Check if user has a specific role
+   */
+  const hasRole = (role: string): boolean => {
+    const userInfo = getUserInfo()
+    return userInfo?.roles.includes(role) || false
+  }
 
+  /**
+   * Check if user has any of the specified roles
+   */
+  const hasAnyRole = (roles: string[]): boolean => {
+    const userInfo = getUserInfo()
+    if (!userInfo?.roles) return false
+    return roles.some(role => userInfo.roles.includes(role))
+  }
+
+  /**
+   * Refresh user information from OIDC
+   */
+  const refreshUserInfo = async (): Promise<UserInfo | null> => {
     try {
-      const refreshed = await keycloakInstance.updateToken(30)
-      if (refreshed) {
-        token.value = keycloakInstance.token || null
-        refreshToken.value = keycloakInstance.refreshToken || null
-        
-        // Update localStorage with new tokens
-        const expiresAt = keycloakInstance.tokenParsed?.exp ? keycloakInstance.tokenParsed.exp * 1000 : null
-        updateStoredTokens(
-          keycloakInstance.token || null,
-          keycloakInstance.refreshToken || null,
-          keycloakInstance.idToken || null,
-          expiresAt
-        )
-        
-        console.log('Token refreshed successfully')
-      }
-      return keycloakInstance.token || null
+      await oidc.fetchUser()
+      await initializeUserData()
+      console.log('✅ User info refreshed successfully')
+      return getUserInfo()
     } catch (error) {
-      console.error('Token refresh failed:', error)
-      clearKeycloakData()
+      console.error('❌ User info refresh failed:', error)
       await logout()
       return null
     }
   }
 
-  const updateToken = async (minValidity: number = 30): Promise<boolean> => {
-    const keycloakInstance = keycloak.value
-    if (!keycloakInstance) return false
-
+  /**
+   * Check if authentication is still valid
+   */
+  const validateAuth = async (): Promise<boolean> => {
     try {
-      const refreshed = await keycloakInstance.updateToken(minValidity)
-      if (refreshed) {
-        token.value = keycloakInstance.token || null
-        refreshToken.value = keycloakInstance.refreshToken || null
-        
-        // Update localStorage with new tokens
-        const expiresAt = keycloakInstance.tokenParsed?.exp ? keycloakInstance.tokenParsed.exp * 1000 : null
-        updateStoredTokens(
-          keycloakInstance.token || null,
-          keycloakInstance.refreshToken || null,
-          keycloakInstance.idToken || null,
-          expiresAt
-        )
-      }
-      return refreshed
+      await oidc.fetchUser()
+      return oidc.isLoggedIn
     } catch (error) {
-      console.error('Failed to update token:', error)
-      clearKeycloakData()
+      console.error('❌ Authentication validation failed:', error)
       return false
     }
   }
 
-  const isTokenExpired = (): boolean => {
-    const keycloakInstance = keycloak.value
-    if (!keycloakInstance || !keycloakInstance.token) return true
-    return keycloakInstance.isTokenExpired()
-  }
-
-  const getUserInfo = (): UserInfo | null => {
-    const keycloakInstance = keycloak.value
-    if (!keycloakInstance?.tokenParsed) return null
-
-    const tokenParsed = keycloakInstance.tokenParsed
-    return {
-      id: tokenParsed.sub || '',
-      username: tokenParsed.preferred_username || '',
-      email: tokenParsed.email || '',
-      firstName: tokenParsed.given_name || '',
-      lastName: tokenParsed.family_name || '',
-      fullName: `${tokenParsed.given_name || ''} ${tokenParsed.family_name || ''}`.trim() || tokenParsed.preferred_username || '',
-      roles: tokenParsed.realm_access?.roles || []
-    }
-  }
-
-  const hasRole = (role: string): boolean => {
-    const userRoles = getUserInfo()?.roles || []
-    return userRoles.includes(role)
-  }
-
-  const hasAnyRole = (roles: string[]): boolean => {
-    const userRoles = getUserInfo()?.roles || []
-    return roles.some(role => userRoles.includes(role))
-  }
-
-  // Watch for authentication changes
-  watch([isAuthenticated, isInitialized], () => {
-    if (isInitialized.value) {
+  // Watch for authentication state changes
+  watch(
+    () => oidc.isLoggedIn,
+    () => {
       initializeUserData()
-    }
-  }, { immediate: true })
+    },
+    { immediate: true }
+  )
 
-  // Initialize user data on first load
+  // Initialize user data on composable creation
   nextTick(() => {
-    if (isInitialized.value) {
-      initializeUserData()
-    }
+    initializeUserData()
   })
 
   return {
+    // State
     isAuthenticated,
-    user,
-    token,
-    refreshToken,
     isInitialized,
     initError,
+    user: readonly(user),
+    
+    // Methods
     login,
     logout,
     register,
-    getToken,
-    refreshAuthToken,
     getUserInfo,
     hasRole,
     hasAnyRole,
-    updateToken,
-    isTokenExpired
+    refreshUserInfo,
+    validateAuth,
+    
+    // Legacy compatibility (deprecated - tokens not available in OIDC)
+    getToken: () => {
+      console.warn('⚠️ getToken() is deprecated - tokens are managed server-side with OIDC')
+      return null
+    },
+    refreshAuthToken: refreshUserInfo,
+    updateToken: validateAuth,
+    isTokenExpired: () => !oidc.isLoggedIn,
+    
+    // Backward compatibility
+    token: computed(() => null),
+    refreshToken: computed(() => null)
   }
 }

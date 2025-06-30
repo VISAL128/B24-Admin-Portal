@@ -43,8 +43,32 @@
     <div class="px-4 py-3.5 text-sm text-muted">
       {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} {{ t('of') }}
       {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t('row_selected') }}
+    <!-- <div class="px-4 py-3.5 text-sm text-muted">
+      {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+      {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
+    </div> -->
+     <!-- Table Footer -->
+    <div class="flex items-center justify-between px-4 py-3 text-sm text-muted">
+      <span>
+        {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
+      </span>
+      <div class="flex items-center gap-4">
+        <USelect
+          v-model="pageSize"
+          :options="[10, 20, 50, 100]"
+          class="w-24"
+          @change="onPageSizeChange"
+        />
+        <UPagination
+          v-model="page"
+          :page-count="Math.ceil(total / pageSize)"
+          :total="total"
+        />
+      </div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -59,9 +83,13 @@ import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
 import { exportToExcelStyled, exportToPDF } from '~/composables/utils/exportUtils'
-import { useI18n } from '#imports'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+// import {
+//   exportSettlementToPDF,
+//   exportSettlementToExcel
+// } from '~/composables/utils/exportUtils'
 
 const { getSettlementHistory, getSuppliers } = useSupplierApi()
 const { execute } = useApiExecutor()
@@ -71,6 +99,9 @@ const router = useRouter()
 const { copy } = useClipboard()
 const toast = useToast()
 
+const page = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 const search = ref('')
 const startDate = ref('')
 const endDate = ref('')
@@ -92,6 +123,11 @@ watch(modelValue, (val) => {
   fetchSettlementHistory()
 })
 
+// Watch pagination
+watch([page, pageSize], () => {
+  fetchSettlementHistory()
+})
+
 // Fetch settlement data from API
 const fetchSettlementHistory = async () => {
   loading.value = true
@@ -99,13 +135,14 @@ const fetchSettlementHistory = async () => {
     const payload: SettlementHistoryQuery = {
       page: 1,
       limit: 100,
-      startDate: startDate.value || undefined,
-      endDate: endDate.value || undefined,
+      start_date: startDate.value || undefined,
+      end_date: endDate.value || undefined,
       // status: 'paid', // Optional filter if needed
     }
 
     const data = await getSettlementHistory(payload)
     settlements.value = data?.records ?? []
+    total.value = data?.total ?? 0
   } catch (error: any) {
     console.error('Error loading settlement history:', error.message)
     errorMsg.value = error.message || 'Failed to load settlement history.'
@@ -114,10 +151,15 @@ const fetchSettlementHistory = async () => {
   }
 }
 
+const onPageSizeChange = () => {
+  page.value = 1
+  fetchSettlementHistory()
+}
+
 // Filtered rows for table
 const filteredData = computed(() =>
   settlements.value.filter(item =>
-    item.settledBy.toLowerCase().includes(search.value.toLowerCase())
+    item.settled_by.toLowerCase().includes(search.value.toLowerCase())
   )
 )
 
@@ -127,7 +169,7 @@ onMounted(() => {
 })
 
 const onGenerateSettlement = () => {
-  router.push('/settlement/generatereport')
+  router.push('/settlement/generate')
 }
 
 const exportHeaders = [
@@ -137,6 +179,9 @@ const exportHeaders = [
   { key: 'totalAmount', label: t('total_amount') },
   { key: 'settledBy', label: t('settled_by') },
   { key: 'status', label: t('status') }
+// const exportItems: any[] = [
+  // { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
+  // { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
 ]
 
 const exportToExcelHandler = async () => {
@@ -255,28 +300,38 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   },
   { accessorKey: 'totalSupplier', header: t('total_supplier') },
   {
-    accessorKey: 'totalAmount',
-    header: t('total_amount'),
+    accessorKey: 'total_amount',
+    header: 'Total Amount',
     cell: ({ row }) =>
-      h('div', { class: 'text-right font-medium' }, `$${row.getValue('totalAmount')}`)
+      h('div', { class: 'text-right font-medium' }, `$${row.getValue('total_amount')}`)
   },
-  { accessorKey: 'settledBy', header: t('settled_by') },
+  { accessorKey: 'settled_by', header: 'Settled By' },
   {
-    accessorKey: 'status',
-    header: t('status'),
-    cell: ({ row }) => {
-      const color = {
-        paid: 'success',
-        failed: 'error',
-        refunded: 'warning'
-      }[row.getValue('status') as string]
+  accessorKey: 'status', // optional if you need sorting/filtering
+  header: 'Status',
+  cell: ({ row }) => {
+    const success = row.original.success
+    const fail = row.original.fail
+    const total = row.original.total_Settled
 
-      return h(resolveComponent('UBadge'), {
-        color,
-        variant: 'subtle',
-        class: 'capitalize'
-      }, () => row.getValue('status'))
-    }
+    const UBadge = resolveComponent('UBadge')
+    const Icon = resolveComponent('UIcon')
+
+    return h('div', { class: 'flex gap-2 items-center' }, [
+      h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+        h('span', {}, total)
+      ]),
+      h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+        h('span', {}, success)
+      ]),
+      h(UBadge, { color: 'error', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }),
+        h('span', {}, fail)
+      ])
+    ])
   }
+}
 ]
 </script>
