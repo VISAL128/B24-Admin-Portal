@@ -196,7 +196,10 @@ definePageMeta({
             >
               <USelectMenu
                 v-model="selectedSuppliers"
-                :items="suppliers"
+                :items="suppliers.map((supplier) => ({
+                  label: supplier.name,
+                  value: supplier,
+                }))"
                 icon="i-lucide-user"
                 label="Select Suppliers"
                 placeholder="Choose suppliers..."
