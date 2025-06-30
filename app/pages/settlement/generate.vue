@@ -7,6 +7,7 @@ import {
   getLocalTimeZone,
 } from "@internationalized/date";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
+import type { Supplier } from "~/models/settlement";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");

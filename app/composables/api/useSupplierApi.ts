@@ -24,11 +24,11 @@ export const useSupplierApi = () => {
     return rep.data
   }
 
-  const getCPOsBySuppliers = async (
+  const getListCPOApi = async (
     payload: CpoBySupplierRequest
   ): Promise<Cpo[]> => {
     var rep = await execute(() =>
-      $fetch(`${baseUrl}/api/getcpo`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<Cpo[]>>(`${baseUrl}/api/getcpo`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPOs:', rep.message)
@@ -86,7 +86,7 @@ export const useSupplierApi = () => {
 
   return {
     getSuppliers,
-    getCPOsBySuppliers,
+    getListCPOApi,
     getCpoBalances,
     // getTransactionHistory,
     confirmSettlement,
