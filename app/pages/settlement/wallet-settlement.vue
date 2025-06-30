@@ -163,7 +163,7 @@ const onGenerateSettlement = () => {
   router.push('/settlement/generate')
 }
 
-const exportItems = [
+const exportItems: any[] = [
   // { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
   // { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
 ]

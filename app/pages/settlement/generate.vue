@@ -7,6 +7,7 @@ import {
   getLocalTimeZone,
 } from "@internationalized/date";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
+import type { Supplier } from "~/models/settlement";
 
 const df = new DateFormatter("en-US", {
   dateStyle: "medium",
