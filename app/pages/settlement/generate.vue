@@ -7,7 +7,6 @@ import {
   getLocalTimeZone,
 } from "@internationalized/date";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
-import type { Supplier } from "~/models/settlement";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
@@ -160,8 +159,8 @@ const fetchCpos = async () => {
     const request: CpoBySupplierRequest = {
       supplier_ids: selectedSuppliers.value.map((supplier) => supplier.id)
     }
-    
-    cpoList.value = await supplierApi.getCPOsBySuppliers(request);
+
+    cpoList.value = await supplierApi.getListCPOApi(request);
   } catch (error) {
     console.error('Failed to fetch CPOs:', error)
   } finally {
@@ -198,7 +197,6 @@ definePageMeta({
               <USelectMenu
                 v-model="selectedSuppliers"
                 :items="suppliers"
-                :loading="status === 'pending'"
                 icon="i-lucide-user"
                 label="Select Suppliers"
                 placeholder="Choose suppliers..."
