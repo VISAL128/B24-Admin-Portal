@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StepperItem, TableColumn } from "@nuxt/ui";
+import type { StepperItem, AvatarProps, TableColumn } from "@nuxt/ui";
 import type { Cpo, Supplier, CpoBySupplierRequest } from "~/models/settlement";
 import {
   CalendarDate,
@@ -46,80 +46,22 @@ const items: StepperItem[] = [
   },
 ];
 
-const suppliers = ref<Supplier[]>([]);
+const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<Supplier[]>([]);
 const cpoList = ref<Cpo[]>([]);
-const columns: TableColumn<Cpo>[] = [
-  {
-    id: "expand",
-    cell: ({ row }) =>
-      h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        icon: "i-lucide-chevron-down",
-        square: true,
-        "aria-label": "Expand",
-        ui: {
-          leadingIcon: [
-            "transition-transform",
-            row.getIsExpanded() ? "duration-200 rotate-180" : "",
-          ],
-        },
-        onClick: () => row.toggleExpanded(),
-      }),
-  },
-  {
-    accessorKey: "id",
-    header: "#",
-    cell: ({ row }) => `#${row.getValue("id")}`,
-  },
-  {
-    accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => {
-      return new Date(row.getValue("date")).toLocaleString("en-US", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const color = {
-        paid: "success" as const,
-        failed: "error" as const,
-        refunded: "neutral" as const,
-      }[row.getValue("status") as string];
 
-      return h(UBadge, { class: "capitalize", variant: "subtle", color }, () =>
-        row.getValue("status")
-      );
-    },
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "amount",
-    header: () => h("div", { class: "text-right" }, "Amount"),
-    cell: ({ row }) => {
-      const amount = Number.parseFloat(row.getValue("amount"));
 
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "EUR",
-      }).format(amount);
+const columns:TableColumn<Cpo>[] = [
 
-      return h("div", { class: "text-right font-medium" }, formatted);
-    },
-  },
+  { accessorKey: "supplierCode", header: "Supplier Code" },
+  { accessorKey: "supplierName", header: "Supplier Name" },
+  { accessorKey: "cpoCode", header: "CPO Code" },
+  { accessorKey: "cpoName", header: "CPO Name" },
+  { accessorKey: "phone", header: "Phone" },
+  { accessorKey: "email", header: "Email" },
+  { accessorKey: "address", header: "Address" },
 ];
+
 
 const expanded = ref({ 1: true });
 
@@ -146,27 +88,27 @@ onMounted(() => {
 
 const fetchSuppliers = async () => {
   try {
-    suppliers.value = await supplierApi.getSuppliers();
+    supplierKeys.value = await supplierApi.getSuppliers();
   } catch (error) {
-    console.error('Failed to fetch suppliers:', error);
+    console.error("Failed to fetch suppliers:", error);
   }
 };
 
 // Function to fetch CPOs based on selected suppliers
 const fetchCpos = async () => {
-  if (selectedSuppliers.value.length === 0) return
+  if (selectedSuppliers.value.length === 0) return;
   try {
     const request: CpoBySupplierRequest = {
-      supplier_ids: selectedSuppliers.value.map((supplier) => supplier.id)
-    }
+      supplier_ids: selectedSuppliers.value.map((supplier) => supplier.value.id),
+    };
 
     cpoList.value = await supplierApi.getListCPOApi(request);
   } catch (error) {
-    console.error('Failed to fetch CPOs:', error)
+    console.error("Failed to fetch CPOs:", error);
   } finally {
     // Optionally handle loading state or errors
   }
-}
+};
 
 definePageMeta({
   auth: false,
@@ -196,10 +138,12 @@ definePageMeta({
             >
               <USelectMenu
                 v-model="selectedSuppliers"
-                :items="suppliers.map((supplier) => ({
-                  label: supplier.name,
-                  value: supplier,
-                }))"
+                :items="
+                  supplierKeys.map((supplier) => ({
+                    label: supplier.name,
+                    value: supplier,
+                  }))
+                "
                 icon="i-lucide-user"
                 label="Select Suppliers"
                 placeholder="Choose suppliers..."
@@ -207,12 +151,11 @@ definePageMeta({
                 class="w-1/2"
               >
                 <template #leading="{ modelValue, ui }">
-                  <!-- <UAvatar
-              v-if="modelValue"
-              v-bind="modelValue.avatar"
-              :size="(ui.leadingAvatarSize() as AvatarProps['size'])"
-              :class="ui.leadingAvatar()"
-            /> -->
+                  <!-- Display icon and count of selected suppliers -->
+                    <UIcon
+                    name="i-lucide-users"
+                    class="mr-2 text-gray-500"
+                    />
                 </template>
               </USelectMenu>
               <UPopover>

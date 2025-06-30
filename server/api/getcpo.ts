@@ -30,13 +30,13 @@ export default defineEventHandler(async (event): Promise<ApiResponse<any[]>> => 
     return base
   })
 
-  const filtered = body.supplier_ids
-    ? mockData.filter(item => body.supplier_ids.includes(item.supplier_id))
-    : mockData
+  // const filtered = body.supplier_ids
+  //   ? mockData.filter(item => body.supplier_ids.includes(item.supplier_id))
+  //   : mockData
 
   return {
     code: 'SUCCESS',
     message: 'Success',
-    data: filtered
+    data: mockData
   }
 })
