@@ -29,9 +29,9 @@
         <UButton color="primary" icon="i-lucide-play" @click="onGenerateSettlement">
           Generate Settlement
         </UButton>
-        <!-- <UDropdownMenu :items="exportItems" :content="{ align: 'end' }">
+        <UDropdownMenu :items="exportItems" :content="{ align: 'end' }">
           <UButton icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">Export</UButton>
-        </UDropdownMenu> -->
+        </UDropdownMenu>
       </div>
     </div>
 
@@ -39,9 +39,29 @@
     <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto" />
 
     <!-- Table Footer -->
-    <div class="px-4 py-3.5 text-sm text-muted">
+    <!-- <div class="px-4 py-3.5 text-sm text-muted">
       {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
       {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
+    </div> -->
+     <!-- Table Footer -->
+    <div class="flex items-center justify-between px-4 py-3 text-sm text-muted">
+      <span>
+        {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
+      </span>
+      <div class="flex items-center gap-4">
+        <USelect
+          v-model="pageSize"
+          :options="[10, 20, 50, 100]"
+          class="w-24"
+          @change="onPageSizeChange"
+        />
+        <UPagination
+          v-model="page"
+          :page-count="Math.ceil(total / pageSize)"
+          :total="total"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -70,6 +90,9 @@ const router = useRouter()
 const { copy } = useClipboard()
 const toast = useToast()
 
+const page = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 const search = ref('')
 const startDate = ref('')
 const endDate = ref('')
@@ -91,6 +114,11 @@ watch(modelValue, (val) => {
   fetchSettlementHistory()
 })
 
+// Watch pagination
+watch([page, pageSize], () => {
+  fetchSettlementHistory()
+})
+
 // Fetch settlement data from API
 const fetchSettlementHistory = async () => {
   loading.value = true
@@ -98,13 +126,14 @@ const fetchSettlementHistory = async () => {
     const payload: SettlementHistoryQuery = {
       page: 1,
       limit: 100,
-      startDate: startDate.value || undefined,
-      endDate: endDate.value || undefined,
+      start_date: startDate.value || undefined,
+      end_date: endDate.value || undefined,
       // status: 'paid', // Optional filter if needed
     }
 
     const data = await getSettlementHistory(payload)
     settlements.value = data?.records ?? []
+    total.value = data?.total ?? 0
   } catch (error: any) {
     console.error('Error loading settlement history:', error.message)
     errorMsg.value = error.message || 'Failed to load settlement history.'
@@ -113,10 +142,15 @@ const fetchSettlementHistory = async () => {
   }
 }
 
+const onPageSizeChange = () => {
+  page.value = 1
+  fetchSettlementHistory()
+}
+
 // Filtered rows for table
 const filteredData = computed(() =>
   settlements.value.filter(item =>
-    item.settledBy.toLowerCase().includes(search.value.toLowerCase())
+    item.settled_by.toLowerCase().includes(search.value.toLowerCase())
   )
 )
 
@@ -129,10 +163,10 @@ const onGenerateSettlement = () => {
   router.push('/settlement/generate')
 }
 
-// const exportItems = [
-//   { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
-//   { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
-// ]
+const exportItems = [
+  // { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
+  // { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
+]
 
 const columns: TableColumn<SettlementHistoryRecord>[] = [
   {
@@ -156,37 +190,47 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     enableSorting: false,
     enableHiding: false
   },
-  { accessorKey: 'settlementId', header: 'Settlement ID' },
+  { accessorKey: 'settlement_id', header: 'Settlement ID' },
   {
-    accessorKey: 'settlementDate',
+    accessorKey: 'settlement_date',
     header: 'Settlement Date',
     cell: ({ row }) =>
-      new Date(row.getValue('settlementDate')).toLocaleDateString()
+      new Date(row.getValue('settlement_date')).toLocaleDateString()
   },
   { accessorKey: 'totalSupplier', header: 'Total Supplier' },
   {
-    accessorKey: 'totalAmount',
+    accessorKey: 'total_amount',
     header: 'Total Amount',
     cell: ({ row }) =>
-      h('div', { class: 'text-right font-medium' }, `$${row.getValue('totalAmount')}`)
+      h('div', { class: 'text-right font-medium' }, `$${row.getValue('total_amount')}`)
   },
-  { accessorKey: 'settledBy', header: 'Settled By' },
+  { accessorKey: 'settled_by', header: 'Settled By' },
   {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const color = {
-        paid: 'success',
-        failed: 'error',
-        refunded: 'warning'
-      }[row.getValue('status') as string]
+  accessorKey: 'status', // optional if you need sorting/filtering
+  header: 'Status',
+  cell: ({ row }) => {
+    const success = row.original.success
+    const fail = row.original.fail
+    const total = row.original.total_Settled
 
-      return h(resolveComponent('UBadge'), {
-        color,
-        variant: 'subtle',
-        class: 'capitalize'
-      }, () => row.getValue('status'))
-    }
+    const UBadge = resolveComponent('UBadge')
+    const Icon = resolveComponent('UIcon')
+
+    return h('div', { class: 'flex gap-2 items-center' }, [
+      h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+        h('span', {}, total)
+      ]),
+      h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+        h('span', {}, success)
+      ]),
+      h(UBadge, { color: 'error', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }),
+        h('span', {}, fail)
+      ])
+    ])
   }
+}
 ]
 </script>

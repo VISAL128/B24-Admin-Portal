@@ -1,74 +1,89 @@
-import { SettlementHistoryQuery, SettlementHistoryResponse, SettlementHistoryRecord } from '~/models/settlement'
+import { defineEventHandler, readBody } from 'h3'
 import { ApiResponse } from '~/models/baseModel'
 import { parseISO, isAfter, isBefore } from 'date-fns'
+import { SettlementHistoryQuery, SettlementHistoryRecord, SettlementHistoryResponse } from '~/models/settlement'
 
 export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryResponse>> => {
   const body = await readBody<SettlementHistoryQuery>(event)
 
-  // Example mock data
-  const mockRecords: SettlementHistoryRecord[] = [
-    {
-      settlementId: 'SETTLE-001',
-      settlementDate: '2025-06-25T10:00:00Z',
-      totalSupplier: 2,
-      totalAmount: 7000,
-      settledBy: 'admin',
-      status: 'paid'
-    },
-    {
-      settlementId: 'SETTLE-002',
-      settlementDate: '2025-06-28T15:30:00Z',
-      totalSupplier: 5,
-      totalAmount: 5500,
-      settledBy: 'john',
-      status: 'refunded'
-    },
-    {
-      settlementId: 'SETTLE-003',
-      settlementDate: '2025-07-01T12:00:00Z',
-      totalSupplier: 3,
-      totalAmount: 3000,
-      settledBy: 'sokleng',
-      status: 'failed'
+  const mockData: SettlementHistoryRecord[] = Array.from({ length: 5 }, (_, i) => {
+    const suffix = i + 1
+    return {
+      settlement_id: `settle-000${suffix}`,
+      settlement_date: `2025-01-0${suffix} 10:04:09`,
+      total_supplier: 5 + i,
+      total_amount: `${20000 + i * 1000}`,
+      currency: 'USD',
+      supplier_id: `supplier-${suffix}`,
+      settled_by: 'admin',
+      success: 10,
+      fail: 2,
+      total_Settled: 8 + i, // Added property to match SettlementHistoryRecord
+      settle_details: {
+        party_id: `cpo-${suffix}`,
+        supplier_id: '',
+        supplier: {
+          id: `sup-${suffix}`,
+          code: `820${suffix}`,
+          name: `hong channy ${suffix}`,
+          phone: 88930499,
+          email: `channyheng${suffix}@gmail.com`,
+          address: ''
+        },
+        cpo: {
+          id: `cpo-${suffix}`,
+          code: `792${suffix}`,
+          name: `chang dara ${suffix}`,
+          phone: 88930499,
+          email: `changdarra${suffix}@gmail.com`,
+          address: ''
+        },
+        settle_amount: 1200 + i * 100,
+        settlement_bank_id: 'AC',
+        settlement_bank_name: 'ACLEDA BANK',
+        status: i % 2 === 0 ? 'success' : 'fail'
+      }
     }
-  ]
+  })
 
-  const { startDate, endDate, status, page = 1, limit = 10 } = body
-  const searchName = (body as any).name?.toLowerCase() // support extra `name` filter
+  // Optional filtering (basic)
+  const { start_date, end_date, status, page = 1, limit = 10, name } = body
 
-  let filtered = mockRecords
+  let filtered = mockData
 
-  // Filter by status
   if (status) {
-    filtered = filtered.filter(r => r.status === status)
+    filtered = filtered.filter(item => item.settle_details.status === status)
   }
 
-  // Filter by date range
-  if (startDate) {
-    filtered = filtered.filter(r => isAfter(parseISO(r.settlementDate), parseISO(startDate)))
-  }
-  if (endDate) {
-    filtered = filtered.filter(r => isBefore(parseISO(r.settlementDate), parseISO(endDate)))
+  if (start_date) {
+    filtered = filtered.filter(item =>
+      isAfter(parseISO(item.settlement_date), parseISO(start_date))
+    )
   }
 
-  // Filter by settledBy name
-  if (searchName) {
-    filtered = filtered.filter(r => r.settledBy.toLowerCase().includes(searchName))
+  if (end_date) {
+    filtered = filtered.filter(item =>
+      isBefore(parseISO(item.settlement_date), parseISO(end_date))
+    )
   }
 
-  // Pagination
-  const start = (page - 1) * limit
-  const end = start + limit
-  const paginated = filtered.slice(start, end)
+  if (name) {
+    const lower = name.toLowerCase()
+    filtered = filtered.filter(item =>
+      item.settle_details.cpo.name.toLowerCase().includes(lower)
+    )
+  }
 
-  return {
+  const paged = filtered.slice((page - 1) * limit, page * limit)
+
+return {
     code: 'SUCCESS',
-    message: 'Fetched successfully',
+    message: 'Success',
     data: {
       page,
       limit,
       total: filtered.length,
-      records: paginated
+      records: paged
     }
   }
 })

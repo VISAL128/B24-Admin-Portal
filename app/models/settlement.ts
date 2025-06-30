@@ -1,47 +1,69 @@
 // 1. Get All Suppliers
 export interface Supplier {
-  supplierId: string
+  id: string
+  code: string
   name: string
+  phone: number
+  email: string
+  address: string
 }
 
 // 2. Get CPOs by Supplier List
 export interface CpoBySupplierRequest {
-  supplierIds: string[]
+  supplier_ids: string[]
 }
 
 export interface Cpo {
-  cpoId: string
-  supplierId: string
+  id: string
+  code: string
   name: string
+  phone: number
+  email: string
+  address: string
+  supplier_id: string
+  supplier: Supplier
 }
 
 // 3. Get Current Balance for Each CPO
 export interface BalanceQueryRequest {
-  supplierIds?: string[]
-  cpoIds?: string[]
+  supplier_ids?: string[]
+  cpo_ids?: string[]
 }
 
 export interface CpoBalance {
-  cpoId: string
-  supplierId: string
+  cpo_id: string
+  supplier_id: string
   balance: number
   currency: string
 }
 
 // 4. Get Transaction History by CPO
-export interface TransactionHistory {
-  transactionId: string
-  date: string // ISO date string
-  type: 'credit' | 'debit'
+export interface TransactionAllocation {
+  id: string
   amount: number
-  description: string
+  currency_id: string
+  bank_ref: string
+  bank_name: string
+  tran_date: string
+}
+
+export interface CpoSettlement {
+  id: string
+  party_id: string
+  party_type: number
+  amount: number
+  settlement_bank_id: string
+  currency: string
+  supplier: Supplier
+  cpo: Cpo
+  transaction_allocations: TransactionAllocation[]
 }
 
 // 5. Confirm Settlement
 export interface ConfirmSettlementRequest {
-  settledBy: string
+  settled_by: string
   suppliers: {
-    supplierId: string
+    supplier_id: string
     cpoIds: string[]
     amount: number
   }[]
@@ -49,27 +71,56 @@ export interface ConfirmSettlementRequest {
 }
 
 export interface ConfirmSettlementResponse {
-  settlementId: string
+  settlement_id: string
 }
-
 // 6. Get Settlement History
 export interface SettlementHistoryQuery {
+  start_date?: string
+  end_date?: string
+  status?: string
+  name?: string
   page?: number
   limit?: number
-  status?: 'paid' | 'failed' | 'refunded'
-  startDate?: string
-  endDate?: string
+}
+
+export interface SettlementHistoryDetail {
+  party_id: string
+  supplier_id: string
+  supplier: {
+    id: string
+    code: string
+    name: string
+    phone: number
+    email: string
+    address: string
+  }
+  cpo: {
+    id: string
+    code: string
+    name: string
+    phone: number
+    email: string
+    address: string
+  }
+  settle_amount: number
+  settlement_bank_id: string
+  settlement_bank_name: string
+  status: string
 }
 
 export interface SettlementHistoryRecord {
-  settlementId: string
-  settlementDate: string
-  totalSupplier: number
-  totalAmount: number
-  settledBy: string
-  status: 'paid' | 'failed' | 'refunded'
+  settlement_id: string
+  settlement_date: string
+  total_supplier: number
+  total_amount: string
+  currency: string
+  supplier_id: string
+  settled_by: string
+  total_Settled: number
+  success: number
+  fail: number
+  settle_details: SettlementHistoryDetail
 }
-
 export interface SettlementHistoryResponse {
   page: number
   limit: number
