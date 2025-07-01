@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { StepperItem, AvatarProps, TableColumn } from "@nuxt/ui";
-import type { Cpo, Supplier, CpoBySupplierRequest, InitQuerySettlement, CpoSettlement, Settlement, TransactionAllocation } from "~/models/settlement";
+import type { Cpo, Supplier, CpoBySupplierRequest, InitQuerySettlement, CpoSettlement, Settlement, TransactionAllocation, ConfirmSettlementRequest } from "~/models/settlement";
 import type { CurrencyConfig, CurrencyFormatOptions } from "~/composables/utils/useCurrency";
 import {
   CalendarDate,
@@ -10,6 +10,7 @@ import {
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import EmptyState from '~/components/TableEmptyState.vue';
+import {formatColumnValue} from '~/utils/helper';
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
@@ -61,6 +62,7 @@ const defaultCurrency: CurrencyConfig = {
   locale: "km-KH",
 };
 
+const isLoading = ref(false);
 
 // Step 2 reconciliation
 const selectedCpo = ref<Cpo[]>([]);
@@ -96,12 +98,48 @@ const columns: TableColumn<Cpo>[] = [
   { accessorKey: "address", header: "Address" },
 ];
 
+
 const cpoSettlementColumns: TableColumn<Settlement>[] = [
-  { accessorKey: "supplier.code", header: "CPO Code" },
-  { accessorKey: "supplier.name", header: "CPO Name" },
-  { accessorKey: "amount", header: "Amount" },
-  { accessorKey: "currency", header: "Currency" },
-  { accessorKey: "settlement_bank_id", header: "Settle To Bank" },
+  {
+    accessorKey: "supplier.code",
+    header: "CPO Code",
+    cell: ({ row }) =>
+      h("div", { class: "text-left" }, [
+        formatColumnValue(ColumnType.Text, row.original, "supplier.code")
+      ])
+  },
+  {
+    accessorKey: "supplier.name",
+    header: "CPO Name",
+    cell: ({ row }) =>
+      h("div", { class: "text-left" }, [
+        formatColumnValue(ColumnType.Text, row.original, "supplier.name")
+      ])
+  },
+  {
+    accessorKey: "amount",
+    header: "Amount",
+    cell: ({ row }) =>
+      h("div", { class: "text-right" }, [
+        formatColumnValue(ColumnType.Number, row.original, "amount", "currency")
+      ])
+  },
+  {
+    accessorKey: "currency",
+    header: "Currency",
+    cell: ({ row }) =>
+      h("div", { class: "text-center" }, [
+        formatColumnValue(ColumnType.Text, row.original, "currency")
+      ])
+  },
+  {
+    accessorKey: "settlement_bank_id",
+    header: "Settle To Bank",
+    cell: ({ row }) =>
+      h("div", { class: "text-left" }, [
+        formatColumnValue(ColumnType.Text, row.original, "settlement_bank_id")
+      ])
+  },
   {
     id: 'actions',
     header: 'Actions',
@@ -120,12 +158,44 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
   }
 ];
 
-const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
-  { accessorKey: "tran_date", header: "Transaction Date" },
-  { accessorKey: "bank_ref", header: "Bank Ref" },
-  { accessorKey: "bank_name", header: "Bank Name" },
-  { accessorKey: "amount", header: "Transaction Amount" }
+const cpoSettlementTransactionColumns: (TableColumn<TransactionAllocation> & {
+  type?: ColumnType;
+  currencyKey?: string;
+})[] = [
+  {
+    accessorKey: 'tran_date',
+    header: 'Date',
+    cell: ({ row }) =>
+      h('div', { class: 'text-left' }, [
+        formatColumnValue(ColumnType.Date, row.original, 'tran_date'),
+      ]),
+  },
+  {
+    accessorKey: 'bank_ref',
+    header: 'Bank Ref',
+    cell: ({ row }) =>
+      h('div', { class: 'text-left' }, [
+        formatColumnValue(ColumnType.Text, row.original, 'bank_ref'),
+      ]),
+  },
+  {
+    accessorKey: 'bank_name',
+    header: 'Bank Name',
+    cell: ({ row }) =>
+      h('div', { class: 'text-left' }, [
+        formatColumnValue(ColumnType.Text, row.original, 'bank_name'),
+      ]),
+  },
+  {
+    accessorKey: 'amount',
+    header: 'Amount',
+    cell: ({ row }) =>
+      h('div', { class: 'text-right' }, [
+        formatColumnValue(ColumnType.Number, row.original, 'amount', 'currency_id'),
+      ]),
+  },
 ];
+
 
 
 
@@ -159,10 +229,8 @@ function handleViewCpo(cpo: Settlement) {
   selectedCpoSettlement.value = cpo;
 }
 
-onMounted(() => {
-  // Fetch suppliers when the component is mounted
-  fetchSuppliers();
-  // Set default currency
+onMounted(async () => {
+  await fetchSuppliers();
   selectedCurrency.value = defaultCurrency;
 });
 
@@ -212,22 +280,43 @@ const fetchInquirySettlementCpo = async () => {
   }
 };
 
-function onReconciliationNext() {
-  fetchInquirySettlementCpo();
+async function onReconciliationNext() {
+  isLoading.value = true;
+  await fetchInquirySettlementCpo();
+  isLoading.value = false;
+  stepper.value?.next();
+}
+
+async function onSubmitSettle() {
+  isLoading.value = true;
+  try {
+    const request: ConfirmSettlementRequest = {
+      token: ""
+    };
+
+    const response = await supplierApi.confirmSettlementAPI(request);
+    const data = response;
+  } catch (error) {
+    const errorMessage = (error instanceof Error) ? error.message : String(error);
+    alert("Failed to fetch CPOs: " + errorMessage);
+  } finally {
+    isLoading.value = false;
+    return;
+  }
   stepper.value?.next();
 }
 
 const router = useRouter();
 function onConfirm() {
-  router.push('/settlement/generate')
+  router.push('/settlement/wallet-settlement')
 }
 
-// Add this method after fetchCpos function
 const handleSupplierMenuChanged = async () => {
-  // The selectedSuppliers is already updated by v-model
+   isLoading.value = true;
   cpoList.value = await supplierApi.getListCPOApi({
     supplier_ids: selectedSuppliers.value.map(s => s.value.id),
   });
+  isLoading.value = false;
 };
 
 definePageMeta({
@@ -282,7 +371,7 @@ definePageMeta({
                     </UButton>
                     <template #content>
                       <UCalendar
-                        v-model="modelValue"
+                        :v-model="modelValue"
                         class="p-2"
                       />
                     </template>
@@ -293,7 +382,7 @@ definePageMeta({
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">Select Currency</h1>
                   <USelectMenu
-                    v-model="selectedCurrency"
+                    :v-model="selectedCurrency"
                     :items="useCurrency().getAllCurrencies.value.map(currency => ({
                       label: currency.name,
                       value: currency.code,
@@ -318,7 +407,12 @@ definePageMeta({
                 :columns="columns"
                 sticky
                 class="min-w-[800px] w-full h-150"
-              />
+                :loading="isLoading"
+              >
+                <template #empty>
+                  <EmptyState></EmptyState>
+                </template>
+              </UTable>
             </div>
           </UCard>
 
@@ -327,7 +421,7 @@ definePageMeta({
             variant="subtle"
             class="flex-1" -->
             <div
-            v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
+            v-if="item.title === t('settlement.generate.steps.reconciliation.title') "
           >
             <div class="flex flex-col lg:flex-row gap-6 mt-4">
               <!-- Master Table -->
@@ -339,8 +433,13 @@ definePageMeta({
                     :columns="cpoSettlementColumns"
                     sticky
                     class="min-w-[800px] w-full h-150"
+                    :loading="isLoading"
                     @row:click="handleRowClick"
-                  />
+                    >
+                <template #empty>
+                  <EmptyState></EmptyState>
+                </template>
+              </UTable>
                 </div>
               </div>
 
@@ -361,7 +460,24 @@ definePageMeta({
                       :columns="cpoSettlementTransactionColumns"
                       sticky
                       class="min-w-[600px] w-full h-150"
-                    />
+                      :loading="isLoading"
+                      
+                      >
+                <template #empty>
+                  <EmptyState></EmptyState>
+                </template>
+              </UTable>
+                    <!-- Footer summary as a separate div -->
+                    <div class="flex justify-end bg-gray-50 border-t border-gray-200 font-semibold">
+                      <span class="mr-0">Total:</span>
+                      <span class="font-bold">
+                        {{
+                          selectedCpoSettlement.transaction_allocations
+                            .reduce((sum, txn) => sum + (txn.amount || 0), 0)
+                            .toLocaleString()
+                        }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -410,7 +526,8 @@ definePageMeta({
             </UButton>
             <UButton v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
               :disabled="!stepper?.hasNext || !canProceedToNext"
-              @click="onReconciliationNext()"
+              :loading="isLoading"
+              @click="onSubmitSettle()"
             >
               Confirm To Settlement
             </UButton>
