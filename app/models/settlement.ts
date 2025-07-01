@@ -79,13 +79,14 @@ export interface Settlement {
 
 // 5. Confirm Settlement
 export interface ConfirmSettlementRequest {
-  settled_by: string
-  suppliers: {
-    supplier_id: string
-    cpoIds: string[]
-    amount: number
-  }[]
-  note?: string
+  token: string
+  // settled_by: string
+  // suppliers: {
+  //   supplier_id: string
+  //   cpoIds: string[]
+  //   amount: number
+  // }[]
+  // note?: string
 }
 
 export interface ConfirmSettlementResponse {

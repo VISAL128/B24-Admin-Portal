@@ -84,11 +84,6 @@ import { exportToExcelStyled, exportToPDF } from '~/composables/utils/exportUtil
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-// import {
-//   exportSettlementToPDF,
-//   exportSettlementToExcel
-// } from '~/composables/utils/exportUtils'
-
 const { getSettlementHistory, getSuppliers } = useSupplierApi()
 const { execute } = useApiExecutor()
 

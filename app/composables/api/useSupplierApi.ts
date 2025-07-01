@@ -52,25 +52,26 @@ export const useSupplierApi = () => {
     return rep.data 
   }
 
-  // const getTransactionHistory = async (
-  //   cpoId: string
-  // ): Promise<TransactionHistory[]> => {
-  //   var rep = await execute(() =>
-  //     $fetch<ApiResponse<TransactionHistory[]>>(`${baseUrl}/api/transaction-logs/${cpoId}`)
-  //   )
-  //   if (rep.code !== 'SUCCESS') { 
-  //     console.error('Failed to fetch transaction history:', rep.message)
-  //     return []
-  //   }
-  //   return rep.data
-  // }
-
-  const confirmSettlement = async (
+  const confirmSettlementAPI = async (
     payload: ConfirmSettlementRequest
-  ): Promise<ApiResponse<ConfirmSettlementResponse>> => {
-    return await execute(() =>
-      $fetch(`${baseUrl}/api/confirm-settlement`, { method: 'POST', body: payload })
-    )
+  ): Promise<ConfirmSettlementResponse> => {
+    try {
+      if (!payload.token) {
+        throw new Error('Token is required for settlement confirmation')
+      }
+      var rep = await execute(() =>
+              $fetch<ApiResponse<ConfirmSettlementResponse>>(`${baseUrl}/api/confirm-settlement`, { method: 'POST', body: payload })
+            )
+    
+      if (rep.code !== 'SUCCESS') {
+        console.error('Failed to fetch CPO settlements:', rep.message)
+        throw new Error(rep.message)
+      }
+    } catch (error) {
+      console.error('Failed to confirm settlement:', error)
+      throw error
+    }
+    return rep.data 
   }
 
   const getSettlementHistory = async (
@@ -91,7 +92,7 @@ export const useSupplierApi = () => {
     getListCPOApi,
     getInquirySettlement,
     // getTransactionHistory,
-    confirmSettlement,
+    confirmSettlementAPI,
     getSettlementHistory
   }
 }

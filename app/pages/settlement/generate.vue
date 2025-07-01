@@ -73,6 +73,8 @@ const defaultCurrency: CurrencyConfig = {
   locale: "km-KH",
 };
 
+const isLoading = ref(false);
+
 // Add currency options computed property
 const currencyOptions = computed(() =>
   useCurrency().getAllCurrencies.value.map((currency) => ({
@@ -399,7 +401,12 @@ function useWindowSize(): { height: Ref<number> } {
                   :columns="columns"
                   sticky
                   class="min-w-[800px] w-full h-100"
-                />
+                  :loading="isLoading"
+              >
+                <template #empty>
+                  <EmptyState></EmptyState>
+                </template>
+              </UTable>
               </div>
             </div>
           </UCard>
@@ -421,10 +428,13 @@ function useWindowSize(): { height: Ref<number> } {
                     :data="listInquirySettlement?.settlements || []"
                     :columns="cpoSettlementColumns"
                     sticky
-                    class="min-w-[800px] w-full"
-                    :style="{ maxHeight: tableHeight }"
+                    class="min-w-[800px] w-full h-150"
                     @row:click="handleRowClick"
-                  />
+                    >
+                <template #empty>
+                  <EmptyState></EmptyState>
+                </template>
+              </UTable>
                 </div>
               </div>
 
