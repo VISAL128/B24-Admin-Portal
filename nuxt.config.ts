@@ -68,6 +68,7 @@ export default defineNuxtConfig({
     client: true
   },
   runtimeConfig: {
+    management_api_url: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
     // Server-side runtime config
     openidConnect: {
       op: {

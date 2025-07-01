@@ -1,3 +1,4 @@
+import {SettlementInquiryRequest} from "~~/server/model/management_api/settlement";
 
 let token = null;
 let tokenExpireTime = null;
@@ -47,4 +48,30 @@ export async function getToken(): string | null {
         }
     }
     return token;
+}
+
+export async function requestToManagementApi(endpoint: string, method: string = 'POST', body: any = null): Promise<any> {
+    const token = await getToken();
+    if (!token) {
+        throw new Error('Authentication failed or token not received');
+    }
+    let url = `${useRuntimeConfig().management_api_url}${endpoint}`;
+    const response = await fetch(url, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: body ? JSON.stringify(body) : null
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+export async function inquirySettlementWallet(body: SettlementInquiryRequest): Promise<any> {
+    return requestToManagementApi('/settlement/wallet/inquiry', 'POST', body);
 }
