@@ -281,20 +281,21 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     enableSorting: false,
     enableHiding: false
   },
-  { accessorKey: 'settlementId', header: t('settlement_id') },
+  { accessorKey: 'settlement_id', header: t('Settlement ID') },
   {
-    accessorKey: 'settlementDate',
-    header: t('settlement_date'),
+    accessorKey: 'settlement_date',
+    header: t('Settlement Date'),
     cell: ({ row }) =>
-      new Date(row.getValue('settlementDate')).toLocaleDateString()
+      new Date(row.getValue('settlement_date')).toLocaleDateString()
   },
-  { accessorKey: 'totalSupplier', header: t('total_supplier') },
+  { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     accessorKey: 'total_amount',
     header: 'Total Amount',
     cell: ({ row }) =>
-      h('div', { class: 'text-right font-medium' }, `$${row.getValue('total_amount')}`)
+      row.getValue('total_amount')
   },
+  { accessorKey: 'currency', header: 'Currency' },
   { accessorKey: 'settled_by', header: 'Settled By' },
   {
   accessorKey: 'status', // optional if you need sorting/filtering
