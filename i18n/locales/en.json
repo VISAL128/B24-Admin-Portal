@@ -5,6 +5,9 @@
     "english": "English",
     "khmer": "Khmer"
   },
+  "generate_settlement": "Generate Settlement",
+  "search_by_settler": "Search by Settler...",
+  "pick_a_date": "Pick a Date",
   "user_profile": "User Profile",
   "dashboard": "Dashboard",
   "settlements": "Settlements",
@@ -106,7 +109,14 @@
         "settlement_request_successful": "Settlement Request Successful!",
         "settlement_request_message": "Your settlement request has been submitted successfully.",
         "done": "Done",
-        "back_to_list": "Back to List"
+        "back_to_list": "Back to List",
+        "select_time": "Select Time",
+        "select_time_placeholder": "Select Time",
+        "hour": "Hour",
+        "minute": "Minute",
+        "second": "Second",
+        "search_cpo": "Search CPO",
+        "search_placeholder": "Search by CPO Code, Name, Email, or Address"
       }
     }
   }

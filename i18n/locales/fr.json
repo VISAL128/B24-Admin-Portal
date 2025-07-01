@@ -64,7 +64,12 @@
         "settlement_request_successful": "Demande de règlement réussie !",
         "settlement_request_message": "Votre demande de règlement a été soumise avec succès.",
         "done": "Terminé",
-        "back_to_list": "Retour à la liste"
+        "back_to_list": "Retour à la liste",
+        "select_time": "Select Time",
+        "select_time_placeholder": "Select Time",
+        "hour": "Heure",
+        "minute": "Minute",
+        "second": "Seconde"
       }
     }
   }

@@ -1,7 +1,6 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
-  Supplier, Cpo, CpoBySupplierRequest, CpoBalance,
-  BalanceQueryRequest,
+  Supplier, Cpo, CpoBySupplierRequest,
   ConfirmSettlementRequest, ConfirmSettlementResponse,
   SettlementHistoryQuery, SettlementHistoryResponse,
   InitQuerySettlement,
@@ -11,7 +10,7 @@ import type {
 import type { ApiResponse } from '~/models/baseModel'
 import { authorizeTokenApi } from './authorizeTokenApi'
 
-const baseUrl = process.env.MANAGEMENT_API_URL || 'http://172.16.81.141:22031'
+const baseUrl = process.env.MANAGEMENT_API_URL || ''//'http://172.16.81.141:22031'
 
 export const useSupplierApi = () => {
   const { execute } = useApiExecutor()

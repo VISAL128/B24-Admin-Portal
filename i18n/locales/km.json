@@ -135,7 +135,14 @@
         "settlement_request_successful": "សំណើទូទាត់បានជោគជ័យ!",
         "settlement_request_message": "សំណើទូទាត់របស់អ្នកត្រូវបានដាក់ស្នើដោយជោគជ័យ។",
         "done": "រួចរាល់",
-        "back_to_list": "ត្រលប់ទៅបញ្ជី"
+        "back_to_list": "ត្រលប់ទៅបញ្ជី",
+        "select_time": "ជ្រើសរើសពេលវេលា",
+        "select_time_placeholder": "ជ្រើសរើសពេលវេលា",
+        "hour": "ម៉ោង",
+        "minute": "នាទី",
+        "second": "វិនាទី",
+        "search_cpo": "ស្វែងរក CPO",
+        "search_placeholder": "ស្វែងរកតាមលេខកូដ CPO, ឈ្មោះ, អ៊ីមែល, ឬអាសយដ្ឋាន"
       }
     }
   }
