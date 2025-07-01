@@ -9,8 +9,9 @@ import type {
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
 import type { ApiResponse } from '~/models/baseModel'
+import { authorizeTokenApi } from './authorizeTokenApi'
 
-const baseUrl = ''//'http://localhost:3005'
+const baseUrl = process.env.MANAGEMENT_API_URL || 'http://172.16.81.141:22031'
 
 export const useSupplierApi = () => {
   const { execute } = useApiExecutor()
@@ -95,4 +96,17 @@ export const useSupplierApi = () => {
     confirmSettlementAPI,
     getSettlementHistory
   }
+
+  // Replace with your actual token access logic
+function getAuthHeader(): Record<string, string> {
+  const supplierApi = authorizeTokenApi();
+  const token = useCookie('auth_token')?.value || '' // Or usePinia/store, etc.
+  return {
+    Authorization: `Bearer ${token}`
+  }
 }
+
+}
+
+
+

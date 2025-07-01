@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StepperItem, AvatarProps, TableColumn } from "@nuxt/ui";
+import type { StepperItem, TableRow, TableColumn } from "@nuxt/ui";
 import type {
   Cpo,
   Supplier,
@@ -60,11 +60,17 @@ const items: StepperItem[] = [
   },
 ];
 
+const showConfirmModal = ref(false);
+
 const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
-const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(undefined);
+const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(
+  undefined
+);
 const cpoList = ref<Cpo[]>([]);
-const selectedCurrency = ref<{ label: string; value: CurrencyConfig } | undefined>(undefined);
+const selectedCurrency = ref<
+  { label: string; value: CurrencyConfig } | undefined
+>(undefined);
 const defaultCurrency: CurrencyConfig = {
   code: "KHR",
   symbol: "៛",
@@ -85,44 +91,101 @@ const currencyOptions = computed(() =>
 
 // Step 2 reconciliation
 const selectedCpo = ref<Cpo[]>([]);
+const selectedCpoIds = ref<Set<string>>(new Set());
+
+// Add methods to handle selection
+const isRowSelected = (cpo: Cpo) => {
+  return selectedCpoIds.value.has(cpo.id);
+};
+
+const toggleRowSelection = (cpo: Cpo) => {
+  if (selectedCpoIds.value.has(cpo.id)) {
+    selectedCpoIds.value.delete(cpo.id);
+    selectedCpo.value = selectedCpo.value.filter((item) => item.id !== cpo.id);
+  } else {
+    selectedCpoIds.value.add(cpo.id);
+    selectedCpo.value.push(cpo);
+  }
+};
+
+const toggleAllSelection = (selectAll: boolean) => {
+  if (selectAll) {
+    selectedCpoIds.value = new Set(cpoList.value.map((cpo) => cpo.id));
+    selectedCpo.value = [...cpoList.value];
+  } else {
+    selectedCpoIds.value.clear();
+    selectedCpo.value = [];
+  }
+};
+
+const isAllSelected = computed(() => {
+  return (
+    cpoList.value.length > 0 && selectedCpoIds.value.size === cpoList.value.length
+  );
+});
+
+const isSomeSelected = computed(() => {
+  return (
+    selectedCpoIds.value.size > 0 &&
+    selectedCpoIds.value.size < cpoList.value.length
+  );
+});
 
 const columns: TableColumn<Cpo>[] = [
   {
     id: "select",
-    header: ({ table }) =>
+    header: () =>
       h(resolveComponent("UCheckbox"), {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? "indeterminate"
-          : table.getIsAllPageRowsSelected(),
+        modelValue: isSomeSelected.value ? "indeterminate" : isAllSelected.value,
         "onUpdate:modelValue": (value: boolean | "indeterminate") =>
-          table.toggleAllPageRowsSelected(!!value),
+          toggleAllSelection(!!value),
         "aria-label": "Select all",
       }),
     cell: ({ row }) =>
       h(resolveComponent("UCheckbox"), {
-        modelValue: row.getIsSelected(),
-        "onUpdate:modelValue": (value: boolean | "indeterminate") =>
-          row.toggleSelected(!!value),
+        modelValue: isRowSelected(row.original),
+        "onUpdate:modelValue": () => toggleRowSelection(row.original),
         "aria-label": "Select row",
       }),
     enableSorting: false,
     enableHiding: false,
   },
-  { accessorKey: "supplier.code", header: () => t("settlement.generate.form.supplier_code") },
-  { accessorKey: "supplier.name", header: () => t("settlement.generate.form.supplier_name") },
+  {
+    accessorKey: "supplier.code",
+    header: () => t("settlement.generate.form.supplier_code"),
+  },
+  {
+    accessorKey: "supplier.name",
+    header: () => t("settlement.generate.form.supplier_name"),
+  },
   { accessorKey: "code", header: () => t("settlement.generate.form.cpo_code") },
   { accessorKey: "name", header: () => t("settlement.generate.form.cpo_name") },
   { accessorKey: "phone", header: () => t("settlement.generate.form.phone") },
   { accessorKey: "email", header: () => t("settlement.generate.form.email") },
-  { accessorKey: "address", header: () => t("settlement.generate.form.address") },
+  {
+    accessorKey: "address",
+    header: () => t("settlement.generate.form.address"),
+  },
 ];
 
 const cpoSettlementColumns: TableColumn<Settlement>[] = [
-  { accessorKey: "supplier.code", header: () => t("settlement.generate.form.cpo_code") },
-  { accessorKey: "supplier.name", header: () => t("settlement.generate.form.cpo_name") },
+  {
+    accessorKey: "supplier.code",
+    header: () => t("settlement.generate.form.cpo_code"),
+  },
+  {
+    accessorKey: "supplier.name",
+    header: () => t("settlement.generate.form.cpo_name"),
+  },
   { accessorKey: "amount", header: () => t("settlement.generate.form.amount") },
-  { accessorKey: "currency", header: () => t("settlement.generate.form.currency") },
-  { accessorKey: "settlement_bank_id", header: () => t("settlement.generate.form.settle_to_bank") },
+  {
+    accessorKey: "currency",
+    header: () => t("settlement.generate.form.currency"),
+  },
+  {
+    accessorKey: "settlement_bank_id",
+    header: () => t("settlement.generate.form.settle_to_bank"),
+  },
   {
     id: "actions",
     header: () => t("settlement.generate.form.actions"),
@@ -142,13 +205,23 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
 ];
 
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
-  { accessorKey: "tran_date", header: () => t("settlement.generate.form.transaction_date") },
-  { accessorKey: "bank_ref", header: () => t("settlement.generate.form.bank_ref") },
-  { accessorKey: "bank_name", header: () => t("settlement.generate.form.bank_name") },
-  { accessorKey: "amount", header: () => t("settlement.generate.form.transaction_amount") },
+  {
+    accessorKey: "tran_date",
+    header: () => t("settlement.generate.form.transaction_date"),
+  },
+  {
+    accessorKey: "bank_ref",
+    header: () => t("settlement.generate.form.bank_ref"),
+  },
+  {
+    accessorKey: "bank_name",
+    header: () => t("settlement.generate.form.bank_name"),
+  },
+  {
+    accessorKey: "amount",
+    header: () => t("settlement.generate.form.transaction_amount"),
+  },
 ];
-
-const expanded = ref({ 1: true });
 
 const stepper = ref<{
   next: () => void;
@@ -167,11 +240,15 @@ const canProceedToNext = computed(() => {
   const currentStepTitle = items[currentStepIndex.value]?.title;
   // Check if can proceed to Reconcile
   if (currentStepTitle === t("settlement.generate.steps.supplier.title")) {
-    return selectedSuppliers.value.length > 0 && cutOffDate.value !== null && selectedCurrency.value !== undefined;
+    return (
+      selectedSuppliers.value.length > 0 &&
+      cutOffDate.value !== null &&
+      selectedCurrency.value !== undefined &&
+      selectedCpo.value.length > 0
+    );
   }
   return true; // Allow proceeding for other steps
 });
-const listSelectedCpo = ref<Cpo | null>(null);
 let listInquirySettlement = ref<CpoSettlement>();
 let selectedCpoSettlement = ref<Settlement | null>(null);
 function handleRowClick(row: CpoSettlement) {
@@ -199,27 +276,15 @@ const fetchSuppliers = async () => {
   }
 };
 
-// Function to fetch CPOs based on selected suppliers
-// const fetchCpos = async () => {
-//   if (selectedSuppliers.value.length === 0) return;
-//   try {
-//     const request: CpoBySupplierRequest = {
-//       supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
-//     };
-
-//     cpoList.value = await supplierApi.getListCPOApi(request);
-//   } catch (error) {
-//     console.error("Failed to fetch CPOs:", error);
-//   } finally {
-//     // Optionally handle loading state or errors
-//   }
-// };
-
 const fetchInquirySettlementCpo = async () => {
   if (selectedSuppliers.value.length === 0) return;
   try {
     const request: InitQuerySettlement = {
-      main_supplier_id: selectedSuppliers.value.map((s) => s.value.id),
+      parties: selectedCpo.value?.map((cpo) => ({
+        id: cpo.id,
+        type: "cpo",
+      })) || [],
+      main_supplier_id: selectedSupplier.value?.value.id || "",
       cutoff_date: cutOffDate.value
         ? cutOffDate.value.toDate(getLocalTimeZone()).toISOString()
         : new Date().toISOString(),
@@ -236,6 +301,7 @@ const fetchInquirySettlementCpo = async () => {
 };
 
 function onReconciliationNext() {
+  console.log("Selected CPOs:", selectedCpo.value.length);
   fetchInquirySettlementCpo();
   stepper.value?.next();
 }
@@ -245,10 +311,13 @@ function onConfirm() {
   router.push("/settlement/generate");
 }
 
-// Add this method after fetchCpos function
+// Clear selection when supplier changes
 const handleSupplierMenuChanged = async () => {
-  // Reset CPO list when suppliers change
+  // Reset CPO list and selection when suppliers change
   cpoList.value = [];
+  selectedCpo.value = [];
+  selectedCpoIds.value.clear();
+
   if (!selectedSupplier.value) return;
   selectedSuppliers.value = [selectedSupplier.value!];
   // This for multiple suppliers
@@ -299,6 +368,16 @@ function useWindowSize(): { height: Ref<number> } {
 
   return { height };
 }
+
+// function onCpoListTableSelect(row: TableRow<Cpo>, e?: Event) {
+//   row.toggleSelected(!row.getIsSelected())
+//   // Add row data to selectedCpo
+//   if (row.getIsSelected()) {
+//     selectedCpo.value.push(row.original)
+//   } else {
+//     selectedCpo.value = selectedCpo.value.filter(cpo => cpo.id !== row.original.id)
+//   }
+// }
 </script>
 <template>
   <div
@@ -322,26 +401,31 @@ function useWindowSize(): { height: Ref<number> } {
                   </h1>
                   <div class="flex flex-row items-center gap-2">
                     <USelectMenu
-                    v-model="selectedSupplier"
-                    :items="
-                      supplierKeys.map((supplier) => ({
-                        label: supplier.name,
-                        value: supplier,
-                      }))
-                    "
-                    option-attribute="value"
-                    required
-                    icon="i-lucide-user"
-                    label="Select Suppliers"
-                    :placeholder="t('settlement.generate.form.choose_suppliers')"
-                    class="w-full"
-                    @change="handleSupplierMenuChanged"
-                  >
-                    <template #leading="{ modelValue, ui }">
-                      <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
-                    </template>
-                  </USelectMenu>
-                  <!-- <UButton
+                      v-model="selectedSupplier"
+                      :items="
+                        supplierKeys.map((supplier) => ({
+                          label: supplier.name,
+                          value: supplier,
+                        }))
+                      "
+                      option-attribute="value"
+                      required
+                      icon="i-lucide-user"
+                      label="Select Suppliers"
+                      :placeholder="
+                        t('settlement.generate.form.choose_suppliers')
+                      "
+                      class="w-full"
+                      @change="handleSupplierMenuChanged"
+                    >
+                      <template #leading="{ modelValue, ui }">
+                        <UIcon
+                          name="i-lucide-users"
+                          class="mr-2 text-gray-500"
+                        />
+                      </template>
+                    </USelectMenu>
+                    <!-- <UButton
                     icon="i-lucide-x"
                     size="md"
                     color="neutral"
@@ -355,7 +439,9 @@ function useWindowSize(): { height: Ref<number> } {
 
                 <!-- Cutoff Date -->
                 <div>
-                  <h1 class="text-sm mb-2 font-semibold">{{ t("settlement.generate.form.select_cutoff_date") }}</h1>
+                  <h1 class="text-sm mb-2 font-semibold">
+                    {{ t("settlement.generate.form.select_cutoff_date") }}
+                  </h1>
                   <UPopover class="w-full">
                     <UButton
                       color="neutral"
@@ -376,7 +462,9 @@ function useWindowSize(): { height: Ref<number> } {
 
                 <!-- Currency Selector -->
                 <div>
-                  <h1 class="text-sm mb-2 font-semibold">{{ t("settlement.generate.form.select_currency") }}</h1>
+                  <h1 class="text-sm mb-2 font-semibold">
+                    {{ t("settlement.generate.form.select_currency") }}
+                  </h1>
                   <USelectMenu
                     v-model="selectedCurrency"
                     :items="currencyOptions"
@@ -386,7 +474,10 @@ function useWindowSize(): { height: Ref<number> } {
                     class="w-full"
                   >
                     <template #leading>
-                      <UIcon name="i-lucide-dollar-sign" class="mr-2 text-gray-500" />
+                      <UIcon
+                        name="i-lucide-dollar-sign"
+                        class="mr-2 text-gray-500"
+                      />
                     </template>
                   </USelectMenu>
                 </div>
@@ -396,8 +487,11 @@ function useWindowSize(): { height: Ref<number> } {
             <!-- Cpo List Table -->
             <div class="mt-4 flex flex-col">
               <h1 class="text-sm font-semibold mb-2">
-                {{ t("settlement.generate.form.cpo_list") }} ({{ cpoList.length }})
+                {{ t("settlement.generate.form.cpo_list") }} ({{
+                  cpoList.length
+                }})
               </h1>
+              <!-- Add selected row data to the CPO list -->
               <div class="flex-1 border border-gray-200 rounded-lg bg-white">
                 <UTable
                   ref="table"
@@ -405,12 +499,13 @@ function useWindowSize(): { height: Ref<number> } {
                   :columns="columns"
                   sticky
                   class="min-w-[800px] w-full h-100"
-                  :loading="isLoading"
-              >
-                <template #empty>
-                  <EmptyState></EmptyState>
-                </template>
-              </UTable>
+                  @row:click="(row: Cpo) => toggleRowSelection(row)"
+                >
+                >
+                  <template #empty>
+                    <EmptyState></EmptyState>
+                  </template>
+                </UTable>
               </div>
             </div>
           </UCard>
@@ -434,11 +529,11 @@ function useWindowSize(): { height: Ref<number> } {
                     sticky
                     class="min-w-[800px] w-full h-150"
                     @row:click="handleRowClick"
-                    >
-                <template #empty>
-                  <EmptyState></EmptyState>
-                </template>
-              </UTable>
+                  >
+                    <template #empty>
+                      <EmptyState></EmptyState>
+                    </template>
+                  </UTable>
                 </div>
               </div>
 
@@ -451,7 +546,9 @@ function useWindowSize(): { height: Ref<number> } {
                 class="lg:w-1/3 p-4 border border-gray-200 rounded-lg bg-white min-h-[300px] flex flex-col"
               >
                 <div class="flex justify-between items-center">
-                  <h3 class="text-lg font-semibold">{{ t("settlement.generate.form.transaction_history") }}</h3>
+                  <h3 class="text-lg font-semibold">
+                    {{ t("settlement.generate.form.transaction_history") }}
+                  </h3>
                   <UButton
                     icon="i-lucide-x"
                     size="xs"
@@ -492,13 +589,18 @@ function useWindowSize(): { height: Ref<number> } {
                 class="text-green-500 text-6xl mb-4"
               />
               <h2 class="text-2xl font-bold text-green-700 mb-2">
-                {{ t("settlement.generate.form.settlement_request_successful") }}
+                {{
+                  t("settlement.generate.form.settlement_request_successful")
+                }}
               </h2>
               <p class="text-green-700 mb-6">
                 {{ t("settlement.generate.form.settlement_request_message") }}
               </p>
               <UButton color="primary" size="lg" @click="onConfirm()">
-                {{ t("settlement.generate.form.done") || t("settlement.generate.form.back_to_list") }}
+                {{
+                  t("settlement.generate.form.done") ||
+                  t("settlement.generate.form.back_to_list")
+                }}
               </UButton>
             </div>
           </div>
@@ -528,13 +630,31 @@ function useWindowSize(): { height: Ref<number> } {
             <UButton
               v-if="
                 item.title ===
-                t('settlement.generate.steps.reconciliation.title')
+                t('settlement.generate.steps.reconciliation.title') && !showConfirmModal
               "
               :disabled="!stepper?.hasNext || !canProceedToNext"
               @click="onReconciliationNext()"
             >
               {{ t("settlement.generate.form.confirm_settlement") }}
             </UButton>
+            <!-- Show confirm modal to confirm settlement -->
+            <UModal
+              :transition="true"
+              :title="t('settlement.generate.form.confirm_settlement')"
+              :body="t('settlement.generate.form.confirm_settlement_body')"
+              v-if="
+                item.title ===
+                t('settlement.generate.steps.reconciliation.title') && showConfirmModal
+              "
+            >
+              <UButton
+                :label="t('settlement.generate.form.confirm_settlement')"
+              />
+
+              <template #body>
+                <Placeholder class="h-48" />
+              </template>
+            </UModal>
           </div>
         </div>
       </template>

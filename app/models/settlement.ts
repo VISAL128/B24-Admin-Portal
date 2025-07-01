@@ -21,7 +21,7 @@ export interface Cpo {
   email: string
   address: string
   supplier_id: string
-  supplier: Supplier
+  parent_supplier: Supplier
 }
 
 // 3. Get Current Balance for Each CPO
@@ -38,8 +38,19 @@ export interface CpoBalance {
 }
 
 
+export interface authorizeTokenResponse {
+  issuer: string
+  token: string
+  refreshToken: number
+  userId: string
+  email: string
+  fullname: string
+  tokenExpireTime: string
+}
+
+
 export interface InitQuerySettlement {
-  main_supplier_id?: string[]
+  main_supplier_id?: string
   cutoff_date?: string
   parties?: parties[]
   currency?: string
