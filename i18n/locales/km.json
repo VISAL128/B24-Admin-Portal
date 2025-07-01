@@ -52,6 +52,11 @@
   "failed_to_export_to_pdf": "បរាជ័យក្នុងការទាញយកទៅ PDF",
   "settlement_history_title": "ប្រវត្តិការទូទាត់",
   "settlement_history_subtitle":  "ប្រវត្តិការទូទាត់គឺជាកំណត់ត្រានៃការទូទាត់ដែលបានធ្វើដោយអ្នកផ្គត់ផ្គង់។ វាអាចប្រើសម្រាប់តាមដាន និងគ្រប់គ្រងការទូទាត់។",
+  "confirm_button": {
+    "title": "បញ្ជាក់",
+    "body": "តើអ្នកប្រាកដជាចង់បន្តទេ?",
+    "confirm": "បញ្ជាក់"
+  },
   "settlement": {
     "generate": {
       "steps": {

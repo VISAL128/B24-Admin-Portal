@@ -12,6 +12,11 @@
   "settlement_history": "Historique des règlements",
   "settings": "Paramètres",
   "logout": "Déconnexion",
+  "confirm_button": {
+    "title": "Confirmer",
+    "body": "Êtes-vous sûr de vouloir continuer?",
+    "confirm": "Confirmer"
+  },
   "settlement": {
     "generate": {
       "steps": {

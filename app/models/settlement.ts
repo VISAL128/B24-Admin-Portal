@@ -39,7 +39,7 @@ export interface CpoBalance {
 
 
 export interface InitQuerySettlement {
-  main_supplier_id?: string[]
+  main_supplier_id?: string
   cutoff_date?: string
   parties?: parties[]
   currency?: string

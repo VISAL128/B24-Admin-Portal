@@ -53,11 +53,16 @@
   "failed_to_export_to_pdf": "Failed to export to PDF",
   "settlement_history_title": "Settlement History",
   "settlement_history_subtitle": "Settlement history is a record of settlements made by suppliers",
+  "confirm_button": {
+    "title": "Confirm",
+    "body": "Are you sure you want to proceed?",
+    "confirm": "Confirm"
+  },
   "settlement": {
     "generate": {
       "steps": {
         "supplier": {
-          "title": "Suppliers Selection",
+          "title": "Supplier Selection",
           "description": "Select the suppliers for which you want to generate the settlement."
         },
         "reconciliation": {
@@ -74,10 +79,10 @@
         "next": "Next"
       },
       "form": {
-        "select_suppliers": "Select Suppliers for Settlement",
-        "select_cutoff_date": "Select Cutoff Date",
+        "select_suppliers": "Select Supplier for Settlement",
+        "select_cutoff_date": "Select Cut-off Date",
         "select_currency": "Select Currency",
-        "choose_suppliers": "Choose suppliers...",
+        "choose_suppliers": "Choose a supplier...",
         "choose_currency": "Choose a currency...",
         "select_date": "Select a date",
         "cpo_list": "Cpo List",
