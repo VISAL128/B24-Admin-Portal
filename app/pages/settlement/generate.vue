@@ -38,9 +38,7 @@ const now = new CalendarDate(
   today.getMonth() + 1,
   today.getDate()
 );
-const modelValue = ref<Date | null>(
-  now ? now.toDate(getLocalTimeZone()) : null
-);
+const cutOffDate = shallowRef(new CalendarDate(2022, 1, 10)); // Default to a specific date
 
 const { t } = useI18n();
 
@@ -64,6 +62,7 @@ const items: StepperItem[] = [
 
 const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
+const selectedSupplier = ref<Supplier | null>(null);
 const cpoList = ref<Cpo[]>([]);
 const selectedCurrency = ref<CurrencyConfig | null>(null);
 const defaultCurrency: CurrencyConfig = {
@@ -73,6 +72,14 @@ const defaultCurrency: CurrencyConfig = {
   decimals: 0,
   locale: "km-KH",
 };
+
+// Add currency options computed property
+const currencyOptions = computed(() =>
+  useCurrency().getAllCurrencies.value.map((currency) => ({
+    label: `${currency.name} (${currency.code})`,
+    value: currency,
+  }))
+);
 
 // Step 2 reconciliation
 const selectedCpo = ref<Cpo[]>([]);
@@ -157,7 +164,7 @@ function handleStepChange(newIndex: number) {
 const canProceedToNext = computed(() => {
   const currentStepTitle = items[currentStepIndex.value]?.title;
   if (currentStepTitle === t("settlement.generate.steps.supplier.title")) {
-    return selectedSuppliers.value.length > 0 && modelValue.value !== null;
+    return selectedSuppliers.value.length > 0 && cutOffDate.value !== null;
   }
   return true; // Allow proceeding for other steps
 });
@@ -210,8 +217,8 @@ const fetchInquirySettlementCpo = async () => {
   try {
     const request: InitQuerySettlement = {
       main_supplier_id: selectedSuppliers.value.map((s) => s.value.id),
-      cutoff_date: modelValue.value
-        ? modelValue.value.toISOString()
+      cutoff_date: cutOffDate.value
+        ? cutOffDate.value.toDate(getLocalTimeZone()).toISOString()
         : new Date().toISOString(),
       currency: selectedCurrency.value?.code || defaultCurrency.code,
     };
@@ -309,7 +316,7 @@ function useWindowSize(): { height: Ref<number> } {
                   </h1>
                   <div class="flex flex-row items-center gap-2">
                     <USelectMenu
-                    v-model="selectedSuppliers"
+                    v-model="selectedSupplier"
                     :items="
                       supplierKeys.map((supplier) => ({
                         label: supplier.name,
@@ -317,7 +324,6 @@ function useWindowSize(): { height: Ref<number> } {
                       }))
                     "
                     option-attribute="value"
-                    multiple
                     required
                     icon="i-lucide-user"
                     label="Select Suppliers"
@@ -329,7 +335,7 @@ function useWindowSize(): { height: Ref<number> } {
                       <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
                     </template>
                   </USelectMenu>
-                  <UButton
+                  <!-- <UButton
                     icon="i-lucide-x"
                     size="md"
                     color="neutral"
@@ -337,7 +343,7 @@ function useWindowSize(): { height: Ref<number> } {
                     @click="selectedSuppliers = []"
                   >
                     Clear
-                  </UButton>
+                  </UButton> -->
                   </div>
                 </div>
 
@@ -351,17 +357,13 @@ function useWindowSize(): { height: Ref<number> } {
                       icon="i-lucide-calendar"
                     >
                       {{
-                        modelValue
-                          ? df.format(
-                              modelValue instanceof CalendarDate
-                                ? modelValue.toDate(getLocalTimeZone())
-                                : modelValue
-                            )
+                        cutOffDate
+                          ? df.format(cutOffDate.toDate(getLocalTimeZone()))
                           : "Select a date"
                       }}
                     </UButton>
                     <template #content>
-                      <UCalendar v-model="modelValue" class="p-2" />
+                      <UCalendar v-model="cutOffDate" class="p-2" />
                     </template>
                   </UPopover>
                 </div>
@@ -371,17 +373,16 @@ function useWindowSize(): { height: Ref<number> } {
                   <h1 class="text-sm mb-2 font-semibold">Select Currency</h1>
                   <USelectMenu
                     v-model="selectedCurrency"
-                    :items="
-                      useCurrency().getAllCurrencies.value.map((currency) => ({
-                        label: currency.name,
-                        value: currency.code,
-                      }))
-                    "
+                    :items="currencyOptions"
+                    option-attribute="value"
                     icon="i-lucide-dollar-sign"
-                    label="Select Currency"
                     placeholder="Choose a currency..."
                     class="w-full"
-                  />
+                  >
+                    <template #leading>
+                      <UIcon name="i-lucide-dollar-sign" class="mr-2 text-gray-500" />
+                    </template>
+                  </USelectMenu>
                 </div>
               </div>
             </template>
@@ -397,8 +398,7 @@ function useWindowSize(): { height: Ref<number> } {
                   :data="cpoList"
                   :columns="columns"
                   sticky
-                  class="min-w-[800px] w-full"
-                  :style="{ maxHeight: tableHeight }"
+                  class="min-w-[800px] w-full h-100"
                 />
               </div>
             </div>
