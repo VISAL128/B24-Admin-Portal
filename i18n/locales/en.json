@@ -6,6 +6,10 @@
     "khmer": "Khmer"
   },
   "user_profile": "User Profile",
+  "dashboard": "Dashboard",
+  "settlements": "Settlements",
+  "wallet_settlements": "Wallet Settlements",
+  "settlement_history": "Settlement History",
   "settings": "Settings",
   "logout": "Logout",
   "logout_successful": "Successfully Logged Out",
@@ -68,6 +72,39 @@
       "navigation": {
         "prev": "Previous",
         "next": "Next"
+      },
+      "form": {
+        "select_suppliers": "Select Suppliers for Settlement",
+        "select_cutoff_date": "Select Cutoff Date",
+        "select_currency": "Select Currency",
+        "choose_suppliers": "Choose suppliers...",
+        "choose_currency": "Choose a currency...",
+        "select_date": "Select a date",
+        "cpo_list": "Cpo List",
+        "supplier_code": "Supplier Code",
+        "supplier_name": "Supplier Name",
+        "cpo_code": "CPO Code",
+        "cpo_name": "CPO Name",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "amount": "Amount",
+        "currency": "Currency",
+        "settle_to_bank": "Settle To Bank",
+        "actions": "Actions",
+        "view": "View",
+        "transaction_date": "Transaction Date",
+        "bank_ref": "Bank Ref",
+        "bank_name": "Bank Name",
+        "transaction_amount": "Transaction Amount",
+        "transaction_history": "Transaction History",
+        "back": "Back",
+        "reconcile_settle": "Reconcile & Settle",
+        "confirm_settlement": "Confirm To Settlement",
+        "settlement_request_successful": "Settlement Request Successful!",
+        "settlement_request_message": "Your settlement request has been submitted successfully.",
+        "done": "Done",
+        "back_to_list": "Back to List"
       }
     }
   }

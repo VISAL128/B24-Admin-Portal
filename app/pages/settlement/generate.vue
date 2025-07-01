@@ -62,9 +62,9 @@ const items: StepperItem[] = [
 
 const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
-const selectedSupplier = ref<Supplier | null>(null);
+const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(undefined);
 const cpoList = ref<Cpo[]>([]);
-const selectedCurrency = ref<CurrencyConfig | null>(null);
+const selectedCurrency = ref<CurrencyConfig | undefined>(undefined);
 const defaultCurrency: CurrencyConfig = {
   code: "KHR",
   symbol: "៛",
@@ -108,24 +108,24 @@ const columns: TableColumn<Cpo>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  { accessorKey: "supplier.code", header: "Supplier Code" },
-  { accessorKey: "supplier.name", header: "Supplier Name" },
-  { accessorKey: "code", header: "CPO Code" },
-  { accessorKey: "name", header: "CPO Name" },
-  { accessorKey: "phone", header: "Phone" },
-  { accessorKey: "email", header: "Email" },
-  { accessorKey: "address", header: "Address" },
+  { accessorKey: "supplier.code", header: () => t("settlement.generate.form.supplier_code") },
+  { accessorKey: "supplier.name", header: () => t("settlement.generate.form.supplier_name") },
+  { accessorKey: "code", header: () => t("settlement.generate.form.cpo_code") },
+  { accessorKey: "name", header: () => t("settlement.generate.form.cpo_name") },
+  { accessorKey: "phone", header: () => t("settlement.generate.form.phone") },
+  { accessorKey: "email", header: () => t("settlement.generate.form.email") },
+  { accessorKey: "address", header: () => t("settlement.generate.form.address") },
 ];
 
 const cpoSettlementColumns: TableColumn<Settlement>[] = [
-  { accessorKey: "supplier.code", header: "CPO Code" },
-  { accessorKey: "supplier.name", header: "CPO Name" },
-  { accessorKey: "amount", header: "Amount" },
-  { accessorKey: "currency", header: "Currency" },
-  { accessorKey: "settlement_bank_id", header: "Settle To Bank" },
+  { accessorKey: "supplier.code", header: () => t("settlement.generate.form.cpo_code") },
+  { accessorKey: "supplier.name", header: () => t("settlement.generate.form.cpo_name") },
+  { accessorKey: "amount", header: () => t("settlement.generate.form.amount") },
+  { accessorKey: "currency", header: () => t("settlement.generate.form.currency") },
+  { accessorKey: "settlement_bank_id", header: () => t("settlement.generate.form.settle_to_bank") },
   {
     id: "actions",
-    header: "Actions",
+    header: () => t("settlement.generate.form.actions"),
     cell: ({ row }) =>
       h(
         resolveComponent("UButton"),
@@ -134,7 +134,7 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
           color: "primary",
           onClick: () => handleViewCpo(row.original),
         },
-        { default: () => "View" }
+        { default: () => t("settlement.generate.form.view") }
       ),
     enableSorting: false,
     enableHiding: false,
@@ -142,10 +142,10 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
 ];
 
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
-  { accessorKey: "tran_date", header: "Transaction Date" },
-  { accessorKey: "bank_ref", header: "Bank Ref" },
-  { accessorKey: "bank_name", header: "Bank Name" },
-  { accessorKey: "amount", header: "Transaction Amount" },
+  { accessorKey: "tran_date", header: () => t("settlement.generate.form.transaction_date") },
+  { accessorKey: "bank_ref", header: () => t("settlement.generate.form.bank_ref") },
+  { accessorKey: "bank_name", header: () => t("settlement.generate.form.bank_name") },
+  { accessorKey: "amount", header: () => t("settlement.generate.form.transaction_amount") },
 ];
 
 const expanded = ref({ 1: true });
@@ -165,8 +165,9 @@ function handleStepChange(newIndex: number) {
 // Computed property to validate if current step can proceed
 const canProceedToNext = computed(() => {
   const currentStepTitle = items[currentStepIndex.value]?.title;
+  // Check if can proceed to Reconcile
   if (currentStepTitle === t("settlement.generate.steps.supplier.title")) {
-    return selectedSuppliers.value.length > 0 && cutOffDate.value !== null;
+    return selectedSuppliers.value.length > 0 && cutOffDate.value !== null && selectedCurrency.value !== undefined;
   }
   return true; // Allow proceeding for other steps
 });
@@ -187,7 +188,7 @@ onMounted(() => {
   // Fetch suppliers when the component is mounted
   fetchSuppliers();
   // Set default currency
-  selectedCurrency.value = defaultCurrency;
+  // selectedCurrency.value = defaultCurrency;
 });
 
 const fetchSuppliers = async () => {
@@ -199,20 +200,20 @@ const fetchSuppliers = async () => {
 };
 
 // Function to fetch CPOs based on selected suppliers
-const fetchCpos = async () => {
-  if (selectedSuppliers.value.length === 0) return;
-  try {
-    const request: CpoBySupplierRequest = {
-      supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
-    };
+// const fetchCpos = async () => {
+//   if (selectedSuppliers.value.length === 0) return;
+//   try {
+//     const request: CpoBySupplierRequest = {
+//       supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
+//     };
 
-    cpoList.value = await supplierApi.getListCPOApi(request);
-  } catch (error) {
-    console.error("Failed to fetch CPOs:", error);
-  } finally {
-    // Optionally handle loading state or errors
-  }
-};
+//     cpoList.value = await supplierApi.getListCPOApi(request);
+//   } catch (error) {
+//     console.error("Failed to fetch CPOs:", error);
+//   } finally {
+//     // Optionally handle loading state or errors
+//   }
+// };
 
 const fetchInquirySettlementCpo = async () => {
   if (selectedSuppliers.value.length === 0) return;
@@ -248,6 +249,9 @@ function onConfirm() {
 const handleSupplierMenuChanged = async () => {
   // Reset CPO list when suppliers change
   cpoList.value = [];
+  if (!selectedSupplier.value) return;
+  selectedSuppliers.value = [selectedSupplier.value!];
+  // This for multiple suppliers
   if (selectedSuppliers.value.length === 0) return;
   cpoList.value = await supplierApi.getListCPOApi({
     supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
@@ -314,7 +318,7 @@ function useWindowSize(): { height: Ref<number> } {
                 <!-- Supplier Selector -->
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">
-                    Select Suppliers for Settlement
+                    {{ t("settlement.generate.form.select_suppliers") }}
                   </h1>
                   <div class="flex flex-row items-center gap-2">
                     <USelectMenu
@@ -329,7 +333,7 @@ function useWindowSize(): { height: Ref<number> } {
                     required
                     icon="i-lucide-user"
                     label="Select Suppliers"
-                    placeholder="Choose suppliers..."
+                    :placeholder="t('settlement.generate.form.choose_suppliers')"
                     class="w-full"
                     @change="handleSupplierMenuChanged"
                   >
@@ -351,7 +355,7 @@ function useWindowSize(): { height: Ref<number> } {
 
                 <!-- Cutoff Date -->
                 <div>
-                  <h1 class="text-sm mb-2 font-semibold">Select Cutoff Date</h1>
+                  <h1 class="text-sm mb-2 font-semibold">{{ t("settlement.generate.form.select_cutoff_date") }}</h1>
                   <UPopover class="w-full">
                     <UButton
                       color="neutral"
@@ -361,7 +365,7 @@ function useWindowSize(): { height: Ref<number> } {
                       {{
                         cutOffDate
                           ? df.format(cutOffDate.toDate(getLocalTimeZone()))
-                          : "Select a date"
+                          : t("settlement.generate.form.select_date")
                       }}
                     </UButton>
                     <template #content>
@@ -372,13 +376,13 @@ function useWindowSize(): { height: Ref<number> } {
 
                 <!-- Currency Selector -->
                 <div>
-                  <h1 class="text-sm mb-2 font-semibold">Select Currency</h1>
+                  <h1 class="text-sm mb-2 font-semibold">{{ t("settlement.generate.form.select_currency") }}</h1>
                   <USelectMenu
                     v-model="selectedCurrency"
                     :items="currencyOptions"
                     option-attribute="value"
                     icon="i-lucide-dollar-sign"
-                    placeholder="Choose a currency..."
+                    :placeholder="t('settlement.generate.form.choose_currency')"
                     class="w-full"
                   >
                     <template #leading>
@@ -389,10 +393,10 @@ function useWindowSize(): { height: Ref<number> } {
               </div>
             </template>
 
-            <!-- Selected Suppliers Table -->
+            <!-- Cpo List Table -->
             <div class="mt-4 flex flex-col">
               <h1 class="text-sm font-semibold mb-2">
-                Selected Suppliers ({{ selectedSuppliers.length }})
+                {{ t("settlement.generate.form.cpo_list") }} ({{ cpoList.length }})
               </h1>
               <div class="flex-1 border border-gray-200 rounded-lg bg-white">
                 <UTable
@@ -447,7 +451,7 @@ function useWindowSize(): { height: Ref<number> } {
                 class="lg:w-1/3 p-4 border border-gray-200 rounded-lg bg-white min-h-[300px] flex flex-col"
               >
                 <div class="flex justify-between items-center">
-                  <h3 class="text-lg font-semibold">Transaction History</h3>
+                  <h3 class="text-lg font-semibold">{{ t("settlement.generate.form.transaction_history") }}</h3>
                   <UButton
                     icon="i-lucide-x"
                     size="xs"
@@ -488,13 +492,13 @@ function useWindowSize(): { height: Ref<number> } {
                 class="text-green-500 text-6xl mb-4"
               />
               <h2 class="text-2xl font-bold text-green-700 mb-2">
-                {{ "Settlement Request Successful!" }}
+                {{ t("settlement.generate.form.settlement_request_successful") }}
               </h2>
               <p class="text-green-700 mb-6">
-                {{ "Your settlement request has been submitted successfully." }}
+                {{ t("settlement.generate.form.settlement_request_message") }}
               </p>
               <UButton color="primary" size="lg" @click="onConfirm()">
-                {{ t(" Done ") || "Back to List" }}
+                {{ t("settlement.generate.form.done") || t("settlement.generate.form.back_to_list") }}
               </UButton>
             </div>
           </div>
@@ -509,7 +513,7 @@ function useWindowSize(): { height: Ref<number> } {
               :disabled="!stepper?.hasPrev"
               @click="stepper?.prev()"
             >
-              Back
+              {{ t("settlement.generate.form.back") }}
             </UButton>
 
             <UButton
@@ -519,7 +523,7 @@ function useWindowSize(): { height: Ref<number> } {
               :disabled="!stepper?.hasNext || !canProceedToNext"
               @click="onReconciliationNext()"
             >
-              Reconcile & Settle
+              {{ t("settlement.generate.form.reconcile_settle") }}
             </UButton>
             <UButton
               v-if="
@@ -529,7 +533,7 @@ function useWindowSize(): { height: Ref<number> } {
               :disabled="!stepper?.hasNext || !canProceedToNext"
               @click="onReconciliationNext()"
             >
-              Confirm To Settlement
+              {{ t("settlement.generate.form.confirm_settlement") }}
             </UButton>
           </div>
         </div>

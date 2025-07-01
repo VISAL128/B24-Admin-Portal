@@ -9,12 +9,14 @@ const props = withDefaults(defineProps<Props>(), {
   collapsed: false
 })
 
+const { t } = useI18n()
+
 const route = useRoute()
 
 const items = ref<NavigationMenuItem[][]>([
   [
     {
-      label: 'Dashboard',
+      label: t("dashboard"),
       icon: 'i-material-symbols-light-space-dashboard-rounded',
       size: 'lg',
       to:'/',
@@ -22,14 +24,14 @@ const items = ref<NavigationMenuItem[][]>([
     },
     // settlements with child items wallet settlements
     {
-      label: 'Settlements',
+      label: t("settlements"),
       icon: 'i-material-symbols-light-lab-profile-rounded',
       size: 'lg',
       active: false,
       open: false,
       children: [
         {
-          label: 'Wallet Settlements',
+          label: t("wallet_settlements"),
           icon: 'i-material-symbols-light-lab-profile-rounded',
           size: 'lg',
           to: '/settlement/wallet-settlement',
@@ -38,7 +40,7 @@ const items = ref<NavigationMenuItem[][]>([
       ],
     },
     {
-      label: 'Settings',
+      label: t("settings"),
       icon: 'i-material-symbols-light-settings-rounded',
       size: 'lg',
       to: '/settings',

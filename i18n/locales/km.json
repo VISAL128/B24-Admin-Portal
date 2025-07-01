@@ -1,11 +1,15 @@
 {
   "hello": "សួស្តី",
-  "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង B24",
+  "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24",
   "lang": {
     "english": "អង់គ្លេស",
     "khmer": "ខ្មែរ"
   },
   "user_profile": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
+  "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+  "settlements": "ការទូទាត់",
+  "wallet_settlements": "ការទូទាត់កាបូប",
+  "settlement_history": "ប្រវត្តិការទូទាត់",
   "settings": "ការកំណត់",
   "logout": "ចាកចេញ",
   "logout_successful": "ចាកចេញដោយជោគជ័យ",
@@ -67,6 +71,39 @@
       "navigation": {
         "prev": "មុន",
         "next": "បន្ទាប់"
+      },
+      "form": {
+        "select_suppliers": "ជ្រើសរើសអ្នកផ្គត់ផ្គង់សម្រាប់ការទូទាត់",
+        "select_cutoff_date": "ជ្រើសរើសកាលបរិច្ឆេទកាត់ផ្តាច់",
+        "select_currency": "ជ្រើសរើសរូបិយប័ណ្ណ",
+        "choose_suppliers": "ជ្រើសរើសអ្នកផ្គត់ផ្គង់...",
+        "choose_currency": "ជ្រើសរើសរូបិយប័ណ្ណ...",
+        "select_date": "ជ្រើសរើសកាលបរិច្ឆេទ",
+        "cpo_list": "បញ្ជី CPO",
+        "supplier_code": "លេខកូដអ្នកផ្គត់ផ្គង់",
+        "supplier_name": "ឈ្មោះអ្នកផ្គត់ផ្គង់",
+        "cpo_code": "លេខកូដ CPO",
+        "cpo_name": "ឈ្មោះ CPO",
+        "phone": "ទូរស័ព្ទ",
+        "email": "អ៊ីមែល",
+        "address": "អាសយដ្ឋាន",
+        "amount": "ចំនួនទឹកប្រាក់",
+        "currency": "រូបិយប័ណ្ណ",
+        "settle_to_bank": "ទូទាត់ទៅធនាគារ",
+        "actions": "សកម្មភាព",
+        "view": "មើល",
+        "transaction_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "bank_ref": "សំយោគធនាគារ",
+        "bank_name": "ឈ្មោះធនាគារ",
+        "transaction_amount": "ចំនួនទឹកប្រាក់ប្រតិបត្តិការ",
+        "transaction_history": "ប្រវត្តិប្រតិបត្តិការ",
+        "back": "ត្រលប់ក្រោយ",
+        "reconcile_settle": "ត្រួតពិនិត្យ និងទូទាត់",
+        "confirm_settlement": "បញ្ជាក់ការទូទាត់",
+        "settlement_request_successful": "សំណើទូទាត់បានជោគជ័យ!",
+        "settlement_request_message": "សំណើទូទាត់របស់អ្នកត្រូវបានដាក់ស្នើដោយជោគជ័យ។",
+        "done": "រួចរាល់",
+        "back_to_list": "ត្រលប់ទៅបញ្ជី"
       }
     }
   }

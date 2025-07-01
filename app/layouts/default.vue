@@ -31,9 +31,12 @@
                     block
                     size="sm"
                     >🇬🇧
-                    <span class="text-left w-full">{{
+                    <span class="text-left w-full">
+                      <!-- {{
                       t("lang.english")
-                    }}</span></UButton
+                    }} -->
+                      English
+                    </span></UButton
                   >
                   <UButton
                     variant="ghost"
@@ -46,9 +49,12 @@
                     block
                     size="sm"
                     >🇰🇭
-                    <span class="text-left w-full">{{
+                    <span class="text-left w-full">
+                      ភាសាខ្មែរ
+                      <!-- {{
                       t("lang.khmer")
-                    }}</span></UButton
+                    }} -->
+                    </span></UButton
                   >
                 </div>
               </template>

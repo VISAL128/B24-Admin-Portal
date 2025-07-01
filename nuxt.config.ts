@@ -103,4 +103,18 @@ export default defineNuxtConfig({
   //       }
   //   }
   // },
+  // UI Theme Configuration for Bill24
+  ui: {
+    theme: {
+      colors: [
+        'primary',
+        'secondary',
+        'success',
+        'info',
+        'warning',
+        'error',
+        'neutral'
+      ]
+    }
+  },
 })
