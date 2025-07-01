@@ -23,25 +23,32 @@ export default defineNuxtRouteMiddleware((to) => {
   // Routes can opt-out by setting meta.auth = false
   const isAuthRequired = to.meta.auth !== false
   
-  // Skip auth check for the callback/error pages to prevent redirect loops
+  // Skip auth check for the callback/error/logout pages to prevent redirect loops
   const isCallbackPage = to.path === '/get-started'
   const isErrorPage = to.path === '/auth-error'
+  const isLogoutPage = to.path === '/logout' || to.path === '/auth/logout'
+  const isLoginPage = to.path === '/auth/login'
+  const isPublicPage = isCallbackPage || isErrorPage || isLogoutPage || isLoginPage
   
   console.log(`🔐 Auth Middleware - Path: ${to.path}, Auth Required: ${isAuthRequired}, Logged In: ${oidc.isLoggedIn}`)
 
   // Handle unauthenticated users trying to access protected routes
-  if (isAuthRequired && !oidc.isLoggedIn && !isCallbackPage && !isErrorPage) {
-    console.log('� Access denied - redirecting to OIDC login')
+  if (isAuthRequired && !oidc.isLoggedIn && !isPublicPage) {
+    console.log('🚫 Access denied - redirecting to login page')
     
     // Store the intended destination for post-login redirect
     const returnUrl = to.fullPath
-    oidc.login(returnUrl)
-    return
+    
+    // Navigate to the auth login page instead of OIDC login directly
+    return navigateTo(`/auth/login?redirect=${encodeURIComponent(returnUrl)}`, { 
+      external: false,
+      replace: true 
+    })
   }
   
   // Handle authenticated users on the callback page
   if (oidc.isLoggedIn && isCallbackPage) {
     console.log('✅ User authenticated on callback page - redirecting to dashboard')
-    return navigateTo('/')
+    return navigateTo('/', { replace: true })
   }
 })

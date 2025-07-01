@@ -237,9 +237,12 @@ const initiateLogin = async () => {
     
     console.log('🔐 Initiating login...')
     
-    // Use OIDC login with return URL
+    // Use the login endpoint with return URL
     const returnUrl = new URLSearchParams(window.location.search).get('redirect') || '/'
-    oidc.login(returnUrl)
+    await navigateTo(`/login?redirect=${encodeURIComponent(returnUrl)}`, { 
+      external: false,
+      replace: true 
+    })
     
   } catch (error) {
     console.error('❌ Login initiation failed:', error)

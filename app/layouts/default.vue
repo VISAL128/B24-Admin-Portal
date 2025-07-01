@@ -8,33 +8,69 @@
         <div class="flex flex-row items-center justify-end gap-4 h-full">
           <div class="flex items-center gap-2">
             <UPopover placement="bottom-end" :offset="[0, 10]">
-              <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2">
-                <span class="ml-1 font-medium">{{ locale === 'en' ? 'EN' : 'KM' }}</span>
+              <UButton
+                icon="heroicons:globe-alt"
+                variant="ghost"
+                size="sm"
+                class="px-2"
+              >
+                <span class="ml-1 font-medium">{{
+                  locale === "en" ? "EN" : "KM"
+                }}</span>
               </UButton>
               <template #content>
                 <div class="flex flex-col gap-1 p-2 w-28">
                   <UButton
                     variant="ghost"
                     class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
-                    @click="() => { setLocale('en') }"
-                    block size="sm"
-                  >🇬🇧 <span class="text-left w-full">{{ t('lang.english') }}</span></UButton>
+                    @click="
+                      () => {
+                        setLocale('en');
+                      }
+                    "
+                    block
+                    size="sm"
+                    >🇬🇧
+                    <span class="text-left w-full">{{
+                      t("lang.english")
+                    }}</span></UButton
+                  >
                   <UButton
                     variant="ghost"
                     class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
-                    @click="() => { setLocale('km') }"
-                    block size="sm"
-                  >🇰🇭 <span class="text-left w-full">{{ t('lang.khmer') }}</span></UButton>
+                    @click="
+                      () => {
+                        setLocale('km');
+                      }
+                    "
+                    block
+                    size="sm"
+                    >🇰🇭
+                    <span class="text-left w-full">{{
+                      t("lang.khmer")
+                    }}</span></UButton
+                  >
                 </div>
               </template>
             </UPopover>
             <!-- Theme Switcher -->
-            <UButton icon="heroicons:moon" variant="ghost" size="sm" class="px-2" @click="toggleTheme">
+            <UButton
+              icon="heroicons:moon"
+              variant="ghost"
+              size="sm"
+              class="px-2"
+              @click="toggleTheme"
+            >
               <span class="sr-only">Toggle Theme</span>
             </UButton>
           </div>
           <!-- User Popover -->
-          <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
+          <UPopover
+            ref="popoverRef"
+            placement="bottom-end"
+            :offset="[0, 10]"
+            class="z-50"
+          >
             <UAvatar
               :src="user?.picture"
               size="xl"
@@ -48,19 +84,26 @@
             <template #content>
               <div class="w-48 p-2">
                 <!-- User Info Section -->
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
+                <div
+                  class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3"
+                >
                   <div class="flex items-center gap-3">
                     <UAvatar :src="user?.picture" size="sm">
                       <template v-if="!user?.picture" #default>
-                        <Icon name="heroicons:user" class="w-4 h-4 text-[#43B3DE]" />
+                        <Icon
+                          name="heroicons:user"
+                          class="w-4 h-4 text-[#43B3DE]"
+                        />
                       </template>
                     </UAvatar>
                     <div class="flex flex-col">
-                      <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ user?.fullName || 'User' }}
+                      <span
+                        class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                      >
+                        {{ user?.fullName || "User" }}
                       </span>
                       <span class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ user?.email || 'user@example.com' }}
+                        {{ user?.email || "user@example.com" }}
                       </span>
                     </div>
                   </div>
@@ -75,7 +118,7 @@
                     class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
-                    {{ t('user_profile') }}
+                    {{ t("user_profile") }}
                   </UButton>
 
                   <UButton
@@ -85,7 +128,7 @@
                     class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
-                    {{ t('settings') }}
+                    {{ t("settings") }}
                   </UButton>
 
                   <UDivider class="my-2" />
@@ -96,8 +139,11 @@
                     size="md"
                     class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
-                    <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
-                    {{ t('logout') }}
+                    <Icon
+                      name="heroicons:arrow-right-on-rectangle"
+                      class="w-4 h-4 mr-2"
+                    />
+                    {{ t("logout") }}
                   </UButton>
                 </div>
               </div>
@@ -143,10 +189,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-const { locale, t, setLocale } = useI18n()
-const popoverRef = ref<{ close: () => void } | null>(null)
+import { ref } from "vue";
+import { useI18n } from "vue-i18n";
+const { locale, t, setLocale } = useI18n();
+const popoverRef = ref<{ close: () => void } | null>(null);
 
 const isNavExpanded = ref(true);
 
@@ -154,11 +200,10 @@ const auth = useAuth();
 
 const user = auth.user;
 
-
 const colorMode = useColorMode ? useColorMode() : null;
 const toggleTheme = () => {
   if (!colorMode) return;
-  colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark';
+  colorMode.preference = colorMode.preference === "dark" ? "light" : "dark";
 };
 
 const toggleNavigation = () => {
@@ -167,19 +212,27 @@ const toggleNavigation = () => {
 
 // User menu handlers
 const handleUserProfile = () => {
-  navigateTo('/profile');
+  navigateTo("/profile");
 };
 
 const handleSettings = () => {
-  navigateTo('/settings');
+  navigateTo("/settings");
 };
 
 const handleLogout = async () => {
   try {
+    console.log("🔄 User initiated logout...");
     await auth.logout();
-    await navigateTo('/get-started', { replace: true });
+    // Don't manually navigate - let the auth composable handle the redirect
   } catch (error) {
-    console.error('Logout failed:', error);
+    console.error("Logout failed:", error);
+    // Fallback: navigate to logout page if auth.logout fails
+    await navigateTo("/logout", { replace: true });
   }
 };
+
+definePageMeta({
+  middleware: ["auth"],
+  auth: true, // Ensure this layout requires authentication
+});
 </script>

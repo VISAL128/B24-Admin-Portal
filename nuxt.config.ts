@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   devServer: {
     host: 'localhost',
-    port: 3002
+    port: 3000
   },
   modules: [
     '@nuxt/fonts',
@@ -41,7 +41,7 @@ export default defineNuxtConfig({
       issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
       clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
-      callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3002'}/get-started`,
+      callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/get-started`,
       scope: ["openid", "email", "profile", "address"],
     },
     config: {
@@ -73,7 +73,7 @@ export default defineNuxtConfig({
         issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
         clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
         clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
-        callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3002'}/get-started`,
+        callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/get-started`,
       },
       config: {
         cookieFlags: {

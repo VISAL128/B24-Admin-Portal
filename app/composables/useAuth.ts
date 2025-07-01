@@ -9,11 +9,8 @@
  * - Reactive authentication state
  * - User information management
  * - Role-based access control
- * - Backward compatibility with localStorage (optional)
  * - Automatic token management via OIDC
  */
-
-import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
 
 interface UserInfo {
   id: string
@@ -26,17 +23,14 @@ interface UserInfo {
   picture?: string
 }
 
-interface StoredAuthData {
-  user: UserInfo | null
-  authenticated: boolean
-  lastSync: number
-}
-
 export const useAuth = () => {
   const oidc = useOidc()
   
-  // Core reactive state
-  const user = ref<UserInfo | null>(null)
+  // Core reactive state - derive user directly from OIDC
+  const user = computed(() => {
+    if (!oidc.isLoggedIn || !oidc.user) return null
+    return extractUserInfo()
+  })
   
   // Computed properties derived from OIDC state
   const isAuthenticated = computed(() => oidc.isLoggedIn)
@@ -56,39 +50,34 @@ export const useAuth = () => {
       email: oidcUser.email || '',
       firstName: oidcUser.given_name || '',
       lastName: oidcUser.family_name || '',
-      fullName: `${oidcUser.given_name || ''} ${oidcUser.family_name || ''}`.trim() || 
-                oidcUser.preferred_username || oidcUser.email || '',
+      fullName: (
+        `${oidcUser.given_name || ''} ${oidcUser.family_name || ''}`.trim() ||
+        oidcUser.preferred_username ||
+        oidcUser.email ||
+        ''
+      ),
       roles: oidcUser.realm_access?.roles || oidcUser.roles || [],
       picture: oidcUser.picture || ''
     }
   }
 
   /**
-   * Initialize user data from OIDC
+   * Optional: Sync user data to localStorage for backward compatibility
    */
-  const initializeUserData = async () => {
-    if (oidc.isLoggedIn && oidc.user) {
-      user.value = extractUserInfo()
-      
-      // Optional: Store in localStorage for backward compatibility
-      if (user.value) {
-        const authData: StoredAuthData = {
-          user: user.value,
-          authenticated: true,
-          lastSync: Date.now()
-        }
-        
-        const storage = useStorage<StoredAuthData>()
-        storage.setItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA, authData, 24 * 60 * 60) // 24 hours
-      }
-    } else {
-      user.value = null
-      
-      // Clear localStorage when not authenticated
-      const storage = useStorage()
-      storage.removeItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA)
-    }
-  }
+  // const syncToLocalStorage = () => {
+  //   // const storage = useStorage<StoredAuthData>()
+    
+  //   if (oidc.isLoggedIn && user.value) {
+  //     // const authData: StoredAuthData = {
+  //     //   user: user.value,
+  //     //   authenticated: true,
+  //     //   lastSync: Date.now()
+  //     // }
+  //     // storage.setItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA, authData, 24 * 60 * 60) // 24 hours
+  //   } else {
+  //     // storage.removeItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA)
+  //   }
+  // }
 
   /**
    * Initiate login flow
@@ -96,7 +85,12 @@ export const useAuth = () => {
   const login = async (redirectTo?: string): Promise<void> => {
     try {
       const returnUrl = redirectTo || '/'
-      oidc.login(returnUrl)
+      
+      // Navigate to the login endpoint with redirect parameter
+      await navigateTo(`/auth/login?redirect=${encodeURIComponent(returnUrl)}`, { 
+        external: false,
+        replace: true
+      })
     } catch (error) {
       console.error('❌ Login failed:', error)
       throw error
@@ -108,25 +102,18 @@ export const useAuth = () => {
    */
   const logout = async (): Promise<void> => {
     try {
-      // Clear localStorage data
-      const storage = useStorage()
-      storage.removeItem(LOCAL_STORAGE_KEYS.AUTHENTICATED_DATA)
+      console.log('🔄 Starting logout process...')
       
-      // Clear legacy authentication data
-      Object.values(LOCAL_STORAGE_KEYS).forEach(key => {
-        if (key.toLowerCase().includes('keycloak')) {
-          storage.removeItem(key)
-        }
+      // Navigate to logout page which will handle the actual logout process
+      await navigateTo('/auth/logout', { 
+        external: false,
+        replace: true 
       })
-      
-      // Clear user state
-      user.value = null
-      
-      // Perform OIDC logout
-      oidc.logout('/') // Redirect to home after logout
       
     } catch (error) {
       console.error('❌ Logout failed:', error)
+      // Fallback: navigate to logout page even if navigation fails
+      await navigateTo('/auth/logout', { replace: true })
       throw error
     }
   }
@@ -147,7 +134,7 @@ export const useAuth = () => {
    * Get current user information
    */
   const getUserInfo = (): UserInfo | null => {
-    return user.value || extractUserInfo()
+    return user.value
   }
 
   /**
@@ -173,7 +160,7 @@ export const useAuth = () => {
   const refreshUserInfo = async (): Promise<UserInfo | null> => {
     try {
       await oidc.fetchUser()
-      await initializeUserData()
+      // syncToLocalStorage()
       console.log('✅ User info refreshed successfully')
       return getUserInfo()
     } catch (error) {
@@ -196,19 +183,14 @@ export const useAuth = () => {
     }
   }
 
-  // Watch for authentication state changes
+  // Watch for authentication state changes and sync to localStorage
   watch(
-    () => oidc.isLoggedIn,
+    () => [oidc.isLoggedIn, oidc.user],
     () => {
-      initializeUserData()
+      // syncToLocalStorage()
     },
-    { immediate: true }
+    { immediate: true, deep: true }
   )
-
-  // Initialize user data on composable creation
-  nextTick(() => {
-    initializeUserData()
-  })
 
   return {
     // State
