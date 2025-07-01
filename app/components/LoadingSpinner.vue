@@ -7,7 +7,7 @@
     
     <!-- Loading text -->
     <p v-if="message" :class="textClass" class="mt-4 font-medium">
-      {{ message }}
+      {{ message || 'Loading...' }}
     </p>
     
     <!-- Optional description -->

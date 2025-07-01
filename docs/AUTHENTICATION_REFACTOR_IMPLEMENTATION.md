@@ -54,7 +54,7 @@ interface UserInfo {
 ### 3. Configuration Updates (`nuxt.config.ts`)
 
 **Port Alignment:**
-- Fixed development server port from 3000 to 3002
+- Fixed development server port from 3000 to 3000
 - Updated callback URLs to match the correct port
 - Consistent configuration across development and production
 
@@ -154,9 +154,9 @@ KEYCLOAK_URL=https://your-keycloak-domain
 KEYCLOAK_REALM=your-realm
 KEYCLOAK_CLIENT_ID=b24-admin-portal
 KEYCLOAK_CLIENT_SECRET=your-secret
-KEYCLOAK_CALLBACK_URL=http://localhost:3002/get-started
-BASE_URL=http://localhost:3002
-NUXT_PORT=3002
+KEYCLOAK_CALLBACK_URL=http://localhost:3000/get-started
+BASE_URL=http://localhost:3000
+NUXT_PORT=3000
 ```
 
 ### Cookie Configuration:
@@ -172,7 +172,7 @@ cookieFlags: {
 ## Testing Considerations
 
 ### Development Testing:
-1. Start development server on port 3002
+1. Start development server on port 3000
 2. Test unauthenticated access to protected routes
 3. Verify OIDC login flow
 4. Test post-authentication redirects
@@ -216,7 +216,7 @@ cookieFlags: {
 ## Troubleshooting
 
 ### Common Issues:
-1. **Port Mismatch**: Ensure all URLs use port 3002 in development
+1. **Port Mismatch**: Ensure all URLs use port 3000 in development
 2. **Infinite Redirects**: Check callback URL configuration
 3. **Cookie Issues**: Verify secure flag settings for environment
 4. **CORS Problems**: Ensure Keycloak client configuration matches app URLs

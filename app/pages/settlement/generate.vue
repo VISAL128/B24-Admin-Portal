@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import type { StepperItem, AvatarProps, TableColumn } from "@nuxt/ui";
-import type { Cpo, Supplier, CpoBySupplierRequest, InitQuerySettlement, CpoSettlement, Settlement, TransactionAllocation, ConfirmSettlementRequest } from "~/models/settlement";
-import type { CurrencyConfig, CurrencyFormatOptions } from "~/composables/utils/useCurrency";
+import type {
+  Cpo,
+  Supplier,
+  CpoBySupplierRequest,
+  InitQuerySettlement,
+  CpoSettlement,
+  Settlement,
+  TransactionAllocation, ConfirmSettlementRequest,
+} from "~/models/settlement";
+import type {
+  CurrencyConfig,
+  CurrencyFormatOptions,
+} from "~/composables/utils/useCurrency";
 import {
   CalendarDate,
   DateFormatter,
@@ -28,7 +39,9 @@ const now = new CalendarDate(
   today.getMonth() + 1,
   today.getDate()
 );
-const modelValue = ref<Date | null>(now ? now.toDate(getLocalTimeZone()) : null);
+const modelValue = ref<Date | null>(
+  now ? now.toDate(getLocalTimeZone()) : null
+);
 
 const { t } = useI18n();
 
@@ -69,25 +82,25 @@ const selectedCpo = ref<Cpo[]>([]);
 
 const columns: TableColumn<Cpo>[] = [
   {
-    id: 'select',
+    id: "select",
     header: ({ table }) =>
-      h(resolveComponent('UCheckbox'), {
-        'modelValue': table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
+      h(resolveComponent("UCheckbox"), {
+        modelValue: table.getIsSomePageRowsSelected()
+          ? "indeterminate"
           : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+        "onUpdate:modelValue": (value: boolean | "indeterminate") =>
           table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all'
+        "aria-label": "Select all",
       }),
     cell: ({ row }) =>
-      h(resolveComponent('UCheckbox'), {
-        'modelValue': row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+      h(resolveComponent("UCheckbox"), {
+        modelValue: row.getIsSelected(),
+        "onUpdate:modelValue": (value: boolean | "indeterminate") =>
           row.toggleSelected(!!value),
-        'aria-label': 'Select row'
+        "aria-label": "Select row",
       }),
     enableSorting: false,
-    enableHiding: false
+    enableHiding: false,
   },
   { accessorKey: "supplier.code", header: "Supplier Code" },
   { accessorKey: "supplier.name", header: "Supplier Name" },
@@ -141,21 +154,21 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
       ])
   },
   {
-    id: 'actions',
-    header: 'Actions',
+    id: "actions",
+    header: "Actions",
     cell: ({ row }) =>
       h(
-        resolveComponent('UButton'),
+        resolveComponent("UButton"),
         {
-          size: 'xs',
-          color: 'primary',
-          onClick: () => handleViewCpo(row.original)
+          size: "xs",
+          color: "primary",
+          onClick: () => handleViewCpo(row.original),
         },
-        { default: () => 'View' }
+        { default: () => "View" }
       ),
     enableSorting: false,
-    enableHiding: false
-  }
+    enableHiding: false,
+  },
 ];
 
 const cpoSettlementTransactionColumns: (TableColumn<TransactionAllocation> & {
@@ -198,10 +211,14 @@ const cpoSettlementTransactionColumns: (TableColumn<TransactionAllocation> & {
 
 
 
-
 const expanded = ref({ 1: true });
 
-const stepper = ref<{ next: () => void; prev: () => void; hasNext?: boolean; hasPrev?: boolean } | null>(null);
+const stepper = ref<{
+  next: () => void;
+  prev: () => void;
+  hasNext?: boolean;
+  hasPrev?: boolean;
+} | null>(null);
 const currentStepIndex = ref(0);
 
 function handleStepChange(newIndex: number) {
@@ -247,9 +264,7 @@ const fetchCpos = async () => {
   if (selectedSuppliers.value.length === 0) return;
   try {
     const request: CpoBySupplierRequest = {
-      supplier_ids: selectedSuppliers.value.map(
-        (s) => s.value.id
-      ),
+      supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
     };
 
     cpoList.value = await supplierApi.getListCPOApi(request);
@@ -264,7 +279,7 @@ const fetchInquirySettlementCpo = async () => {
   if (selectedSuppliers.value.length === 0) return;
   try {
     const request: InitQuerySettlement = {
-      main_supplier_id: selectedSuppliers.value.map(s => s.value.id),
+      main_supplier_id: selectedSuppliers.value.map((s) => s.value.id),
       cutoff_date: modelValue.value
         ? modelValue.value.toISOString()
         : new Date().toISOString(),
@@ -308,37 +323,91 @@ async function onSubmitSettle() {
 
 const router = useRouter();
 function onConfirm() {
-  router.push('/settlement/wallet-settlement')
+  router.push('/settlement/generate')
 }
 
 const handleSupplierMenuChanged = async () => {
+  // Reset CPO list when suppliers change
+  cpoList.value = [];
+  if (selectedSuppliers.value.length === 0) return;
    isLoading.value = true;
   cpoList.value = await supplierApi.getListCPOApi({
-    supplier_ids: selectedSuppliers.value.map(s => s.value.id),
+    supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
   });
   isLoading.value = false;
 };
+
+// Add viewport height tracking
+const { height: windowHeight } = useWindowSize();
+
+// Calculate responsive table heights
+const tableHeight = computed(() => {
+  const baseHeight = windowHeight.value || 768;
+  // Reserve space for header, stepper, and other UI elements
+  const availableHeight = Math.max(baseHeight, 300);
+  return `${Math.min(availableHeight * 0.4, 400)}px`;
+});
+
+const detailTableHeight = computed(() => {
+  const baseHeight = windowHeight.value || 768;
+  const availableHeight = Math.max(baseHeight, 300);
+  return `${Math.min(availableHeight * 0.6, 500)}px`;
+});
 
 definePageMeta({
   auth: false,
 });
 
+import { ref, onMounted, onUnmounted } from "vue";
+
+function useWindowSize(): { height: Ref<number> } {
+  const height = ref(window.innerHeight);
+
+  const updateHeight = () => {
+    height.value = window.innerHeight;
+  };
+
+  onMounted(() => {
+    window.addEventListener("resize", updateHeight);
+    updateHeight();
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener("resize", updateHeight);
+  });
+
+  return { height };
+}
 </script>
 <template>
-  <div class="w-full h-full bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex flex-col">
+  <div
+    class="w-full h-full bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex flex-col"
+  >
     <UStepper ref="stepper" disabled :items="items" class="flex-1">
       <template #content="{ item }">
         <div class="flex flex-col h-full justify-between">
           <!-- Step 1: Supplier Selection -->
-          <UCard variant="subtle" class="flex-1 mt-4 bg-white" v-if="item.title === t('settlement.generate.steps.supplier.title')">
+          <UCard
+            variant="subtle"
+            class="flex-1 mt-4"
+            v-if="item.title === t('settlement.generate.steps.supplier.title')"
+          >
             <template #header>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Supplier Selector -->
                 <div>
-                  <h1 class="text-sm mb-2 font-semibold">Select Suppliers for Settlement</h1>
-                  <USelectMenu
+                  <h1 class="text-sm mb-2 font-semibold">
+                    Select Suppliers for Settlement
+                  </h1>
+                  <div class="flex flex-row items-center gap-2">
+                    <USelectMenu
                     v-model="selectedSuppliers"
-                    :items="supplierKeys.map(supplier => ({ label: supplier.name, value: supplier }))"
+                    :items="
+                      supplierKeys.map((supplier) => ({
+                        label: supplier.name,
+                        value: supplier,
+                      }))
+                    "
                     option-attribute="value"
                     multiple
                     required
@@ -352,13 +421,27 @@ definePageMeta({
                       <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
                     </template>
                   </USelectMenu>
+                  <UButton
+                    icon="i-lucide-x"
+                    size="md"
+                    color="neutral"
+                    variant="outline"
+                    @click="selectedSuppliers = []"
+                  >
+                    Clear
+                  </UButton>
+                  </div>
                 </div>
 
                 <!-- Cutoff Date -->
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">Select Cutoff Date</h1>
                   <UPopover class="w-full">
-                    <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
+                    <UButton
+                      color="neutral"
+                      variant="subtle"
+                      icon="i-lucide-calendar"
+                    >
                       {{
                         modelValue
                           ? df.format(
@@ -370,10 +453,7 @@ definePageMeta({
                       }}
                     </UButton>
                     <template #content>
-                      <UCalendar
-                        :v-model="modelValue"
-                        class="p-2"
-                      />
+                      <UCalendar :v-model="modelValue" class="p-2" />
                     </template>
                   </UPopover>
                 </div>
@@ -383,10 +463,12 @@ definePageMeta({
                   <h1 class="text-sm mb-2 font-semibold">Select Currency</h1>
                   <USelectMenu
                     :v-model="selectedCurrency"
-                    :items="useCurrency().getAllCurrencies.value.map(currency => ({
-                      label: currency.name,
-                      value: currency.code,
-                    }))"
+                    :items="
+                      useCurrency().getAllCurrencies.value.map((currency) => ({
+                        label: currency.name,
+                        value: currency.code,
+                      }))
+                    "
                     icon="i-lucide-dollar-sign"
                     label="Select Currency"
                     placeholder="Choose a currency..."
@@ -397,35 +479,39 @@ definePageMeta({
             </template>
 
             <!-- Selected Suppliers Table -->
-            <h1 class="text-sm font-semibold mb-2 mt-6">
-              Selected Suppliers ({{ selectedSuppliers.length }})
-            </h1>
-            <div class="overflow-x-auto border border-gray-200 rounded-lg bg-white">
-              <UTable
-                ref="table"
-                :data="cpoList"
-                :columns="columns"
-                sticky
-                class="min-w-[800px] w-full h-150"
-                :loading="isLoading"
+            <div class="mt-4 flex flex-col">
+              <h1 class="text-sm font-semibold mb-2">
+                Selected Suppliers ({{ selectedSuppliers.length }})
+              </h1>
+              <div class="flex-1 border border-gray-200 rounded-lg bg-white">
+                <UTable
+                  ref="table"
+                  :data="cpoList"
+                  :columns="columns"
+                  sticky
+                  class="min-w-[800px] w-full"
+                  :style="{ maxHeight: tableHeight }"
+                  :loading="isLoading"
               >
                 <template #empty>
                   <EmptyState></EmptyState>
                 </template>
               </UTable>
+              </div>
             </div>
           </UCard>
 
           <!-- Step 2: Reconciliation -->
-          <!-- <UCard
-            variant="subtle"
-            class="flex-1" -->
-            <div
-            v-if="item.title === t('settlement.generate.steps.reconciliation.title') "
+          <div
+            v-if="
+              item.title === t('settlement.generate.steps.reconciliation.title') 
+            "
           >
             <div class="flex flex-col lg:flex-row gap-6 mt-4">
               <!-- Master Table -->
-              <div class="flex-1 overflow-x-auto border border-gray-200 rounded-lg bg-white">
+              <div
+                class="flex-1 overflow-x-auto border border-gray-200 rounded-lg bg-white"
+              >
                 <div class="overflow-x-auto">
                   <UTable
                     ref="table"
@@ -433,7 +519,6 @@ definePageMeta({
                     :columns="cpoSettlementColumns"
                     sticky
                     class="min-w-[800px] w-full h-150"
-                    :loading="isLoading"
                     @row:click="handleRowClick"
                     >
                 <template #empty>
@@ -445,21 +530,32 @@ definePageMeta({
 
               <!-- Detail Table -->
               <div
-                v-if="selectedCpoSettlement?.transaction_allocations && selectedCpoSettlement.transaction_allocations.length > 0"
+                v-if="
+                  selectedCpoSettlement?.transaction_allocations &&
+                  selectedCpoSettlement.transaction_allocations.length > 0
+                "
                 class="lg:w-1/3 p-4 border border-gray-200 rounded-lg bg-white min-h-[300px] flex flex-col"
               >
                 <div class="flex justify-between items-center">
                   <h3 class="text-lg font-semibold">Transaction History</h3>
-                  <UButton icon="i-lucide-x" size="xs" color="gray" @click="selectedCpoSettlement = null" />
+                  <UButton
+                    icon="i-lucide-x"
+                    size="xs"
+                    color="gray"
+                    @click="selectedCpoSettlement = null"
+                  />
                 </div>
-                <div class="flex-1 overflow-x-auto border border-gray-200 rounded-lg">
+                <div
+                  class="flex-1 overflow-x-auto border border-gray-200 rounded-lg"
+                >
                   <div class="overflow-x-auto">
                     <UTable
                       ref="table"
                       :data="selectedCpoSettlement.transaction_allocations"
                       :columns="cpoSettlementTransactionColumns"
                       sticky
-                      class="min-w-[600px] w-full h-150"
+                      class="min-w-[600px] w-full"
+                      :style="{ maxHeight: detailTableHeight }"
                       :loading="isLoading"
                       
                       >
@@ -482,49 +578,61 @@ definePageMeta({
                 </div>
               </div>
             </div>
-            </div>
-
-        <!-- Step 3: Settlement Request Success -->
-        <div
-          v-if="item.title === t('settlement.generate.steps.confirmation.title')"
-          class="flex flex-1 items-center justify-center mt-6"
-        >
-          <div
-            class="w-full max-w-xl bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm"
-          >
-            <UIcon
-              name="i-lucide-check-circle"
-              class="text-green-500 text-6xl mb-4"
-            />
-            <h2 class="text-2xl font-bold text-green-700 mb-2">
-              {{ 'Settlement Request Successful!' }}
-            </h2>
-            <p class="text-green-700 mb-6">
-              {{ 'Your settlement request has been submitted successfully.' }}
-            </p>
-            <UButton color="primary" size="lg" @click="onConfirm()">
-              {{ t(' Done ') || 'Back to List' }}
-            </UButton>
           </div>
+
+          <!-- Step 3: Settlement Request Success -->
+          <div
+            v-if="
+              item.title === t('settlement.generate.steps.confirmation.title')
+            "
+            class="flex flex-1 items-center justify-center mt-6"
+          >
+            <div
+              class="w-full max-w-xl bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm"
+            >
+              <UIcon
+                name="i-lucide-check-circle"
+                class="text-green-500 text-6xl mb-4"
+              />
+              <h2 class="text-2xl font-bold text-green-700 mb-2">
+                {{ "Settlement Request Successful!" }}
+              </h2>
+              <p class="text-green-700 mb-6">
+                {{ "Your settlement request has been submitted successfully." }}
+              </p>
+              <UButton color="primary" size="lg" @click="onConfirm()">
+                {{ t(" Done ") || "Back to List" }}
+              </UButton>
+            </div>
           </div>
 
           <!-- Navigation Buttons -->
           <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3">
             <UButton
-              v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
+              v-if="
+                item.title ===
+                t('settlement.generate.steps.reconciliation.title')
+              "
               :disabled="!stepper?.hasPrev"
               @click="stepper?.prev()"
             >
-                   Back     
+              Back
             </UButton>
-            
-            <UButton v-if="item.title === t('settlement.generate.steps.supplier.title')"
+
+            <UButton
+              v-if="
+                item.title === t('settlement.generate.steps.supplier.title')
+              "
               :disabled="!stepper?.hasNext || !canProceedToNext"
               @click="onReconciliationNext()"
             >
               Reconcile & Settle
             </UButton>
-            <UButton v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
+            <UButton
+              v-if="
+                item.title ===
+                t('settlement.generate.steps.reconciliation.title')
+              "
               :disabled="!stepper?.hasNext || !canProceedToNext"
               :loading="isLoading"
               @click="onSubmitSettle()"

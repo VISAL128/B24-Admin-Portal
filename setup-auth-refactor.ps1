@@ -108,9 +108,9 @@ Write-Status "Creating development run script..."
 @"
 # Bill24 Admin Portal Development Server
 Write-Host "🚀 Starting Bill24 Admin Portal (Development Mode)" -ForegroundColor Blue
-Write-Host "📍 Application will be available at: http://localhost:3002" -ForegroundColor Green
-Write-Host "🔐 OIDC Callback URL: http://localhost:3002/get-started" -ForegroundColor Yellow
-Write-Host "❌ Error Page: http://localhost:3002/auth-error" -ForegroundColor Yellow
+Write-Host "📍 Application will be available at: http://localhost:3000" -ForegroundColor Green
+Write-Host "🔐 OIDC Callback URL: http://localhost:3000/get-started" -ForegroundColor Yellow
+Write-Host "❌ Error Page: http://localhost:3000/auth-error" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Cyan
 Write-Host ""
@@ -134,8 +134,8 @@ Write-Host ""
 Write-Host "📋 Next Steps:" -ForegroundColor Yellow
 Write-Host "1. Update your .env file with correct Keycloak configuration"
 Write-Host "2. Ensure your Keycloak client is configured with:"
-Write-Host "   - Valid Redirect URIs: http://localhost:3002/get-started"
-Write-Host "   - Web Origins: http://localhost:3002"
+Write-Host "   - Valid Redirect URIs: http://localhost:3000/get-started"
+Write-Host "   - Web Origins: http://localhost:3000"
 Write-Host "   - Access Type: confidential"
 Write-Host "3. Run './run-dev.ps1' to start the development server"
 Write-Host ""
@@ -148,11 +148,11 @@ Write-Host "- Start dev server: ./run-dev.ps1"
 Write-Host "- Clear old auth data: Run clear_auth_data.js in browser console"
 Write-Host ""
 Write-Host "🌐 URLs:" -ForegroundColor Yellow
-Write-Host "- Application: http://localhost:3002"
-Write-Host "- Login: http://localhost:3002/login"
-Write-Host "- Logout: http://localhost:3002/logout"
-Write-Host "- Callback: http://localhost:3002/get-started"
-Write-Host "- Error page: http://localhost:3002/auth-error"
+Write-Host "- Application: http://localhost:3000"
+Write-Host "- Login: http://localhost:3000/login"
+Write-Host "- Logout: http://localhost:3000/logout"
+Write-Host "- Callback: http://localhost:3000/get-started"
+Write-Host "- Error page: http://localhost:3000/auth-error"
 Write-Host ""
 
 if ($missingVars.Count -gt 0) {

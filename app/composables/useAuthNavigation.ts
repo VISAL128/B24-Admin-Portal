@@ -28,10 +28,17 @@ export const useAuthNavigation = () => {
   }
 
   /**
-   * Navigate to get-started page (for authentication)
+   * Navigate to auth login page (for authentication)
    */
   const navigateToAuth = async (): Promise<void> => {
-    await navigateTo('/get-started', { replace: true })
+    await navigateTo('/auth/login', { replace: true })
+  }
+
+  /**
+   * Navigate to logout page (after logout)
+   */
+  const navigateToLogout = async (): Promise<void> => {
+    await navigateTo('/auth/logout', { replace: true })
   }
 
   /**
@@ -39,7 +46,7 @@ export const useAuthNavigation = () => {
    */
   const shouldRedirectFromAuth = (): boolean => {
     const route = useRoute()
-    const isOnAuthPage = route.path === '/get-started'
+    const isOnAuthPage = route.path === '/get-started' || route.path === '/auth/login'
     const isAuthenticated = oidc.isLoggedIn
     
     return isOnAuthPage && isAuthenticated
@@ -50,7 +57,7 @@ export const useAuthNavigation = () => {
    */
   const shouldRedirectToAuth = (): boolean => {
     const route = useRoute()
-    const isOnAuthPage = route.path === '/get-started'
+    const isOnAuthPage = route.path === '/get-started' || route.path === '/auth/login'
     const isAuthenticated = oidc.isLoggedIn
     
     return !isOnAuthPage && !isAuthenticated
@@ -60,6 +67,7 @@ export const useAuthNavigation = () => {
     navigateBasedOnAuth,
     navigateToDashboard,
     navigateToAuth,
+    navigateToLogout,
     shouldRedirectFromAuth,
     shouldRedirectToAuth
   }
