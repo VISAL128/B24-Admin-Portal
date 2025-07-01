@@ -40,9 +40,7 @@
     <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white" />
 
     <!-- Table Footer -->
-    <div class="px-4 py-3.5 text-sm text-muted">
-     <!-- Table Footer -->
-    <div class="flex items-center justify-between px-4 py-3 text-sm text-muted">
+    <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
       <span>
         {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
         {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
@@ -59,8 +57,7 @@
           :page-count="Math.ceil(total / pageSize)"
           :total="total"
         />
-      </div>
-    </div>
+      </div>  
   </div>
 </div>
 </template>
