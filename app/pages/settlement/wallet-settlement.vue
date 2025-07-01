@@ -162,6 +162,11 @@ const onGenerateSettlement = () => {
   router.push('/settlement/generate')
 }
 
+// Handle navigation to details page
+const navigateToDetails = (settlementId: string) => {
+  router.push(`/settlement/details/${settlementId}`)
+}
+
 const exportHeaders = [
   { key: 'settlementId', label: t('settlement_id') },
   { key: 'settlementDate', label: t('settlement_date') },
@@ -249,6 +254,14 @@ const exportItems = ref<DropdownMenuItem[]>([
   }
 ])
 
+// Add translation keys
+const translations = {
+  actions: 'Actions',
+  view: 'View',
+  view_details: 'View Details',
+  // Add more translations as needed
+}
+
 
 const handleExport = (item: { click: () => void }) => {
   if (item.click) {
@@ -295,31 +308,46 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   { accessorKey: 'currency', header: 'Currency' },
   { accessorKey: 'settled_by', header: 'Settled By' },
   {
-  accessorKey: 'status', // optional if you need sorting/filtering
-  header: 'Status',
-  cell: ({ row }) => {
-    const success = row.original.success
-    const fail = row.original.fail
-    const total = row.original.total_Settled
+    accessorKey: 'status', // optional if you need sorting/filtering
+    header: 'Status',
+    cell: ({ row }) => {
+      const success = row.original.success
+      const fail = row.original.fail
+      const total = row.original.total_Settled
 
-    const UBadge = resolveComponent('UBadge')
-    const Icon = resolveComponent('UIcon')
+      const UBadge = resolveComponent('UBadge')
+      const Icon = resolveComponent('UIcon')
 
-    return h('div', { class: 'flex gap-2 items-center' }, [
-      h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-        h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-        h('span', {}, total)
-      ]),
-      h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-        h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-        h('span', {}, success)
-      ]),
-      h(UBadge, { color: 'error', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-        h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }),
-        h('span', {}, fail)
+      return h('div', { class: 'flex gap-2 items-center' }, [
+        h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+          h('span', {}, total)
+        ]),
+        h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+          h('span', {}, success)
+        ]),
+        h(UBadge, { color: 'error', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }),
+          h('span', {}, fail)
+        ])
       ])
+    }
+  },
+  // Add an action column for viewing details
+  {
+    id: 'actions',
+    header: translations.actions,
+    cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
+      h(resolveComponent('UButton'), {
+        color: 'primary',
+        variant: 'ghost',
+        icon: 'i-lucide-eye',
+        size: 'sm',
+        onClick: () => navigateToDetails(row.original.settlement_id),
+        title: translations.view_details
+      }, () => translations.view)
     ])
   }
-}
 ]
 </script>
