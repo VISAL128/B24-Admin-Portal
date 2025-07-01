@@ -40,9 +40,7 @@
     <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white" />
 
     <!-- Table Footer -->
-    <div class="px-4 py-3.5 text-sm text-muted">
-     <!-- Table Footer -->
-    <div class="flex items-center justify-between px-4 py-3 text-sm text-muted">
+    <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
       <span>
         {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
         {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
@@ -59,8 +57,7 @@
           :page-count="Math.ceil(total / pageSize)"
           :total="total"
         />
-      </div>
-    </div>
+      </div>  
   </div>
 </div>
 </template>
@@ -165,6 +162,11 @@ const onGenerateSettlement = () => {
   router.push('/settlement/generate')
 }
 
+// Handle navigation to details page
+const navigateToDetails = (settlementId: string) => {
+  router.push(`/settlement/details/${settlementId}`)
+}
+
 const exportHeaders = [
   { key: 'settlementId', label: t('settlement_id') },
   { key: 'settlementDate', label: t('settlement_date') },
@@ -252,6 +254,14 @@ const exportItems = ref<DropdownMenuItem[]>([
   }
 ])
 
+// Add translation keys
+const translations = {
+  actions: 'Actions',
+  view: 'View',
+  view_details: 'View Details',
+  // Add more translations as needed
+}
+
 
 const handleExport = (item: { click: () => void }) => {
   if (item.click) {
@@ -281,47 +291,63 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     enableSorting: false,
     enableHiding: false
   },
-  { accessorKey: 'settlementId', header: t('settlement_id') },
+  { accessorKey: 'settlement_id', header: t('Settlement ID') },
   {
-    accessorKey: 'settlementDate',
-    header: t('settlement_date'),
+    accessorKey: 'settlement_date',
+    header: t('Settlement Date'),
     cell: ({ row }) =>
-      new Date(row.getValue('settlementDate')).toLocaleDateString()
+      new Date(row.getValue('settlement_date')).toLocaleDateString()
   },
-  { accessorKey: 'totalSupplier', header: t('total_supplier') },
+  { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     accessorKey: 'total_amount',
     header: 'Total Amount',
     cell: ({ row }) =>
-      h('div', { class: 'text-right font-medium' }, `$${row.getValue('total_amount')}`)
+      row.getValue('total_amount')
   },
+  { accessorKey: 'currency', header: 'Currency' },
   { accessorKey: 'settled_by', header: 'Settled By' },
   {
-  accessorKey: 'status', // optional if you need sorting/filtering
-  header: 'Status',
-  cell: ({ row }) => {
-    const success = row.original.success
-    const fail = row.original.fail
-    const total = row.original.total_Settled
+    accessorKey: 'status', // optional if you need sorting/filtering
+    header: 'Status',
+    cell: ({ row }) => {
+      const success = row.original.success
+      const fail = row.original.fail
+      const total = row.original.total_Settled
 
-    const UBadge = resolveComponent('UBadge')
-    const Icon = resolveComponent('UIcon')
+      const UBadge = resolveComponent('UBadge')
+      const Icon = resolveComponent('UIcon')
 
-    return h('div', { class: 'flex gap-2 items-center' }, [
-      h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-        h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-        h('span', {}, total)
-      ]),
-      h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-        h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-        h('span', {}, success)
-      ]),
-      h(UBadge, { color: 'error', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-        h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }),
-        h('span', {}, fail)
+      return h('div', { class: 'flex gap-2 items-center' }, [
+        h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+          h('span', {}, total)
+        ]),
+        h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+          h('span', {}, success)
+        ]),
+        h(UBadge, { color: 'error', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }),
+          h('span', {}, fail)
+        ])
       ])
+    }
+  },
+  // Add an action column for viewing details
+  {
+    id: 'actions',
+    header: translations.actions,
+    cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
+      h(resolveComponent('UButton'), {
+        color: 'primary',
+        variant: 'ghost',
+        icon: 'i-lucide-eye',
+        size: 'sm',
+        onClick: () => navigateToDetails(row.original.settlement_id),
+        title: translations.view_details
+      }, () => translations.view)
     ])
   }
-}
 ]
 </script>

@@ -1,15 +1,11 @@
 {
   "hello": "សួស្តី",
-  "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24",
+  "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង B24",
   "lang": {
     "english": "អង់គ្លេស",
     "khmer": "ខ្មែរ"
   },
   "user_profile": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
-  "dashboard": "ផ្ទាំងគ្រប់គ្រង",
-  "settlements": "ការទូទាត់",
-  "wallet_settlements": "ការទូទាត់កាបូប",
-  "settlement_history": "ប្រវត្តិការទូទាត់",
   "settings": "ការកំណត់",
   "logout": "ចាកចេញ",
   "logout_successful": "ចាកចេញដោយជោគជ័យ",
@@ -27,6 +23,37 @@
   "logging_out_message": "សូមរង់ចាំខណៈយើងកំពុងចាកចេញដោយសុវត្ថិភាព...",
   "logout_error": "កំហុសក្នុងការចាកចេញ",
   "go_to_login": "ទៅកាន់ការចូលប្រព័ន្ធ",
+
+  "index": {
+    "navigation_instructions": "ប្រើម៉ឺនុយរុករកដើម្បីរុករកផ្នែកផ្សេងៗ។",
+    "current_version": "កំណែបច្ចុប្បន្ន",
+    "quick_actions": "សកម្មភាពរហ័ស",
+    "generate_settlement_desc": "បង្កើតការទូទាត់សម្រាប់អ្នកផ្គត់ផ្គង់",
+    "settings_desc": "កំណត់រចនាសម្ព័ន្ធប្រព័ន្ធ",
+    "system_status": "ស្ថានភាពប្រព័ន្ធ",
+    "authentication": "ការផ្ទៀងផ្ទាត់",
+    "database": "មូលដ្ឋានទិន្នន័យ",
+    "active": "សកម្ម",
+    "connected": "បានភ្ជាប់"
+  },
+
+  "settlement": {
+    "dashboard_title": "ផ្ទាំងគ្រប់គ្រងការទូទាត់",
+    "details_title": "ព័ត៌មានលម្អិតនៃការទូទាត់",
+    "overview": "ទិដ្ឋភាពទូទៅនៃការទូទាត់",
+    "statistics": "ស្ថិតិនៃការទូទាត់",
+    "transactions": "ប្រតិបត្តិការទូទាត់",
+    "total_transactions": "ប្រតិបត្តិការសរុប",
+    "successful": "ជោគជ័យ",
+    "failed": "បរាជ័យ",
+    "detailed_transactions_message": "ទិន្នន័យប្រតិបត្តិការលម្អិតនឹងត្រូវបង្ហាញនៅទីនេះ"
+  },
+
+  "actions": "សកម្មភាព",
+  "view": "មើល",
+  "view_details": "មើលព័ត៌មានលម្អិត",
+  "back": "ត្រលប់ក្រោយ",
+
   "search_by_settler": "ស្វែងរកតាមអ្នកទូទាត់...",
   "pick_a_date": "ជ្រើសរើសកាលបរិច្ឆេទ",
   "generate_settlement": "បង្កើតការទូទាត់",
