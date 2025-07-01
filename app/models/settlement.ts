@@ -37,6 +37,19 @@ export interface CpoBalance {
   currency: string
 }
 
+
+export interface InitQuerySettlement {
+  main_supplier_id?: string[]
+  cutoff_date?: string
+  parties?: parties[]
+  currency?: string
+}
+
+type parties = {
+  id?: string
+  type?: string
+} 
+
 // 4. Get Transaction History by CPO
 export interface TransactionAllocation {
   id: string
@@ -46,8 +59,13 @@ export interface TransactionAllocation {
   bank_name: string
   tran_date: string
 }
-
 export interface CpoSettlement {
+  token: string
+  settlements: Settlement[]
+}
+
+
+export interface Settlement {
   id: string
   party_id: string
   party_type: number

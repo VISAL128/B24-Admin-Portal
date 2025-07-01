@@ -5,7 +5,7 @@ import type { ApiResponse } from '~/models/baseModel'
 export default defineEventHandler(async (event): Promise<ApiResponse<any[]>> => {
   const body = await readBody<CpoBySupplierRequest>(event)
 
-  const mockData = Array.from({ length: 5 }, (_, i) => {
+  const mockData = Array.from({ length: 25 }, (_, i) => {
     const id = `cpo-id-${i + 1}`
     const supplierId = `supplier-${i + 1}`
 

@@ -3,7 +3,9 @@ import type {
   Supplier, Cpo, CpoBySupplierRequest, CpoBalance,
   BalanceQueryRequest,
   ConfirmSettlementRequest, ConfirmSettlementResponse,
-  SettlementHistoryQuery, SettlementHistoryResponse
+  SettlementHistoryQuery, SettlementHistoryResponse,
+  InitQuerySettlement,
+  CpoSettlement
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
 import type { ApiResponse } from '~/models/baseModel'
@@ -37,15 +39,15 @@ export const useSupplierApi = () => {
     return rep.data
   }
 
-  const getCpoBalances = async (
-    payload: BalanceQueryRequest
-  ): Promise<CpoBalance[]> => {
+  const getInquirySettlement = async (
+    payload: InitQuerySettlement
+  ): Promise<CpoSettlement> => {
     var rep = await execute(() =>
-      $fetch<ApiResponse<CpoBalance[]>>(`${baseUrl}/api/balance`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<CpoSettlement>>(`${baseUrl}/api/balance`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch CPO balances:', rep.message)
-      return []
+      console.error('Failed to fetch CPO settlements:', rep.message)
+     return null as any
     }
     return rep.data 
   }
@@ -87,7 +89,7 @@ export const useSupplierApi = () => {
   return {
     getSuppliers,
     getListCPOApi,
-    getCpoBalances,
+    getInquirySettlement,
     // getTransactionHistory,
     confirmSettlement,
     getSettlementHistory

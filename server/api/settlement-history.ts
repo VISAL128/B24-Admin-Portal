@@ -6,7 +6,7 @@ import { SettlementHistoryQuery, SettlementHistoryRecord, SettlementHistoryRespo
 export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryResponse>> => {
   const body = await readBody<SettlementHistoryQuery>(event)
 
-  const mockData: SettlementHistoryRecord[] = Array.from({ length: 5 }, (_, i) => {
+  const mockData: SettlementHistoryRecord[] = Array.from({ length: 25 }, (_, i) => {
     const suffix = i + 1
     return {
       settlement_id: `settle-000${suffix}`,

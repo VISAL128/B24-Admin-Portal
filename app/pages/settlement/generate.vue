@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { StepperItem, AvatarProps, TableColumn } from "@nuxt/ui";
-import type { Cpo, Supplier, CpoBySupplierRequest } from "~/models/settlement";
+import type { Cpo, Supplier, CpoBySupplierRequest, InitQuerySettlement, CpoSettlement, Settlement, TransactionAllocation } from "~/models/settlement";
 import type { CurrencyConfig, CurrencyFormatOptions } from "~/composables/utils/useCurrency";
 import {
   CalendarDate,
@@ -9,6 +9,7 @@ import {
 } from "@internationalized/date";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
 import { useCurrency } from "~/composables/utils/useCurrency";
+import EmptyState from '~/components/TableEmptyState.vue';
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
@@ -60,6 +61,10 @@ const defaultCurrency: CurrencyConfig = {
   locale: "km-KH",
 };
 
+
+// Step 2 reconciliation
+const selectedCpo = ref<Cpo[]>([]);
+
 const columns: TableColumn<Cpo>[] = [
   {
     id: 'select',
@@ -91,12 +96,12 @@ const columns: TableColumn<Cpo>[] = [
   { accessorKey: "address", header: "Address" },
 ];
 
-const cpoSettlementColumns:TableColumn<Cpo>[] = [
+const cpoSettlementColumns: TableColumn<Settlement>[] = [
   { accessorKey: "supplier.code", header: "CPO Code" },
   { accessorKey: "supplier.name", header: "CPO Name" },
-  { accessorKey: "code", header: "Amount" },
-  { accessorKey: "name", header: "Currency" },
-  { accessorKey: "phone", header: "Settle To Bank" },
+  { accessorKey: "amount", header: "Amount" },
+  { accessorKey: "currency", header: "Currency" },
+  { accessorKey: "settlement_bank_id", header: "Settle To Bank" },
   {
     id: 'actions',
     header: 'Actions',
@@ -115,10 +120,18 @@ const cpoSettlementColumns:TableColumn<Cpo>[] = [
   }
 ];
 
+const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
+  { accessorKey: "tran_date", header: "Transaction Date" },
+  { accessorKey: "bank_ref", header: "Bank Ref" },
+  { accessorKey: "bank_name", header: "Bank Name" },
+  { accessorKey: "amount", header: "Transaction Amount" }
+];
+
+
 
 const expanded = ref({ 1: true });
 
-const stepper = useTemplateRef("stepper");
+const stepper = ref<{ next: () => void; prev: () => void; hasNext?: boolean; hasPrev?: boolean } | null>(null);
 const currentStepIndex = ref(0);
 
 function handleStepChange(newIndex: number) {
@@ -133,11 +146,17 @@ const canProceedToNext = computed(() => {
   }
   return true; // Allow proceeding for other steps
 });
+const listSelectedCpo = ref<Cpo | null>(null);
+let listInquirySettlement = ref<CpoSettlement>();
+let selectedCpoSettlement = ref<Settlement | null>(null);
+function handleRowClick(row: CpoSettlement) {
+  // selectedCpo.value = row;
+}
 
-// Add this method in your <script setup>
-function handleViewCpo(cpo: Cpo) {
+function handleViewCpo(cpo: Settlement) {
   // Replace with your logic, e.g., open a modal or navigate
-  alert(`View CPO: ${cpo.name} (${cpo.code})`);
+  // alert(`View CPO: ${cpo.id} (${cpo.amount})`);
+  selectedCpoSettlement.value = cpo;
 }
 
 onMounted(() => {
@@ -149,7 +168,7 @@ onMounted(() => {
 
 const fetchSuppliers = async () => {
   try {
-    supplierKeys.value = await supplierApi.getSuppliers();
+    supplierKeys.value = await supplierpi.getSuppliers();
   } catch (error) {
     console.error("Failed to fetch suppliers:", error);
   }
@@ -173,6 +192,36 @@ const fetchCpos = async () => {
   }
 };
 
+const fetchInquirySettlementCpo = async () => {
+  if (selectedSuppliers.value.length === 0) return;
+  try {
+    const request: InitQuerySettlement = {
+      main_supplier_id: selectedSuppliers.value.map(supplier => supplier.id),
+      cutoff_date: modelValue.value
+        ? modelValue.value.toDate(getLocalTimeZone()).toISOString()
+        : new Date().toISOString(),
+      currency: selectedCurrency.value?.code || defaultCurrency.code,
+    };
+
+    const response = await supplierApi.getInquirySettlement(request);
+    listInquirySettlement.value = response;
+  } catch (error) {
+    console.error("Failed to fetch CPOs:", error);
+  } finally {
+    // Optionally handle loading state or errors
+  }
+};
+
+function onReconciliationNext() {
+  fetchInquirySettlementCpo();
+  stepper.value?.next();
+}
+
+const router = useRouter();
+function onConfirm() {
+  router.push('/settlement/generate')
+}
+
 // Add this method after fetchCpos function
 const handleSupplierMenuChanged = async () => {
   // The selectedSuppliers is already updated by v-model
@@ -184,35 +233,23 @@ const handleSupplierMenuChanged = async () => {
 definePageMeta({
   auth: false,
 });
-</script>
 
+</script>
 <template>
-  <div
-    class="w-full h-full bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex flex-col"
-  >
+  <div class="w-full h-full bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex flex-col">
     <UStepper ref="stepper" disabled :items="items" class="flex-1">
       <template #content="{ item }">
         <div class="flex flex-col h-full justify-between">
-          <UCard
-            variant="subtle"
-            class="flex-1"
-            v-if="item.title === t('settlement.generate.steps.supplier.title')"
-          >
+          <!-- Step 1: Supplier Selection -->
+          <UCard variant="subtle" class="flex-1 mt-4 bg-white" v-if="item.title === t('settlement.generate.steps.supplier.title')">
             <template #header>
-              <!-- Header -->
-              <div class="flex flex-row gap-4 justify-start">
-                <div class="w-1/2">
-                  <h1 class="text-sm mb-2 font-semibold">
-                    Select Suppliers for Settlement
-                  </h1>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Supplier Selector -->
+                <div>
+                  <h1 class="text-sm mb-2 font-semibold">Select Suppliers for Settlement</h1>
                   <USelectMenu
                     v-model="selectedSuppliers"
-                    :items="
-                      supplierKeys.map((supplier) => ({
-                        label: supplier.name,
-                        value: supplier,
-                      }))
-                    "
+                    :items="supplierKeys.map(supplier => ({ label: supplier.name, value: supplier }))"
                     icon="i-lucide-user"
                     label="Select Suppliers"
                     placeholder="Choose suppliers..."
@@ -222,22 +259,16 @@ definePageMeta({
                     @change="handleSupplierMenuChanged"
                   >
                     <template #leading="{ modelValue, ui }">
-                      <!-- Display icon and count of selected suppliers -->
                       <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
                     </template>
                   </USelectMenu>
                 </div>
-                <!-- Select Cut of Date -->
-                <div class="w-50">
-                  <h1 class="text-sm mb-2 font-semibold">
-                    Select Cut of Date
-                  </h1>
+
+                <!-- Cutoff Date -->
+                <div>
+                  <h1 class="text-sm mb-2 font-semibold">Select Cutoff Date</h1>
                   <UPopover class="w-full">
-                    <UButton
-                      color="neutral"
-                      variant="subtle"
-                      icon="i-lucide-calendar"
-                    >
+                    <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
                       {{
                         modelValue
                           ? df.format(modelValue.toDate(getLocalTimeZone()))
@@ -249,14 +280,13 @@ definePageMeta({
                     </template>
                   </UPopover>
                 </div>
-                <!-- Select Currency -->
-                 <div class="w-50">
-                  <h1 class="text-sm mb-2 font-semibold">
-                    Select Currency
-                  </h1>
+
+                <!-- Currency Selector -->
+                <div>
+                  <h1 class="text-sm mb-2 font-semibold">Select Currency</h1>
                   <USelectMenu
                     v-model="selectedCurrency"
-                    :items="useCurrency().getAllCurrencies.value.map((currency) => ({
+                    :items="useCurrency().getAllCurrencies.value.map(currency => ({
                       label: currency.name,
                       value: currency.code,
                     }))"
@@ -265,96 +295,116 @@ definePageMeta({
                     placeholder="Choose a currency..."
                     class="w-full"
                   />
-                 </div>
+                </div>
               </div>
             </template>
-            <h1 class="text-sm font-semibold mb-2">
+
+            <!-- Selected Suppliers Table -->
+            <h1 class="text-sm font-semibold mb-2 mt-6">
               Selected Suppliers ({{ selectedSuppliers.length }})
             </h1>
-            <UTable ref="table" :data="cpoList" :columns="columns" sticky class="flex-1 overflow-auto" />
-            <!-- <div class="overflow-auto max-h-96 rounded-lg border border-gray-200">
-              
-            </div> -->
-
-            <!-- <template #footer>
-            <Placeholder class="h-8" />
-          </template> -->
+            <div class="overflow-x-auto border border-gray-200 rounded-lg bg-white">
+              <UTable
+                ref="table"
+                :data="cpoList"
+                :columns="columns"
+                sticky
+                class="min-w-[800px] w-full h-150",
+              />
+            </div>
           </UCard>
 
-          <!-- Reconciliation -->
-<!-- Reconciliation -->
-          <UCard
+          <!-- Step 2: Reconciliation -->
+          <!-- <UCard
             variant="subtle"
-            class="flex-1"
+            class="flex-1" -->
+            <div
             v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
           >
-            <template>
-              <!-- Header -->
-              <div
-                class="flex flex-row gap-4 justify-start"
-                v-if="
-                  item.title === t('settlement.generate.steps.supplier.title')
-                "
-              >
-                <USelectMenu
-                  v-model="selectedSuppliers"
-                  :items="
-                    supplierKeys.map((supplier) => ({
-                      label: supplier.name,
-                      value: supplier,
-                    }))
-                  "
-                  icon="i-lucide-user"
-                  label="Select Suppliers"
-                  placeholder="Choose suppliers..."
-                  multiple
-                  class="w-1/2"
-                >
-                  <template #leading="{ modelValue, ui }">
-                    <!-- Display icon and count of selected suppliers -->
-                    <UIcon name="i-lucide-users" class="mr-2 text-gray-500" />
-                  </template>
-                </USelectMenu>
-                <UPopover>
-                  <UButton
-                    color="neutral"
-                    variant="subtle"
-                    icon="i-lucide-calendar"
-                  >
-                    {{
-                      modelValue
-                        ? df.format(modelValue.toDate(getLocalTimeZone()))
-                        : "Select a date"
-                    }}
-                  </UButton>
-                  <template #content>
-                    <UCalendar v-model="modelValue" class="p-2" />
-                  </template>
-                </UPopover>
+            <div class="flex flex-col lg:flex-row gap-6 mt-4">
+              <!-- Master Table -->
+              <div class="flex-1 overflow-x-auto border border-gray-200 rounded-lg bg-white">
+                <div class="overflow-x-auto">
+                  <UTable
+                    ref="table"
+                    :data="listInquirySettlement?.settlements || []"
+                    :columns="cpoSettlementColumns"
+                    sticky
+                    class="min-w-[800px] w-full h-150"
+                    @row:click="handleRowClick"
+                  />
+                </div>
               </div>
-            </template>
-            <h1 class="text-sm font-semibold mb-5">
-              List settlement CPOs
-            </h1>
-  
-            <UTable ref="table" :data="cpoList" :columns="cpoSettlementColumns" sticky class="flex-1 overflow-auto" />
-            </UCard>
 
-          <!-- Navigation buttons moved to bottom -->
-          <div class="mt-4 flex justify-between items-center">
+              <!-- Detail Table -->
+              <div
+                v-if="selectedCpoSettlement?.transaction_allocations && selectedCpoSettlement.transaction_allocations.length > 0"
+                class="lg:w-1/3 p-4 border border-gray-200 rounded-lg bg-white min-h-[300px] flex flex-col"
+              >
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-semibold">Transaction History</h3>
+                  <UButton icon="i-lucide-x" size="xs" color="gray" @click="selectedCpoSettlement = null" />
+                </div>
+                <div class="flex-1 overflow-x-auto border border-gray-200 rounded-lg">
+                  <div class="overflow-x-auto">
+                    <UTable
+                      ref="table"
+                      :data="selectedCpoSettlement.transaction_allocations"
+                      :columns="cpoSettlementTransactionColumns"
+                      sticky
+                      class="min-w-[600px] w-full h-150"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+
+        <!-- Step 3: Settlement Request Success -->
+        <div
+          v-if="item.title === t('settlement.generate.steps.confirmation.title')"
+          class="flex flex-1 items-center justify-center mt-6"
+        >
+          <div
+            class="w-full max-w-xl bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm"
+          >
+            <UIcon
+              name="i-lucide-check-circle"
+              class="text-green-500 text-6xl mb-4"
+            />
+            <h2 class="text-2xl font-bold text-green-700 mb-2">
+              {{ 'Settlement Request Successful!' }}
+            </h2>
+            <p class="text-green-700 mb-6">
+              {{ 'Your settlement request has been submitted successfully.' }}
+            </p>
+            <UButton color="primary" size="lg" @click="onConfirm()">
+              {{ t(' Done ') || 'Back to List' }}
+            </UButton>
+          </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3">
             <UButton
+              v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
               :disabled="!stepper?.hasPrev"
               @click="stepper?.prev()"
             >
-              {{ t("settlement.generate.navigation.prev") }}
+                   Back     
             </UButton>
-
-            <UButton
+            
+            <UButton v-if="item.title === t('settlement.generate.steps.supplier.title')"
               :disabled="!stepper?.hasNext || !canProceedToNext"
-              @click="stepper?.next()"
+              @click="onReconciliationNext()"
             >
-            Reconciliation Settlement
-              <!-- {{ t("settlement.generate.navigation.next") }} -->
+              Reconcile & Settle
+            </UButton>
+            <UButton v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
+              :disabled="!stepper?.hasNext || !canProceedToNext"
+              @click="onReconciliationNext()"
+            >
+              Confirm To Settlement
             </UButton>
           </div>
         </div>

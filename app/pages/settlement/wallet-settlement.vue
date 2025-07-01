@@ -37,16 +37,10 @@
     </div>
 
     <!-- Table -->
-    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto" />
+    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white" />
 
     <!-- Table Footer -->
     <div class="px-4 py-3.5 text-sm text-muted">
-      {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} {{ t('of') }}
-      {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t('row_selected') }}
-    <!-- <div class="px-4 py-3.5 text-sm text-muted">
-      {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-      {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
-    </div> -->
      <!-- Table Footer -->
     <div class="flex items-center justify-between px-4 py-3 text-sm text-muted">
       <span>
@@ -72,6 +66,10 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  auth: false,
+});
 import {
   h, ref, computed, onMounted, shallowRef, watch, resolveComponent
 } from 'vue'
@@ -179,9 +177,6 @@ const exportHeaders = [
   { key: 'totalAmount', label: t('total_amount') },
   { key: 'settledBy', label: t('settled_by') },
   { key: 'status', label: t('status') }
-// const exportItems: any[] = [
-  // { label: 'PDF', icon: 'i-lucide-file-text', click: () => exportSettlementToPDF(filteredData.value) },
-  // { label: 'Excel', icon: 'i-lucide-file-spreadsheet', click: () => exportSettlementToExcel(filteredData.value) }
 ]
 
 const exportToExcelHandler = async () => {
