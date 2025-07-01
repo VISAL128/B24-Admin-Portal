@@ -23,5 +23,13 @@ export const useApiExecutor = () => {
     }
   }
 
-  return { execute }
+  const executeV2 = async <T>(
+    requestFn: () => Promise<T>
+  ): Promise<T> => {
+   const response = await requestFn()
+
+      return response
+  }
+
+  return { execute , executeV2 }
 }
