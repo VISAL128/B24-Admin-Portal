@@ -27,7 +27,7 @@ const now = new CalendarDate(
   today.getMonth() + 1,
   today.getDate()
 );
-const modelValue = ref<CalendarDate | null>(now);
+const modelValue = ref<Date | null>(now ? now.toDate(getLocalTimeZone()) : null);
 
 const { t } = useI18n();
 
@@ -50,7 +50,7 @@ const items: StepperItem[] = [
 ];
 
 const supplierKeys = ref<Supplier[]>([]);
-const selectedSuppliers = ref<Supplier[]>([]);
+const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
 const cpoList = ref<Cpo[]>([]);
 const selectedCurrency = ref<CurrencyConfig | null>(null);
 const defaultCurrency: CurrencyConfig = {
@@ -168,7 +168,7 @@ onMounted(() => {
 
 const fetchSuppliers = async () => {
   try {
-    supplierKeys.value = await supplierpi.getSuppliers();
+    supplierKeys.value = await supplierApi.getSuppliers();
   } catch (error) {
     console.error("Failed to fetch suppliers:", error);
   }
@@ -180,7 +180,7 @@ const fetchCpos = async () => {
   try {
     const request: CpoBySupplierRequest = {
       supplier_ids: selectedSuppliers.value.map(
-        (supplier) => supplier.value.id
+        (s) => s.value.id
       ),
     };
 
@@ -196,9 +196,9 @@ const fetchInquirySettlementCpo = async () => {
   if (selectedSuppliers.value.length === 0) return;
   try {
     const request: InitQuerySettlement = {
-      main_supplier_id: selectedSuppliers.value.map(supplier => supplier.id),
+      main_supplier_id: selectedSuppliers.value.map(s => s.value.id),
       cutoff_date: modelValue.value
-        ? modelValue.value.toDate(getLocalTimeZone()).toISOString()
+        ? modelValue.value.toISOString()
         : new Date().toISOString(),
       currency: selectedCurrency.value?.code || defaultCurrency.code,
     };
@@ -226,7 +226,7 @@ function onConfirm() {
 const handleSupplierMenuChanged = async () => {
   // The selectedSuppliers is already updated by v-model
   cpoList.value = await supplierApi.getListCPOApi({
-    supplier_ids: selectedSuppliers.value.map(supplier => supplier.id),
+    supplier_ids: selectedSuppliers.value.map(s => s.value.id),
   });
 };
 
@@ -250,11 +250,12 @@ definePageMeta({
                   <USelectMenu
                     v-model="selectedSuppliers"
                     :items="supplierKeys.map(supplier => ({ label: supplier.name, value: supplier }))"
+                    option-attribute="value"
+                    multiple
+                    required
                     icon="i-lucide-user"
                     label="Select Suppliers"
                     placeholder="Choose suppliers..."
-                    multiple
-                    required
                     class="w-full"
                     @change="handleSupplierMenuChanged"
                   >
@@ -271,12 +272,19 @@ definePageMeta({
                     <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
                       {{
                         modelValue
-                          ? df.format(modelValue.toDate(getLocalTimeZone()))
+                          ? df.format(
+                              modelValue instanceof CalendarDate
+                                ? modelValue.toDate(getLocalTimeZone())
+                                : modelValue
+                            )
                           : "Select a date"
                       }}
                     </UButton>
                     <template #content>
-                      <UCalendar v-model="modelValue" class="p-2" />
+                      <UCalendar
+                        v-model="modelValue"
+                        class="p-2"
+                      />
                     </template>
                   </UPopover>
                 </div>
@@ -309,7 +317,7 @@ definePageMeta({
                 :data="cpoList"
                 :columns="columns"
                 sticky
-                class="min-w-[800px] w-full h-150",
+                class="min-w-[800px] w-full h-150"
               />
             </div>
           </UCard>
