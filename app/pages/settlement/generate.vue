@@ -64,7 +64,7 @@ const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
 const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(undefined);
 const cpoList = ref<Cpo[]>([]);
-const selectedCurrency = ref<CurrencyConfig | undefined>(undefined);
+const selectedCurrency = ref<{ label: string; value: CurrencyConfig } | undefined>(undefined);
 const defaultCurrency: CurrencyConfig = {
   code: "KHR",
   symbol: "៛",
@@ -223,7 +223,7 @@ const fetchInquirySettlementCpo = async () => {
       cutoff_date: cutOffDate.value
         ? cutOffDate.value.toDate(getLocalTimeZone()).toISOString()
         : new Date().toISOString(),
-      currency: selectedCurrency.value?.code || defaultCurrency.code,
+      currency: selectedCurrency.value?.value.code || defaultCurrency.code,
     };
 
     const response = await supplierApi.getInquirySettlement(request);
