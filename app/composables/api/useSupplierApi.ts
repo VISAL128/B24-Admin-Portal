@@ -3,6 +3,7 @@ import type {
   Supplier, Cpo, CpoBySupplierRequest,
   ConfirmSettlementRequest, ConfirmSettlementResponse,
   SettlementHistoryQuery, SettlementHistoryResponse,
+  SettlementHistoryRecord,
   InitQuerySettlement,
   SettlementInquiryResponse
 } from '~/models/settlement'
@@ -85,13 +86,27 @@ export const useSupplierApi = () => {
     return rep.data
   }
 
+  const getSettlementHistoryById = async (
+    id: string
+  ): Promise<SettlementHistoryRecord> => {
+    var rep = await execute(() =>
+      $fetch<ApiResponse<SettlementHistoryRecord>>(`/api/findsettlementhistory/${id}`)
+    )
+    if (rep.code !== 'SUCCESS') {
+      console.error('Failed to fetch settlement history by ID:', rep.message)
+      throw new Error(rep.message || 'Failed to fetch settlement history detail')
+    }
+    return rep.data
+  }
+
   return {
     getSuppliers,
     getListCPOApi,
     getInquirySettlement,
     // getTransactionHistory,
     confirmSettlementAPI,
-    getSettlementHistory
+    getSettlementHistory,
+    getSettlementHistoryById
   }
 
 }

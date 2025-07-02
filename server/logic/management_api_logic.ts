@@ -92,3 +92,6 @@ export async function getCPOsBySuppliers(body: any): Promise<any> {
 export async function getSettlementHistory(body: any): Promise<any> {
     return requestToManagementApi('/dynamic/settlement-history', 'POST', body);
 }
+export async function getSettlementHistoryById(id: string): Promise<any> {
+    return requestToManagementApi(`/dynamic/settlement-history/${id}`, 'GET');
+}

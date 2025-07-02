@@ -123,13 +123,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '#i18n';
 import { useSupplierApi } from '~/composables/api/useSupplierApi';
 import { useApiExecutor } from '~/composables/api/useApiExecutor';
-
+const supplierApi = useSupplierApi();
 // Add getSettlementDetails to supplier API (placeholder)
 const useSettlementApi = () => {
   const getSettlementDetails = async (id: string) => {
     // This is a placeholder. In a real app, you would call an API endpoint
     console.log(`Fetching details for settlement ${id}`);
-    
+    const response = await supplierApi.getSettlementHistoryById(id);
+
     // Return dummy data for now
     return {
       settlement_id: id,
@@ -225,4 +226,5 @@ definePageMeta({
 useHead({
   title: `${t('settlement.details_title')} - Bill24 Admin Portal`
 });
+
 </script>
