@@ -50,6 +50,13 @@
     "confirm": "Confirm"
   },
   "settlement": {
+    "supplier": "Supplier",
+    "cpo": {
+      "code": "CPO Code",
+      "name": "CPO Name"
+    },
+    "total_amount": "Total Amount",
+    "currency": "Currency",
     "dashboard_title": "Settlement Dashboard",
     "details_title": "Settlement Details",
     "overview": "Settlement Overview",

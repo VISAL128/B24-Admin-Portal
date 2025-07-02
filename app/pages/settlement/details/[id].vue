@@ -34,14 +34,14 @@
     <div v-else-if="settlementDetails" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Settlement overview card -->
       <UCard class="lg:col-span-1">
-        <template #header>
+        <!-- <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold">{{ $t('settlement.overview') }}</h2>
-            <UBadge :color="getStatusColor(settlementDetails.status)" size="lg">
-              {{ settlementDetails.status }}
+            <UBadge color="primary" size="lg">
+              {{ settlementDetails.success ? $t('settlement.status.success') : $t('settlement.status.failed') }}
             </UBadge>
           </div>
-        </template>
+        </template> -->
 
         <div class="space-y-4">
           <div class="flex justify-between items-center py-2 border-b dark:border-gray-700">
@@ -104,7 +104,8 @@
       </UCard>
       
       <!-- Settlement details table (Optional) -->
-      <UCard class="lg:col-span-3">
+      
+      <!-- <UCard class="lg:col-span-3">
         <template #header>
           <h2 class="text-lg font-semibold">{{ $t('settlement.transactions') }}</h2>
         </template>
@@ -112,8 +113,9 @@
         <div class="text-center py-4 text-gray-500">
           <p>{{ $t('settlement.detailed_transactions_message') }}</p>
         </div>
-      </UCard>
+      </UCard> -->
     </div>
+    <SettlementHistoryTable :settlementHistorys="settlementHistoryDetails" />
   </div>
 </template>
 
@@ -123,39 +125,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '#i18n';
 import { useSupplierApi } from '~/composables/api/useSupplierApi';
 import { useApiExecutor } from '~/composables/api/useApiExecutor';
+import type { SettlementHistoryDetail, SettlementHistoryRecord } from '~/models/settlement';
+import SettlementHistoryTable from '~/components/tables/SettlementHistoryTable.vue';
 const supplierApi = useSupplierApi();
-// Add getSettlementDetails to supplier API (placeholder)
-const useSettlementApi = () => {
-  const getSettlementDetails = async (id: string) => {
-    // This is a placeholder. In a real app, you would call an API endpoint
-    console.log(`Fetching details for settlement ${id}`);
-    const response = await supplierApi.getSettlementHistoryById(id);
-
-    // Return dummy data for now
-    return {
-      settlement_id: id,
-      settlement_date: new Date().toISOString(),
-      total_supplier: 5,
-      total_amount: 1250.75,
-      currency: 'USD',
-      settled_by: 'Admin User',
-      status: 'Completed',
-      total_Settled: 25,
-      success: 23,
-      fail: 2
-    };
-  };
-
-  return {
-    getSettlementDetails
-  };
-};
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-// Use the settlement API instead
-const { getSettlementDetails } = useSettlementApi();
 const { execute } = useApiExecutor();
 
 // Get settlement ID from route params
@@ -164,7 +140,8 @@ const settlementId = route.params.id as string;
 // State management
 const loading = ref(true);
 const error = ref('');
-const settlementDetails = ref<any>(null);
+const settlementDetails = ref<SettlementHistoryRecord>();
+const settlementHistoryDetails = ref<SettlementHistoryDetail[]>([]);
 
 // Format date for display
 const formatDate = (dateString: string) => {
@@ -204,8 +181,9 @@ const fetchSettlementDetails = async () => {
   
   try {
     // Direct call to the API function without using execute
-    const result = await getSettlementDetails(settlementId);
-    settlementDetails.value = result;
+    const response = await supplierApi.getSettlementHistoryById(settlementId);
+    settlementDetails.value = response;
+    settlementHistoryDetails.value = response.settle_details || [];
   } catch (e: any) {
     console.error('Error fetching settlement details:', e);
     error.value = e.message || 'Failed to load settlement details';

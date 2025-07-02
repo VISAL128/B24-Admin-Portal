@@ -151,7 +151,7 @@ export interface SettlementHistoryRecord {
   total_Settled: number
   success: number
   fail: number
-  settle_details: SettlementHistoryDetail
+  settle_details: SettlementHistoryDetail[]
 }
 export interface SettlementHistoryResponse {
   total_page: number

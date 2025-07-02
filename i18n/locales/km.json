@@ -37,18 +37,6 @@
     "connected": "បានភ្ជាប់"
   },
 
-  "settlement": {
-    "dashboard_title": "ផ្ទាំងគ្រប់គ្រងការទូទាត់",
-    "details_title": "ព័ត៌មានលម្អិតនៃការទូទាត់",
-    "overview": "ទិដ្ឋភាពទូទៅនៃការទូទាត់",
-    "statistics": "ស្ថិតិនៃការទូទាត់",
-    "transactions": "ប្រតិបត្តិការទូទាត់",
-    "total_transactions": "ប្រតិបត្តិការសរុប",
-    "successful": "ជោគជ័យ",
-    "failed": "បរាជ័យ",
-    "detailed_transactions_message": "ទិន្នន័យប្រតិបត្តិការលម្អិតនឹងត្រូវបង្ហាញនៅទីនេះ"
-  },
-
   "actions": "សកម្មភាព",
   "view": "មើល",
   "view_details": "មើលព័ត៌មានលម្អិត",
@@ -85,6 +73,22 @@
     "confirm": "បញ្ជាក់"
   },
   "settlement": {
+    "dashboard_title": "ផ្ទាំងគ្រប់គ្រងការទូទាត់",
+    "details_title": "ព័ត៌មានលម្អិតនៃការទូទាត់",
+    "overview": "ទិដ្ឋភាពទូទៅនៃការទូទាត់",
+    "statistics": "ស្ថិតិនៃការទូទាត់",
+    "transactions": "ប្រតិបត្តិការទូទាត់",
+    "total_transactions": "ប្រតិបត្តិការសរុប",
+    "successful": "ជោគជ័យ",
+    "failed": "បរាជ័យ",
+    "detailed_transactions_message": "ទិន្នន័យប្រតិបត្តិការលម្អិតនឹងត្រូវបង្ហាញនៅទីនេះ",
+    "supplier": "អ្នកផ្គត់ផ្គង់",
+    "cpo": {
+      "code": "លេខកូដ CPO",
+      "name": "ឈ្មោះ CPO"
+    },
+    "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+    "currency": "រូបិយប័ណ្ណ",
     "generate": {
       "steps": {
         "supplier": {
