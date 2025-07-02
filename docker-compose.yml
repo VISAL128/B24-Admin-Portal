@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   admin_portal:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: registry.bill24.io/b24/admin-portal:beta-1.0
     ports:
       - "23055:3000"
     environment:
@@ -15,5 +13,5 @@ services:
       - KEYCLOAK_REALM=EP-Staging-ids
       - KEYCLOAK_CLIENT_ID=b24-admin-portal
       - KEYCLOAK_CLIENT_SECRET=yxPl1d1zSHTi2oeYkh6gpJApPQEMzlIw
-      - KEYCLOAK_CALLBACK_URL=0.0.0.0:23055/get-started
+      - KEYCLOAK_CALLBACK_URL=http://172.16.81.141:23055/get-started
       - APP_VERSION=1.0.0

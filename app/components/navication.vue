@@ -15,24 +15,24 @@ const route = useRoute()
 let itemsCal = computed( ()=>{
   return [];
 })
-const items = computed<NavigationMenuItem[][]>(() => [
+const items = ref<NavigationMenuItem[][]>([
   [
     {
-      label: t("dashboard"),
+      label: computed(() => t("dashboard")),
       icon: 'i-material-symbols-light-space-dashboard-rounded',
       size: 'lg',
       to: '/',
       active: false,
     },
     {
-      label: t("settlements"),
+      label: computed(()=> t("settlements")),
       icon: 'i-material-symbols-light-lab-profile-rounded',
       size: 'lg',
       active: false,
       open: false,
       children: [
         {
-          label: t("wallet_settlements"),
+          label: computed(()=>  t("wallet_settlements")),
           icon: 'i-material-symbols-light-lab-profile-rounded',
           size: 'lg',
           to: '/settlement/wallet-settlement',
@@ -41,7 +41,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
       ],
     },
     {
-      label: t("settings"),
+      label: computed(()=> t("settings")),
       icon: 'i-material-symbols-light-settings-rounded',
       size: 'lg',
       to: '/settings',

@@ -7,7 +7,7 @@
       <div
         :class="[
           'flex flex-col h-full rounded-lg shadow-lg p-2 bg-white dark:bg-slate-900 border-r-2 border-gray-200 dark:border-gray-700 transition-all duration-300 relative gap-4',
-          isNavExpanded ? 'w-[240px]' : 'w-[60px]',
+          isNavExpanded ? 'w-[260px]' : 'w-[60px]',
         ]"
       >
         <B24header :isNavExpanded="isNavExpanded"/>
