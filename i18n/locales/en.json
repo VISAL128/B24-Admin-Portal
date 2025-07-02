@@ -50,6 +50,11 @@
     "confirm": "Confirm"
   },
   "settlement": {
+    "search_placeholder": "Search",
+    "settle_amount": "Settle Amount",
+    "settlement_bank": "Settlement Bank",
+    "status": "Status",
+    "history": "History",
     "supplier": "Supplier",
     "cpo": {
       "code": "CPO Code",

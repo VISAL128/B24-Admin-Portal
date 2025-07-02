@@ -1,37 +1,56 @@
 <template>
   <div class="flex flex-col space-y-6">
     <!-- Breadcrumb and header section -->
-    <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow">
+    <div
+      class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
+    >
       <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <NuxtLink to="/settlement" class="hover:text-primary transition-colors">
-            {{ $t('settlement.dashboard_title') }}
+          <NuxtLink
+            to="/settlement"
+            class="hover:text-primary transition-colors"
+          >
+            {{ $t("settlement.dashboard_title") }}
           </NuxtLink>
           <span>/</span>
-          <span>{{ $t('settlement.details_title') }}</span>
+          <span>{{ $t("settlement.details_title") }}</span>
         </div>
-        <h1 class="text-xl font-bold">{{ $t('settlement.details_title') }} #{{ settlementId }}</h1>
+        <h1 class="text-xl font-bold">
+          {{ $t("settlement.details_title") }} #{{ settlementId }}
+        </h1>
       </div>
 
       <div class="flex items-center gap-2">
         <UButton color="primary" icon="i-lucide-arrow-left" @click="goBack">
-          {{ $t('back') }}
+          {{ $t("back") }}
         </UButton>
       </div>
     </div>
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center items-center py-10">
-      <UIcon name="i-lucide-loader-2" class="animate-spin h-8 w-8 text-gray-500" />
+      <UIcon
+        name="i-lucide-loader-2"
+        class="animate-spin h-8 w-8 text-gray-500"
+      />
     </div>
 
     <!-- Error state -->
-    <UAlert v-else-if="error" title="Error" color="error" variant="soft" icon="i-lucide-alert-circle">
+    <UAlert
+      v-else-if="error"
+      title="Error"
+      color="error"
+      variant="soft"
+      icon="i-lucide-alert-circle"
+    >
       {{ error }}
     </UAlert>
 
     <!-- Content when data is loaded -->
-    <div v-else-if="settlementDetails" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div
+      v-else-if="settlementDetails"
+      class="grid grid-cols-1 lg:grid-cols-3 gap-6"
+    >
       <!-- Settlement overview card -->
       <UCard class="lg:col-span-1">
         <!-- <template #header>
@@ -44,25 +63,54 @@
         </template> -->
 
         <div class="space-y-4">
-          <div class="flex justify-between items-center py-2 border-b dark:border-gray-700">
-            <span class="text-gray-600 dark:text-gray-400">{{ $t('settlement_id') }}</span>
-            <span class="font-medium">{{ settlementDetails.settlement_id }}</span>
+          <div
+            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
+          >
+            <span class="text-gray-600 dark:text-gray-400">{{
+              $t("settlement_id")
+            }}</span>
+            <span class="font-medium">{{
+              settlementDetails.records.settlement_id
+            }}</span>
           </div>
-          <div class="flex justify-between items-center py-2 border-b dark:border-gray-700">
-            <span class="text-gray-600 dark:text-gray-400">{{ $t('settlement_date') }}</span>
-            <span class="font-medium">{{ formatDate(settlementDetails.settlement_date) }}</span>
+          <div
+            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
+          >
+            <span class="text-gray-600 dark:text-gray-400">{{
+              $t("settlement_date")
+            }}</span>
+            <span class="font-medium">{{
+              formatDate(settlementDetails.records.settlement_date.toString() || "")
+            }}</span>
           </div>
-          <div class="flex justify-between items-center py-2 border-b dark:border-gray-700">
-            <span class="text-gray-600 dark:text-gray-400">{{ $t('total_supplier') }}</span>
-            <span class="font-medium">{{ settlementDetails.total_supplier }}</span>
+          <div
+            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
+          >
+            <span class="text-gray-600 dark:text-gray-400">{{
+              $t("total_supplier")
+            }}</span>
+            <span class="font-medium">{{
+              settlementDetails.records.total_supplier
+            }}</span>
           </div>
-          <div class="flex justify-between items-center py-2 border-b dark:border-gray-700">
-            <span class="text-gray-600 dark:text-gray-400">{{ $t('total_amount') }}</span>
-            <span class="font-medium">{{ settlementDetails.total_amount }} {{ settlementDetails.currency }}</span>
+          <div
+            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
+          >
+            <span class="text-gray-600 dark:text-gray-400">{{
+              $t("total_amount")
+            }}</span>
+            <span class="font-medium"
+              >{{ settlementDetails.records.total_amount }}
+              {{ settlementDetails.records.currency }}</span
+            >
           </div>
-          <div class="flex justify-between items-center py-2 border-b dark:border-gray-700">
-            <span class="text-gray-600 dark:text-gray-400">{{ $t('settled_by') }}</span>
-            <span class="font-medium">{{ settlementDetails.settled_by }}</span>
+          <div
+            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
+          >
+            <span class="text-gray-600 dark:text-gray-400">{{
+              $t("settled_by")
+            }}</span>
+            <span class="font-medium">{{ settlementDetails.records.settled_by }}</span>
           </div>
         </div>
       </UCard>
@@ -70,7 +118,9 @@
       <!-- Settlement stats card -->
       <UCard class="lg:col-span-2">
         <template #header>
-          <h2 class="text-lg font-semibold">{{ $t('settlement.statistics') }}</h2>
+          <h2 class="text-lg font-semibold">
+            {{ $t("settlement.statistics") }}
+          </h2>
         </template>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -78,17 +128,28 @@
           <UCard class="bg-gray-50 dark:bg-gray-800">
             <div class="flex flex-col items-center text-center p-2">
               <UIcon name="i-lucide-sigma" class="w-8 h-8 text-gray-600 mb-2" />
-              <h3 class="text-lg font-medium">{{ $t('settlement.total_transactions') }}</h3>
-              <p class="text-3xl font-bold">{{ settlementDetails.total_Settled }}</p>
+              <h3 class="text-lg font-medium">
+                {{ $t("settlement.total_transactions") }}
+              </h3>
+              <p class="text-3xl font-bold">
+                {{ settlementDetails.records.total_Settled }}
+              </p>
             </div>
           </UCard>
 
           <!-- Success transactions card -->
           <UCard class="bg-green-50 dark:bg-green-900/20">
             <div class="flex flex-col items-center text-center p-2">
-              <UIcon name="i-lucide-check" class="w-8 h-8 text-green-600 mb-2" />
-              <h3 class="text-lg font-medium">{{ $t('settlement.successful') }}</h3>
-              <p class="text-3xl font-bold text-green-600">{{ settlementDetails.success }}</p>
+              <UIcon
+                name="i-lucide-check"
+                class="w-8 h-8 text-green-600 mb-2"
+              />
+              <h3 class="text-lg font-medium">
+                {{ $t("settlement.successful") }}
+              </h3>
+              <p class="text-3xl font-bold text-green-600">
+                {{ settlementDetails.records.success }}
+              </p>
             </div>
           </UCard>
 
@@ -96,15 +157,17 @@
           <UCard class="bg-red-50 dark:bg-red-900/20">
             <div class="flex flex-col items-center text-center p-2">
               <UIcon name="i-lucide-x" class="w-8 h-8 text-red-600 mb-2" />
-              <h3 class="text-lg font-medium">{{ $t('settlement.failed') }}</h3>
-              <p class="text-3xl font-bold text-red-600">{{ settlementDetails.fail }}</p>
+              <h3 class="text-lg font-medium">{{ $t("settlement.failed") }}</h3>
+              <p class="text-3xl font-bold text-red-600">
+                {{ settlementDetails.records.fail }}
+              </p>
             </div>
           </UCard>
         </div>
       </UCard>
-      
+
       <!-- Settlement details table (Optional) -->
-      
+
       <!-- <UCard class="lg:col-span-3">
         <template #header>
           <h2 class="text-lg font-semibold">{{ $t('settlement.transactions') }}</h2>
@@ -115,26 +178,39 @@
         </div>
       </UCard> -->
     </div>
-    <SettlementHistoryTable :settlementHistorys="settlementHistoryDetails" />
+    <SettlementHistoryTable
+      :settlementHistorys="settlementHistoryDetails"
+      :totalPage="settlementDetails?.total_page || 1"
+      :settlement_id="settlementId"
+      :total="settlementDetails?.total_record || 0"
+      :onSearchSubmit="handleSearchSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useI18n } from '#i18n';
-import { useSupplierApi } from '~/composables/api/useSupplierApi';
-import { useApiExecutor } from '~/composables/api/useApiExecutor';
-import type { SettlementHistoryDetail, SettlementHistoryRecord } from '~/models/settlement';
-import SettlementHistoryTable from '~/components/tables/SettlementHistoryTable.vue';
-import type { SettlementHistoryDetailQuery } from '~/models/settlement';
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "#i18n";
+import { useSupplierApi } from "~/composables/api/useSupplierApi";
+import { useApiExecutor } from "~/composables/api/useApiExecutor";
+import type {
+  SettlementHistoryDetail,
+  SettlementHistoryDetailResponse,
+  SettlementHistoryRecord,
+  SettlementHistoryResponse,
+} from "~/models/settlement";
+import SettlementHistoryTable from "~/components/tables/SettlementHistoryTable.vue";
+import type { SettlementHistoryDetailQuery } from "~/models/settlement";
 const supplierApi = useSupplierApi();
 // Add getSettlementDetails to supplier API (placeholder)
 const useSettlementApi = () => {
   const getSettlementDetails = async (id: string) => {
     // This is a placeholder. In a real app, you would call an API endpoint
     console.log(`Fetching details for settlement ${id}`);
-    const response = await supplierApi.getSettlementHistoryById(settlementHistoryQuery.value);
+    const response = await supplierApi.getSettlementHistoryById(
+      settlementHistoryQuery.value
+    );
 
     // Return dummy data for now
     return {
@@ -142,17 +218,17 @@ const useSettlementApi = () => {
       settlement_date: new Date().toISOString(),
       total_supplier: 5,
       total_amount: 1250.75,
-      currency: 'USD',
-      settled_by: 'Admin User',
-      status: 'Completed',
+      currency: "USD",
+      settled_by: "Admin User",
+      status: "Completed",
       total_Settled: 25,
       success: 23,
-      fail: 2
+      fail: 2,
     };
   };
 
   return {
-    getSettlementDetails
+    getSettlementDetails,
   };
 };
 
@@ -166,13 +242,13 @@ const settlementId = route.params.id as string;
 
 // State management
 const loading = ref(true);
-const error = ref('');
-const settlementDetails = ref<SettlementHistoryRecord>();
+const error = ref("");
+const settlementDetails = ref<SettlementHistoryDetailResponse>();
 const settlementHistoryDetails = ref<SettlementHistoryDetail[]>([]);
 const settlementHistoryQuery = ref<SettlementHistoryDetailQuery>({
   settlement_history_id: settlementId,
   page: 1,
-  page_size: 10
+  page_size: 10,
 });
 
 // Format date for display
@@ -187,17 +263,17 @@ const formatDate = (dateString: string) => {
 // Determine status color based on status value
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
-    case 'completed':
-    case 'success':
-      return 'success';
-    case 'pending':
-    case 'processing':
-      return 'warning';
-    case 'failed':
-    case 'error':
-      return 'error';
+    case "completed":
+    case "success":
+      return "success";
+    case "pending":
+    case "processing":
+      return "warning";
+    case "failed":
+    case "error":
+      return "error";
     default:
-      return 'neutral';
+      return "neutral";
   }
 };
 
@@ -209,19 +285,29 @@ const goBack = () => {
 // Fetch settlement details
 const fetchSettlementDetails = async () => {
   loading.value = true;
-  error.value = '';
-  
+  error.value = "";
+
   try {
     // Direct call to the API function without using execute
-    const response = await supplierApi.getSettlementHistoryById(settlementHistoryQuery.value);
+    const response = await supplierApi.getSettlementHistoryById(
+      settlementHistoryQuery.value
+    );
+
     settlementDetails.value = response;
-    settlementHistoryDetails.value = response.settle_details || [];
+    settlementHistoryDetails.value = response.records.settle_details || [];
   } catch (e: any) {
-    console.error('Error fetching settlement details:', e);
-    error.value = e.message || 'Failed to load settlement details';
+    console.error("Error fetching settlement details:", e);
+    error.value = e.message || "Failed to load settlement details";
   } finally {
     loading.value = false;
   }
+};
+
+// Handle search submit from SettlementHistoryTable
+const handleSearchSubmit = (query: SettlementHistoryDetailQuery) => {
+  console.log("Search query submitted:", query);
+  settlementHistoryQuery.value = query;
+  fetchSettlementDetails();
 };
 
 // Load data on component mount
@@ -229,12 +315,7 @@ onMounted(() => {
   fetchSettlementDetails();
 });
 
-definePageMeta({
-  auth: true
-});
-
 useHead({
-  title: `${t('settlement.details_title')} - Bill24 Admin Portal`
+  title: `${t("settlement.details_title")} - Bill24 Admin Portal`,
 });
-
 </script>

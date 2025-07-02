@@ -6,7 +6,8 @@ import type {
   SettlementHistoryRecord,
   InitQuerySettlement,
   SettlementInquiryResponse,
-  SettlementHistoryDetailQuery
+  SettlementHistoryDetailQuery,
+  SettlementHistoryDetailResponse
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
 import type { ApiResponse } from '~/models/baseModel'
@@ -89,9 +90,9 @@ export const useSupplierApi = () => {
 
   const getSettlementHistoryById = async (
     payload: SettlementHistoryDetailQuery
-  ): Promise<SettlementHistoryRecord> => {
+  ): Promise<SettlementHistoryDetailResponse> => {
     var rep = await execute(() =>
-      $fetch<ApiResponse<SettlementHistoryRecord>>(`/api/find-settlement-history-detail`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<SettlementHistoryDetailResponse>>(`/api/find-settlement-history-detail`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch settlement history by ID:', rep.message)

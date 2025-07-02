@@ -1,4 +1,7 @@
 {
+  "wallet_settlements": "កាបូបទូទាត់",
+  "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+  "settlements": "ការទូទាត់",
   "hello": "សួស្តី",
   "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង B24",
   "lang": {
@@ -73,6 +76,11 @@
     "confirm": "បញ្ជាក់"
   },
   "settlement": {
+    "search_placeholder": "ស្វែងរក",
+    "settle_amount": "ចំនួនទឹកប្រាក់សម្រាប់ទូទាត់",
+    "settlement_bank": "ធនាគារទូទាត់",
+    "status": "ស្ថានភាព",
+    "history": "ប្រវត្តិប្រតិបត្តិការ",
     "dashboard_title": "ផ្ទាំងគ្រប់គ្រងការទូទាត់",
     "details_title": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "overview": "ទិដ្ឋភាពទូទៅនៃការទូទាត់",
