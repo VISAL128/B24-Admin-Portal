@@ -9,7 +9,7 @@ import type {
   Settlement,
   TransactionAllocation,
   ConfirmSettlementRequest,
-  ConfirmSettlementResponse
+  ConfirmSettlementResponse,
 } from "~/models/settlement";
 import type {
   CurrencyConfig,
@@ -200,6 +200,7 @@ const items: StepperItem[] = [
 ];
 
 const supplierKeys = ref<Supplier[]>([]);
+const isLoadingSupplier = ref(false);
 const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
 const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(
   undefined
@@ -217,7 +218,7 @@ const defaultCurrency: CurrencyConfig = {
 };
 
 const isConfirmModalShow = ref(false);
-const isProcessWithMockupDate = true;
+const isProcessWithMockupDate = false;
 
 // Add currency options computed property
 const currencyOptions = computed(() =>
@@ -329,22 +330,50 @@ const columns: TableColumn<Cpo>[] = [
       }),
     enableSorting: false,
     enableHiding: false,
+    size: 50,
+    maxSize: 50,
   },
   {
     accessorKey: "parent_supplier.code",
     header: () => t("settlement.generate.form.supplier_code"),
+    size: 120,
+    maxSize: 120,
   },
   {
     accessorKey: "parent_supplier.name",
     header: () => t("settlement.generate.form.supplier_name"),
+    size: 180,
+    maxSize: 200,
   },
-  { accessorKey: "code", header: () => t("settlement.generate.form.cpo_code") },
-  { accessorKey: "name", header: () => t("settlement.generate.form.cpo_name") },
-  { accessorKey: "phone", header: () => t("settlement.generate.form.phone") },
-  { accessorKey: "email", header: () => t("settlement.generate.form.email") },
+  { 
+    accessorKey: "code", 
+    header: () => t("settlement.generate.form.cpo_code"),
+    size: 120,
+    maxSize: 120,
+  },
+  { 
+    accessorKey: "name", 
+    header: () => t("settlement.generate.form.cpo_name"),
+    size: 200,
+    maxSize: 250,
+  },
+  { 
+    accessorKey: "phone", 
+    header: () => t("settlement.generate.form.phone"),
+    size: 130,
+    maxSize: 130,
+  },
+  { 
+    accessorKey: "email", 
+    header: () => t("settlement.generate.form.email"),
+    size: 200,
+    maxSize: 250,
+  },
   {
     accessorKey: "address",
     header: () => t("settlement.generate.form.address"),
+    size: 200,
+    maxSize: 300,
   },
 ];
 
@@ -352,54 +381,69 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
   {
     accessorKey: "supplier.code",
     header: () => t("settlement.generate.form.cpo_code"),
+    size: 120,
+    maxSize: 120,
   },
   {
     accessorKey: "supplier.name",
     header: () => t("settlement.generate.form.cpo_name"),
+    size: 200,
+    maxSize: 250,
   },
-  { accessorKey: "amount", header: () => t("settlement.generate.form.amount") },
+  {
+    accessorKey: "amount",
+    header: () => t("settlement.generate.form.amount"),
+    cell: ({row}) => useCurrency().formatAmount(row.original.amount, row.original.currency || 'USD'),
+    size: 140,
+    maxSize: 140,
+  },
   {
     accessorKey: "currency",
     header: () => t("settlement.generate.form.currency"),
+    size: 80,
+    maxSize: 80,
   },
   {
     accessorKey: "settlement_bank_id",
     header: () => t("settlement.generate.form.settle_to_bank"),
+    size: 150,
+    maxSize: 150,
   },
   {
     id: "actions",
     header: () => t("settlement.generate.form.actions"),
-    cell: ({ row }) =>
-      h(
+    cell: ({ row }) => {
+      const isCurrentlyViewing = selectedCpoSettlement.value?.party_id === row.original.party_id;
+      return h(
         resolveComponent("UButton"),
         {
           size: "xs",
-          color: "primary",
+          color: isCurrentlyViewing ? "neutral" : "primary",
           onClick: () => handleViewCpo(row.original),
         },
-        { default: () => t("settlement.generate.form.view") }
-      ),
+        { default: () => isCurrentlyViewing ? t("settlement.generate.form.viewing") : t("settlement.generate.form.view") }
+      );
+    },
     enableSorting: false,
     enableHiding: false,
+    size: 100,
+    maxSize: 100,
   },
 ];
 
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   {
     accessorKey: "tran_date",
-    header: () => t("settlement.generate.form.transaction_date"),
-  },
-  {
-    accessorKey: "bank_ref",
-    header: () => t("settlement.generate.form.bank_ref"),
-  },
-  {
-    accessorKey: "bank_name",
-    header: () => t("settlement.generate.form.bank_name"),
+    header: () => t("settlement.generate.form.date"),
+    size: 150,
+    maxSize: 150,
   },
   {
     accessorKey: "amount",
-    header: () => t("settlement.generate.form.transaction_amount"),
+    header: () => h('div', {class: 'text-center'}, t("settlement.generate.form.amount"),),
+    cell: ({ row }) => h('div', { class: 'text-right' }, useCurrency().formatCurrency(row.original.amount, row.original.currency_id || 'USD')),
+    size: 150,
+    maxSize: 150,
   },
 ];
 
@@ -460,6 +504,7 @@ watch(
 
 const fetchSuppliers = async () => {
   try {
+    isLoadingSupplier.value = true;
     supplierKeys.value = await supplierApi.getSuppliers();
     if (isProcessWithMockupDate) {
       // Simulate loading delay
@@ -467,6 +512,8 @@ const fetchSuppliers = async () => {
     }
   } catch (error) {
     console.error("Failed to fetch suppliers:", error);
+  } finally {
+    isLoadingSupplier.value = false;
   }
 };
 
@@ -487,7 +534,8 @@ const fetchInquirySettlementCpo = async () => {
     };
 
     const response = await supplierApi.getInquirySettlement(request);
-    if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000));
+    if (isProcessWithMockupDate)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     listInquirySettlement.value = response;
   } catch (error) {
     console.error("Failed to fetch CPOs:", error);
@@ -499,7 +547,7 @@ const fetchInquirySettlementCpo = async () => {
 const onReconciliationNext = async () => {
   await fetchInquirySettlementCpo();
   stepper.value?.next();
-}
+};
 
 const router = useRouter();
 function onConfirm() {
@@ -547,9 +595,10 @@ const handleSubmitSettlement = async () => {
       settlement_token: listInquirySettlement.value?.token || "",
     };
     const response = await supplierApi.confirmSettlementAPI(payload);
-    if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000));
+    if (isProcessWithMockupDate)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     // Check if response is valid
-    if(response.error) {
+    if (response.error) {
       console.error("Error confirming settlement:", response.error);
       alert(`Error confirming settlement: ${response.error}`);
       return;
@@ -564,11 +613,23 @@ const handleSubmitSettlement = async () => {
     } else {
       // Handle error in submission
       console.error("Settlement submission failed:", response);
-      
     }
   } catch (error) {
     console.error("Failed to submit settlement:", error);
   }
+};
+
+// Clear reconciliation data when going back to supplier selection
+const clearReconciliationData = () => {
+  listInquirySettlement.value = undefined;
+  selectedCpoSettlement.value = null;
+  confirmSettlementResponse.value = null;
+};
+
+// Handle back navigation from reconciliation step
+const handleBackToSupplierSelection = () => {
+  clearReconciliationData();
+  stepper.value?.prev();
 };
 
 definePageMeta({
@@ -639,15 +700,18 @@ function useWindowSize(): { height: Ref<number> } {
                       icon="i-lucide-user"
                       label="Select Suppliers"
                       :placeholder="
-                        t('settlement.generate.form.choose_suppliers')
+                        isLoadingSupplier 
+                          ? t('settlement.generate.form.loading_suppliers') || 'Loading suppliers...'
+                          : t('settlement.generate.form.choose_suppliers')
                       "
+                      :disabled="isLoadingSupplier"
                       class="w-full"
                       @change="handleSupplierMenuChanged"
                     >
                       <template #leading="{ modelValue, ui }">
                         <UIcon
-                          name="i-lucide-users"
-                          class="mr-2 text-gray-500"
+                          :name="isLoadingSupplier ? 'i-lucide-loader-2' : 'i-lucide-users'"
+                          :class="['mr-2 text-gray-500', { 'animate-spin': isLoadingSupplier }]"
                         />
                       </template>
                     </USelectMenu>
@@ -848,19 +912,37 @@ function useWindowSize(): { height: Ref<number> } {
                   />
                 </div>
                 <div
-                  class="flex-1 overflow-x-auto border border-gray-200 rounded-lg"
+                  class="flex-1 border border-gray-200 rounded-lg"
                 >
-                  <div class="overflow-x-auto">
-                    <UTable
+                  <UTable
                       ref="table"
                       :data="selectedCpoSettlement.transaction_allocations"
                       :columns="cpoSettlementTransactionColumns"
                       sticky
-                      class="min-w-[600px] w-full"
+                      class="w-full"
                       :style="{ maxHeight: detailTableHeight }"
                     />
-                  </div>
                 </div>
+                <p class="mt-2 text-sm font-semibold text-gray-500">
+                  {{ t("settlement.generate.form.total_amount") }}:
+                  <span class="font-bold text-gray-800">
+                    {{
+                      useCurrency().formatAmount(
+                        selectedCpoSettlement.amount,
+                        selectedCpoSettlement.currency
+                          ? selectedCpoSettlement.currency
+                          : defaultCurrency.code
+                      )
+                    }}
+                    <span>
+                      {{
+                        selectedCpoSettlement.currency
+                          ? selectedCpoSettlement.currency
+                          : defaultCurrency.code
+                      }}</span
+                    >
+                  </span>
+                </p>
               </div>
             </div>
           </div>
@@ -904,7 +986,7 @@ function useWindowSize(): { height: Ref<number> } {
                 t('settlement.generate.steps.reconciliation.title')
               "
               :disabled="!stepper?.hasPrev"
-              @click="stepper?.prev()"
+              @click="handleBackToSupplierSelection"
             >
               {{ t("settlement.generate.form.back") }}
             </UButton>

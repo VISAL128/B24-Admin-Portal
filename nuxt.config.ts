@@ -42,7 +42,7 @@ export default defineNuxtConfig({
       issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
       clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
-      callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/get-started`,
+      callbackUrl: 'http://localhost:3000/oidc/callback',//process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/get-started`,
       scope: ["openid", "email", "profile", "address"],
     },
     config: {
@@ -92,19 +92,6 @@ export default defineNuxtConfig({
     }
   },
   ssr: false, // Important: OIDC works better with SPA mode
-  plugins: [
-    // { src: '~/plugins/keycloak.client.ts', mode: 'client' },
-    // { src: '~/plugins/keycloak-api.client.ts', mode: 'client' }
-  ],
-  // i18n config moved to i18n.config.ts
-  // build: {
-  //   transpile: ['@nuxtjs/keycloak'],
-  //   extend (config: any, ctx: any) {
-  //       if (ctx.isDev) {
-  //         config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
-  //       }
-  //   }
-  // },
   // UI Theme Configuration for Bill24
   ui: {
     theme: {

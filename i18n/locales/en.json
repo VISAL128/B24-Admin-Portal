@@ -98,7 +98,9 @@
         "settle_to_bank": "Settle To Bank",
         "actions": "Actions",
         "view": "View",
+        "viewing": "Viewing",
         "transaction_date": "Transaction Date",
+        "date": "Date",
         "bank_ref": "Bank Ref",
         "bank_name": "Bank Name",
         "transaction_amount": "Transaction Amount",
@@ -123,7 +125,9 @@
         "confirm_settlement_buttons": {
           "yes": "Yes, Confirm",
           "no": "No"
-        }
+        },
+        "total_amount": "Total Amount",
+        "loading_suppliers": "Loading Suppliers..."
       }
     }
   }
