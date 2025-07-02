@@ -10,7 +10,7 @@ export interface Supplier {
 
 // 2. Get CPOs by Supplier List
 export interface CpoBySupplierRequest {
-  supplier_ids: string[]
+  parent_supplier_ids: string[]
 }
 
 export interface Cpo {
@@ -90,18 +90,20 @@ export interface Settlement {
 
 // 5. Confirm Settlement
 export interface ConfirmSettlementRequest {
-  token: string
-  // settled_by: string
-  // suppliers: {
-  //   supplier_id: string
-  //   cpoIds: string[]
-  //   amount: number
-  // }[]
-  // note?: string
+  settlement_token: string
 }
 
 export interface ConfirmSettlementResponse {
-  settlement_id: string
+  date: string
+  party_id: string
+  party_type: number
+  party_name: number
+  amount: number
+  settlement_bank_id: string
+  currency: string
+  status: string
+  message : string
+  bank_ref : string
 }
 // 6. Get Settlement History
 export interface SettlementHistoryQuery {
@@ -110,7 +112,7 @@ export interface SettlementHistoryQuery {
   status?: string
   name?: string
   page?: number
-  limit?: number
+  page_size?: number
 }
 
 export interface SettlementHistoryDetail {
@@ -152,8 +154,8 @@ export interface SettlementHistoryRecord {
   settle_details: SettlementHistoryDetail
 }
 export interface SettlementHistoryResponse {
+  total_page: number
   page: number
-  limit: number
-  total: number
+  total_record: number
   records: SettlementHistoryRecord[]
 }

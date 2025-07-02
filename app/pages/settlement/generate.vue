@@ -323,7 +323,7 @@ const handleSupplierMenuChanged = async () => {
   // This for multiple suppliers
   if (selectedSuppliers.value.length === 0) return;
   cpoList.value = await supplierApi.getListCPOApi({
-    supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
+    parent_supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
   });
 };
 
