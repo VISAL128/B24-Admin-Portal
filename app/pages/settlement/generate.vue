@@ -15,30 +15,165 @@ import type {
 } from "~/composables/utils/useCurrency";
 import {
   CalendarDate,
+  CalendarDateTime,
   DateFormatter,
   getLocalTimeZone,
+  Time,
 } from "@internationalized/date";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import EmptyState from "~/components/TableEmptyState.vue";
+import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
 
 const supplierApi = useSupplierApi();
 
+// Load user preferences for time format
+const storage = useStorage()
+const userPreferences = computed(() => {
+  const prefs = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
+  return prefs || { timeFormat: '24h' }
+})
+
 const df = new DateFormatter("en-US", {
   dateStyle: "medium",
+  timeStyle: "short",
 });
 
 // Create a CalendarDate for today in the local time zone
 const today = new Date();
-const now = new CalendarDate(
+const now = new CalendarDateTime(
   today.getFullYear(),
   today.getMonth() + 1,
-  today.getDate()
+  today.getDate(),
+  23,
+  59
 );
-const cutOffDate = shallowRef(new CalendarDate(2022, 1, 10)); // Default to a specific date
+const cutOffDatetime = shallowRef(now); // Default with time
+
+// Create computed properties that sync with cutOffDatetime
+// Generate hour options based on user preference
+const getHourOptions = computed(() => {
+  if (userPreferences.value.timeFormat === '12h') {
+    return Array.from({ length: 12 }, (_, i) => {
+      const hour = i + 1; // Start from 1 to 12
+      return { 
+        label: hour.toString().padStart(2, '0'), 
+        value: hour 
+      };
+    });
+  } else {
+    return Array.from({ length: 24 }, (_, i) => ({ 
+      label: i.toString().padStart(2, '0'), 
+      value: i 
+    }));
+  }
+});
+
+// Generate minute options (same for both formats)
+const getMinuteOptions = computed(() => {
+  return Array.from({ length: 60 }, (_, i) => ({ 
+    label: i.toString().padStart(2, '0'), 
+    value: i 
+  }));
+});
+
+// AM/PM options for 12-hour format
+const getPeriodOptions = computed(() => {
+  return [
+    { label: 'AM', value: 'AM' },
+    { label: 'PM', value: 'PM' }
+  ];
+});
+
+// Handle hour selection based on format
+const cutOffDateHour = computed({
+  get: () => {
+    if (userPreferences.value.timeFormat === '12h') {
+      const hour24 = cutOffDatetime.value.hour;
+      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+      return {
+        label: hour12.toString().padStart(2, '0'),
+        value: hour12
+      };
+    } else {
+      return {
+        label: cutOffDatetime.value.hour.toString().padStart(2, '0'),
+        value: cutOffDatetime.value.hour
+      };
+    }
+  },
+  set: (hour: { label: string; value: number }) => {
+    if (userPreferences.value.timeFormat === '12h') {
+      // Convert 12-hour to 24-hour format
+      const period = cutOffDatePeriod.value.value;
+      let hour24 = hour.value;
+      if (period === 'AM' && hour.value === 12) {
+        hour24 = 0;
+      } else if (period === 'PM' && hour.value !== 12) {
+        hour24 = hour.value + 12;
+      }
+      cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour24 });
+    } else {
+      cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour.value });
+    }
+  }
+});
+
+// Handle minute selection
+const cutOffDateMinute = computed({
+  get: () => ({
+    label: cutOffDatetime.value.minute.toString().padStart(2, '0'),
+    value: cutOffDatetime.value.minute
+  }),
+  set: (minute: { label: string; value: number }) => {
+    cutOffDatetime.value = cutOffDatetime.value.set({ minute: minute.value });
+  }
+});
+
+// Handle AM/PM selection for 12-hour format
+const cutOffDatePeriod = computed({
+  get: () => {
+    const hour = cutOffDatetime.value.hour;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    return { label: period, value: period };
+  },
+  set: (period: { label: string; value: string }) => {
+    const currentHour = cutOffDatetime.value.hour;
+    let newHour = currentHour;
+    
+    if (period.value === 'AM' && currentHour >= 12) {
+      newHour = currentHour - 12;
+    } else if (period.value === 'PM' && currentHour < 12) {
+      newHour = currentHour + 12;
+    }
+    
+    cutOffDatetime.value = cutOffDatetime.value.set({ hour: newHour });
+  }
+});
+
+// Format time display based on user preference
+const formatTimeDisplay = computed(() => {
+  if (!cutOffDatetime.value) return '';
+  
+  const date = cutOffDatetime.value.toDate(getLocalTimeZone());
+  
+  if (userPreferences.value.timeFormat === '12h') {
+    return new DateFormatter("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      hour12: true
+    }).format(date);
+  } else {
+    return new DateFormatter("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      hour12: false
+    }).format(date);
+  }
+});
 
 const { t } = useI18n();
 
@@ -92,6 +227,24 @@ const currencyOptions = computed(() =>
 // Step 2 reconciliation
 const selectedCpo = ref<Cpo[]>([]);
 const selectedCpoIds = ref<Set<string>>(new Set());
+
+// Add search functionality
+const searchQuery = ref('');
+
+// Add computed property for filtered CPO list
+const filteredCpoList = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return cpoList.value;
+  }
+  
+  const query = searchQuery.value.toLowerCase().trim();
+  return cpoList.value.filter(cpo => 
+    cpo.code.toLowerCase().includes(query) ||
+    cpo.name.toLowerCase().includes(query) ||
+    cpo.email?.includes(query) ||
+    cpo.address?.includes(query)
+  );
+});
 
 // Add methods to handle selection
 const isRowSelected = (cpo: Cpo) => {
@@ -242,7 +395,7 @@ const canProceedToNext = computed(() => {
   if (currentStepTitle === t("settlement.generate.steps.supplier.title")) {
     return (
       selectedSuppliers.value.length > 0 &&
-      cutOffDate.value !== null &&
+      cutOffDatetime.value !== null &&
       selectedCurrency.value !== undefined &&
       selectedCpo.value.length > 0
     );
@@ -285,8 +438,8 @@ const fetchInquirySettlementCpo = async () => {
         type: "cpo",
       })) || [],
       main_supplier_id: selectedSupplier.value?.value.id || "",
-      cutoff_date: cutOffDate.value
-        ? cutOffDate.value.toDate(getLocalTimeZone()).toISOString()
+      cutoff_date: cutOffDatetime.value
+        ? cutOffDatetime.value.toDate(getLocalTimeZone()).toISOString()
         : new Date().toISOString(),
       currency: selectedCurrency.value?.value.code || defaultCurrency.code,
     };
@@ -308,7 +461,7 @@ function onReconciliationNext() {
 
 const router = useRouter();
 function onConfirm() {
-  router.push("/settlement/generate");
+  router.push("/settlement/wallet-settlement");
 }
 
 // Clear selection when supplier changes
@@ -317,6 +470,7 @@ const handleSupplierMenuChanged = async () => {
   cpoList.value = [];
   selectedCpo.value = [];
   selectedCpoIds.value.clear();
+  searchQuery.value = ''; // Clear search when supplier changes
 
   if (!selectedSupplier.value) return;
   selectedSuppliers.value = [selectedSupplier.value!];
@@ -388,7 +542,7 @@ function useWindowSize(): { height: Ref<number> } {
         <div class="flex flex-col h-full justify-between">
           <!-- Step 1: Supplier Selection -->
           <UCard
-            variant="subtle"
+            
             class="flex-1 mt-4"
             v-if="item.title === t('settlement.generate.steps.supplier.title')"
           >
@@ -447,15 +601,47 @@ function useWindowSize(): { height: Ref<number> } {
                       color="neutral"
                       variant="subtle"
                       icon="i-lucide-calendar"
+                      class="w-full justify-start"
                     >
                       {{
-                        cutOffDate
-                          ? df.format(cutOffDate.toDate(getLocalTimeZone()))
+                        cutOffDatetime
+                          ? formatTimeDisplay
                           : t("settlement.generate.form.select_date")
                       }}
                     </UButton>
                     <template #content>
-                      <UCalendar v-model="cutOffDate" class="p-2" />
+                      <div class="p-4 space-y-4">
+                        <UCalendar v-model="cutOffDatetime" />
+                        <div class="border-t pt-4">
+                          <label class="block text-sm font-medium mb-2">
+                            {{ t("settlement.generate.form.select_time") }}
+                          </label>
+                          <div class="flex gap-2">
+                            <USelectMenu
+                              v-model="cutOffDateHour"
+                              :items="getHourOptions"
+                              :placeholder="t('settlement.generate.form.hour')"
+                              class="flex-1"
+                              :search-input="false"
+                            />
+                            <USelectMenu
+                              v-model="cutOffDateMinute"
+                              :items="getMinuteOptions"
+                              :placeholder="t('settlement.generate.form.minute')"
+                              class="flex-1"
+                              :search-input="false"
+                            />
+                            <USelectMenu
+                              v-if="userPreferences.timeFormat === '12h'"
+                              v-model="cutOffDatePeriod"
+                              :items="getPeriodOptions"
+                              placeholder="AM/PM"
+                              class="flex-1"
+                              :search-input="false"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </template>
                   </UPopover>
                 </div>
@@ -486,21 +672,47 @@ function useWindowSize(): { height: Ref<number> } {
 
             <!-- Cpo List Table -->
             <div class="mt-4 flex flex-col">
-              <h1 class="text-sm font-semibold mb-2">
-                {{ t("settlement.generate.form.cpo_list") }} ({{
-                  cpoList.length
-                }})
-              </h1>
+              <div class="flex items-center justify-between mb-4">
+                <h1 class="text-sm font-semibold">
+                  {{ t("settlement.generate.form.cpo_list") }} ({{
+                    filteredCpoList.length
+                  }})
+                  <span v-if="searchQuery && filteredCpoList.length !== cpoList.length" class="text-gray-500">
+                    of {{ cpoList.length }}
+                  </span>
+                </h1>
+                
+                <!-- Search Input -->
+                <div class="w-64">
+                  <UInput
+                    v-model="searchQuery"
+                    icon="i-lucide-search"
+                    :placeholder="t('settlement.generate.form.search_cpo')"
+                    class="w-full"
+                    :trailing="searchQuery ? true : false"
+                  >
+                    <template #trailing v-if="searchQuery">
+                      <UButton
+                        icon="i-lucide-x"
+                        size="xs"
+                        color="gray"
+                        variant="ghost"
+                        @click="searchQuery = ''"
+                      />
+                    </template>
+                  </UInput>
+                </div>
+              </div>
+              
               <!-- Add selected row data to the CPO list -->
               <div class="flex-1 border border-gray-200 rounded-lg bg-white">
                 <UTable
                   ref="table"
-                  :data="cpoList"
+                  :data="filteredCpoList"
                   :columns="columns"
                   sticky
                   class="min-w-[800px] w-full h-100"
                   @row:click="(row: Cpo) => toggleRowSelection(row)"
-                >
                 >
                   <template #empty>
                     <EmptyState></EmptyState>
@@ -582,7 +794,7 @@ function useWindowSize(): { height: Ref<number> } {
             class="flex flex-1 items-center justify-center mt-6"
           >
             <div
-              class="w-full max-w-xl bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm"
+              class="w-10/12 h-10/12 bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm items-center justify-center content-center"
             >
               <UIcon
                 name="i-lucide-check-circle"

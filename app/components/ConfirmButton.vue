@@ -3,7 +3,7 @@
     <UButton label="Open" color="neutral" variant="subtle" />
 
     <template #body>
-      <Placeholder class="h-48" />
+      <p>{{ body }}</p>
     </template>
   </UModal>
 </template>

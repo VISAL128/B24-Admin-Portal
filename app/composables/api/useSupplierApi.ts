@@ -1,7 +1,6 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
-  Supplier, Cpo, CpoBySupplierRequest, CpoBalance,
-  BalanceQueryRequest,
+  Supplier, Cpo, CpoBySupplierRequest,
   ConfirmSettlementRequest, ConfirmSettlementResponse,
   SettlementHistoryQuery, SettlementHistoryResponse,
   InitQuerySettlement,
@@ -54,7 +53,7 @@ export const useSupplierApi = () => {
     payload: ConfirmSettlementRequest
   ): Promise<ConfirmSettlementResponse> => {
     try {
-      if (!payload.token) {
+      if (!payload.settlement_token) {
         throw new Error('Token is required for settlement confirmation')
       }
       var rep = await execute(() =>
