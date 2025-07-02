@@ -1,3 +1,4 @@
+import { SettlementHistoryDetailQuery } from "~/models/settlement";
 import {SettlementInquiryRequest} from "~~/server/model/management_api/settlement";
 
 let token: string | PromiseLike<string | null> | null = null;
@@ -92,6 +93,6 @@ export async function getCPOsBySuppliers(body: any): Promise<any> {
 export async function getSettlementHistory(body: any): Promise<any> {
     return requestToManagementApi('/dynamic/settlement-history', 'POST', body);
 }
-export async function getSettlementHistoryById(id: string): Promise<any> {
-    return requestToManagementApi(`/dynamic/settlement-history/${id}`, 'GET');
+export async function getSettlementHistoryById(body: SettlementHistoryDetailQuery): Promise<any> {
+    return requestToManagementApi(`/dynamic/settlement-history-details`,'POST', body);
 }

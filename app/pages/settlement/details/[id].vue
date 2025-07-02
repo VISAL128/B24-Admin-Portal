@@ -123,13 +123,19 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '#i18n';
 import { useSupplierApi } from '~/composables/api/useSupplierApi';
 import { useApiExecutor } from '~/composables/api/useApiExecutor';
+import type { SettlementHistoryDetailQuery } from '~/models/settlement';
 const supplierApi = useSupplierApi();
 // Add getSettlementDetails to supplier API (placeholder)
 const useSettlementApi = () => {
   const getSettlementDetails = async (id: string) => {
     // This is a placeholder. In a real app, you would call an API endpoint
     console.log(`Fetching details for settlement ${id}`);
-    const response = await supplierApi.getSettlementHistoryById(id);
+    const payload: SettlementHistoryDetailQuery = {
+      settlement_history_id: id,
+      page: 1,
+      page_size: 10
+    };
+    const response = await supplierApi.getSettlementHistoryById(payload);
 
     // Return dummy data for now
     return {

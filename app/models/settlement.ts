@@ -159,3 +159,11 @@ export interface SettlementHistoryResponse {
   total_record: number
   records: SettlementHistoryRecord[]
 }
+
+export interface SettlementHistoryDetailQuery {
+  settlement_history_id?: string
+  search?: string
+  name?: string
+  page?: number
+  page_size?: number
+}
