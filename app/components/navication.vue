@@ -12,17 +12,18 @@ const props = withDefaults(defineProps<Props>(), {
 const { t } = useI18n()
 
 const route = useRoute()
-
-const items = ref<NavigationMenuItem[][]>([
+let itemsCal = computed( ()=>{
+  return [];
+})
+const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: t("dashboard"),
       icon: 'i-material-symbols-light-space-dashboard-rounded',
       size: 'lg',
-      to:'/',
+      to: '/',
       active: false,
     },
-    // settlements with child items wallet settlements
     {
       label: t("settlements"),
       icon: 'i-material-symbols-light-lab-profile-rounded',
