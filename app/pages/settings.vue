@@ -150,14 +150,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen">
+  <div class="max-h-screen">
     <!-- Page Header -->
-    <div class="bg-gradient-to-b from-[#43B3DE] to-white px-6 py-8">
+    <!-- <div class="bg-gradient-to-b from-[#43B3DE] to-white px-6 py-8">
       <div class="max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold text-white mb-2">Settings</h1>
         <p class="text-white/80">Manage your account preferences and settings</p>
       </div>
-    </div>
+    </div> -->
 
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-6 py-8">

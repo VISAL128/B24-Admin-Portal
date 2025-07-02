@@ -34,7 +34,7 @@ const supplierApi = useSupplierApi();
 const storage = useStorage()
 const userPreferences = computed(() => {
   const prefs = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
-  return prefs || { timeFormat: '24h' }
+  return prefs || { timeFormat: '24h', currency: 'USD' }
 })
 
 const df = new DateFormatter("en-US", {
@@ -195,8 +195,6 @@ const items: StepperItem[] = [
   },
 ];
 
-const showConfirmModal = ref(false);
-
 const supplierKeys = ref<Supplier[]>([]);
 const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
 const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(
@@ -223,6 +221,26 @@ const currencyOptions = computed(() =>
     value: currency,
   }))
 );
+
+// Set default currency based on user preferences
+const setDefaultCurrency = () => {
+  if (!selectedCurrency.value && currencyOptions.value.length > 0) {
+    // Try to find currency from user preferences
+    const preferredCurrency = currencyOptions.value.find(
+      option => option.value.code === userPreferences.value.currency
+    );
+    
+    if (preferredCurrency) {
+      selectedCurrency.value = preferredCurrency;
+    } else {
+      // Fall back to default currency if user preference currency is not available
+      const fallbackCurrency = currencyOptions.value.find(
+        option => option.value.code === defaultCurrency.code
+      );
+      selectedCurrency.value = fallbackCurrency || currencyOptions.value[0];
+    }
+  }
+};
 
 // Step 2 reconciliation
 const selectedCpo = ref<Cpo[]>([]);
@@ -417,9 +435,14 @@ function handleViewCpo(cpo: Settlement) {
 onMounted(() => {
   // Fetch suppliers when the component is mounted
   fetchSuppliers();
-  // Set default currency
-  // selectedCurrency.value = defaultCurrency;
+  // Set default currency based on user preferences
+  setDefaultCurrency();
 });
+
+// Watch for currency options changes to set default currency
+watch(currencyOptions, () => {
+  setDefaultCurrency();
+}, { immediate: true });
 
 const fetchSuppliers = async () => {
   try {
@@ -839,7 +862,7 @@ function useWindowSize(): { height: Ref<number> } {
             >
               {{ t("settlement.generate.form.reconcile_settle") }}
             </UButton>
-            <UButton
+            <!-- <UButton
               v-if="
                 item.title ===
                 t('settlement.generate.steps.reconciliation.title') && !showConfirmModal
@@ -848,15 +871,15 @@ function useWindowSize(): { height: Ref<number> } {
               @click="onReconciliationNext()"
             >
               {{ t("settlement.generate.form.confirm_settlement") }}
-            </UButton>
+            </UButton> -->
             <!-- Show confirm modal to confirm settlement -->
             <UModal
-              :transition="true"
-              :title="t('settlement.generate.form.confirm_settlement')"
+              transition
+              :title="t('settlement.generate.form.confirm_settlement_title')"
               :body="t('settlement.generate.form.confirm_settlement_body')"
               v-if="
                 item.title ===
-                t('settlement.generate.steps.reconciliation.title') && showConfirmModal
+                t('settlement.generate.steps.reconciliation.title') //&& showConfirmModal
               "
             >
               <UButton
@@ -864,8 +887,43 @@ function useWindowSize(): { height: Ref<number> } {
               />
 
               <template #body>
-                <Placeholder class="h-48" />
+                <div class="flex flex-col items-center text-center py-6">
+                  <!-- Icon with circle background using Bill24 colors -->
+                  <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background-color: #EAF6FC;">
+                    <UIcon
+                      name="i-lucide-alert-triangle"
+                      class="text-2xl opacity-80"
+                      style="color: #43B3DE;"
+                    />
+                  </div>
+
+                  <!-- Question text -->
+                  <h4 class="text-xl font-semibold mb-3" style="color: #211e1f;">
+                    {{ t('settlement.generate.form.confirm_settlement_message') }}
+                  </h4>
+
+                  <!-- Description text -->
+                  <p class="max-w-md leading-relaxed" style="color: #B2AAA3;">
+                    {{ t('settlement.generate.form.confirm_settlement_description') }}
+                  </p>
+                </div>
               </template>
+              <template #footer>
+                  <div class="flex justify-end gap-3 w-full">
+                    <UButton
+                      variant="outline"
+                      style="border-color: #D0C8C1; color: #211e1f;"
+                    >
+                      {{ t('settlement.generate.form.confirm_settlement_buttons.no') }}
+                    </UButton>
+                    <UButton
+                      style="background-color: #43B3DE; color: #FFFFFF;"
+                      @click="stepper?.next()"
+                    >
+                      {{ t('settlement.generate.form.confirm_settlement_buttons.yes') }}
+                    </UButton>
+                  </div>
+                </template>
             </UModal>
           </div>
         </div>

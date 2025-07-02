@@ -116,7 +116,14 @@
         "minute": "Minute",
         "second": "Second",
         "search_cpo": "Search CPO",
-        "search_placeholder": "Search by CPO Code, Name, Email, or Address"
+        "search_placeholder": "Search by CPO Code, Name, Email, or Address",
+        "confirm_settlement_message": "Are you sure you want to confirm the settlement?",
+        "confirm_settlement_title": "Confirmation",
+        "confirm_settlement_description": "Please review the settlement details before confirming.",
+        "confirm_settlement_buttons": {
+          "yes": "Yes, Confirm",
+          "no": "No"
+        }
       }
     }
   }
