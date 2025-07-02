@@ -331,11 +331,11 @@ const columns: TableColumn<Cpo>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "supplier.code",
+    accessorKey: "parent_supplier.code",
     header: () => t("settlement.generate.form.supplier_code"),
   },
   {
-    accessorKey: "supplier.name",
+    accessorKey: "parent_supplier.name",
     header: () => t("settlement.generate.form.supplier_name"),
   },
   { accessorKey: "code", header: () => t("settlement.generate.form.cpo_code") },

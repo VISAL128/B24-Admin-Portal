@@ -167,7 +167,7 @@ onMounted(() => {
 })
 
 const onGenerateSettlement = () => {
-  router.push('/settlement/generate')
+  router.push('/settlement/wallet-settlement/generate')
 }
 
 // Handle navigation to details page
