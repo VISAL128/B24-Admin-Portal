@@ -40,7 +40,7 @@ export const useSupplierApi = () => {
     payload: InitQuerySettlement
   ): Promise<CpoSettlement> => {
     var rep = await execute(() =>
-      $fetch<ApiResponse<CpoSettlement>>(`/api/balance`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<CpoSettlement>>(`/api/inquiry-settlement`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPO settlements:', rep.message)
@@ -57,7 +57,7 @@ export const useSupplierApi = () => {
         throw new Error('Token is required for settlement confirmation')
       }
       var rep = await execute(() =>
-              $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/confirm-settlement`, { method: 'POST', body: payload })
+              $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/submit-settlement`, { method: 'POST', body: payload })
             )
     
       if (rep.code !== 'SUCCESS') {
