@@ -5,6 +5,9 @@
     "english": "អង់គ្លេស",
     "khmer": "ខ្មែរ"
   },
+  "dashboard": "ទំព័រដើម",
+  "settlements": "ការទូទាត់",
+  "wallet_settlements": "ការទូទាត់ នៅលើ wallet",
   "user_profile": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
   "settings": "ការកំណត់",
   "logout": "ចាកចេញ",
