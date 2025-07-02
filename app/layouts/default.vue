@@ -1,174 +1,20 @@
 <template>
   <div>
-    <UCard class="fixed top-0 left-0 w-full z-50">
-      <div class="flex flex-row items-center justify-between gap-2 w-full h-5">
-        <div class="w-fit">
-          <B24header />
-        </div>
-        <div class="flex flex-row items-center justify-end gap-4 h-full">
-          <div class="flex items-center gap-2">
-            <UPopover placement="bottom-end" :offset="[0, 10]">
-              <UButton
-                icon="heroicons:globe-alt"
-                variant="ghost"
-                size="sm"
-                class="px-2"
-              >
-                <span class="ml-1 font-medium">{{
-                  locale === "en" ? "EN" : "KM"
-                }}</span>
-              </UButton>
-              <template #content>
-                <div class="flex flex-col gap-1 p-2 w-28">
-                  <UButton
-                    variant="ghost"
-                    class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
-                    @click="
-                      () => {
-                        setLocale('en');
-                      }
-                    "
-                    block
-                    size="sm"
-                    >🇬🇧
-                    <span class="text-left w-full">
-                      <!-- {{
-                      t("lang.english")
-                    }} -->
-                      English
-                    </span></UButton
-                  >
-                  <UButton
-                    variant="ghost"
-                    class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
-                    @click="
-                      () => {
-                        setLocale('km');
-                      }
-                    "
-                    block
-                    size="sm"
-                    >🇰🇭
-                    <span class="text-left w-full">
-                      ភាសាខ្មែរ
-                      <!-- {{
-                      t("lang.khmer")
-                    }} -->
-                    </span></UButton
-                  >
-                </div>
-              </template>
-            </UPopover>
-            <!-- Theme Switcher -->
-            <UButton
-              icon="heroicons:moon"
-              variant="ghost"
-              size="sm"
-              class="px-2"
-              @click="toggleTheme"
-            >
-              <span class="sr-only">Toggle Theme</span>
-            </UButton>
-          </div>
-          <!-- User Popover -->
-          <UPopover
-            ref="popoverRef"
-            placement="bottom-end"
-            :offset="[0, 10]"
-            class="z-50"
-          >
-            <UAvatar
-              :src="user?.picture"
-              size="xl"
-              class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all"
-            >
-              <template v-if="!user?.picture" #default>
-                <Icon name="heroicons:user" class="w-6 h-6 text-[#43B3DE]" />
-              </template>
-            </UAvatar>
-
-            <template #content>
-              <div class="w-48 p-2">
-                <!-- User Info Section -->
-                <div
-                  class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3"
-                >
-                  <div class="flex items-center gap-3">
-                    <UAvatar :src="user?.picture" size="sm">
-                      <template v-if="!user?.picture" #default>
-                        <Icon
-                          name="heroicons:user"
-                          class="w-4 h-4 text-[#43B3DE]"
-                        />
-                      </template>
-                    </UAvatar>
-                    <div class="flex flex-col">
-                      <span
-                        class="text-sm font-medium text-gray-900 dark:text-gray-100"
-                      >
-                        {{ user?.fullName || "User" }}
-                      </span>
-                      <span class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ user?.email || "user@example.com" }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Menu Items -->
-                <div class="space-y-1">
-                  <UButton
-                    @click="handleUserProfile"
-                    variant="ghost"
-                    size="md"
-                    class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
-                    {{ t("user_profile") }}
-                  </UButton>
-
-                  <UButton
-                    @click="handleSettings"
-                    variant="ghost"
-                    size="md"
-                    class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
-                    {{ t("settings") }}
-                  </UButton>
-
-                  <UDivider class="my-2" />
-
-                  <UButton
-                    @click="handleLogout"
-                    variant="ghost"
-                    size="md"
-                    class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    <Icon
-                      name="heroicons:arrow-right-on-rectangle"
-                      class="w-4 h-4 mr-2"
-                    />
-                    {{ t("logout") }}
-                  </UButton>
-                </div>
-              </div>
-            </template>
-          </UPopover>
-        </div>
-      </div>
-    </UCard>
     <div
-      class="pt-18 h-screen flex flex-row items-start justify-start gap-2 bg-gray-100 dark:bg-gray-900"
+      class=" h-screen flex flex-row items-start justify-start gap-2 bg-neutral-100 dark:bg-neutral-800"
     >
       <!-- Navigation sidebar -->
       <div
         :class="[
-          'flex flex-col h-[calc(100vh-5rem)] rounded-lg shadow-lg p-2 bg-white dark:bg-slate-900 border-r-2 border-gray-200 dark:border-gray-700 transition-all duration-300 relative',
-          isNavExpanded ? 'w-[260px]' : 'w-[60px]',
+          'flex flex-col h-full rounded-lg shadow-lg p-2 bg-white dark:bg-slate-900 border-r-2 border-gray-200 dark:border-gray-700 transition-all duration-300 relative gap-4',
+          isNavExpanded ? 'w-[240px]' : 'w-[60px]',
         ]"
       >
+        <B24header :isNavExpanded="isNavExpanded"/>
+
         <Navication :collapsed="!isNavExpanded" />
+
+        <!-- Toggle button for navigation -->
         <UButton
           @click="toggleNavigation"
           variant="ghost"
@@ -185,11 +31,173 @@
           />
         </UButton>
       </div>
+
       <!-- Main content area -->
       <div
-        class="flex flex-col h-[calc(100vh-5rem)] w-full rounded-lg shadow-lg p-4"
+        class="flex flex-col h-full w-full rounded-lg"
       >
-        <slot />
+        <UCard class="top-0 right-0 z-50" variant="soft">
+          <div class="flex flex-row items-center justify-between gap-2 w-full h-5">
+            <div class="w-fit">
+
+            </div>
+            <div class="flex flex-row items-center justify-end gap-4 h-full">
+              <div class="flex items-center gap-2">
+                <UPopover placement="bottom-end" :offset="[0, 10]">
+                  <UButton
+                      icon="heroicons:globe-alt"
+                      variant="ghost"
+                      size="sm"
+                      class="px-2"
+                  >
+                <span class="ml-1 font-medium">{{
+                    locale === "en" ? "English" : "ភាសាខ្មែរ"
+                  }}</span>
+                  </UButton>
+                  <template #content>
+                    <div class="flex flex-col gap-1 p-2 w-28">
+                      <UButton
+                          variant="ghost"
+                          class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                          @click="
+                      () => {
+                        setLanguage('en');
+                      }
+                    "
+                          block
+                          size="sm"
+                      >🇬🇧
+                        <span class="text-left w-full">
+                      <!-- {{
+                      t("lang.english")
+                    }} -->
+                      English
+                    </span></UButton
+                      >
+                      <UButton
+                          variant="ghost"
+                          class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                          @click="
+                      () => {
+                        setLanguage('km');
+                      }
+                    "
+                          block
+                          size="sm"
+                      >🇰🇭
+                        <span class="text-left w-full">
+                      ភាសាខ្មែរ
+                          <!-- {{
+                          t("lang.khmer")
+                        }} -->
+                    </span></UButton
+                      >
+                    </div>
+                  </template>
+                </UPopover>
+                <!-- Theme Switcher -->
+                <UButton
+                    :icon="colorMode.preference === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
+                    variant="ghost"
+                    size="sm"
+                    class="px-2"
+                    @click="toggleTheme"
+                >
+                  <span class="sr-only">Toggle Theme</span>
+                </UButton>
+              </div>
+              <!-- User Popover -->
+              <UPopover
+                  ref="popoverRef"
+                  placement="bottom-end"
+                  :offset="[0, 10]"
+                  class="z-50"
+              >
+                <UAvatar
+                    :src="user?.picture"
+                    size="xl"
+                    class="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
+                >
+                  <template v-if="!user?.picture" #default>
+                    <Icon name="heroicons:user" class="w-6 h-6 text-primary" />
+                  </template>
+                </UAvatar>
+
+                <template #content>
+                  <div class="w-48 p-2">
+                    <!-- User Info Section -->
+                    <div
+                        class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3"
+                    >
+                      <div class="flex items-center gap-3">
+                        <UAvatar :src="user?.picture" size="sm">
+                          <template v-if="!user?.picture" #default>
+                            <Icon
+                                name="heroicons:user"
+                                class="w-4 h-4 text-[#43B3DE]"
+                            />
+                          </template>
+                        </UAvatar>
+                        <div class="flex flex-col">
+                      <span
+                          class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                      >
+                        {{ user?.fullName || "User" }}
+                      </span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ user?.email || "user@example.com" }}
+                      </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Menu Items -->
+                    <div class="space-y-1">
+                      <UButton
+                          @click="handleUserProfile"
+                          variant="ghost"
+                          size="md"
+                          class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
+                        <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
+                        {{ t("user_profile") }}
+                      </UButton>
+
+                      <UButton
+                          @click="handleSettings"
+                          variant="ghost"
+                          size="md"
+                          class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
+                        <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
+                        {{ t("settings") }}
+                      </UButton>
+
+                      <UDivider class="my-2" />
+
+                      <UButton
+                          @click="handleLogout"
+                          variant="ghost"
+                          size="md"
+                          class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Icon
+                            name="heroicons:arrow-right-on-rectangle"
+                            class="w-4 h-4 mr-2"
+                        />
+                        {{ t("logout") }}
+                      </UButton>
+                    </div>
+                  </div>
+                </template>
+              </UPopover>
+            </div>
+          </div>
+        </UCard>
+        <!-- Main content slot -->
+        <div class="flex-1 p-2 overflow-y-auto h-full w-full">
+          <slot />
+        </div>
       </div>
     </div>
   </div>
@@ -198,6 +206,7 @@
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 const { locale, t, setLocale } = useI18n();
+const { getLanguage,toggleLanguage,lang,setLanguage } = useLanguage()
 const popoverRef = ref<{ close: () => void } | null>(null);
 
 const isNavExpanded = ref(true);

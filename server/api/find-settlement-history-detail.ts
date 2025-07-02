@@ -1,17 +1,27 @@
 import { defineEventHandler, getRouterParam } from 'h3'
 import type { ApiResponse } from '~/models/baseModel'
-import { SettlementHistoryDetail, SettlementHistoryRecord } from '~/models/settlement'
+import { SettlementHistoryDetail, SettlementHistoryDetailQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { getSettlementHistoryById } from '~~/server/logic/management_api_logic'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryRecord>> => {
-  const id = getRouterParam(event, 'id')
-  
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Settlement ID is required'
-    })
-  }
+// export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryRecord>> => {
+//   const id = getRouterParam(event, 'id')
+  export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryRecord>> => {
+  const payload = await readBody<SettlementHistoryDetailQuery>(event)
+
+  //  if (!payload.settlement_history_id) {
+  //   throw createError({
+  //     statusCode: 400,
+  //     statusMessage: 'Settlement ID is required'
+  //     })
+  //   }
+
+  //   const response = await getSettlementHistoryById(payload);
+  //   // Do NOT call .json() again here!
+  //   return {
+  //     code: 'SUCCESS',
+  //     message: 'Success',
+  //     data: response.data as SettlementHistoryRecord
+  //   };
 
 //   try {
 //     const response = await getSettlementHistoryById(id);
@@ -32,7 +42,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<SettlementH
 //   }
 
    const mockSettlementDetail: SettlementHistoryRecord = {
-      settlement_id: id,
+      settlement_id: "ieuru94838f3984224",
       settlement_date: "2025-01-01 10:04:09",
       total_supplier: 5,
       total_amount: "21000",

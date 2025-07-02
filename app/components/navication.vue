@@ -12,17 +12,18 @@ const props = withDefaults(defineProps<Props>(), {
 const { t } = useI18n()
 
 const route = useRoute()
-
-const items = ref<NavigationMenuItem[][]>([
+let itemsCal = computed( ()=>{
+  return [];
+})
+const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: t("dashboard"),
       icon: 'i-material-symbols-light-space-dashboard-rounded',
       size: 'lg',
-      to:'/',
+      to: '/',
       active: false,
     },
-    // settlements with child items wallet settlements
     {
       label: t("settlements"),
       icon: 'i-material-symbols-light-lab-profile-rounded',
@@ -102,7 +103,8 @@ const appVersion = ref($config.public.appVersion || 'v1.0.0')
     <UNavigationMenu highlight popover :collapsed="props.collapsed" orientation="vertical" :items="items" class="w-full flex-1" size="lg" :ui="{
       linkLeadingIcon: 'shrink-0 size-6',
       linkLabel: 'text-md truncate',
-      link: 'p-2 cursor-pointer'
+      link: 'p-2 cursor-pointer',
+      transition: 'ease-in-out duration-800',
     }"/>
     
     <div v-if="!props.collapsed" class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">

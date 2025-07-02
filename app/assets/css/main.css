@@ -2,69 +2,21 @@
 @import "@nuxt/ui";
 
 @theme {
-  /* Bill24 Sky Blue - Primary Color */
-  --color-bill24-sky-blue-50: #EAF6FC;
-  --color-bill24-sky-blue-100: #C8E7F5;
-  --color-bill24-sky-blue-200: #A3DAEF;
-  --color-bill24-sky-blue-300: #7FCDE8;
-  --color-bill24-sky-blue-400: #5BC0E1;
-  --color-bill24-sky-blue-500: #43B3DE;
-  --color-bill24-sky-blue-600: #369CB8;
-  --color-bill24-sky-blue-700: #2A7A92;
-  --color-bill24-sky-blue-800: #1E576C;
-  --color-bill24-sky-blue-900: #123446;
-  --color-bill24-sky-blue-950: #091A23;
-
-  /* Bill24 Neutral - Based on Light Gray (#f9fafb) */
-  --color-bill24-neutral-50: #f9fafb;
-  --color-bill24-neutral-100: #f3f4f6;
-  --color-bill24-neutral-200: #e5e7eb;
-  --color-bill24-neutral-300: #d1d5db;
-  --color-bill24-neutral-400: #9ca3af;
-  --color-bill24-neutral-500: #6b7280;
-  --color-bill24-neutral-600: #4b5563;
-  --color-bill24-neutral-700: #374151;
-  --color-bill24-neutral-800: #1f2937;
-  --color-bill24-neutral-900: #111827;
-  --color-bill24-neutral-950: #030712;
+    --font-display: "Kantumruy Pro","DM Sans", sans-serif;
 }
 
 :root {
   /* Bill24 Primary Color Configuration */
-  --ui-primary: #43B3DE;
-  --ui-neutral: #f9fafb;
-  
-  /* Override neutral design tokens with Bill24 colors */
-  --ui-text: #111827;
-  --ui-text-highlighted: #111827;
-  --ui-text-inverted: #FFFFFF;
-  --ui-bg: #FFFFFF;
-  --ui-bg-muted: #f9fafb;
-  --ui-bg-elevated: #f3f4f6;
-  --ui-bg-accented: #e5e7eb;
-  --ui-bg-inverted: #111827;
-  --ui-border: #e5e7eb;
-  --ui-border-muted: #e5e7eb;
-  --ui-border-accented: #d1d5db;
-  --ui-border-inverted: #111827;
-  
-  /* Bill24 radius configuration for modern UI */
-  --ui-radius: 0.375rem; /* 6px - slightly more modern than default */
+  --ui-primary: #3F83F8;
+    font-family: "Kantumruy Pro","DM Sans", sans-serif;
 }
 
 .dark {
-  /* Bill24 Dark Mode Configuration */
-  --ui-primary: #5BC0E1;
-  --ui-text: #f3f4f6;
-  --ui-text-highlighted: #FFFFFF;
-  --ui-text-inverted: #111827;
-  --ui-bg: #030712;
-  --ui-bg-muted: #111827;
-  --ui-bg-elevated: #1f2937;
-  --ui-bg-accented: #374151;
-  --ui-bg-inverted: #FFFFFF;
-  --ui-border: #1f2937;
-  --ui-border-muted: #374151;
-  --ui-border-accented: #4b5563;
-  --ui-border-inverted: #FFFFFF;
+    /* Bill24 Dark Mode Primary Color Configuration */
+    --ui-primary: #76A9FA;
+}
+
+button
+{
+    @apply cursor-pointer;
 }

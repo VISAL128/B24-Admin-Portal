@@ -127,7 +127,34 @@ import { useSupplierApi } from '~/composables/api/useSupplierApi';
 import { useApiExecutor } from '~/composables/api/useApiExecutor';
 import type { SettlementHistoryDetail, SettlementHistoryRecord } from '~/models/settlement';
 import SettlementHistoryTable from '~/components/tables/SettlementHistoryTable.vue';
+import type { SettlementHistoryDetailQuery } from '~/models/settlement';
 const supplierApi = useSupplierApi();
+// Add getSettlementDetails to supplier API (placeholder)
+const useSettlementApi = () => {
+  const getSettlementDetails = async (id: string) => {
+    // This is a placeholder. In a real app, you would call an API endpoint
+    console.log(`Fetching details for settlement ${id}`);
+    const response = await supplierApi.getSettlementHistoryById(settlementHistoryQuery.value);
+
+    // Return dummy data for now
+    return {
+      settlement_id: id,
+      settlement_date: new Date().toISOString(),
+      total_supplier: 5,
+      total_amount: 1250.75,
+      currency: 'USD',
+      settled_by: 'Admin User',
+      status: 'Completed',
+      total_Settled: 25,
+      success: 23,
+      fail: 2
+    };
+  };
+
+  return {
+    getSettlementDetails
+  };
+};
 
 const { t } = useI18n();
 const route = useRoute();
@@ -142,6 +169,11 @@ const loading = ref(true);
 const error = ref('');
 const settlementDetails = ref<SettlementHistoryRecord>();
 const settlementHistoryDetails = ref<SettlementHistoryDetail[]>([]);
+const settlementHistoryQuery = ref<SettlementHistoryDetailQuery>({
+  settlement_history_id: settlementId,
+  page: 1,
+  page_size: 10
+});
 
 // Format date for display
 const formatDate = (dateString: string) => {
@@ -181,7 +213,7 @@ const fetchSettlementDetails = async () => {
   
   try {
     // Direct call to the API function without using execute
-    const response = await supplierApi.getSettlementHistoryById(settlementId);
+    const response = await supplierApi.getSettlementHistoryById(settlementHistoryQuery.value);
     settlementDetails.value = response;
     settlementHistoryDetails.value = response.settle_details || [];
   } catch (e: any) {
