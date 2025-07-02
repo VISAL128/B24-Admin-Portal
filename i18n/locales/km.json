@@ -124,7 +124,9 @@
         "settle_to_bank": "ទូទាត់ទៅធនាគារ",
         "actions": "សកម្មភាព",
         "view": "មើល",
+        "viewing": "កំពុងមើល",
         "transaction_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "date": "កាលបរិច្ឆេទ",
         "bank_ref": "សំយោគធនាគារ",
         "bank_name": "ឈ្មោះធនាគារ",
         "transaction_amount": "ចំនួនទឹកប្រាក់ប្រតិបត្តិការ",
@@ -149,7 +151,9 @@
         "confirm_settlement_buttons": {
           "yes": "បាទ, បញ្ជាក់",
           "no": "ទេ"
-        }
+        },
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "loading_suppliers": "ទាញយកអ្នកផ្គត់ផ្គង់..."
       }
     }
   }

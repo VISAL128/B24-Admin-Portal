@@ -51,16 +51,25 @@
         {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
       </span>
       <div class="flex items-center gap-4">
-        <USelect
+        <!-- <USelect
           v-model="pageSize"
-          :options="[10, 20, 50, 100]"
+          :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
+          class="w-24"
+          @change="onPageSizeChange"
+        /> -->
+        <USelectMenu
+          v-model="pageSize"
+          :items="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
           class="w-24"
           @change="onPageSizeChange"
         />
         <UPagination
           v-model="page"
-          :page-count="Math.ceil(total / pageSize)"
+          :page-size-options="[10, 25, 50, 100]"
+          :page-count="totalPage"
+          :items-per-page="pageSize.value"
           :total="total"
+          v-on:update:page="page = $event"
         />
       </div>  
   </div>
@@ -96,8 +105,9 @@ const { copy } = useClipboard()
 const toast = useToast()
 
 const page = ref(1)
-const pageSize = ref(10)
+const pageSize = ref<{label: string; value: number}>({label: '10', value: 10})
 const total = ref(0)
+const totalPage = ref(0)
 const search = ref('')
 const startDate = ref('')
 const endDate = ref('')
@@ -131,7 +141,7 @@ const fetchSettlementHistory = async () => {
   try {
     const payload: SettlementHistoryQuery = {
       name: search.value || undefined,  
-      page_size: pageSize.value,
+      page_size: pageSize.value.value,
       page: page.value,
       start_date: startDate.value,
       end_date: endDate.value,
@@ -141,6 +151,7 @@ const fetchSettlementHistory = async () => {
     const data = await getSettlementHistory(payload)
     settlements.value = data?.records ?? []
     total.value = data?.total_record ?? 0
+    totalPage.value = data?.total_page ?? 0
   } catch (error: any) {
     console.error('Error loading settlement history:', error.message)
     errorMsg.value = error.message || 'Failed to load settlement history.'
@@ -151,7 +162,7 @@ const fetchSettlementHistory = async () => {
 
 const onPageSizeChange = () => {
   page.value = 1
-  fetchSettlementHistory()
+  // fetchSettlementHistory()
 }
 
 // Filtered rows for table
@@ -319,6 +330,10 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     accessorKey: 'status', // optional if you need sorting/filtering
     header: 'Status',
     cell: ({ row }) => {
+      // return h('span', {
+      //   class: `text-sm font-medium`
+      // }, `Total: ${row.original.total_Settled}`)
+
       const success = row.original.success
       const fail = row.original.fail
       const total = row.original.total_Settled
@@ -327,10 +342,15 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       const Icon = resolveComponent('UIcon')
 
       return h('div', { class: 'flex gap-2 items-center' }, [
-        h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-          h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-          h('span', {}, total)
+        // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+        //   h('span', {}, total)
+        // ]),
+        h(UBadge, { color: 'primary', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+          h('span', { class: 'text-sm' }, `Total: ${total}`)
         ]),
+        // Success and Fail badges
         h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
           h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
           h('span', {}, success)
@@ -353,8 +373,8 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
         icon: 'i-lucide-eye',
         size: 'sm',
         onClick: () => navigateToDetails(row.original.settlement_id),
-        title: translations.view_details
-      }, () => translations.view)
+        // title: translations.view_details
+      },)
     ])
   }
 ]

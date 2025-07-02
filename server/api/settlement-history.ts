@@ -32,7 +32,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<SettlementH
       settled_by: 'admin',
       success: 10,
       fail: 2,
-      total_Settled: 8 + i, // Added property to match SettlementHistoryRecord
+      total_Settled: 12, //8 + i, // Added property to match SettlementHistoryRecord
       settle_details: {
         party_id: `cpo-${suffix}`,
         supplier_id: '',
