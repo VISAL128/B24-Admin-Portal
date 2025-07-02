@@ -43,7 +43,7 @@ export default defineNuxtConfig({
       issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
       clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
-      callbackUrl: 'http://localhost:3000/oidc/callback',//process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/get-started`,
+      callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/oidc/callback`,
       scope: ["openid", "email", "profile", "address"],
     },
     config: {

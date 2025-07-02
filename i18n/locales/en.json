@@ -50,6 +50,18 @@
     "confirm": "Confirm"
   },
   "settlement": {
+    "search_placeholder": "Search",
+    "settle_amount": "Settle Amount",
+    "settlement_bank": "Settlement Bank",
+    "status": "Status",
+    "history": "History",
+    "supplier": "Supplier",
+    "cpo": {
+      "code": "CPO Code",
+      "name": "CPO Name"
+    },
+    "total_amount": "Total Amount",
+    "currency": "Currency",
     "dashboard_title": "Settlement Dashboard",
     "details_title": "Settlement Details",
     "overview": "Settlement Overview",

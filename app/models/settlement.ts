@@ -147,11 +147,12 @@ export interface SettlementHistoryRecord {
   total_amount: string
   currency: string
   supplier_id: string
+  supplier: Supplier
   settled_by: string
   total_Settled: number
   success: number
   fail: number
-  settle_details: SettlementHistoryDetail
+  settle_details: SettlementHistoryDetail[]
 }
 export interface SettlementHistoryResponse {
   total_page: number
@@ -159,6 +160,15 @@ export interface SettlementHistoryResponse {
   total_record: number
   records: SettlementHistoryRecord[]
 }
+
+export interface SettlementHistoryDetailResponse {
+  total_page: number
+  page: number
+  total_record: number
+  records: SettlementHistoryRecord
+}
+
+export interface SettlementHistoryDetailResponse {}
 
 export interface SettlementHistoryDetailQuery {
   settlement_history_id?: string
