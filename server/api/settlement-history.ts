@@ -8,10 +8,16 @@ export default defineEventHandler(async (event): Promise<ApiResponse<SettlementH
   const payload = await readBody<SettlementHistoryQuery>(event)
 
    let response = await getSettlementHistory(payload);
+   let data: SettlementHistoryResponse = {
+     total_page: response.total_pages,
+     page: response.page,
+     total_record: response.total_records,
+     records: response.data as SettlementHistoryResponse['records'] || []
+   }
     return {
         code: 'SUCCESS',
         message: 'Success',
-        data: response.data as SettlementHistoryResponse
+        data: data
     };
 
 //   const mockData: SettlementHistoryRecord[] = Array.from({ length: 25 }, (_, i) => {

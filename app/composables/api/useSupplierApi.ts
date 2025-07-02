@@ -40,7 +40,7 @@ export const useSupplierApi = () => {
     payload: InitQuerySettlement
   ): Promise<SettlementInquiryResponse> => {
     var rep = await execute(() =>
-      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/balance`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/inquiry-settlement`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPO settlements:', rep.message)

@@ -37,7 +37,12 @@
     </div>
 
     <!-- Table -->
-    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white" />
+    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white"
+    >
+      <template #empty>
+        <TableEmptyState />
+      </template>
+    </UTable>
 
     <!-- Table Footer -->
     <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
@@ -79,6 +84,7 @@ import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalize
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
 import { exportToExcelStyled, exportToPDF } from '~/composables/utils/exportUtils'
 import { useI18n } from 'vue-i18n'
+import TableEmptyState from '~/components/TableEmptyState.vue'
 
 const { t } = useI18n()
 const { getSettlementHistory, getSuppliers } = useSupplierApi()
@@ -101,15 +107,16 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 const df = new DateFormatter('en-US', { dateStyle: 'medium' })
+const today = new Date()
 const modelValue = shallowRef({
-  start: new CalendarDate(2024, 6, 1),
-  end: new CalendarDate(2024, 6, 30)
+  start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+  end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
 })
 
 // Watch and convert modelValue to string ISO
 watch(modelValue, (val) => {
-  startDate.value = val.start?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || ''
-  endDate.value = val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || ''
+  startDate.value = val.start?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || new CalendarDate(today.getFullYear(), today.getMonth(), 1).toString()
+  endDate.value = val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || new CalendarDate(today.getFullYear(), today.getMonth(), 30).toString()
   fetchSettlementHistory()
 })
 
@@ -123,16 +130,17 @@ const fetchSettlementHistory = async () => {
   loading.value = true
   try {
     const payload: SettlementHistoryQuery = {
-      page: 1,
-      limit: 100,
-      start_date: startDate.value || undefined,
-      end_date: endDate.value || undefined,
-      // status: 'paid', // Optional filter if needed
+      name: search.value || undefined,  
+      page_size: pageSize.value,
+      page: page.value,
+      start_date: startDate.value,
+      end_date: endDate.value,
+      status: 'complete', // Optional filter if needed
     }
 
     const data = await getSettlementHistory(payload)
     settlements.value = data?.records ?? []
-    total.value = data?.total ?? 0
+    total.value = data?.total_record ?? 0
   } catch (error: any) {
     console.error('Error loading settlement history:', error.message)
     errorMsg.value = error.message || 'Failed to load settlement history.'
@@ -149,7 +157,7 @@ const onPageSizeChange = () => {
 // Filtered rows for table
 const filteredData = computed(() =>
   settlements.value.filter(item =>
-    item.settled_by.toLowerCase().includes(search.value.toLowerCase())
+    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
 
