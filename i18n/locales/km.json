@@ -124,7 +124,9 @@
         "settle_to_bank": "ទូទាត់ទៅធនាគារ",
         "actions": "សកម្មភាព",
         "view": "មើល",
+        "viewing": "កំពុងមើល",
         "transaction_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "date": "កាលបរិច្ឆេទ",
         "bank_ref": "សំយោគធនាគារ",
         "bank_name": "ឈ្មោះធនាគារ",
         "transaction_amount": "ចំនួនទឹកប្រាក់ប្រតិបត្តិការ",
@@ -135,7 +137,23 @@
         "settlement_request_successful": "សំណើទូទាត់បានជោគជ័យ!",
         "settlement_request_message": "សំណើទូទាត់របស់អ្នកត្រូវបានដាក់ស្នើដោយជោគជ័យ។",
         "done": "រួចរាល់",
-        "back_to_list": "ត្រលប់ទៅបញ្ជី"
+        "back_to_list": "ត្រលប់ទៅបញ្ជី",
+        "select_time": "ជ្រើសរើសពេលវេលា",
+        "select_time_placeholder": "ជ្រើសរើសពេលវេលា",
+        "hour": "ម៉ោង",
+        "minute": "នាទី",
+        "second": "វិនាទី",
+        "search_cpo": "ស្វែងរក CPO",
+        "search_placeholder": "ស្វែងរកតាមលេខកូដ CPO, ឈ្មោះ, អ៊ីមែល, ឬអាសយដ្ឋាន",
+        "confirm_settlement_message": "តើអ្នកប្រាកដជាចង់បញ្ជាក់ការទូទាត់?",
+        "confirm_settlement_title": "ការបញ្ជាក់",
+        "confirm_settlement_description": "សូមពិនិត្យព័ត៌មានលម្អិតអំពីការទូទាត់មុនពេលបញ្ជាក់។",
+        "confirm_settlement_buttons": {
+          "yes": "បាទ, បញ្ជាក់",
+          "no": "ទេ"
+        },
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "loading_suppliers": "ទាញយកអ្នកផ្គត់ផ្គង់..."
       }
     }
   }

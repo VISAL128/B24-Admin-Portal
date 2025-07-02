@@ -5,6 +5,9 @@
     "english": "English",
     "khmer": "Khmer"
   },
+  "generate_settlement": "Generate Settlement",
+  "search_by_settler": "Search by Settler...",
+  "pick_a_date": "Pick a Date",
   "user_profile": "User Profile",
   "dashboard": "Dashboard",
   "settlements": "Settlements",
@@ -95,7 +98,9 @@
         "settle_to_bank": "Settle To Bank",
         "actions": "Actions",
         "view": "View",
+        "viewing": "Viewing",
         "transaction_date": "Transaction Date",
+        "date": "Date",
         "bank_ref": "Bank Ref",
         "bank_name": "Bank Name",
         "transaction_amount": "Transaction Amount",
@@ -106,7 +111,23 @@
         "settlement_request_successful": "Settlement Request Successful!",
         "settlement_request_message": "Your settlement request has been submitted successfully.",
         "done": "Done",
-        "back_to_list": "Back to List"
+        "back_to_list": "Back to List",
+        "select_time": "Select Time",
+        "select_time_placeholder": "Select Time",
+        "hour": "Hour",
+        "minute": "Minute",
+        "second": "Second",
+        "search_cpo": "Search CPO",
+        "search_placeholder": "Search by CPO Code, Name, Email, or Address",
+        "confirm_settlement_message": "Are you sure you want to confirm the settlement?",
+        "confirm_settlement_title": "Confirmation",
+        "confirm_settlement_description": "Please review the settlement details before confirming.",
+        "confirm_settlement_buttons": {
+          "yes": "Yes, Confirm",
+          "no": "No"
+        },
+        "total_amount": "Total Amount",
+        "loading_suppliers": "Loading Suppliers..."
       }
     }
   }

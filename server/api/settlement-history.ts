@@ -2,10 +2,24 @@ import { defineEventHandler, readBody } from 'h3'
 import { ApiResponse } from '~/models/baseModel'
 import { parseISO, isAfter, isBefore } from 'date-fns'
 import { SettlementHistoryQuery, SettlementHistoryRecord, SettlementHistoryResponse } from '~/models/settlement'
+import { getSettlementHistory } from '../logic/management_api_logic'
 
+// export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryResponse>> => {
+//   const payload = await readBody<SettlementHistoryQuery>(event)
+
+//    let response = await getSettlementHistory(payload);
+//    let data: SettlementHistoryResponse = {
+//      total_page: response.total_pages,
+//      page: response.page,
+//      total_record: response.total_records,
+//      records: response.data as SettlementHistoryResponse['records'] || []
+//    }
+//     return {
+//         code: 'SUCCESS',
+//         message: 'Success',
+//         data: data
+//     };
 export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryResponse>> => {
-  const body = await readBody<SettlementHistoryQuery>(event)
-
   const mockData: SettlementHistoryRecord[] = Array.from({ length: 25 }, (_, i) => {
     const suffix = i + 1
     return {
@@ -18,7 +32,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<SettlementH
       settled_by: 'admin',
       success: 10,
       fail: 2,
-      total_Settled: 8 + i, // Added property to match SettlementHistoryRecord
+      total_Settled: 12, //8 + i, // Added property to match SettlementHistoryRecord
       settle_details: {
         party_id: `cpo-${suffix}`,
         supplier_id: '',
@@ -46,44 +60,45 @@ export default defineEventHandler(async (event): Promise<ApiResponse<SettlementH
     }
   })
 
-  // Optional filtering (basic)
-  const { start_date, end_date, status, page = 1, limit = 10, name } = body
+  // Read request body and destructure properties for filtering
+  const body = await readBody<SettlementHistoryQuery>(event)
+  const { start_date, end_date, status, page = 1, name ,page_size=5 } = body
 
   let filtered = mockData
 
   if (status) {
-    filtered = filtered.filter(item => item.settle_details.status === status)
+    // filtered = filtered.filter(item => item.settle_details.status === status)
   }
 
   if (start_date) {
-    filtered = filtered.filter(item =>
-      isAfter(parseISO(item.settlement_date), parseISO(start_date))
-    )
+    // filtered = filtered.filter(item =>
+    //   isAfter(parseISO(item.settlement_date), parseISO(start_date))
+    // )
   }
 
   if (end_date) {
-    filtered = filtered.filter(item =>
-      isBefore(parseISO(item.settlement_date), parseISO(end_date))
-    )
+    // filtered = filtered.filter(item =>
+    //   isBefore(parseISO(item.settlement_date), parseISO(end_date))
+    // )
   }
 
   if (name) {
-    const lower = name.toLowerCase()
-    filtered = filtered.filter(item =>
-      item.settle_details.cpo.name.toLowerCase().includes(lower)
-    )
+    // const lower = name.toLowerCase()
+    // filtered = filtered.filter(item =>
+    //   item.settle_details.cpo.name.toLowerCase().includes(lower)
+    // )
   }
 
-  const paged = filtered.slice((page - 1) * limit, page * limit)
+  const paged = filtered.slice((page - 1) * page_size, page * page_size)
 
 return {
     code: 'SUCCESS',
     message: 'Success',
     data: {
       page,
-      limit,
-      total: filtered.length,
+      total_page: Math.ceil(filtered.length / page_size),
+      total_record: filtered.length,
       records: paged
     }
   }
-})
+}) // Uncomment this line to use the actual API logic

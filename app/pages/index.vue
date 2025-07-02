@@ -12,7 +12,7 @@
                     <h2 class="text-lg font-semibold text-[#43B3DE]">Quick Actions</h2>
                 </template>
                 <div class="space-y-3">
-                    <NuxtLink to="/settlement/generate" class="block p-3 rounded-lg bg-gray-50 hover:bg-[#EAF6FC] transition-colors">
+                    <NuxtLink to="/settlement/wallet-settlement/generate" class="block p-3 rounded-lg bg-gray-50 hover:bg-[#EAF6FC] transition-colors">
                         <div class="font-medium text-[#211e1f]">Generate Settlement</div>
                         <div class="text-sm text-gray-600">Generate settlement for suppliers</div>
                     </NuxtLink>

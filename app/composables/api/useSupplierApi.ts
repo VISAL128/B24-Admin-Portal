@@ -1,17 +1,14 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
-  Supplier, Cpo, CpoBySupplierRequest, CpoBalance,
-  BalanceQueryRequest,
+  Supplier, Cpo, CpoBySupplierRequest,
   ConfirmSettlementRequest, ConfirmSettlementResponse,
   SettlementHistoryQuery, SettlementHistoryResponse,
+  SettlementHistoryRecord,
   InitQuerySettlement,
-  CpoSettlement
+  SettlementInquiryResponse
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
 import type { ApiResponse } from '~/models/baseModel'
-import { authorizeTokenApi } from './authorizeTokenApi'
-
-const baseUrl = process.env.MANAGEMENT_API_URL || 'http://172.16.81.141:22031'
 
 export const useSupplierApi = () => {
   const { execute } = useApiExecutor()
@@ -31,7 +28,7 @@ export const useSupplierApi = () => {
     payload: CpoBySupplierRequest
   ): Promise<Cpo[]> => {
     var rep = await execute(() =>
-      $fetch<ApiResponse<Cpo[]>>(`${baseUrl}/api/getcpo`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<Cpo[]>>(`/api/getcpo`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPOs:', rep.message)
@@ -42,9 +39,9 @@ export const useSupplierApi = () => {
 
   const getInquirySettlement = async (
     payload: InitQuerySettlement
-  ): Promise<CpoSettlement> => {
+  ): Promise<SettlementInquiryResponse> => {
     var rep = await execute(() =>
-      $fetch<ApiResponse<CpoSettlement>>(`${baseUrl}/api/balance`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/inquiry-settlement`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPO settlements:', rep.message)
@@ -55,35 +52,49 @@ export const useSupplierApi = () => {
 
   const confirmSettlementAPI = async (
     payload: ConfirmSettlementRequest
-  ): Promise<ConfirmSettlementResponse> => {
+  ): Promise<{data?: ConfirmSettlementResponse; error?: string}> => {
     try {
-      if (!payload.token) {
+      if (!payload.settlement_token) {
         throw new Error('Token is required for settlement confirmation')
       }
       var rep = await execute(() =>
-              $fetch<ApiResponse<ConfirmSettlementResponse>>(`${baseUrl}/api/confirm-settlement`, { method: 'POST', body: payload })
+              $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/submit-settlement`, { method: 'POST', body: payload })
             )
     
       if (rep.code !== 'SUCCESS') {
         console.error('Failed to fetch CPO settlements:', rep.message)
+        return { error: rep.message }
         throw new Error(rep.message)
       }
     } catch (error) {
       console.error('Failed to confirm settlement:', error)
       throw error
     }
-    return rep.data 
+    return { data: rep.data }
   }
 
   const getSettlementHistory = async (
     payload: SettlementHistoryQuery
   ): Promise<SettlementHistoryResponse> => {
     var rep = await execute(() =>
-      $fetch(`${baseUrl}/api/settlement-history`, { method: 'POST', body: payload })
+      $fetch(`/api/settlement-history`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch settlement history:', rep.message)
       return null as any
+    }
+    return rep.data
+  }
+
+  const getSettlementHistoryById = async (
+    id: string
+  ): Promise<SettlementHistoryRecord> => {
+    var rep = await execute(() =>
+      $fetch<ApiResponse<SettlementHistoryRecord>>(`/api/findsettlementhistory/${id}`)
+    )
+    if (rep.code !== 'SUCCESS') {
+      console.error('Failed to fetch settlement history by ID:', rep.message)
+      throw new Error(rep.message || 'Failed to fetch settlement history detail')
     }
     return rep.data
   }
@@ -94,17 +105,9 @@ export const useSupplierApi = () => {
     getInquirySettlement,
     // getTransactionHistory,
     confirmSettlementAPI,
-    getSettlementHistory
+    getSettlementHistory,
+    getSettlementHistoryById
   }
-
-  // Replace with your actual token access logic
-function getAuthHeader(): Record<string, string> {
-  const supplierApi = authorizeTokenApi();
-  const token = useCookie('auth_token')?.value || '' // Or usePinia/store, etc.
-  return {
-    Authorization: `Bearer ${token}`
-  }
-}
 
 }
 

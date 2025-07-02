@@ -37,7 +37,12 @@
     </div>
 
     <!-- Table -->
-    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white" />
+    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white"
+    >
+      <template #empty>
+        <TableEmptyState />
+      </template>
+    </UTable>
 
     <!-- Table Footer -->
     <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
@@ -46,16 +51,25 @@
         {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
       </span>
       <div class="flex items-center gap-4">
-        <USelect
+        <!-- <USelect
           v-model="pageSize"
-          :options="[10, 20, 50, 100]"
+          :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
+          class="w-24"
+          @change="onPageSizeChange"
+        /> -->
+        <USelectMenu
+          v-model="pageSize"
+          :items="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
           class="w-24"
           @change="onPageSizeChange"
         />
         <UPagination
           v-model="page"
-          :page-count="Math.ceil(total / pageSize)"
+          :page-size-options="[10, 25, 50, 100]"
+          :page-count="totalPage"
+          :items-per-page="pageSize.value"
           :total="total"
+          v-on:update:page="page = $event"
         />
       </div>  
   </div>
@@ -79,6 +93,7 @@ import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalize
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
 import { exportToExcelStyled, exportToPDF } from '~/composables/utils/exportUtils'
 import { useI18n } from 'vue-i18n'
+import TableEmptyState from '~/components/TableEmptyState.vue'
 
 const { t } = useI18n()
 const { getSettlementHistory, getSuppliers } = useSupplierApi()
@@ -90,8 +105,9 @@ const { copy } = useClipboard()
 const toast = useToast()
 
 const page = ref(1)
-const pageSize = ref(10)
+const pageSize = ref<{label: string; value: number}>({label: '10', value: 10})
 const total = ref(0)
+const totalPage = ref(0)
 const search = ref('')
 const startDate = ref('')
 const endDate = ref('')
@@ -101,15 +117,16 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 const df = new DateFormatter('en-US', { dateStyle: 'medium' })
+const today = new Date()
 const modelValue = shallowRef({
-  start: new CalendarDate(2024, 6, 1),
-  end: new CalendarDate(2024, 6, 30)
+  start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+  end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
 })
 
 // Watch and convert modelValue to string ISO
 watch(modelValue, (val) => {
-  startDate.value = val.start?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || ''
-  endDate.value = val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || ''
+  startDate.value = val.start?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || new CalendarDate(today.getFullYear(), today.getMonth(), 1).toString()
+  endDate.value = val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || new CalendarDate(today.getFullYear(), today.getMonth(), 30).toString()
   fetchSettlementHistory()
 })
 
@@ -123,16 +140,18 @@ const fetchSettlementHistory = async () => {
   loading.value = true
   try {
     const payload: SettlementHistoryQuery = {
-      page: 1,
-      limit: 100,
-      start_date: startDate.value || undefined,
-      end_date: endDate.value || undefined,
-      // status: 'paid', // Optional filter if needed
+      name: search.value || undefined,  
+      page_size: pageSize.value.value,
+      page: page.value,
+      start_date: startDate.value,
+      end_date: endDate.value,
+      status: 'complete', // Optional filter if needed
     }
 
     const data = await getSettlementHistory(payload)
     settlements.value = data?.records ?? []
-    total.value = data?.total ?? 0
+    total.value = data?.total_record ?? 0
+    totalPage.value = data?.total_page ?? 0
   } catch (error: any) {
     console.error('Error loading settlement history:', error.message)
     errorMsg.value = error.message || 'Failed to load settlement history.'
@@ -143,13 +162,13 @@ const fetchSettlementHistory = async () => {
 
 const onPageSizeChange = () => {
   page.value = 1
-  fetchSettlementHistory()
+  // fetchSettlementHistory()
 }
 
 // Filtered rows for table
 const filteredData = computed(() =>
   settlements.value.filter(item =>
-    item.settled_by.toLowerCase().includes(search.value.toLowerCase())
+    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
 
@@ -159,7 +178,7 @@ onMounted(() => {
 })
 
 const onGenerateSettlement = () => {
-  router.push('/settlement/generate')
+  router.push('/settlement/wallet-settlement/generate')
 }
 
 // Handle navigation to details page
@@ -311,6 +330,10 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     accessorKey: 'status', // optional if you need sorting/filtering
     header: 'Status',
     cell: ({ row }) => {
+      // return h('span', {
+      //   class: `text-sm font-medium`
+      // }, `Total: ${row.original.total_Settled}`)
+
       const success = row.original.success
       const fail = row.original.fail
       const total = row.original.total_Settled
@@ -319,10 +342,15 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       const Icon = resolveComponent('UIcon')
 
       return h('div', { class: 'flex gap-2 items-center' }, [
-        h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-          h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-          h('span', {}, total)
+        // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+        //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+        //   h('span', {}, total)
+        // ]),
+        h(UBadge, { color: 'primary', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+          // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+          h('span', { class: 'text-sm' }, `Total: ${total}`)
         ]),
+        // Success and Fail badges
         h(UBadge, { color: 'success', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
           h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
           h('span', {}, success)
@@ -345,8 +373,8 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
         icon: 'i-lucide-eye',
         size: 'sm',
         onClick: () => navigateToDetails(row.original.settlement_id),
-        title: translations.view_details
-      }, () => translations.view)
+        // title: translations.view_details
+      },)
     ])
   }
 ]
