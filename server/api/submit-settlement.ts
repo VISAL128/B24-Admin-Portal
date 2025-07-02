@@ -9,7 +9,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<ConfirmSett
 
    let response = await submitSettlement(payload);
     return {
-        code: 'SUCCESS',
+        code: 'SUCCESS-10',
         message: 'Success',
         data: response.data as ConfirmSettlementResponse
     };

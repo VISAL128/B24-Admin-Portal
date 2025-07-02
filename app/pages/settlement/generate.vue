@@ -5,9 +5,11 @@ import type {
   Supplier,
   CpoBySupplierRequest,
   InitQuerySettlement,
-  CpoSettlement,
+  SettlementInquiryResponse,
   Settlement,
   TransactionAllocation,
+  ConfirmSettlementRequest,
+  ConfirmSettlementResponse
 } from "~/models/settlement";
 import type {
   CurrencyConfig,
@@ -23,7 +25,7 @@ import {
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import EmptyState from "~/components/TableEmptyState.vue";
-import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
+import { LOCAL_STORAGE_KEYS } from "~/utils/constants";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
@@ -31,11 +33,11 @@ const UBadge = resolveComponent("UBadge");
 const supplierApi = useSupplierApi();
 
 // Load user preferences for time format
-const storage = useStorage()
+const storage = useStorage();
 const userPreferences = computed(() => {
-  const prefs = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
-  return prefs || { timeFormat: '24h', currency: 'USD' }
-})
+  const prefs = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES);
+  return prefs || { timeFormat: "24h", currency: "USD" };
+});
 
 const df = new DateFormatter("en-US", {
   dateStyle: "medium",
@@ -56,121 +58,123 @@ const cutOffDatetime = shallowRef(now); // Default with time
 // Create computed properties that sync with cutOffDatetime
 // Generate hour options based on user preference
 const getHourOptions = computed(() => {
-  if (userPreferences.value.timeFormat === '12h') {
+  if (userPreferences.value.timeFormat === "12h") {
     return Array.from({ length: 12 }, (_, i) => {
       const hour = i + 1; // Start from 1 to 12
-      return { 
-        label: hour.toString().padStart(2, '0'), 
-        value: hour 
+      return {
+        label: hour.toString().padStart(2, "0"),
+        value: hour,
       };
     });
   } else {
-    return Array.from({ length: 24 }, (_, i) => ({ 
-      label: i.toString().padStart(2, '0'), 
-      value: i 
+    return Array.from({ length: 24 }, (_, i) => ({
+      label: i.toString().padStart(2, "0"),
+      value: i,
     }));
   }
 });
 
 // Generate minute options (same for both formats)
 const getMinuteOptions = computed(() => {
-  return Array.from({ length: 60 }, (_, i) => ({ 
-    label: i.toString().padStart(2, '0'), 
-    value: i 
+  return Array.from({ length: 60 }, (_, i) => ({
+    label: i.toString().padStart(2, "0"),
+    value: i,
   }));
 });
 
 // AM/PM options for 12-hour format
 const getPeriodOptions = computed(() => {
   return [
-    { label: 'AM', value: 'AM' },
-    { label: 'PM', value: 'PM' }
+    { label: "AM", value: "AM" },
+    { label: "PM", value: "PM" },
   ];
 });
 
 // Handle hour selection based on format
 const cutOffDateHour = computed({
   get: () => {
-    if (userPreferences.value.timeFormat === '12h') {
+    if (userPreferences.value.timeFormat === "12h") {
       const hour24 = cutOffDatetime.value.hour;
       const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
       return {
-        label: hour12.toString().padStart(2, '0'),
-        value: hour12
+        label: hour12.toString().padStart(2, "0"),
+        value: hour12,
       };
     } else {
       return {
-        label: cutOffDatetime.value.hour.toString().padStart(2, '0'),
-        value: cutOffDatetime.value.hour
+        label: cutOffDatetime.value.hour.toString().padStart(2, "0"),
+        value: cutOffDatetime.value.hour,
       };
     }
   },
   set: (hour: { label: string; value: number }) => {
-    if (userPreferences.value.timeFormat === '12h') {
+    if (userPreferences.value.timeFormat === "12h") {
       // Convert 12-hour to 24-hour format
       const period = cutOffDatePeriod.value.value;
       let hour24 = hour.value;
-      if (period === 'AM' && hour.value === 12) {
+      if (period === "AM" && hour.value === 12) {
         hour24 = 0;
-      } else if (period === 'PM' && hour.value !== 12) {
+      } else if (period === "PM" && hour.value !== 12) {
         hour24 = hour.value + 12;
       }
       cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour24 });
     } else {
       cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour.value });
     }
-  }
+  },
 });
 
 // Handle minute selection
 const cutOffDateMinute = computed({
   get: () => ({
-    label: cutOffDatetime.value.minute.toString().padStart(2, '0'),
-    value: cutOffDatetime.value.minute
+    label: cutOffDatetime.value.minute.toString().padStart(2, "0"),
+    value: cutOffDatetime.value.minute,
   }),
   set: (minute: { label: string; value: number }) => {
     cutOffDatetime.value = cutOffDatetime.value.set({ minute: minute.value });
-  }
+  },
 });
 
 // Handle AM/PM selection for 12-hour format
 const cutOffDatePeriod = computed({
   get: () => {
     const hour = cutOffDatetime.value.hour;
-    const period = hour >= 12 ? 'PM' : 'AM';
+    const period = hour >= 12 ? "PM" : "AM";
     return { label: period, value: period };
   },
   set: (period: { label: string; value: string }) => {
     const currentHour = cutOffDatetime.value.hour;
     let newHour = currentHour;
-    
-    if (period.value === 'AM' && currentHour >= 12) {
+
+    if (period.value === "AM" && currentHour >= 12) {
       newHour = currentHour - 12;
-    } else if (period.value === 'PM' && currentHour < 12) {
+    } else if (period.value === "PM" && currentHour < 12) {
       newHour = currentHour + 12;
     }
-    
+
     cutOffDatetime.value = cutOffDatetime.value.set({ hour: newHour });
-  }
+  },
 });
 
 // Format time display based on user preference
 const formatTimeDisplay = computed(() => {
-  if (!cutOffDatetime.value) return '';
-  
+  if (!cutOffDatetime.value) return "";
+
   const date = cutOffDatetime.value.toDate(getLocalTimeZone());
-  
-  if (userPreferences.value.timeFormat === '12h') {
-    return new DateFormatter("en-US", {
+  // Get locale base on current language
+  const locale = useI18n().locale.value || "en-US";
+
+  if (userPreferences.value.timeFormat === "12h") {
+    return new DateFormatter(locale, {
       dateStyle: "medium",
       timeStyle: "short",
-      hour12: true
+      hour12: true,
     }).format(date);
   } else {
-    return new DateFormatter("en-US", {
+    return new DateFormatter(locale, {
       dateStyle: "medium",
       timeStyle: "short",
-      hour12: false
+      hour12: false,
     }).format(date);
   }
 });
@@ -212,7 +216,8 @@ const defaultCurrency: CurrencyConfig = {
   locale: "km-KH",
 };
 
-const isLoading = ref(false);
+const isConfirmModalShow = ref(false);
+const isProcessWithMockupDate = true;
 
 // Add currency options computed property
 const currencyOptions = computed(() =>
@@ -227,15 +232,15 @@ const setDefaultCurrency = () => {
   if (!selectedCurrency.value && currencyOptions.value.length > 0) {
     // Try to find currency from user preferences
     const preferredCurrency = currencyOptions.value.find(
-      option => option.value.code === userPreferences.value.currency
+      (option) => option.value.code === userPreferences.value.currency
     );
-    
+
     if (preferredCurrency) {
       selectedCurrency.value = preferredCurrency;
     } else {
       // Fall back to default currency if user preference currency is not available
       const fallbackCurrency = currencyOptions.value.find(
-        option => option.value.code === defaultCurrency.code
+        (option) => option.value.code === defaultCurrency.code
       );
       selectedCurrency.value = fallbackCurrency || currencyOptions.value[0];
     }
@@ -247,20 +252,21 @@ const selectedCpo = ref<Cpo[]>([]);
 const selectedCpoIds = ref<Set<string>>(new Set());
 
 // Add search functionality
-const searchQuery = ref('');
+const searchQuery = ref("");
 
 // Add computed property for filtered CPO list
 const filteredCpoList = computed(() => {
   if (!searchQuery.value.trim()) {
     return cpoList.value;
   }
-  
+
   const query = searchQuery.value.toLowerCase().trim();
-  return cpoList.value.filter(cpo => 
-    cpo.code.toLowerCase().includes(query) ||
-    cpo.name.toLowerCase().includes(query) ||
-    cpo.email?.includes(query) ||
-    cpo.address?.includes(query)
+  return cpoList.value.filter(
+    (cpo) =>
+      cpo.code.toLowerCase().includes(query) ||
+      cpo.name.toLowerCase().includes(query) ||
+      cpo.email?.includes(query) ||
+      cpo.address?.includes(query)
   );
 });
 
@@ -291,7 +297,8 @@ const toggleAllSelection = (selectAll: boolean) => {
 
 const isAllSelected = computed(() => {
   return (
-    cpoList.value.length > 0 && selectedCpoIds.value.size === cpoList.value.length
+    cpoList.value.length > 0 &&
+    selectedCpoIds.value.size === cpoList.value.length
   );
 });
 
@@ -307,7 +314,9 @@ const columns: TableColumn<Cpo>[] = [
     id: "select",
     header: () =>
       h(resolveComponent("UCheckbox"), {
-        modelValue: isSomeSelected.value ? "indeterminate" : isAllSelected.value,
+        modelValue: isSomeSelected.value
+          ? "indeterminate"
+          : isAllSelected.value,
         "onUpdate:modelValue": (value: boolean | "indeterminate") =>
           toggleAllSelection(!!value),
         "aria-label": "Select all",
@@ -420,9 +429,10 @@ const canProceedToNext = computed(() => {
   }
   return true; // Allow proceeding for other steps
 });
-let listInquirySettlement = ref<CpoSettlement>();
+let listInquirySettlement = ref<SettlementInquiryResponse>();
+let confirmSettlementResponse = ref<ConfirmSettlementResponse | null>(null);
 let selectedCpoSettlement = ref<Settlement | null>(null);
-function handleRowClick(row: CpoSettlement) {
+function handleRowClick(row: SettlementInquiryResponse) {
   // selectedCpo.value = row;
 }
 
@@ -440,13 +450,21 @@ onMounted(() => {
 });
 
 // Watch for currency options changes to set default currency
-watch(currencyOptions, () => {
-  setDefaultCurrency();
-}, { immediate: true });
+watch(
+  currencyOptions,
+  () => {
+    setDefaultCurrency();
+  },
+  { immediate: true }
+);
 
 const fetchSuppliers = async () => {
   try {
     supplierKeys.value = await supplierApi.getSuppliers();
+    if (isProcessWithMockupDate) {
+      // Simulate loading delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
   } catch (error) {
     console.error("Failed to fetch suppliers:", error);
   }
@@ -456,10 +474,11 @@ const fetchInquirySettlementCpo = async () => {
   if (selectedSuppliers.value.length === 0) return;
   try {
     const request: InitQuerySettlement = {
-      parties: selectedCpo.value?.map((cpo) => ({
-        id: cpo.id,
-        type: "cpo",
-      })) || [],
+      parties:
+        selectedCpo.value?.map((cpo) => ({
+          id: cpo.id,
+          type: "cpo",
+        })) || [],
       main_supplier_id: selectedSupplier.value?.value.id || "",
       cutoff_date: cutOffDatetime.value
         ? cutOffDatetime.value.toDate(getLocalTimeZone()).toISOString()
@@ -468,6 +487,7 @@ const fetchInquirySettlementCpo = async () => {
     };
 
     const response = await supplierApi.getInquirySettlement(request);
+    if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000));
     listInquirySettlement.value = response;
   } catch (error) {
     console.error("Failed to fetch CPOs:", error);
@@ -476,9 +496,8 @@ const fetchInquirySettlementCpo = async () => {
   }
 };
 
-function onReconciliationNext() {
-  console.log("Selected CPOs:", selectedCpo.value.length);
-  fetchInquirySettlementCpo();
+const onReconciliationNext = async () => {
+  await fetchInquirySettlementCpo();
   stepper.value?.next();
 }
 
@@ -493,7 +512,7 @@ const handleSupplierMenuChanged = async () => {
   cpoList.value = [];
   selectedCpo.value = [];
   selectedCpoIds.value.clear();
-  searchQuery.value = ''; // Clear search when supplier changes
+  searchQuery.value = ""; // Clear search when supplier changes
 
   if (!selectedSupplier.value) return;
   selectedSuppliers.value = [selectedSupplier.value!];
@@ -520,6 +539,37 @@ const detailTableHeight = computed(() => {
   const availableHeight = Math.max(baseHeight, 300);
   return `${Math.min(availableHeight * 0.6, 500)}px`;
 });
+
+// Handle submit settlement function
+const handleSubmitSettlement = async () => {
+  try {
+    const payload: ConfirmSettlementRequest = {
+      settlement_token: listInquirySettlement.value?.token || "",
+    };
+    const response = await supplierApi.confirmSettlementAPI(payload);
+    if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000));
+    // Check if response is valid
+    if(response.error) {
+      console.error("Error confirming settlement:", response.error);
+      alert(`Error confirming settlement: ${response.error}`);
+      return;
+    }
+    if (response.data) {
+      // Handle successful settlement submission
+      console.log("Settlement submitted successfully:", response);
+      confirmSettlementResponse.value = response.data; // Store the response
+      isConfirmModalShow.value = false; // Close confirmation modal
+      // Process to next step
+      stepper.value?.next();
+    } else {
+      // Handle error in submission
+      console.error("Settlement submission failed:", response);
+      
+    }
+  } catch (error) {
+    console.error("Failed to submit settlement:", error);
+  }
+};
 
 definePageMeta({
   auth: false,
@@ -565,7 +615,6 @@ function useWindowSize(): { height: Ref<number> } {
         <div class="flex flex-col h-full justify-between">
           <!-- Step 1: Supplier Selection -->
           <UCard
-            
             class="flex-1 mt-4"
             v-if="item.title === t('settlement.generate.steps.supplier.title')"
           >
@@ -650,7 +699,9 @@ function useWindowSize(): { height: Ref<number> } {
                             <USelectMenu
                               v-model="cutOffDateMinute"
                               :items="getMinuteOptions"
-                              :placeholder="t('settlement.generate.form.minute')"
+                              :placeholder="
+                                t('settlement.generate.form.minute')
+                              "
                               class="flex-1"
                               :search-input="false"
                             />
@@ -700,11 +751,16 @@ function useWindowSize(): { height: Ref<number> } {
                   {{ t("settlement.generate.form.cpo_list") }} ({{
                     filteredCpoList.length
                   }})
-                  <span v-if="searchQuery && filteredCpoList.length !== cpoList.length" class="text-gray-500">
+                  <span
+                    v-if="
+                      searchQuery && filteredCpoList.length !== cpoList.length
+                    "
+                    class="text-gray-500"
+                  >
                     of {{ cpoList.length }}
                   </span>
                 </h1>
-                
+
                 <!-- Search Input -->
                 <div class="w-64">
                   <UInput
@@ -726,7 +782,7 @@ function useWindowSize(): { height: Ref<number> } {
                   </UInput>
                 </div>
               </div>
-              
+
               <!-- Add selected row data to the CPO list -->
               <div class="flex-1 border border-gray-200 rounded-lg bg-white">
                 <UTable
@@ -858,23 +914,16 @@ function useWindowSize(): { height: Ref<number> } {
                 item.title === t('settlement.generate.steps.supplier.title')
               "
               :disabled="!stepper?.hasNext || !canProceedToNext"
-              @click="onReconciliationNext()"
+              @click="onReconciliationNext"
+              loading-auto
             >
               {{ t("settlement.generate.form.reconcile_settle") }}
             </UButton>
-            <!-- <UButton
-              v-if="
-                item.title ===
-                t('settlement.generate.steps.reconciliation.title') && !showConfirmModal
-              "
-              :disabled="!stepper?.hasNext || !canProceedToNext"
-              @click="onReconciliationNext()"
-            >
-              {{ t("settlement.generate.form.confirm_settlement") }}
-            </UButton> -->
             <!-- Show confirm modal to confirm settlement -->
             <UModal
               transition
+              v-bind:open="isConfirmModalShow"
+              :close="false"
               :title="t('settlement.generate.form.confirm_settlement_title')"
               :body="t('settlement.generate.form.confirm_settlement_body')"
               v-if="
@@ -884,46 +933,69 @@ function useWindowSize(): { height: Ref<number> } {
             >
               <UButton
                 :label="t('settlement.generate.form.confirm_settlement')"
+                @click="isConfirmModalShow = true"
               />
 
               <template #body>
                 <div class="flex flex-col items-center text-center py-6">
                   <!-- Icon with circle background using Bill24 colors -->
-                  <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background-color: #EAF6FC;">
+                  <div
+                    class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                    style="background-color: #eaf6fc"
+                  >
                     <UIcon
                       name="i-lucide-alert-triangle"
-                      class="text-2xl opacity-80"
-                      style="color: #43B3DE;"
+                      class="text-3xl opacity-80"
+                      style="color: #43b3de"
                     />
                   </div>
 
                   <!-- Question text -->
-                  <h4 class="text-xl font-semibold mb-3" style="color: #211e1f;">
-                    {{ t('settlement.generate.form.confirm_settlement_message') }}
+                  <h4 class="text-lg font-semibold mb-1" style="color: #211e1f">
+                    {{
+                      t("settlement.generate.form.confirm_settlement_message")
+                    }}
                   </h4>
 
                   <!-- Description text -->
-                  <p class="max-w-md leading-relaxed" style="color: #B2AAA3;">
-                    {{ t('settlement.generate.form.confirm_settlement_description') }}
+                  <p
+                    class="max-w-md text-sm leading-relaxed"
+                    style="color: #b2aaa3"
+                  >
+                    {{
+                      t(
+                        "settlement.generate.form.confirm_settlement_description"
+                      )
+                    }}
                   </p>
                 </div>
               </template>
               <template #footer>
-                  <div class="flex justify-end gap-3 w-full">
-                    <UButton
-                      variant="outline"
-                      style="border-color: #D0C8C1; color: #211e1f;"
-                    >
-                      {{ t('settlement.generate.form.confirm_settlement_buttons.no') }}
-                    </UButton>
-                    <UButton
-                      style="background-color: #43B3DE; color: #FFFFFF;"
-                      @click="stepper?.next()"
-                    >
-                      {{ t('settlement.generate.form.confirm_settlement_buttons.yes') }}
-                    </UButton>
-                  </div>
-                </template>
+                <div class="flex justify-end gap-3 w-full">
+                  <UButton
+                    variant="outline"
+                    style="border-color: #d0c8c1; color: #211e1f"
+                    @click="isConfirmModalShow = false"
+                  >
+                    {{
+                      t(
+                        "settlement.generate.form.confirm_settlement_buttons.no"
+                      )
+                    }}
+                  </UButton>
+                  <UButton
+                    style="background-color: #43b3de; color: #ffffff"
+                    loading-auto
+                    @click="handleSubmitSettlement"
+                  >
+                    {{
+                      t(
+                        "settlement.generate.form.confirm_settlement_buttons.yes"
+                      )
+                    }}
+                  </UButton>
+                </div>
+              </template>
             </UModal>
           </div>
         </div>

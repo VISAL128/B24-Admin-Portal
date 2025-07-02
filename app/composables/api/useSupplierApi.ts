@@ -4,7 +4,7 @@ import type {
   ConfirmSettlementRequest, ConfirmSettlementResponse,
   SettlementHistoryQuery, SettlementHistoryResponse,
   InitQuerySettlement,
-  CpoSettlement
+  SettlementInquiryResponse
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
 import type { ApiResponse } from '~/models/baseModel'
@@ -38,9 +38,9 @@ export const useSupplierApi = () => {
 
   const getInquirySettlement = async (
     payload: InitQuerySettlement
-  ): Promise<CpoSettlement> => {
+  ): Promise<SettlementInquiryResponse> => {
     var rep = await execute(() =>
-      $fetch<ApiResponse<CpoSettlement>>(`/api/balance`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/balance`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPO settlements:', rep.message)
@@ -51,24 +51,25 @@ export const useSupplierApi = () => {
 
   const confirmSettlementAPI = async (
     payload: ConfirmSettlementRequest
-  ): Promise<ConfirmSettlementResponse> => {
+  ): Promise<{data?: ConfirmSettlementResponse; error?: string}> => {
     try {
       if (!payload.settlement_token) {
         throw new Error('Token is required for settlement confirmation')
       }
       var rep = await execute(() =>
-              $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/confirm-settlement`, { method: 'POST', body: payload })
+              $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/submit-settlement`, { method: 'POST', body: payload })
             )
     
       if (rep.code !== 'SUCCESS') {
         console.error('Failed to fetch CPO settlements:', rep.message)
+        return { error: rep.message }
         throw new Error(rep.message)
       }
     } catch (error) {
       console.error('Failed to confirm settlement:', error)
       throw error
     }
-    return rep.data 
+    return { data: rep.data }
   }
 
   const getSettlementHistory = async (

@@ -70,7 +70,7 @@ export interface TransactionAllocation {
   bank_name: string
   tran_date: string
 }
-export interface CpoSettlement {
+export interface SettlementInquiryResponse {
   token: string
   settlements: Settlement[]
 }
