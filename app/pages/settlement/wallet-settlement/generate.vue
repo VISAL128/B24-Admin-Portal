@@ -676,6 +676,10 @@ const getCpoById = (cpoId: string): Cpo | undefined => {
 
 definePageMeta({
   auth: false,
+  breadcrumbs: [
+    { label: "Wallet Settlement", to: "/settlement/wallet-settlement" },
+    { label: "Generate Settlement", active: true },
+  ],
 });
 
 import { ref, onMounted, onUnmounted } from "vue";
