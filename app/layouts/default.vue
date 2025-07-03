@@ -97,7 +97,7 @@
                   </UPopover>
                   <!-- Theme Switcher -->
                   <UButton
-                      :icon="colorMode.preference === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
+                      :icon="colorMode?.preference === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
                       variant="ghost"
                       size="sm"
                       class="px-2"
@@ -209,7 +209,7 @@
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 const { locale, t, setLocale } = useI18n();
-const { getLanguage,toggleLanguage,lang,setLanguage } = useLanguage()
+const { getLanguage, toggleLanguage, lang, setLanguage, initializeLanguage } = useLanguage()
 const popoverRef = ref<{ close: () => void } | null>(null);
 
 const isNavExpanded = ref(true);
@@ -217,6 +217,11 @@ const isNavExpanded = ref(true);
 const auth = useAuth();
 
 const user = auth.user;
+
+// Initialize language on mount
+onMounted(() => {
+  initializeLanguage();
+})
 
 const colorMode = useColorMode ? useColorMode() : null;
 const toggleTheme = () => {

@@ -37,8 +37,7 @@
     </div>
 
     <!-- Table -->
-    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto rounded-lg"
-    >
+    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       <template #empty>
         <TableEmptyState />
       </template>
@@ -81,7 +80,6 @@
 definePageMeta({
   auth: false,
   breadcrumbs: [
-    { label: 'Settlement', to: '/settlement' },
     { label: 'Wallet Settlement', active: true }
   ]
 });

@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col space-y-6">
     <!-- Breadcrumb and header section -->
-    <div
+    <!-- <div
       class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
     >
       <div>
@@ -25,12 +25,12 @@
           {{ $t("back") }}
         </UButton>
       </div>
-    </div>
+    </div> -->
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center items-center py-10">
       <UIcon
-        name="i-lucide-loader-2"
+        name="i-lucide-loader-circle"
         class="animate-spin h-8 w-8 text-gray-500"
       />
     </div>
@@ -203,6 +203,21 @@ import type {
 import SettlementHistoryTable from "~/components/tables/SettlementHistoryTable.vue";
 import type { SettlementHistoryDetailQuery } from "~/models/settlement";
 const supplierApi = useSupplierApi();
+
+
+definePageMeta({
+  auth: true,
+  breadcrumbs: [
+    {
+      label: "Wallet Settlement",
+      to: "/settlement/wallet-settlement",
+    },
+    {
+      label: "Details",
+      active: true,
+    },
+  ],
+});
 // Add getSettlementDetails to supplier API (placeholder)
 const useSettlementApi = () => {
   const getSettlementDetails = async (id: string) => {

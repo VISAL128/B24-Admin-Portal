@@ -20,7 +20,7 @@ import { getSettlementHistoryById } from '~~/server/logic/management_api_logic'
     return {
       code: 'SUCCESS',
       message: 'Success',
-      data: response.data as SettlementHistoryDetailResponse  
+      data: response.data as SettlementHistoryDetailResponse
     };
     
 })

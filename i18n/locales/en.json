@@ -2,11 +2,13 @@
   "yes": "Yes",
   "no": "No",
   "hello": "Hello",
-  "welcome": "Welcome to B24 Management Portal",
+  "welcome": "Welcome to Bill24 Management Portal",
   "lang": {
     "english": "English",
     "khmer": "Khmer"
   },
+  "12h": "12 Hour",
+  "24h": "24 Hour",
   "generate_settlement": "Generate Settlement",
   "search_by_settler": "Search by Settler...",
   "pick_a_date": "Pick a Date",
@@ -15,7 +17,50 @@
   "settlements": "Settlements",
   "wallet_settlements": "Wallet Settlements",
   "settlement_history": "Settlement History",
-  "settings": "Settings",
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences and settings",
+    "user_preferences": "User Preferences",
+    "user_preferences_desc": "Customize your experience with Bill24 Admin Portal",
+    "theme": "Theme",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_system": "System",
+    "theme_description": "Choose your preferred color theme. System will match your device's setting.",
+    "language": "Language",
+    "timezone": "Timezone",
+    "format_preferences": "Format Preferences",
+    "date_format": "Date Format",
+    "time_format": "Time Format",
+    "time_format_24h": "24-hour (13:30)",
+    "time_format_12h": "12-hour (1:30 PM)",
+    "default_currency": "Default Currency",
+    "preview": "Preview",
+    "preview_date": "Date:",
+    "preview_time": "Time:",
+    "save_preferences": "Save Preferences",
+    "saving": "Saving...",
+    "reset_to_defaults": "Reset to Defaults",
+    "preferences_saved": "Preferences saved successfully!",
+    "auto_save_enabled": "Changes are saved automatically",
+    "preferences_save_error": "Failed to save preferences. Please try again.",
+    "languages": {
+      "en": "English",
+      "km": "ខ្មែរ (Khmer)"
+    },
+    "timezones": {
+      "utc": "UTC",
+      "cambodia": "Cambodia (ICT)",
+      "thailand": "Thailand (ICT)",
+      "vietnam": "Vietnam (ICT)"
+    },
+    "currencies": {
+      "usd": "USD - US Dollar",
+      "khr": "KHR - Cambodian Riel"
+    },
+    "am": "AM",
+    "pm": "PM"
+  },
   "logout": "Logout",
   "logout_successful": "Successfully Logged Out",
   "logout_successful_message": "You have been safely logged out from the Bill24 Admin Portal. Thank you for using our service.",
@@ -102,6 +147,12 @@
         "select_currency": "Select Currency",
         "choose_suppliers": "Choose a supplier...",
         "choose_currency": "Choose a currency...",
+        "currency_options": {
+          "usd": "USD",
+          "usd_label": "US Dollar (USD)",
+          "khr": "KHR",
+          "khr_label": "Cambodian Riel (KHR)"
+        },
         "select_date": "Select a date",
         "cpo_list": "Cpo List",
         "supplier_code": "Supplier Code",
@@ -149,7 +200,15 @@
           "no": "No"
         },
         "total_amount": "Total Amount",
-        "loading_suppliers": "Loading Suppliers..."
+        "loading_suppliers": "Loading Suppliers...",
+        "time_period": "Time Period",
+        "time_format": {
+          "12h": "12-hour format",
+          "24h": "24-hour format",
+          "am": "AM",
+          "pm": "PM"
+        },
+        "am/pm": "AM/PM"
       }
     }
   }

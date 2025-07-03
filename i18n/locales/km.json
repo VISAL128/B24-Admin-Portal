@@ -2,16 +2,61 @@
   "yes": "បាទ",
   "no": "ទេ",
   "hello": "សួស្តី",
-  "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង B24",
+  "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24 Admin Portal",
   "lang": {
     "english": "អង់គ្លេស",
     "khmer": "ខ្មែរ"
   },
+  "12h": "12 ម៉ោង",
+  "24h": "24 ម៉ោង",
   "dashboard": "ទំព័រដើម",
   "settlements": "ការទូទាត់",
   "wallet_settlements": "ការទូទាត់ នៅលើ wallet",
   "user_profile": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
-  "settings": "ការកំណត់",
+  "settings": {
+    "title": "ការកំណត់",
+    "subtitle": "គ្រប់គ្រងចំណូលចិត្ត និងការកំណត់គណនីរបស់អ្នក",
+    "user_preferences": "ចំណូលចិត្តអ្នកប្រើប្រាស់",
+    "user_preferences_desc": "ប្ដូរបទពិសោធន៍របស់អ្នកជាមួយគេហទំព័រគ្រប់គ្រង Bill24",
+    "theme": "រូបរាង",
+    "theme_light": "ភ្លឺ",
+    "theme_dark": "ងងឹត",
+    "theme_system": "ប្រព័ន្ធ",
+    "theme_description": "ជ្រើសរើសរូបរាងពណ៌ដែលអ្នកចូលចិត្ត។ ប្រព័ន្ធនឹងប្រើតាមការកំណត់របស់ឧបករណ៍អ្នក។",
+    "language": "ភាសា",
+    "timezone": "ល្វែងម៉ោង",
+    "format_preferences": "ចំណូលចិត្តទម្រង់",
+    "date_format": "ទម្រង់កាលបរិច្ឆេទ",
+    "time_format": "ទម្រង់ម៉ោង",
+    "time_format_24h": "24-ម៉ោង (13:30)",
+    "time_format_12h": "12-ម៉ោង (1:30 PM)",
+    "default_currency": "រូបិយប័ណ្ណលំនាំដើម",
+    "preview": "មើលជាមុន",
+    "preview_date": "កាលបរិច្ឆេទ:",
+    "preview_time": "ម៉ោង:",
+    "save_preferences": "រក្សាទុកចំណូលចិត្ត",
+    "saving": "កំពុងរក្សាទុក...",
+    "reset_to_defaults": "កំណត់ឡើងវិញទៅលំនាំដើម",
+    "preferences_saved": "រក្សាទុកចំណូលចិត្តដោយជោគជ័យ!",
+    "auto_save_enabled": "ការផ្លាស់ប្តូរត្រូវបានរក្សាទុកដោយស្វ័យប្រវត្តិ",
+    "preferences_save_error": "បរាជ័យក្នុងការរក្សាទុកចំណូលចិត្ត។ សូមព្យាយាមម្តងទៀត។",
+    "languages": {
+      "en": "អង់គ្លេស",
+      "km": "ខ្មែរ (Khmer)"
+    },
+    "timezones": {
+      "utc": "UTC",
+      "cambodia": "កម្ពុជា (ICT)",
+      "thailand": "ថៃ (ICT)",
+      "vietnam": "វៀតណាម (ICT)"
+    },
+    "currencies": {
+      "usd": "USD - ដុល្លារអាមេរិក",
+      "khr": "KHR - រៀលកម្ពុជា"
+    },
+    "am": "ព្រឹក",
+    "pm": "ល្ងាច"
+  },
   "logout": "ចាកចេញ",
   "logout_successful": "ចាកចេញដោយជោគជ័យ",
   "logout_successful_message": "អ្នកបានចាកចេញដោយសុវត្ថិភាពពីគេហទំព័រគ្រប់គ្រង Bill24 ។ សូមអរគុណសម្រាប់ការប្រើប្រាស់សេវាកម្មរបស់យើង។",
@@ -127,6 +172,12 @@
         "select_main_supplier": "ជ្រើសរើសអ្នកផ្គត់ផ្គង់សម្រាប់ការទូទាត់",
         "select_cutoff_date": "ជ្រើសរើសកាលបរិច្ឆេទកាត់ផ្តាច់",
         "select_currency": "ជ្រើសរើសរូបិយប័ណ្ណ",
+        "currency_options": {
+          "usd": "USD",
+          "usd_label": "ដុល្លារសហរដ្ឋអាមេរិក (USD)",
+          "khr": "KHR",
+          "khr_label": "រៀលកម្ពុជា (KHR)"
+        },
         "choose_suppliers": "ជ្រើសរើសអ្នកផ្គត់ផ្គង់...",
         "choose_currency": "ជ្រើសរើសរូបិយប័ណ្ណ...",
         "select_date": "ជ្រើសរើសកាលបរិច្ឆេទ",
@@ -176,7 +227,15 @@
           "no": "ទេ"
         },
         "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-        "loading_suppliers": "ទាញយកអ្នកផ្គត់ផ្គង់..."
+        "loading_suppliers": "ទាញយកអ្នកផ្គត់ផ្គង់...",
+        "time_period": "រយៈពេល",
+        "time_format": {
+          "12h": "ទ្រង់ទ្រាយ 12 ម៉ោង",
+          "24h": "ទ្រង់ទ្រាយ 24 ម៉ោង",
+          "am": "ព្រឹក",
+          "pm": "ល្ងាច"
+        },
+        "am/pm": "ព្រឹក/ល្ងាច"
       }
     }
   }

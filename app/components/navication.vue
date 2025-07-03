@@ -12,40 +12,47 @@ const props = withDefaults(defineProps<Props>(), {
 const { t } = useI18n()
 
 const route = useRoute()
-let itemsCal = computed( ()=>{
-  return [];
+
+// Reactive state for active navigation items
+const activeStates = ref({
+  dashboard: false,
+  settlements: false,
+  settlementsOpen: false,
+  walletSettlements: false,
+  settings: false,
 })
-const items = ref<NavigationMenuItem[][]>([
+
+const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
-      label: computed(() => t("dashboard")),
+      label: t("dashboard"),
       icon: 'i-material-symbols-light-space-dashboard-rounded',
       size: 'lg',
       to: '/',
-      active: false,
+      active: activeStates.value.dashboard,
     },
     {
-      label: computed(()=> t("settlements")),
+      label: t("settlements"),
       icon: 'i-material-symbols-light-lab-profile-rounded',
       size: 'lg',
-      active: false,
-      open: false,
+      active: activeStates.value.settlements,
+      open: activeStates.value.settlementsOpen,
       children: [
         {
-          label: computed(()=>  t("wallet_settlements")),
+          label: t("wallet_settlements"),
           icon: 'i-material-symbols-light-lab-profile-rounded',
           size: 'lg',
           to: '/settlement/wallet-settlement',
-          active: false,
+          active: activeStates.value.walletSettlements,
         },
       ],
     },
     {
-      label: computed(()=> t("settings")),
+      label: t("settings.title"),
       icon: 'i-material-symbols-light-settings-rounded',
       size: 'lg',
       to: '/settings',
-      active: false,
+      active: activeStates.value.settings,
     },
   ]
 ])
@@ -62,35 +69,26 @@ onMounted(() => {
 function activateCurrentRoute() {
   const currentPath = route.path;
   
-  items.value.forEach(group => {
-    group.forEach(item => {
-      // Reset active state for all items
-      item.active = false;
-      
-      // Check if current item matches the route
-      if (item.to === currentPath) {
-        item.active = true;
-      }
-      
-      // Handle children items
-      if (item.children) {
-        let hasActiveChild = false;
-        item.children.forEach(child => {
-          child.active = false;
-          if (child.to === currentPath) {
-            child.active = true;
-            hasActiveChild = true;
-          }
-        });
-        
-        // If a child is active, keep the parent open and active
-        if (hasActiveChild) {
-          item.active = true;
-          item.open = true;
-        }
-      }
-    });
-  });
+  // Reset all active states
+  activeStates.value.dashboard = false;
+  activeStates.value.settlements = false;
+  activeStates.value.settlementsOpen = false;
+  activeStates.value.walletSettlements = false;
+  activeStates.value.settings = false;
+  
+  // Set active based on current path
+  if (currentPath === '/') {
+    activeStates.value.dashboard = true;
+  } else if (currentPath === '/settings') {
+    activeStates.value.settings = true;
+  } else if (currentPath.startsWith('/settlement/wallet-settlement')) {
+    activeStates.value.settlements = true;
+    activeStates.value.settlementsOpen = true;
+    activeStates.value.walletSettlements = true;
+  } else if (currentPath.startsWith('/settlement')) {
+    activeStates.value.settlements = true;
+    activeStates.value.settlementsOpen = true;
+  }
 }
 
 // Get version from runtime config
@@ -104,7 +102,6 @@ const appVersion = ref($config.public.appVersion || 'v1.0.0')
       linkLeadingIcon: 'shrink-0 size-6',
       linkLabel: 'text-md truncate',
       link: 'p-2 cursor-pointer',
-      transition: 'ease-in-out duration-800',
     }"/>
     
     <div v-if="!props.collapsed" class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">

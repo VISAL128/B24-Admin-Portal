@@ -97,8 +97,8 @@ const getSecondOptions = computed(() => {
 // AM/PM options for 12-hour format
 const getPeriodOptions = computed(() => {
   return [
-    { label: "AM", value: "AM" },
-    { label: "PM", value: "PM" },
+    { label: t('settlement.generate.form.time_format.am'), value: "AM" },
+    { label: t('settlement.generate.form.time_format.pm'), value: "PM" },
   ];
 });
 
@@ -163,7 +163,8 @@ const cutOffDatePeriod = computed({
   get: () => {
     const hour = cutOffDatetime.value.hour;
     const period = hour >= 12 ? "PM" : "AM";
-    return { label: period, value: period };
+    const labelPeriod = t(`settlement.generate.form.time_format.${period.toLowerCase()}`);
+    return { label: labelPeriod, value: period };
   },
   set: (period: { label: string; value: string }) => {
     const currentHour = cutOffDatetime.value.hour;
@@ -246,7 +247,7 @@ const isProcessWithMockupDate = false;
 // Add currency options computed property
 const currencyOptions = computed(() =>
   useCurrency().getAllCurrencies.value.map((currency) => ({
-    label: `${currency.name} (${currency.code})`,
+    label: currency.code === 'USD' ? t("settlement.generate.form.currency_options.usd_label") : currency.code === 'KHR' ? t("settlement.generate.form.currency_options.khr_label") : currency.name,
     value: currency,
   }))
 );
@@ -541,6 +542,7 @@ const fetchSuppliers = async () => {
       // Simulate loading delay
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   } catch (error) {
     console.error("Failed to fetch suppliers:", error);
   } finally {
@@ -677,7 +679,6 @@ const getCpoById = (cpoId: string): Cpo | undefined => {
 definePageMeta({
   auth: false,
   breadcrumbs: [
-    { label: 'Settlement', to: '/settlement' },
     { label: "Wallet Settlement", to: "/settlement/wallet-settlement" },
     { label: "Generate Settlement", active: true },
   ],
@@ -757,7 +758,7 @@ function useWindowSize(): { height: Ref<number> } {
                     >
                       <template #leading="{ modelValue, ui }">
                         <UIcon
-                          :name="isLoadingSupplier ? 'i-lucide-loader-2' : 'i-lucide-users'"
+                          :name="isLoadingSupplier ? 'i-lucide-loader-circle' : 'i-lucide-users'"
                           :class="['mr-2 text-gray-500', { 'animate-spin': isLoadingSupplier }]"
                         />
                       </template>
@@ -829,7 +830,7 @@ function useWindowSize(): { height: Ref<number> } {
                               v-if="userPreferences.timeFormat === '12h'"
                               v-model="cutOffDatePeriod"
                               :items="getPeriodOptions"
-                              placeholder="AM/PM"
+                              :placeholder="t('settlement.generate.form.am/pm')"
                               class="flex-1"
                               :search-input="false"
                             />
