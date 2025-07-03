@@ -43,13 +43,20 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  auth: true
-})
-
 const { user } = useAuth()
 
 useHead({
   title: 'Dashboard - Bill24 Admin Portal'
 })
+const {t} = useI18n()
+// let breadcrumbs = computed(() => [
+//   { label: 'dashboard', to: '/dashboard' },
+//   { label: 'Home', to: '/', active: true }
+// ])
+definePageMeta({
+  auth: true,
+  // breadcrumbs: breadcrumbs
+})
+
+
 </script>
