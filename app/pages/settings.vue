@@ -39,6 +39,14 @@ const defaultPreferences: UserPreferences = {
   currency: 'USD'
 }
 
+type Option = { label: string; value: string }
+
+const selectedLanguage = ref<Option>({ label: t('settings.languages.en'), value: 'en' })
+const selectedTimezone = ref<Option>({ label: t('settings.timezones.utc'), value: 'UTC' })
+const selectedDateFormat = ref<Option>({ label: 'DD/MM/YYYY', value: 'DD/MM/YYYY' })
+const selectedTimeFormat = ref<{ label: string; value: '24h' | '12h' }>({ label: t('settings.time_format_24h'), value: '24h' })
+const selectedCurrency = ref<Option>({ label: t('settings.currencies.usd'), value: 'USD' })
+
 // Load preferences from localStorage or use defaults
 const loadPreferences = (): UserPreferences => {
   const stored = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
@@ -56,7 +64,7 @@ const loadPreferences = (): UserPreferences => {
 const preferences = ref<UserPreferences>(loadPreferences())
 
 // Make language options reactive to locale changes
-const languageOptions = computed(() => [
+const languageOptions = computed<Option[]>(() => [
   { value: 'en', label: t('settings.languages.en') },
   { value: 'km', label: t('settings.languages.km') },
 ])
@@ -146,7 +154,7 @@ const getDatePreview = computed(() => {
   const day = String(now.getDate()).padStart(2, '0')
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const year = now.getFullYear()
-  
+
   switch (preferences.value.dateFormat) {
     case 'DD/MM/YYYY':
       return `${day}/${month}/${year}`
@@ -251,6 +259,65 @@ const resetToDefaults = async () => {
   }, 3000)
 }
 
+// Initialize selected options based on current preferences
+const initializeSelectedOptions = (loadedPref: UserPreferences) => {
+  // Find the matching option objects for each preference
+  selectedLanguage.value = { label: loadedPref.language === 'en' ? t('settings.languages.en') : t('settings.languages.km'), value: loadedPref.language }
+  selectedCurrency.value = {
+    label: loadedPref.currency === 'USD' ? t('settings.currencies.usd') : t('settings.currencies.khr'),
+    value: loadedPref.currency
+  }
+  selectedTimezone.value = {
+    label: timezoneOptions.value.find(option => option.value === loadedPref.timezone)?.label || t('settings.timezones.utc'),
+    value: loadedPref.timezone
+  
+  }
+  selectedDateFormat.value = {
+    label: dateFormatOptions.find(option => option.value === loadedPref.dateFormat)?.label || 'DD/MM/YYYY',
+    value: loadedPref.dateFormat
+  }
+  selectedTimeFormat.value = {
+    label: loadedPref.timeFormat === '24h' ? t('settings.time_format_24h') : t('settings.time_format_12h'),
+    value: loadedPref.timeFormat
+  }
+}
+
+// Watch for changes in selected options and update preferences
+watch(selectedLanguage, (newValue) => {
+  if (newValue && preferences.value.language !== newValue.value) {
+    preferences.value.language = newValue.value
+  }
+})
+
+watch(selectedTimezone, (newValue) => {
+  if (newValue && preferences.value.timezone !== newValue.value) {
+    preferences.value.timezone = newValue.value
+  }
+})
+
+watch(selectedDateFormat, (newValue) => {
+  if (newValue && preferences.value.dateFormat !== newValue.value) {
+    preferences.value.dateFormat = newValue.value
+  }
+})
+
+watch(selectedTimeFormat, (newValue) => {
+  if (newValue && preferences.value.timeFormat !== newValue.value) {
+    preferences.value.timeFormat = newValue.value
+  }
+})
+
+watch(selectedCurrency, (newValue) => {
+  if (newValue && preferences.value.currency !== newValue.value) {
+    preferences.value.currency = newValue.value
+  }
+})
+
+// Watch for preference changes and update selected options (for reset functionality)
+watch(() => preferences.value, (newValue) => {
+  initializeSelectedOptions(newValue)
+}, { deep: true })
+
 // Load preferences on component mount
 onMounted(() => {
   isInitialLoad = true
@@ -270,6 +337,9 @@ onMounted(() => {
     colorMode.preference = savedPreferences.theme
   }
   
+  // Initialize selected options based on loaded preferences
+  initializeSelectedOptions(savedPreferences)
+
   // Enable auto-save after initial load
   setTimeout(() => {
     isInitialLoad = false
@@ -386,33 +456,31 @@ onMounted(() => {
           <!-- Language & Region -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label for="language" class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
+              <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
                 {{ $t('settings.language') }}
               </label>
-              <select
-                id="language"
-                v-model="preferences.language"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#43B3DE] focus:border-[#43B3DE] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
-                  {{ lang.label }}
-                </option>
-              </select>
+              <USelectMenu
+                v-model="selectedLanguage"
+                :items="languageOptions"
+                placeholder="Select language"
+                :search-input="false"
+                class="w-full"
+              />
             </div>
 
             <div>
-              <label for="timezone" class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
+              <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
                 {{ $t('settings.timezone') }}
               </label>
-              <select
-                id="timezone"
-                v-model="preferences.timezone"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#43B3DE] focus:border-[#43B3DE] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option v-for="tz in timezoneOptions" :key="tz.value" :value="tz.value">
-                  {{ tz.label }}
-                </option>
-              </select>
+              <USelectMenu
+                v-model="selectedTimezone"
+                :items="timezoneOptions"
+                option-attribute="label"
+                value-attribute="value"
+                placeholder="Select timezone"
+                :search-input="false"
+                class="w-full"
+              />
             </div>
           </div>
 
@@ -422,48 +490,48 @@ onMounted(() => {
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label for="dateFormat" class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
+                <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
                   {{ $t('settings.date_format') }}
                 </label>
-                <select
-                  id="dateFormat"
-                  v-model="preferences.dateFormat"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#43B3DE] focus:border-[#43B3DE] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option v-for="format in dateFormatOptions" :key="format.value" :value="format.value">
-                    {{ format.label }}
-                  </option>
-                </select>
+                <USelectMenu
+                  v-model="selectedDateFormat"
+                  :items="dateFormatOptions"
+                  option-attribute="label"
+                  value-attribute="value"
+                  placeholder="Select date format"
+                  :search-input="false"
+                  class="w-full"
+                />
               </div>
 
               <div>
-                <label for="timeFormat" class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
+                <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
                   {{ $t('settings.time_format') }}
                 </label>
-                <select
-                  id="timeFormat"
-                  v-model="preferences.timeFormat"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#43B3DE] focus:border-[#43B3DE] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option v-for="format in timeFormatOptions" :key="format.value" :value="format.value">
-                    {{ format.label }}
-                  </option>
-                </select>
+                <USelectMenu
+                  v-model="selectedTimeFormat"
+                  :items="timeFormatOptions"
+                  option-attribute="label"
+                  value-attribute="value"
+                  placeholder="Select time format"
+                  :search-input="false"
+                  class="w-full"
+                />
               </div>
 
               <div>
-                <label for="currency" class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
+                <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
                   {{ $t('settings.default_currency') }}
                 </label>
-                <select
-                  id="currency"
-                  v-model="preferences.currency"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#43B3DE] focus:border-[#43B3DE] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option v-for="curr in currencyOptions" :key="curr.value" :value="curr.value">
-                    {{ curr.label }}
-                  </option>
-                </select>
+                <USelectMenu
+                  v-model="selectedCurrency"
+                  :items="currencyOptions"
+                  option-attribute="label"
+                  value-attribute="value"
+                  placeholder="Select currency"
+                  :search-input="false"
+                  class="w-full"
+                />
               </div>
             </div>
 
