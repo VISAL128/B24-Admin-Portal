@@ -36,7 +36,11 @@ const supplierApi = useSupplierApi();
 const storage = useStorage();
 const userPreferences = computed(() => {
   const prefs = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES);
-  return prefs || { timeFormat: "24h", currency: "USD" };
+  return prefs || { 
+    timeFormat: "24h", 
+    currency: "USD",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone // Default to browser timezone
+  };
 });
 
 const df = new DateFormatter("en-US", {
@@ -76,6 +80,14 @@ const getHourOptions = computed(() => {
 
 // Generate minute options (same for both formats)
 const getMinuteOptions = computed(() => {
+  return Array.from({ length: 60 }, (_, i) => ({
+    label: i.toString().padStart(2, "0"),
+    value: i,
+  }));
+});
+
+// Generate second options (same for both formats)
+const getSecondOptions = computed(() => {
   return Array.from({ length: 60 }, (_, i) => ({
     label: i.toString().padStart(2, "0"),
     value: i,
@@ -132,6 +144,17 @@ const cutOffDateMinute = computed({
   }),
   set: (minute: { label: string; value: number }) => {
     cutOffDatetime.value = cutOffDatetime.value.set({ minute: minute.value });
+  },
+});
+
+// Handle second selection
+const cutOffDateSecond = computed({
+  get: () => ({
+    label: cutOffDatetime.value.second.toString().padStart(2, "0"),
+    value: cutOffDatetime.value.second,
+  }),
+  set: (second: { label: string; value: number }) => {
+    cutOffDatetime.value = cutOffDatetime.value.set({ second: second.value });
   },
 });
 
@@ -333,27 +356,27 @@ const columns: TableColumn<Cpo>[] = [
     size: 50,
     maxSize: 50,
   },
-  {
-    accessorKey: "parent_supplier.code",
-    header: () => t("settlement.generate.form.supplier_code"),
-    size: 120,
-    maxSize: 120,
-  },
-  {
-    accessorKey: "parent_supplier.name",
-    header: () => t("settlement.generate.form.supplier_name"),
-    size: 180,
-    maxSize: 200,
-  },
+  // {
+  //   accessorKey: "parent_supplier.code",
+  //   header: () => t("settlement.generate.form.supplier_code"),
+  //   size: 120,
+  //   maxSize: 120,
+  // },
+  // {
+  //   accessorKey: "parent_supplier.name",
+  //   header: () => t("settlement.generate.form.supplier_name"),
+  //   size: 180,
+  //   maxSize: 200,
+  // },
   { 
     accessorKey: "code", 
-    header: () => t("settlement.generate.form.cpo_code"),
+    header: () => t("settlement.generate.form.biller_code"),
     size: 120,
     maxSize: 120,
   },
   { 
     accessorKey: "name", 
-    header: () => t("settlement.generate.form.cpo_name"),
+    header: () => t("settlement.generate.form.biller_name"),
     size: 200,
     maxSize: 250,
   },
@@ -369,26 +392,34 @@ const columns: TableColumn<Cpo>[] = [
     size: 200,
     maxSize: 250,
   },
-  {
-    accessorKey: "address",
-    header: () => t("settlement.generate.form.address"),
-    size: 200,
-    maxSize: 300,
-  },
+  // {
+  //   accessorKey: "address",
+  //   header: () => t("settlement.generate.form.address"),
+  //   size: 200,
+  //   maxSize: 300,
+  // },
 ];
 
 const cpoSettlementColumns: TableColumn<Settlement>[] = [
   {
-    accessorKey: "supplier.code",
+    accessorKey: "cpo.code",
     header: () => t("settlement.generate.form.cpo_code"),
     size: 120,
     maxSize: 120,
+    cell: ({row}) => {
+      const cpo = getCpoById(row.original.party_id);
+      return cpo ? cpo.code : row.original.cpo.code;
+    },
   },
   {
-    accessorKey: "supplier.name",
+    accessorKey: "cpo.name",
     header: () => t("settlement.generate.form.cpo_name"),
     size: 200,
     maxSize: 250,
+    cell: ({row}) => {
+      const cpo = getCpoById(row.original.party_id);
+      return cpo ? cpo.name : row.original.cpo.name;
+    },
   },
   {
     accessorKey: "amount",
@@ -524,11 +555,11 @@ const fetchInquirySettlementCpo = async () => {
       parties:
         selectedCpo.value?.map((cpo) => ({
           id: cpo.id,
-          type: "cpo",
+          type: "2",
         })) || [],
       main_supplier_id: selectedSupplier.value?.value.id || "",
       cutoff_date: cutOffDatetime.value
-        ? cutOffDatetime.value.toDate(getLocalTimeZone()).toISOString()
+        ? cutOffDatetime.value.toDate(userPreferences.value.timezone).toISOString()
         : new Date().toISOString(),
       currency: selectedCurrency.value?.value.code || defaultCurrency.code,
     };
@@ -569,6 +600,12 @@ const handleSupplierMenuChanged = async () => {
   cpoList.value = await supplierApi.getListCPOApi({
     parent_supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
   });
+  
+  // Auto-select all CPOs by default
+  if (cpoList.value.length > 0) {
+    toggleAllSelection(true);
+    selectedCpo.value = [...cpoList.value];
+  }
 };
 
 // Add viewport height tracking
@@ -632,6 +669,11 @@ const handleBackToSupplierSelection = () => {
   stepper.value?.prev();
 };
 
+// Get Cpo by cpo id
+const getCpoById = (cpoId: string): Cpo | undefined => {
+  return cpoList.value.find((cpo) => cpo.id === cpoId);
+};
+
 definePageMeta({
   auth: false,
 });
@@ -684,14 +726,14 @@ function useWindowSize(): { height: Ref<number> } {
                 <!-- Supplier Selector -->
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">
-                    {{ t("settlement.generate.form.select_suppliers") }}
+                    {{ t("settlement.generate.form.select_main_supplier") }}
                   </h1>
                   <div class="flex flex-row items-center gap-2">
                     <USelectMenu
                       v-model="selectedSupplier"
                       :items="
                         supplierKeys.map((supplier) => ({
-                          label: supplier.name,
+                          label: `${supplier.code} - ${supplier.name}`,
                           value: supplier,
                         }))
                       "
@@ -749,7 +791,7 @@ function useWindowSize(): { height: Ref<number> } {
                       <div class="p-4 space-y-4">
                         <UCalendar v-model="cutOffDatetime" />
                         <div class="border-t pt-4">
-                          <label class="block text-sm font-medium mb-2">
+                          <label class="block text-sm font-semibold mb-2">
                             {{ t("settlement.generate.form.select_time") }}
                           </label>
                           <div class="flex gap-2">
@@ -765,6 +807,15 @@ function useWindowSize(): { height: Ref<number> } {
                               :items="getMinuteOptions"
                               :placeholder="
                                 t('settlement.generate.form.minute')
+                              "
+                              class="flex-1"
+                              :search-input="false"
+                            />
+                            <USelectMenu
+                              v-model="cutOffDateSecond"
+                              :items="getSecondOptions"
+                              :placeholder="
+                                t('settlement.generate.form.second')
                               "
                               class="flex-1"
                               :search-input="false"
@@ -796,6 +847,7 @@ function useWindowSize(): { height: Ref<number> } {
                     icon="i-lucide-dollar-sign"
                     :placeholder="t('settlement.generate.form.choose_currency')"
                     class="w-full"
+                    :search-input="false"
                   >
                     <template #leading>
                       <UIcon
@@ -812,16 +864,16 @@ function useWindowSize(): { height: Ref<number> } {
             <div class="mt-4 flex flex-col">
               <div class="flex items-center justify-between mb-4">
                 <h1 class="text-sm font-semibold">
-                  {{ t("settlement.generate.form.cpo_list") }} ({{
-                    filteredCpoList.length
+                  {{ t("settlement.generate.form.biller_list") }} ({{
+                    filteredCpoList.length || 0
                   }})
                   <span
                     v-if="
-                      searchQuery && filteredCpoList.length !== cpoList.length
+                      searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)
                     "
                     class="text-gray-500"
                   >
-                    of {{ cpoList.length }}
+                    of {{ cpoList.length || 0 }}
                   </span>
                 </h1>
 
@@ -830,7 +882,7 @@ function useWindowSize(): { height: Ref<number> } {
                   <UInput
                     v-model="searchQuery"
                     icon="i-lucide-search"
-                    :placeholder="t('settlement.generate.form.search_cpo')"
+                    :placeholder="t('settlement.generate.form.search_biller')"
                     class="w-full"
                     :trailing="searchQuery ? true : false"
                   >
@@ -848,7 +900,7 @@ function useWindowSize(): { height: Ref<number> } {
               </div>
 
               <!-- Add selected row data to the CPO list -->
-              <div class="flex-1 border border-gray-200 rounded-lg bg-white">
+              <div class="flex-1 border border-gray-200 rounded-lg">
                 <UTable
                   ref="table"
                   :data="filteredCpoList"
@@ -874,7 +926,7 @@ function useWindowSize(): { height: Ref<number> } {
             <div class="flex flex-col lg:flex-row gap-6 mt-4">
               <!-- Master Table -->
               <div
-                class="flex-1 overflow-x-auto border border-gray-200 rounded-lg bg-white"
+                class="flex-2 overflow-x-auto border border-gray-200 rounded-lg"
               >
                 <div class="overflow-x-auto">
                   <UTable
@@ -893,57 +945,71 @@ function useWindowSize(): { height: Ref<number> } {
               </div>
 
               <!-- Detail Table -->
-              <div
-                v-if="
-                  selectedCpoSettlement?.transaction_allocations &&
-                  selectedCpoSettlement.transaction_allocations.length > 0
-                "
-                class="lg:w-1/3 p-4 border border-gray-200 rounded-lg bg-white min-h-[300px] flex flex-col"
+              <Transition
+                name="slide-left"
+                enter-active-class="transition-all duration-300 ease-out"
+                leave-active-class="transition-all duration-300 ease-in"
+                enter-from-class="transform translate-x-full opacity-0"
+                enter-to-class="transform translate-x-0 opacity-100"
+                leave-from-class="transform translate-x-0 opacity-100"
+                leave-to-class="transform translate-x-full opacity-0"
               >
-                <div class="flex justify-between items-center">
-                  <h3 class="text-lg font-semibold">
-                    {{ t("settlement.generate.form.transaction_history") }}
-                  </h3>
-                  <UButton
-                    icon="i-lucide-x"
-                    size="xs"
-                    color="gray"
-                    @click="selectedCpoSettlement = null"
-                  />
-                </div>
                 <div
-                  class="flex-1 border border-gray-200 rounded-lg"
+                  v-if="
+                    selectedCpoSettlement?.transaction_allocations &&
+                    selectedCpoSettlement.transaction_allocations.length > 0
+                  "
+                  class="lg:w-1/3 lg:flex-1 p-4 border border-gray-200 rounded-lg bg-white min-h-[300px] flex flex-col shadow-lg"
                 >
-                  <UTable
-                      ref="table"
-                      :data="selectedCpoSettlement.transaction_allocations"
-                      :columns="cpoSettlementTransactionColumns"
-                      sticky
-                      class="w-full"
-                      :style="{ maxHeight: detailTableHeight }"
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">
+                      {{ t("settlement.generate.form.transaction_history") }}
+                    </h3>
+                    <UButton
+                      icon="i-lucide-x"
+                      size="xs"
+                      color="gray"
+                      variant="ghost"
+                      @click="selectedCpoSettlement = null"
+                      class="hover:bg-gray-100 transition-colors duration-200"
                     />
+                  </div>
+                  <div
+                    class="flex-1 border border-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <UTable
+                        ref="table"
+                        :data="selectedCpoSettlement.transaction_allocations"
+                        :columns="cpoSettlementTransactionColumns"
+                        sticky
+                        class="w-full animate-fade-in"
+                        :style="{ maxHeight: detailTableHeight }"
+                      />
+                  </div>
+                  <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-600">
+                      {{ t("settlement.generate.form.total_amount") }}:
+                      <span class="font-bold text-gray-800 ml-1">
+                        {{
+                          useCurrency().formatAmount(
+                            selectedCpoSettlement.amount,
+                            selectedCpoSettlement.currency
+                              ? selectedCpoSettlement.currency
+                              : defaultCurrency.code
+                          )
+                        }}
+                        <span class="ml-1">
+                          {{
+                            selectedCpoSettlement.currency
+                              ? selectedCpoSettlement.currency
+                              : defaultCurrency.code
+                          }}</span
+                        >
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <p class="mt-2 text-sm font-semibold text-gray-500">
-                  {{ t("settlement.generate.form.total_amount") }}:
-                  <span class="font-bold text-gray-800">
-                    {{
-                      useCurrency().formatAmount(
-                        selectedCpoSettlement.amount,
-                        selectedCpoSettlement.currency
-                          ? selectedCpoSettlement.currency
-                          : defaultCurrency.code
-                      )
-                    }}
-                    <span>
-                      {{
-                        selectedCpoSettlement.currency
-                          ? selectedCpoSettlement.currency
-                          : defaultCurrency.code
-                      }}</span
-                    >
-                  </span>
-                </p>
-              </div>
+              </Transition>
             </div>
           </div>
 
@@ -1014,6 +1080,7 @@ function useWindowSize(): { height: Ref<number> } {
               "
             >
               <UButton
+              :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
                 :label="t('settlement.generate.form.confirm_settlement')"
                 @click="isConfirmModalShow = true"
               />
@@ -1033,7 +1100,7 @@ function useWindowSize(): { height: Ref<number> } {
                   </div>
 
                   <!-- Question text -->
-                  <h4 class="text-lg font-semibold mb-1" style="color: #211e1f">
+                  <h4 class="text-lg font-semibold mb-1">
                     {{
                       t("settlement.generate.form.confirm_settlement_message")
                     }}
@@ -1056,7 +1123,7 @@ function useWindowSize(): { height: Ref<number> } {
                 <div class="flex justify-end gap-3 w-full">
                   <UButton
                     variant="outline"
-                    style="border-color: #d0c8c1; color: #211e1f"
+                    style="border-color: #d0c8c1;"
                     @click="isConfirmModalShow = false"
                   >
                     {{
@@ -1079,9 +1146,116 @@ function useWindowSize(): { height: Ref<number> } {
                 </div>
               </template>
             </UModal>
+            <!-- Show No Cpo Settlement Modal -->
+             <!-- <UModal
+             v-bind:open="showNoCpoSettlementModal"
+             v-bind:close="false"
+             transition
+             :title="t('settlement.generate.form.no_cpo_settlement_title')"
+             >
+             <template #body>
+                <div class="flex flex-col items-center text-center py-6">
+                  <div
+                    class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                    style="background-color: #fff3cd"
+                  >
+                    <UIcon
+                      name="i-lucide-alert-triangle"
+                      class="text-3xl opacity-80"
+                      style="color: #ffc107"
+                    />
+                  </div>
+
+                  
+                  <h4 class="text-lg font-semibold mb-1">
+                    {{
+                      t("settlement.generate.form.no_cpo_settlement_message")
+                    }}
+                  </h4>
+                  <p
+                    class="max-w-md text-sm leading-relaxed"
+                    style="color: #b2aaa3"
+                  >
+                    {{
+                      t(
+                        "settlement.generate.form.no_cpo_settlement_description"
+                      )
+                    }}
+                  </p>
+                </div>
+              </template>
+              <template #footer>
+                <div class="flex justify-end gap-3 w-full">
+                  <UButton
+                    style="background-color: #43b3de; color: #ffffff"
+                    @click="showNoCpoSettlementModal = false"
+                  >
+                    {{
+                      t(
+                        "yes"
+                      )
+                    }}
+                  </UButton>
+                </div>
+              </template>
+            </UModal> -->
           </div>
         </div>
       </template>
     </UStepper>
   </div>
 </template>
+
+<style scoped>
+.slide-left-enter-active, .slide-left-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.slide-left-enter-from, .slide-left-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.slide-left-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+.slide-left-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Enhanced master table animations */
+.master-table-container {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left center;
+}
+
+.master-table-container.with-detail {
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.master-table-container.full-width {
+  box-shadow: none;
+}
+
+/* Bill24 color for highlight effect */
+.master-table-container:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 3px;
+  background-color: #43B3DE;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.master-table-container.with-detail:after {
+  opacity: 0.5;
+}
+
+/* Add smooth flex transitions */
+.flex-2, .flex-\[2\] {
+  transition: flex 0.5s ease-in-out;
+}
+</style>

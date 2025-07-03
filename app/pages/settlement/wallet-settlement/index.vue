@@ -37,7 +37,7 @@
     </div>
 
     <!-- Table -->
-    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-white"
+    <UTable ref="table" :data="filteredData" :columns="columns" sticky class="flex-1 overflow-auto rounded-lg"
     >
       <template #empty>
         <TableEmptyState />
@@ -317,7 +317,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     cell: ({ row }) =>
       new Date(row.getValue('settlement_date')).toLocaleDateString()
   },
-  { accessorKey: 'total_supplier', header: t('Total Supplier') },
+  // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     accessorKey: 'total_amount',
     header: 'Total Amount',

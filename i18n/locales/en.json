@@ -1,4 +1,6 @@
 {
+  "yes": "Yes",
+  "no": "No",
   "hello": "Hello",
   "welcome": "Welcome to B24 Management Portal",
   "lang": {
@@ -91,7 +93,11 @@
         "next": "Next"
       },
       "form": {
+        "no_cpo_settlement_title": "No CPO",
+        "no_cpo_settlement_message": "No CPO available for settlement.",
+        "no_cpo_settlement_description": "Please select a supplier, cutoff date, and currency. Then try again.",
         "select_suppliers": "Select Supplier for Settlement",
+        "select_main_supplier": "Select a Main Supplier for Settlement",
         "select_cutoff_date": "Select Cut-off Date",
         "select_currency": "Select Currency",
         "choose_suppliers": "Choose a supplier...",
@@ -102,6 +108,9 @@
         "supplier_name": "Supplier Name",
         "cpo_code": "CPO Code",
         "cpo_name": "CPO Name",
+        "biller_code": "Biller Code",
+        "biller_name": "Biller Name",
+        "biller_list": "Biller List",
         "phone": "Phone",
         "email": "Email",
         "address": "Address",
@@ -130,6 +139,7 @@
         "minute": "Minute",
         "second": "Second",
         "search_cpo": "Search CPO",
+        "search_biller": "Search Biller by Code or Name",
         "search_placeholder": "Search by CPO Code, Name, Email, or Address",
         "confirm_settlement_message": "Are you sure you want to confirm the settlement?",
         "confirm_settlement_title": "Confirmation",

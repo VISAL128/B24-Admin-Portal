@@ -1,3 +1,5 @@
+import type { PartyType } from "@/utils/enumModel";
+
 // 1. Get All Suppliers
 export interface Supplier {
   id: string

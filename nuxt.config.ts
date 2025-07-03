@@ -92,7 +92,7 @@ export default defineNuxtConfig({
       appVersion: process.env.APP_VERSION || 'v1.0.0'
     }
   },
-  ssr: false, // Important: OIDC works better with SPA mode
+  // ssr: false, // Important: OIDC works better with SPA mode
   // UI Theme Configuration for Bill24
   ui: {
     theme: {
@@ -104,7 +104,8 @@ export default defineNuxtConfig({
         'warning',
         'error',
         'neutral'
-      ]
+      ],
+      transitions: true
     }
-  },
+  }
 })

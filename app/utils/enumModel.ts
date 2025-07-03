@@ -27,3 +27,10 @@ enum FilterType {
   Select = 'select',
   MultiSelect = 'multi_select'
 }
+
+enum PartyType {
+  Supplier = 2,
+  Bank = 1
+}
+
+export { SortDirection, FilterOperator, FilterType, PartyType };

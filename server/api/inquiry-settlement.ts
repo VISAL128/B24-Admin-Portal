@@ -1,10 +1,9 @@
 import { defineEventHandler, readBody } from 'h3'
-import type { BalanceQueryRequest } from '~/models/settlement'
 import type { ApiResponse } from '~/models/baseModel'
 import { SettlementInquiryRequest, SettlementInquiryResponse } from '../model/management_api/settlement'
 import { inquirySettlementWallet } from '../logic/management_api_logic'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<any>> => {
+export default defineEventHandler(async (event): Promise<ApiResponse<SettlementInquiryResponse>> => {
   const walletInquiryRequest = await readBody<SettlementInquiryRequest>(event)
 
    let response = await inquirySettlementWallet(walletInquiryRequest);

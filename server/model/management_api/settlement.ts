@@ -19,6 +19,11 @@ export interface Settlement {
     id: string;
     party_id: string;
     party_type: number; // 2 for CPO
+    // party: {
+    //     id: string;
+    //     code: string;
+    //     name: string;
+    // };
     amount: number;
     settlement_bank_id: string;
     settlement_account_id?: string; // Optional, if not provided, it can be null
