@@ -80,6 +80,10 @@
 
 definePageMeta({
   auth: false,
+  breadcrumbs: [
+    { label: 'Settlement', to: '/settlement' },
+    { label: 'Wallet Settlement', active: true }
+  ]
 });
 import {
   h, ref, computed, onMounted, shallowRef, watch, resolveComponent
@@ -171,6 +175,14 @@ const filteredData = computed(() =>
     (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
+
+onBeforeMount(() => {
+  // Set default date range to current month
+  startDate.value = new CalendarDate(today.getFullYear(), today.getMonth(), 1).toString()
+  endDate.value = new CalendarDate(today.getFullYear(), today.getMonth(), 30).toString()
+  modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth(),  1)
+  modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth(), 30)
+})
 
 // Initial load
 onMounted(() => {

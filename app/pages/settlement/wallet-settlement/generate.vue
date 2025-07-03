@@ -677,6 +677,7 @@ const getCpoById = (cpoId: string): Cpo | undefined => {
 definePageMeta({
   auth: false,
   breadcrumbs: [
+    { label: 'Settlement', to: '/settlement' },
     { label: "Wallet Settlement", to: "/settlement/wallet-settlement" },
     { label: "Generate Settlement", active: true },
   ],
