@@ -4,7 +4,7 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   compatibilityDate: '2025-05-15',
-  debug: true,
+  debug: false,
   devtools: { enabled: true },
   devServer: {
     host: 'localhost',
