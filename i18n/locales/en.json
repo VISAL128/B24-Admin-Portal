@@ -17,6 +17,22 @@
   "settlements": "Settlements",
   "wallet_settlements": "Wallet Settlements",
   "settlement_history": "Settlement History",
+  "settlement_history_details": {
+    "title": "Settlement History Details",
+    "subtitle": "View detailed settlement history records",
+    "search_placeholder": "Search by CPO Code, Name, Email, or Address",
+    "no_records_found": "No records found",
+    "loading": "Loading settlement history...",
+    "total_settled": "Total Settled",
+    "total_failed": "Total Failed",
+    "total_amount": "Total Amount",
+    "currency": "Currency",
+    "settlement_date": "Settlement Date",
+    "settlement_time": "Settlement Time",
+    "status": "Status",
+    "status_success": "Success",
+    "status_failed": "Failed"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your account preferences and settings",

@@ -118,7 +118,8 @@ export interface SettlementHistoryQuery {
 }
 
 export interface SettlementHistoryDetail {
-  party_id: string
+  party_id: string // Don't have from response, unused
+  settlement_id: string
   supplier_id: string
   supplier: {
     id: string
@@ -157,6 +158,23 @@ export interface SettlementHistoryRecord {
   fail: number
   settle_details: SettlementHistoryDetail[]
 }
+
+export interface SettlementHistoryMainDetails {
+  settlement_history_id: string
+  settlement_date: string,
+  created_date: string,
+  total_supplier: number
+  total_amount: string
+  currency: string
+  supplier_id: string
+  supplier: Supplier
+  settled_by: string
+  totalSettled: number
+  success: number
+  fail: number
+  settle_details: SettlementHistoryDetail[]
+}
+
 export interface SettlementHistoryResponse {
   total_page: number
   page: number
@@ -168,7 +186,7 @@ export interface SettlementHistoryDetailResponse {
   total_page: number
   page: number
   total_record: number
-  records: SettlementHistoryRecord
+  records: SettlementHistoryMainDetails
 }
 
 export interface SettlementHistoryDetailQuery {

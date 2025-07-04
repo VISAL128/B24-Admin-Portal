@@ -47,128 +47,185 @@
     </UAlert>
 
     <!-- Content when data is loaded -->
-    <div
-      v-else-if="settlementDetails"
-      class="grid grid-cols-1 lg:grid-cols-3 gap-6"
-    >
-      <!-- Settlement overview card -->
-      <UCard class="lg:col-span-1">
-        <!-- <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">{{ $t('settlement.overview') }}</h2>
-            <UBadge color="primary" size="lg">
-              {{ settlementDetails.success ? $t('settlement.status.success') : $t('settlement.status.failed') }}
-            </UBadge>
-          </div>
-        </template> -->
+    <div v-else-if="settlementDetails" class="space-y-2 px-4">
+      <UCard>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          {{ $t("settlement_history_details.total_amount") }}
+        </p>
+        <p class="text-2xl font-semibold text-primary dark:text-white">
+          {{ useCurrency().formatAmount(settlementDetails.records.total_amount) }}
+          {{ settlementDetails.records.currency }}
+        </p>
+      </UCard>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Settlement overview card -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ $t("settlement.overview") }}
+              </h2>
+              <UBadge
+                :color="
+                  settlementDetails.records.success >
+                  settlementDetails.records.fail
+                    ? 'success'
+                    : 'error'
+                "
+                size="lg"
+                variant="soft"
+              >
+                {{
+                  settlementDetails.records.success >
+                  settlementDetails.records.fail
+                    ? $t("settlement_history_details.status_success")
+                    : $t("settlement_history_details.status_failed")
+                }}
+              </UBadge>
+            </div>
+          </template>
 
-        <div class="space-y-4">
-          <div
-            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
-          >
-            <span class="text-gray-600 dark:text-gray-400">{{
-              $t("settlement_id")
-            }}</span>
-            <span class="font-medium">{{
-              settlementDetails.records.id
-            }}</span>
-          </div>
-          <div
-            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
-          >
-            <span class="text-gray-600 dark:text-gray-400">{{
-              $t("settlement_date")
-            }}</span>
-            <span class="font-medium">{{
-              formatDate(settlementDetails.records.settlement_date.toString() || "")
-            }}</span>
-          </div>
-          <div
-            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
-          >
-            <span class="text-gray-600 dark:text-gray-400">{{
-              $t("total_supplier")
-            }}</span>
-            <span class="font-medium">{{
-              settlementDetails.records.total_supplier
-            }}</span>
-          </div>
-          <div
-            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
-          >
-            <span class="text-gray-600 dark:text-gray-400">{{
-              $t("total_amount")
-            }}</span>
-            <span class="font-medium"
-              >{{ settlementDetails.records.total_amount }}
-              {{ settlementDetails.records.currency_id }}</span
+          <div class="space-y-6">
+            <div
+              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
             >
+              <span
+                class="text-sm font-medium text-gray-600 dark:text-gray-400"
+                >{{ $t("settlement_id") }}</span
+              >
+              <div class="flex flex-row justify-end items-center gap-2">
+                <span
+                  class="text-right text-sm2 font-semibold text-gray-900 dark:text-white"
+                  >{{ settlementDetails.records.settlement_history_id }}</span
+                >
+                <UButton
+                  size="sm"
+                  color="info"
+                  variant="ghost"
+                  :icon="isCopied ? 'i-lucide-check' : 'i-lucide-copy'"
+                  :class="
+                    isCopied
+                      ? 'text-primary'
+                      : 'text-gray-500 hover:text-[#43B3DE]'
+                  "
+                  @click="copySettlementId"
+                  :title="isCopied ? 'Copied!' : 'Copy to clipboard'"
+                />
+              </div>
+            </div>
+            <div
+              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
+            >
+              <span
+                class="text-sm font-medium text-gray-600 dark:text-gray-400"
+                >{{ $t("settlement_date") }}</span
+              >
+              <span class="font-semibold text-gray-900 dark:text-white">{{
+                formatDate(
+                  settlementDetails.records.settlement_date.toString() || ""
+                )
+              }}</span>
+            </div>
+            <div
+              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
+            >
+              <span
+                class="text-sm font-medium text-gray-600 dark:text-gray-400"
+                >{{ $t("total_supplier") }}</span
+              >
+              <span class="font-semibold text-gray-900 dark:text-white">{{
+                settlementDetails.records.total_supplier
+              }}</span>
+            </div>
+            <div
+              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
+            >
+              <span
+                class="text-sm font-medium text-gray-600 dark:text-gray-400"
+                >{{ $t("total_amount") }}</span
+              >
+              <span class="font-semibold text-[#43B3DE]"
+                >{{ settlementDetails.records.total_amount }}
+                {{ settlementDetails.records.currency }}</span
+              >
+            </div>
+            <div class="flex justify-between items-center py-3">
+              <span
+                class="text-sm font-medium text-gray-600 dark:text-gray-400"
+                >{{ $t("settled_by") }}</span
+              >
+              <span class="font-semibold text-gray-900 dark:text-white">{{
+                settlementDetails.records.settled_by
+              }}</span>
+            </div>
           </div>
-          <div
-            class="flex justify-between items-center py-2 border-b dark:border-gray-700"
-          >
-            <span class="text-gray-600 dark:text-gray-400">{{
-              $t("settled_by")
-            }}</span>
-            <span class="font-medium">{{ settlementDetails.records.settled_by }}</span>
+        </UCard>
+
+        <!-- Settlement stats card -->
+        <UCard>
+          <template #header>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ $t("settlement.statistics") }}
+            </h2>
+          </template>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total transactions card -->
+            <div
+              class="bg-gradient-to-br from-[#43B3DE] to-[#7FCDE8] rounded-lg p-6 text-white"
+            >
+              <div class="flex flex-col items-center text-center">
+                <div class="bg-white/20 p-3 rounded-full mb-4">
+                  <UIcon name="i-lucide-sigma" class="w-8 h-8" />
+                </div>
+                <h3 class="text-sm font-medium opacity-90 mb-2">
+                  {{ $t("settlement.total_transactions") }}
+                </h3>
+                <p class="text-3xl font-bold">
+                  {{ settlementDetails.records.totalSettled }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Success transactions card -->
+            <div
+              class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 text-white"
+            >
+              <div class="flex flex-col items-center text-center">
+                <div class="bg-white/20 p-3 rounded-full mb-4">
+                  <UIcon name="i-lucide-check" class="w-8 h-8" />
+                </div>
+                <h3 class="text-sm font-medium opacity-90 mb-2">
+                  {{ $t("settlement.successful") }}
+                </h3>
+                <p class="text-3xl font-bold">
+                  {{ settlementDetails.records.success }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Failed transactions card -->
+            <div
+              class="bg-gradient-to-br from-red-200 to-red-300 rounded-lg p-6 text-white"
+            >
+              <div class="flex flex-col items-center text-center">
+                <div class="bg-white/20 p-3 rounded-full mb-4">
+                  <UIcon name="i-lucide-x" class="w-8 h-8" />
+                </div>
+                <h3 class="text-sm font-medium opacity-90 mb-2">
+                  {{ $t("settlement.failed") }}
+                </h3>
+                <p class="text-3xl font-bold">
+                  {{ settlementDetails.records.fail }}
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </UCard>
+        </UCard>
 
-      <!-- Settlement stats card -->
-      <UCard class="lg:col-span-2">
-        <template #header>
-          <h2 class="text-lg font-semibold">
-            {{ $t("settlement.statistics") }}
-          </h2>
-        </template>
+        <!-- Settlement details table (Optional) -->
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Total transactions card -->
-          <UCard class="bg-gray-50 dark:bg-gray-800">
-            <div class="flex flex-col items-center text-center p-2">
-              <UIcon name="i-lucide-sigma" class="w-8 h-8 text-gray-600 mb-2" />
-              <h3 class="text-lg font-medium">
-                {{ $t("settlement.total_transactions") }}
-              </h3>
-              <p class="text-3xl font-bold">
-                {{ settlementDetails.records.total_settled }}
-              </p>
-            </div>
-          </UCard>
-
-          <!-- Success transactions card -->
-          <UCard class="bg-green-50 dark:bg-green-900/20">
-            <div class="flex flex-col items-center text-center p-2">
-              <UIcon
-                name="i-lucide-check"
-                class="w-8 h-8 text-green-600 mb-2"
-              />
-              <h3 class="text-lg font-medium">
-                {{ $t("settlement.successful") }}
-              </h3>
-              <p class="text-3xl font-bold text-green-600">
-                {{ settlementDetails.records.success }}
-              </p>
-            </div>
-          </UCard>
-
-          <!-- Failed transactions card -->
-          <UCard class="bg-red-50 dark:bg-red-900/20">
-            <div class="flex flex-col items-center text-center p-2">
-              <UIcon name="i-lucide-x" class="w-8 h-8 text-red-600 mb-2" />
-              <h3 class="text-lg font-medium">{{ $t("settlement.failed") }}</h3>
-              <p class="text-3xl font-bold text-red-600">
-                {{ settlementDetails.records.fail }}
-              </p>
-            </div>
-          </UCard>
-        </div>
-      </UCard>
-
-      <!-- Settlement details table (Optional) -->
-
-      <!-- <UCard class="lg:col-span-3">
+        <!-- <UCard class="lg:col-span-3">
         <template #header>
           <h2 class="text-lg font-semibold">{{ $t('settlement.transactions') }}</h2>
         </template>
@@ -177,6 +234,7 @@
           <p>{{ $t('settlement.detailed_transactions_message') }}</p>
         </div>
       </UCard> -->
+      </div>
     </div>
     <SettlementHistoryTable
       :settlementHistorys="settlementHistoryDetails"
@@ -188,12 +246,19 @@
   </div>
 </template>
 
+<style>
+.text-sm2 {
+  font-size: 0.775rem;
+}
+</style>
+
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "#i18n";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
 import { useApiExecutor } from "~/composables/api/useApiExecutor";
+import { useClipboard } from "~/composables/useClipboard";
 import type {
   SettlementHistoryDetail,
   SettlementHistoryDetailResponse,
@@ -202,8 +267,8 @@ import type {
 } from "~/models/settlement";
 import SettlementHistoryTable from "~/components/tables/SettlementHistoryTable.vue";
 import type { SettlementHistoryDetailQuery } from "~/models/settlement";
+import { useCurrency } from "~/composables/utils/useCurrency";
 const supplierApi = useSupplierApi();
-
 
 definePageMeta({
   auth: true,
@@ -222,6 +287,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { execute } = useApiExecutor();
+const { copy, isCopied } = useClipboard();
 
 // Get settlement ID from route params
 const settlementId = route.params.id as string;
@@ -268,6 +334,17 @@ const getStatusColor = (status: string) => {
 // Go back to settlement list
 const goBack = () => {
   router.back();
+};
+
+// Copy settlement ID to clipboard
+const copySettlementId = async () => {
+  const success = await copy(
+    settlementDetails.value?.records.settlement_history_id?.toString() || ""
+  );
+  if (success) {
+    // Optional: Show toast notification
+    console.log("Settlement ID copied to clipboard");
+  }
 };
 
 // Fetch settlement details
