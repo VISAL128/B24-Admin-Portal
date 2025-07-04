@@ -70,7 +70,7 @@ export interface TransactionAllocation {
   currency_id: string
   bank_ref: string
   bank_name: string
-  tran_date: string
+  transaction_date: string
 }
 export interface SettlementInquiryResponse {
   token: string

@@ -3,12 +3,15 @@ import type { TableColumn } from "@nuxt/ui";
 import type { min } from "date-fns";
 import { ref } from "vue";
 import { useCurrency } from "~/composables/utils/useCurrency";
+import { useStatusColor } from "~/composables/utils/useStatusColor";
 import type {
   SettlementHistoryDetail,
   SettlementHistoryQuery,
 } from "~/models/settlement";
 
 const { t } = useI18n();
+const { getStatusBackgroundColor } = useStatusColor();
+
 interface Props {
   settlementHistorys: SettlementHistoryDetail[];
   settlement_id: string;
@@ -45,14 +48,14 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   },
   {
     accessorKey: "cpo.code",
-    header: () => t("settlement.cpo.code"),
+    header: () => t("settlement.biller.code"),
     cell: ({ row }) => row.original.cpo?.code || "N/A",
     size: 150,
     maxSize: 150,
   },
   {
     accessorKey: "cpo.name",
-    header: () => t("settlement.cpo.name"),
+    header: () => t("settlement.biller.name"),
     cell: ({ row }) => row.original.cpo?.name || "N/A",
     size: 200,
     maxSize: 200,
@@ -73,6 +76,11 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     accessorKey: "status",
     header: () => t("settlement.status"),
+    cell: ({ row }) => {
+      const status = row.original.status;
+      const colorClass = getStatusBackgroundColor(status);
+      return h('span', {class: `px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}, status);
+    },
     size: 120,
     maxSize: 120,
   },

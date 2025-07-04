@@ -130,7 +130,11 @@
     "settlement_bank": "Settlement Bank",
     "status": "Status",
     "history": "History",
-    "supplier": "Supplier",
+    "supplier": "Main Supplier",
+    "biller": {
+      "code": "Biller Code",
+      "name": "Biller Name"
+    },
     "cpo": {
       "code": "CPO Code",
       "name": "CPO Name"

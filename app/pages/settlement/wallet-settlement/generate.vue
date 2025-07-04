@@ -208,8 +208,8 @@ const { t } = useI18n();
 const items: StepperItem[] = [
   {
     value: "Supplier",
-    title: t("settlement.generate.steps.supplier.title"),
-    description: t("settlement.generate.steps.supplier.description"),
+    title: useI18n().t("settlement.generate.steps.supplier.title"),
+    description: useI18n().t("settlement.generate.steps.supplier.description"),
     icon: "i-lucide-users",
   },
   {
@@ -468,10 +468,22 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
 
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   {
-    accessorKey: "tran_date",
+    accessorKey: "transaction_date",
     header: () => t("settlement.generate.form.date"),
     size: 150,
     maxSize: 150,
+    cell: ({ row }) => {
+      return row.original.transaction_date
+        ? useFormat().formatDateTime(row.original.transaction_date, {
+            dateStyle: "short",
+            timeStyle: "short",
+          }) || new Date(row.original.transaction_date).toLocaleDateString("en-GB", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+        : "-";
+    },
   },
   {
     accessorKey: "amount",
@@ -688,6 +700,7 @@ definePageMeta({
 });
 
 import { ref, onMounted, onUnmounted } from "vue";
+import { useFormat } from "~/composables/utils/useFormat";
 
 function useWindowSize(): { height: Ref<number> } {
   const height = ref(window.innerHeight);
@@ -968,7 +981,7 @@ function useWindowSize(): { height: Ref<number> } {
                     selectedCpoSettlement?.transaction_allocations &&
                     selectedCpoSettlement.transaction_allocations.length > 0
                   "
-                  class="lg:w-1/3 lg:flex-1 p-4 border border-gray-200 rounded-lg bg-white min-h-[300px] flex flex-col shadow-lg"
+                  class="lg:w-1/3 lg:flex-1 p-4 border border-gray-200 rounded-lg min-h-[300px] flex flex-col shadow-lg"
                 >
                   <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">
@@ -984,7 +997,7 @@ function useWindowSize(): { height: Ref<number> } {
                     />
                   </div>
                   <div
-                    class="flex-1 border border-gray-200 rounded-lg overflow-hidden"
+                    class="flex-1 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
                   >
                     <UTable
                         ref="table"
@@ -995,10 +1008,10 @@ function useWindowSize(): { height: Ref<number> } {
                         :style="{ maxHeight: detailTableHeight }"
                       />
                   </div>
-                  <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <p class="text-sm font-semibold text-gray-600">
+                  <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">
                       {{ t("settlement.generate.form.total_amount") }}:
-                      <span class="font-bold text-gray-800 ml-1">
+                      <span class="font-bold text-gray-800 dark:text-gray-200 ml-1">
                         {{
                           useCurrency().formatAmount(
                             selectedCpoSettlement.amount,

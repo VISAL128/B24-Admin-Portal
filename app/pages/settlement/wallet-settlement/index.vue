@@ -147,6 +147,7 @@ import { useI18n } from "vue-i18n";
 import TableEmptyState from "~/components/TableEmptyState.vue";
 import { useUserPreferences } from "~/composables/utils/useUserPreferences";
 import { useCurrency } from "~/composables/utils/useCurrency";
+import { useFormat } from "~/composables/utils/useFormat";
 
 const { t } = useI18n();
 const { getSettlementHistory, getSuppliers } = useSupplierApi();
@@ -425,11 +426,14 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     header: useI18n().t("settlement.settlement_date"),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
-      new Date(row.original.created_date).toLocaleDateString("en-GB", {
+      useFormat().formatDateTime(row.original.created_date, {
+        dateStyle: "short",
+        timeStyle: "short",
+      }) || new Date(row.original.created_date).toLocaleDateString("en-GB", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
-      }),
+      })
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
