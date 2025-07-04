@@ -16,11 +16,17 @@ import { getSettlementHistoryById } from '~~/server/logic/management_api_logic'
     }
 
     const response = await getSettlementHistoryById(payload);
-    // Do NOT call .json() again here!
+    // Mapping the response to the expected format
+    const settlementHistoryDettailResponse: SettlementHistoryDetailResponse = {
+      total_page: response.total_page,
+      page: response.page,
+      total_record: response.total_record,
+      records: response.data as SettlementHistoryRecord
+    };
     return {
       code: 'SUCCESS',
       message: 'Success',
-      data: response.data as SettlementHistoryDetailResponse
+      data: settlementHistoryDettailResponse
     };
     
 })

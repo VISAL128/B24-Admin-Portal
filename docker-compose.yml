@@ -9,9 +9,9 @@ services:
       - NODE_ENV=development
       # Enable experimental WebCrypto API support
       # - NODE_OPTIONS=--experimental-global-webcrypto
-      - KEYCLOAK_URL=https://ids.oone.bz
+      - KEYCLOAK_URL=https://ids.oone.bz/reams/EP-Staging-ids
       - KEYCLOAK_REALM=EP-Staging-ids
       - KEYCLOAK_CLIENT_ID=b24-admin-portal
       - KEYCLOAK_CLIENT_SECRET=yxPl1d1zSHTi2oeYkh6gpJApPQEMzlIw
-      - KEYCLOAK_CALLBACK_URL=http://172.16.81.141:23055/get-started
+      - KEYCLOAK_REDIRECT_URI=0.0.0.0:23055/auth/keycloak/callback
       - APP_VERSION=1.0.0

@@ -2,36 +2,6 @@
  * Example usage of the generic useStorage composable
  */
 
-// Example 1: Simple user preferences storage
-export const useUserPreferences = () => {
-  interface UserPreferences {
-    theme: 'light' | 'dark'
-    language: string
-    notifications: boolean
-  }
-
-  const storage = useStorage<UserPreferences>()
-  const PREFERENCES_KEY = 'user-preferences'
-
-  const savePreferences = (preferences: UserPreferences) => {
-    return storage.setItem(PREFERENCES_KEY, preferences)
-  }
-
-  const getPreferences = (): UserPreferences | null => {
-    return storage.getItem(PREFERENCES_KEY)
-  }
-
-  const clearPreferences = () => {
-    return storage.removeItem(PREFERENCES_KEY)
-  }
-
-  return {
-    savePreferences,
-    getPreferences,
-    clearPreferences
-  }
-}
-
 // Example 2: Cache with expiration
 export const useCache = <T = any>(defaultExpirationInSeconds: number = 3600) => {
   const storage = useStorage<T>()

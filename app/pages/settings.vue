@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
+import type { UserPreferences } from '~/models/userPreference'
 
 definePageMeta({
   auth: true
@@ -12,14 +13,6 @@ useHead({
   title: `${t('settings.title')} - Bill24 Admin Portal`
 })
 
-interface UserPreferences {
-  theme: 'light' | 'dark' | 'system'
-  language: string
-  timezone: string
-  dateFormat: string
-  timeFormat: '24h' | '12h'
-  currency: string
-}
 
 const isLoading = ref(false)
 const isSaving = ref(false)
@@ -28,16 +21,6 @@ const showErrorMessage = ref(false)
 
 // Initialize storage composable
 const storage = useStorage<UserPreferences>()
-
-// Default preferences
-const defaultPreferences: UserPreferences = {
-  theme: 'light',
-  language: 'en',
-  timezone: 'UTC',
-  dateFormat: 'DD/MM/YYYY',
-  timeFormat: '24h',
-  currency: 'USD'
-}
 
 type Option = { label: string; value: string }
 
@@ -50,8 +33,8 @@ const selectedCurrency = ref<Option>({ label: t('settings.currencies.usd'), valu
 // Load preferences from localStorage or use defaults
 const loadPreferences = (): UserPreferences => {
   const stored = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
-  const basePreferences = stored ? { ...defaultPreferences, ...stored } : { ...defaultPreferences }
-  
+  const basePreferences = stored ? { ...DEFAULT_USER_PREFERENCES, ...stored } : { ...DEFAULT_USER_PREFERENCES }
+
   // Sync language with current i18n locale
   basePreferences.language = locale.value
   
@@ -230,16 +213,16 @@ const resetToDefaults = async () => {
   isInitialLoad = true
   
   // Reset preferences to defaults
-  preferences.value = { ...defaultPreferences }
-  
+  preferences.value = { ...DEFAULT_USER_PREFERENCES }
+
   // Update language locale
-  if (defaultPreferences.language === 'en' || defaultPreferences.language === 'km') {
-    setLocale(defaultPreferences.language as 'en' | 'km')
+  if (DEFAULT_USER_PREFERENCES.language === 'en' || DEFAULT_USER_PREFERENCES.language === 'km') {
+    setLocale(DEFAULT_USER_PREFERENCES.language as 'en' | 'km')
   }
   
   // Update color mode theme
-  colorMode.preference = defaultPreferences.theme
-  
+  colorMode.preference = DEFAULT_USER_PREFERENCES.theme
+
   // Clear from localStorage
   storage.removeItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
   localStorage.removeItem('user-lang')

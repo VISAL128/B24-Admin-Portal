@@ -70,7 +70,7 @@
               $t("settlement_id")
             }}</span>
             <span class="font-medium">{{
-              settlementDetails.records.settlement_id
+              settlementDetails.records.id
             }}</span>
           </div>
           <div
@@ -101,7 +101,7 @@
             }}</span>
             <span class="font-medium"
               >{{ settlementDetails.records.total_amount }}
-              {{ settlementDetails.records.currency }}</span
+              {{ settlementDetails.records.currency_id }}</span
             >
           </div>
           <div
@@ -132,7 +132,7 @@
                 {{ $t("settlement.total_transactions") }}
               </h3>
               <p class="text-3xl font-bold">
-                {{ settlementDetails.records.total_Settled }}
+                {{ settlementDetails.records.total_settled }}
               </p>
             </div>
           </UCard>
@@ -218,35 +218,6 @@ definePageMeta({
     },
   ],
 });
-// Add getSettlementDetails to supplier API (placeholder)
-const useSettlementApi = () => {
-  const getSettlementDetails = async (id: string) => {
-    // This is a placeholder. In a real app, you would call an API endpoint
-    console.log(`Fetching details for settlement ${id}`);
-    const response = await supplierApi.getSettlementHistoryById(
-      settlementHistoryQuery.value
-    );
-
-    // Return dummy data for now
-    return {
-      settlement_id: id,
-      settlement_date: new Date().toISOString(),
-      total_supplier: 5,
-      total_amount: 1250.75,
-      currency: "USD",
-      settled_by: "Admin User",
-      status: "Completed",
-      total_Settled: 25,
-      success: 23,
-      fail: 2,
-    };
-  };
-
-  return {
-    getSettlementDetails,
-  };
-};
-
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -261,6 +232,8 @@ const error = ref("");
 const settlementDetails = ref<SettlementHistoryDetailResponse>();
 const settlementHistoryDetails = ref<SettlementHistoryDetail[]>([]);
 const settlementHistoryQuery = ref<SettlementHistoryDetailQuery>({
+  search: "",
+  status: "success",
   settlement_history_id: settlementId,
   page: 1,
   page_size: 10,

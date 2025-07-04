@@ -1,3 +1,5 @@
+import type { UserPreferences } from "~/models/userPreference"
+
 export const APP_CONSTANTS = {
   DEFAULT_TITLE: 'Bill24 Admin Portal',
   DEFAULT_PAGE_SIZE_OPTIONS: [
@@ -15,4 +17,14 @@ export const LOCAL_STORAGE_KEYS = {
   // AUTHENTICATED_DATA: 'authenticated-data',
   LOCALE : 'locale',
   THEME: 'theme',
+}
+
+// Default preferences
+export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  theme: 'light',
+  language: 'en',
+  timezone: 'UTC',
+  dateFormat: 'DD/MM/YYYY',
+  timeFormat: '24h',
+  currency: 'USD'
 }
