@@ -97,7 +97,8 @@
   "generate_settlement": "បង្កើតការទូទាត់",
   "export": "ទាញយក",
   "of": "ពី",
-  "row_selected": "ជួរដេកបានជ្រើស។",
+  "row_selected": "ជួរដេកបានជ្រើស",
+  "total": "សរុប",
   "pdf": "PDF",
   "excel": "Excel",
   "settlement_id": "លេខសម្គាល់ការទូទាត់",
@@ -144,6 +145,7 @@
     },
     "total_amount": "ចំនួនទឹកប្រាក់សរុប",
     "currency": "រូបិយប័ណ្ណ",
+    "settlement_date": "កាលបរិច្ឆេទទូទាត់",
     "generate": {
       "steps": {
         "supplier": {
@@ -247,6 +249,8 @@
     "total_transactions": "ប្រតិបត្តិការសរុប",
     "total_amount": "ចំនួនទឹកប្រាក់សរុប",
     "total_settled": "ចំនួនទឹកប្រាក់ដែលបានទូទាត់",
+    "total_supplier": "ចំនួនអ្នកផ្គត់ផ្គង់",
+    "settled_by": "ទូទាត់ដោយ",
     "total_failed": "ចំនួនទឹកប្រាក់ដែលបានបរាជ័យ",
     "settlement_details": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "settlement_id": "លេខសម្គាល់ការទូទាត់",
@@ -258,5 +262,11 @@
     "status": "ស្ថានភាព",
     "status_success": "ជោគជ័យ",
     "status_failed": "បរាជ័យ"
+  },
+  "table": {
+    "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
+    "loading": "កំពុងទាញយក...",
+    "no_records_found": "រកមិនឃើញកំណត់ត្រា",
+    "search_placeholder": "ស្វែងរក..."
   }
 }

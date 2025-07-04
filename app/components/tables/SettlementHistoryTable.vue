@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
+import type { min } from "date-fns";
 import { ref } from "vue";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import type {
@@ -99,8 +100,8 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
       :data="props.settlementHistorys"
       :columns="columns"
       sticky
-      class="w-full"
-      :style="{ maxHeight: '400px' }"
+      class="w-full h-full"
+      :style="{ maxHeight: '400px', minHeight: '300px' }"
     />
     <template #footer>
       <div class="flex items-center gap-4">

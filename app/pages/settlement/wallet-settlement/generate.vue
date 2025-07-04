@@ -207,16 +207,19 @@ const { t } = useI18n();
 
 const items: StepperItem[] = [
   {
+    value: "Supplier",
     title: t("settlement.generate.steps.supplier.title"),
     description: t("settlement.generate.steps.supplier.description"),
     icon: "i-lucide-users",
   },
   {
+    value: "Reconciliation",
     title: t("settlement.generate.steps.reconciliation.title"),
     description: t("settlement.generate.steps.reconciliation.description"),
     icon: "i-lucide-check-square",
   },
   {
+    value: "Confirmation",
     title: t("settlement.generate.steps.confirmation.title"),
     description: t("settlement.generate.steps.confirmation.description"),
     icon: "i-lucide-check-circle",
@@ -725,7 +728,7 @@ function useWindowSize(): { height: Ref<number> } {
           <!-- Step 1: Supplier Selection -->
           <UCard
             class="flex-1 mt-4"
-            v-if="item.title === t('settlement.generate.steps.supplier.title')"
+            v-if="item.value === 'Supplier'"
           >
             <template #header>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -926,7 +929,7 @@ function useWindowSize(): { height: Ref<number> } {
           <!-- Step 2: Reconciliation -->
           <div
             v-if="
-              item.title === t('settlement.generate.steps.reconciliation.title')
+              item.value === 'Reconciliation'
             "
           >
             <div class="flex flex-col lg:flex-row gap-6 mt-4">
@@ -1022,7 +1025,7 @@ function useWindowSize(): { height: Ref<number> } {
           <!-- Step 3: Settlement Request Success -->
           <div
             v-if="
-              item.title === t('settlement.generate.steps.confirmation.title')
+              item.value === 'Confirmation'
             "
             class="flex flex-1 items-center justify-center mt-6"
           >

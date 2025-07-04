@@ -21,10 +21,11 @@
 </template>
 
 <script setup lang="ts">
+
 defineProps({
   message: {
     type: String,
-    default: 'No data available.',
+    default: () => useI18n().t('table.empty_state_message'),
   },
   icon: {
     type: String,

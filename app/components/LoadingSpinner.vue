@@ -35,7 +35,7 @@ const containerClass = computed(() => {
 })
 
 const spinnerClass = computed(() => {
-  const baseClasses = 'border-[#43B3DE]'
+  const baseClasses = 'border-primary'
   
   switch (props.size) {
     case 'sm':

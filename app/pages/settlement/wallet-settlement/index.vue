@@ -76,8 +76,7 @@
     <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
       <span>
         {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s)
-        selected.
+        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t("row_selected") }}
       </span>
       <div class="flex items-center gap-4">
         <!-- <USelect
@@ -423,7 +422,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   // { accessorKey: "id", header: t("Settlement ID") },
   {
     accessorKey: "created_date",
-    header: t("Settlement Date"),
+    header: useI18n().t("settlement.settlement_date"),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       new Date(row.original.created_date).toLocaleDateString("en-GB", {
@@ -435,14 +434,14 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     accessorKey: "total_amount",
-    header: "Total Amount",
+    header: useI18n().t("total_amount"),
     cell: ({ row }) => useCurrency().formatAmount(row.original.total_amount, row.original.currency_id),
   },
-  { accessorKey: "currency_id", header: "Currency" },
-  { accessorKey: "created_by", header: "Settled By" },
+  { accessorKey: "currency_id", header: useI18n().t("settlement.currency") },
+  { accessorKey: "created_by", header: useI18n().t("settled_by") },
   {
     accessorKey: "status", // optional if you need sorting/filtering
-    header: "Status",
+    header: useI18n().t("status"),
     cell: ({ row }) => {
       // return h('span', {
       //   class: `text-sm font-medium`
@@ -469,7 +468,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
           },
           () => [
             // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-            h("span", { class: "text-sm" }, `Total: ${total}`),
+            h("span", { class: "text-sm" }, `${t("total")}: ${total}`),
           ]
         ),
         // Success and Fail badges
@@ -503,7 +502,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   // Add an action column for viewing details
   {
     id: "actions",
-    header: translations.actions,
+    header: useI18n().t("actions"),
     cell: ({ row }) =>
       h("div", { class: "flex items-center gap-2" }, [
         h(resolveComponent("UButton"), {

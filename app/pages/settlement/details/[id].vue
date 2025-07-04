@@ -1,39 +1,13 @@
 <template>
   <div class="flex flex-col space-y-6">
-    <!-- Breadcrumb and header section -->
-    <!-- <div
-      class="flex flex-wrap items-center justify-between gap-4 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
-    >
-      <div>
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <NuxtLink
-            to="/settlement"
-            class="hover:text-primary transition-colors"
-          >
-            {{ $t("settlement.dashboard_title") }}
-          </NuxtLink>
-          <span>/</span>
-          <span>{{ $t("settlement.details_title") }}</span>
-        </div>
-        <h1 class="text-xl font-bold">
-          {{ $t("settlement.details_title") }} #{{ settlementId }}
-        </h1>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <UButton color="primary" icon="i-lucide-arrow-left" @click="goBack">
-          {{ $t("back") }}
-        </UButton>
-      </div>
-    </div> -->
-
     <!-- Loading state -->
-    <div v-if="loading" class="flex justify-center items-center py-10">
+    <!-- <div v-if="loading" class="flex justify-center items-center py-10">
       <UIcon
         name="i-lucide-loader-circle"
         class="animate-spin h-8 w-8 text-gray-500"
       />
-    </div>
+    </div> -->
+    <LoadingSpinner v-if="loading" fullscreen />
 
     <!-- Error state -->
     <UAlert
@@ -47,19 +21,24 @@
     </UAlert>
 
     <!-- Content when data is loaded -->
-    <div v-else-if="settlementDetails" class="space-y-2 px-4">
-      <UCard>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          {{ $t("settlement_history_details.total_amount") }}
-        </p>
-        <p class="text-2xl font-semibold text-primary dark:text-white">
-          {{ useCurrency().formatAmount(settlementDetails.records.total_amount) }}
-          {{ settlementDetails.records.currency }}
-        </p>
-      </UCard>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Settlement overview card -->
+    <div
+      v-else-if="settlementDetails"
+      class="gap-4 flex flex-row"
+    >
+      <div class="flex flex-1 flex-col gap-4">
         <UCard>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ $t("settlement_history_details.total_amount") }}
+          </p>
+          <p class="text-2xl font-semibold text-primary dark:text-white">
+            {{
+              useCurrency().formatAmount(settlementDetails.records.total_amount)
+            }}
+            {{ settlementDetails.records.currency }}
+          </p>
+        </UCard>
+        <!-- Settlement overview card -->
+        <UCard class="flex-1">
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -85,158 +64,110 @@
             </div>
           </template>
 
-          <div class="space-y-6">
-            <div
-              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
-            >
-              <span
-                class="text-sm font-medium text-gray-600 dark:text-gray-400"
-                >{{ $t("settlement_id") }}</span
-              >
-              <div class="flex flex-row justify-end items-center gap-2">
-                <span
-                  class="text-right text-sm2 font-semibold text-gray-900 dark:text-white"
-                  >{{ settlementDetails.records.settlement_history_id }}</span
-                >
-                <UButton
-                  size="sm"
-                  color="info"
-                  variant="ghost"
-                  :icon="isCopied ? 'i-lucide-check' : 'i-lucide-copy'"
-                  :class="
-                    isCopied
-                      ? 'text-primary'
-                      : 'text-gray-500 hover:text-[#43B3DE]'
-                  "
-                  @click="copySettlementId"
-                  :title="isCopied ? 'Copied!' : 'Copy to clipboard'"
-                />
-              </div>
+          <div class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-3">
+            <div class="flex flex-col items-start text-center">
+              <UIcon name="i-lucide-calendar" class="w-8 h-8 mb-2" />
+              <h3 class="text-sm font-medium opacity-90 mb-1">
+                {{ $t("settlement_history_details.settlement_date") }}
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300">
+                {{ formatDate(settlementDetails.records.settlement_date) }}
+              </p>
             </div>
-            <div
-              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
-            >
-              <span
-                class="text-sm font-medium text-gray-600 dark:text-gray-400"
-                >{{ $t("settlement_date") }}</span
-              >
-              <span class="font-semibold text-gray-900 dark:text-white">{{
-                formatDate(
-                  settlementDetails.records.settlement_date.toString() || ""
-                )
-              }}</span>
+
+            <div class="flex flex-col items-start text-center">
+              <UIcon name="i-lucide-users" class="w-8 h-8 mb-2" />
+              <h3 class="text-sm font-medium opacity-90 mb-1">
+                {{ $t("settlement_history_details.total_supplier") }}
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300">
+                {{ settlementDetails.records.total_supplier }}
+              </p>
             </div>
-            <div
-              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
-            >
-              <span
-                class="text-sm font-medium text-gray-600 dark:text-gray-400"
-                >{{ $t("total_supplier") }}</span
-              >
-              <span class="font-semibold text-gray-900 dark:text-white">{{
-                settlementDetails.records.total_supplier
-              }}</span>
-            </div>
-            <div
-              class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700"
-            >
-              <span
-                class="text-sm font-medium text-gray-600 dark:text-gray-400"
-                >{{ $t("total_amount") }}</span
-              >
-              <span class="font-semibold text-[#43B3DE]"
-                >{{ settlementDetails.records.total_amount }}
-                {{ settlementDetails.records.currency }}</span
-              >
-            </div>
-            <div class="flex justify-between items-center py-3">
-              <span
-                class="text-sm font-medium text-gray-600 dark:text-gray-400"
-                >{{ $t("settled_by") }}</span
-              >
-              <span class="font-semibold text-gray-900 dark:text-white">{{
-                settlementDetails.records.settled_by
-              }}</span>
+
+            <div class="flex flex-col items-start text-center">
+              <UIcon name="i-lucide-user-check" class="w-8 h-8 mb-2" />
+              <h3 class="text-sm font-medium opacity-90 mb-1">
+                {{ $t("settlement_history_details.settled_by") }}
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300">
+                {{ settlementDetails.records.settled_by }}
+              </p>
             </div>
           </div>
         </UCard>
+      </div>
+      <!-- Settlement stats card -->
+      <UCard class="flex-1">
+        <template #header>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ $t("settlement.statistics") }}
+          </h2>
+        </template>
 
-        <!-- Settlement stats card -->
-        <UCard>
-          <template #header>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ $t("settlement.statistics") }}
-            </h2>
-          </template>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Total transactions card -->
-            <div
-              class="bg-gradient-to-br from-[#43B3DE] to-[#7FCDE8] rounded-lg p-6 text-white"
-            >
-              <div class="flex flex-col items-center text-center">
-                <div class="bg-white/20 p-3 rounded-full mb-4">
-                  <UIcon name="i-lucide-sigma" class="w-8 h-8" />
-                </div>
-                <h3 class="text-sm font-medium opacity-90 mb-2">
+        <div class="grid grid-rows-1 md:grid-rows-3 gap-3">
+          <!-- Total transactions card -->
+          <div class="bg-primary/50 rounded-xl p-3 text-white shadow-sm">
+            <div class="flex items-center gap-2">
+              <div
+                class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
+              >
+                <UIcon name="i-lucide-sigma" class="w-4 h-4" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs font-medium opacity-95 mb-0.5 truncate">
                   {{ $t("settlement.total_transactions") }}
                 </h3>
-                <p class="text-3xl font-bold">
+                <p class="text-lg font-bold">
                   {{ settlementDetails.records.totalSettled }}
                 </p>
               </div>
             </div>
+          </div>
 
-            <!-- Success transactions card -->
-            <div
-              class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 text-white"
-            >
-              <div class="flex flex-col items-center text-center">
-                <div class="bg-white/20 p-3 rounded-full mb-4">
-                  <UIcon name="i-lucide-check" class="w-8 h-8" />
-                </div>
-                <h3 class="text-sm font-medium opacity-90 mb-2">
+          <!-- Success transactions card -->
+          <div class="bg-success/50 rounded-xl p-3 text-white shadow-sm">
+            <div class="flex items-center gap-2">
+              <div
+                class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
+              >
+                <UIcon name="i-lucide-check" class="w-4 h-4" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs font-medium opacity-95 mb-0.5 truncate">
                   {{ $t("settlement.successful") }}
                 </h3>
-                <p class="text-3xl font-bold">
+                <p class="text-lg font-bold">
                   {{ settlementDetails.records.success }}
                 </p>
               </div>
             </div>
+          </div>
 
-            <!-- Failed transactions card -->
-            <div
-              class="bg-gradient-to-br from-red-200 to-red-300 rounded-lg p-6 text-white"
-            >
-              <div class="flex flex-col items-center text-center">
-                <div class="bg-white/20 p-3 rounded-full mb-4">
-                  <UIcon name="i-lucide-x" class="w-8 h-8" />
-                </div>
-                <h3 class="text-sm font-medium opacity-90 mb-2">
+          <!-- Failed transactions card -->
+          <div class="bg-error/50 rounded-xl p-3 text-white shadow-sm">
+            <div class="flex items-center gap-2">
+              <div
+                class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
+              >
+                <UIcon name="i-lucide-x" class="w-4 h-4" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs font-medium opacity-95 mb-0.5 truncate">
                   {{ $t("settlement.failed") }}
                 </h3>
-                <p class="text-3xl font-bold">
+                <p class="text-lg font-bold">
                   {{ settlementDetails.records.fail }}
                 </p>
               </div>
             </div>
           </div>
-        </UCard>
-
-        <!-- Settlement details table (Optional) -->
-
-        <!-- <UCard class="lg:col-span-3">
-        <template #header>
-          <h2 class="text-lg font-semibold">{{ $t('settlement.transactions') }}</h2>
-        </template>
-        
-        <div class="text-center py-4 text-gray-500">
-          <p>{{ $t('settlement.detailed_transactions_message') }}</p>
         </div>
-      </UCard> -->
-      </div>
+      </UCard>
     </div>
+
     <SettlementHistoryTable
+      v-if="!loading && !error && settlementDetails"
       :settlementHistorys="settlementHistoryDetails"
       :totalPage="settlementDetails?.total_page || 1"
       :settlement_id="settlementId"

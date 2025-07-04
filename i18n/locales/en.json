@@ -7,8 +7,17 @@
     "english": "English",
     "khmer": "Khmer"
   },
+  "table": {
+    "empty_state_message": "No data available.",
+    "loading": "Loading...",
+    "no_records_found": "No records found",
+    "search_placeholder": "Search..."
+  },
   "12h": "12 Hour",
   "24h": "24 Hour",
+  "actions": "Actions",
+  "row_selected": "row(s) selected",
+  "total": "Total",
   "generate_settlement": "Generate Settlement",
   "search_by_settler": "Search by Settler...",
   "pick_a_date": "Pick a Date",
@@ -24,6 +33,8 @@
     "no_records_found": "No records found",
     "loading": "Loading settlement history...",
     "total_settled": "Total Settled",
+    "total_supplier": "Total Supplier",
+    "settled_by": "Settled By",
     "total_failed": "Total Failed",
     "total_amount": "Total Amount",
     "currency": "Currency",
@@ -113,6 +124,7 @@
     "confirm": "Confirm"
   },
   "settlement": {
+    "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
     "settle_amount": "Settle Amount",
     "settlement_bank": "Settlement Bank",
