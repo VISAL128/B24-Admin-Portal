@@ -386,7 +386,7 @@ onMounted(() => {
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-xl font-semibold text-[#211e1f] dark:text-white">{{ $t('settings.user_preferences') }}</h2>
+              <h2 class="text-xl font-semibold text-primary dark:text-white">{{ $t('settings.user_preferences') }}</h2>
               <p class="text-gray-600 dark:text-gray-300 mt-1">{{ $t('settings.user_preferences_desc') }}</p>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('settings.auto_save_enabled') }}</p>
             </div>
@@ -403,7 +403,7 @@ onMounted(() => {
         <div class="p-6 space-y-6">
           <!-- Theme Selection -->
           <div>
-            <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-3">{{ $t('settings.theme') }}</label>
+            <label class="block text-md font-bold text-primary dark:text-white mb-3">{{ $t('settings.theme') }}</label>
             <div class="grid grid-cols-3 gap-3">
               <label 
                 v-for="theme in ['light', 'dark', 'system']" 
@@ -486,7 +486,7 @@ onMounted(() => {
 
           <!-- Format Preferences -->
           <div class="space-y-6">
-            <h3 class="text-sm font-medium text-[#211e1f] dark:text-white">{{ $t('settings.format_preferences') }}</h3>
+            <h3 class="text-md font-bold text-primary dark:text-white">{{ $t('settings.format_preferences') }}</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
