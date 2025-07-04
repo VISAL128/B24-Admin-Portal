@@ -219,10 +219,10 @@ onMounted(() => {
   }
   
   // Auto-initiate login if no errors
-  if (!authError.value) {
-    console.log('🚀 Auto-initiating login...')
-    handleLogin()
-  }
+  // if (!authError.value) {
+  //   console.log('🚀 Auto-initiating login...')
+  //   handleLogin()
+  // }
 })
 
 onUnmounted(() => {
