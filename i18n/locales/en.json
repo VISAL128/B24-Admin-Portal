@@ -13,6 +13,8 @@
     "no_records_found": "No records found",
     "search_placeholder": "Search..."
   },
+  "total_amount": "Total Amount",
+  "currency": "Currency",
   "12h": "12 Hour",
   "24h": "24 Hour",
   "actions": "Actions",

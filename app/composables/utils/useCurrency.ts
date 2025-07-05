@@ -19,6 +19,13 @@ export interface CurrencyFormatOptions {
 export const useCurrency = () => {
   // Common currencies used in Bill24
   const currencies = ref<Record<string, CurrencyConfig>>({
+    KHR: {
+      code: 'KHR',
+      symbol: '៛',
+      name: 'Cambodian Riel',
+      decimals: 0,
+      locale: 'km-KH'
+    },
     USD: {
       code: 'USD',
       symbol: '$',
@@ -26,16 +33,9 @@ export const useCurrency = () => {
       decimals: 2,
       locale: 'en-US'
     },
-    KHR: {
-      code: 'KHR',
-      symbol: '៛',
-      name: 'Cambodian Riel',
-      decimals: 0,
-      locale: 'km-KH'
-    }
   })
 
-  const defaultCurrency = ref<string>('USD')
+  const defaultCurrency = ref<string>('KHR')
 
   // Get currency configuration
   const getCurrency = (code: string): CurrencyConfig | null => {

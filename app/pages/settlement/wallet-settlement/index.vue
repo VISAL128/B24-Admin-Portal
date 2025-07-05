@@ -246,22 +246,22 @@ onBeforeMount(() => {
   // Set default date range to current month
   startDate.value = new CalendarDate(
     today.getFullYear(),
-    today.getMonth(),
+    today.getMonth() + 1,
     1
   ).toString();
   endDate.value = new CalendarDate(
     today.getFullYear(),
-    today.getMonth(),
+    today.getMonth() + 1,
     30
   ).toString();
   modelValue.value.start = new CalendarDate(
     today.getFullYear(),
-    today.getMonth(),
+    today.getMonth() + 1,
     1
   );
   modelValue.value.end = new CalendarDate(
     today.getFullYear(),
-    today.getMonth(),
+    today.getMonth() + 1,
     30
   );
 });

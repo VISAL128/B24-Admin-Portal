@@ -191,13 +191,13 @@ const formatTimeDisplay = computed(() => {
   if (userPreferences.value.timeFormat === "12h") {
     return new DateFormatter(locale, {
       dateStyle: "medium",
-      timeStyle: "short",
+      timeStyle: "medium",
       hour12: true,
     }).format(date);
   } else {
     return new DateFormatter(locale, {
       dateStyle: "medium",
-      timeStyle: "short",
+      timeStyle: "medium",
       hour12: false,
     }).format(date);
   }
@@ -703,6 +703,9 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useFormat } from "~/composables/utils/useFormat";
 
 function useWindowSize(): { height: Ref<number> } {
+  if (typeof window === "undefined") {
+    return { height: ref(0) }; // Return 0 if not in browser context
+  }
   const height = ref(window.innerHeight);
 
   const updateHeight = () => {

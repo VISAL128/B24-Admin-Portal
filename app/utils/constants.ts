@@ -21,10 +21,10 @@ export const LOCAL_STORAGE_KEYS = {
 
 // Default preferences
 export const DEFAULT_USER_PREFERENCES: UserPreferences = {
-  theme: 'light',
+  theme: 'system',
   language: 'en',
   timezone: 'UTC',
   dateFormat: 'DD/MM/YYYY',
-  timeFormat: '24h',
-  currency: 'USD'
+  timeFormat: '12h',
+  currency: 'KHR'
 }
