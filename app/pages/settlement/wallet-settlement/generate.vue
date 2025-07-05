@@ -475,8 +475,8 @@ const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
     cell: ({ row }) => {
       return row.original.transaction_date
         ? useFormat().formatDateTime(row.original.transaction_date, {
-            dateStyle: "short",
-            timeStyle: "short",
+            dateStyle: "medium",
+            timeStyle: "medium",
           }) || new Date(row.original.transaction_date).toLocaleDateString("en-GB", {
             year: "numeric",
             month: "2-digit",

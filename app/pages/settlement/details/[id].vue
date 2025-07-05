@@ -34,7 +34,7 @@
             {{
               useCurrency().formatAmount(settlementDetails.records.total_amount)
             }}
-            {{ settlementDetails.records.currency }}
+            {{ settlementDetails.records.currency_id }}
           </p>
         </UCard>
         <!-- Settlement overview card -->
@@ -71,7 +71,7 @@
                 {{ $t("settlement_history_details.settlement_date") }}
               </h3>
               <p class="text-gray-700 dark:text-gray-300">
-                {{ formatDate(settlementDetails.records.settlement_date) }}
+                {{ useFormat().formatDateTime(settlementDetails.records.settlement_date) }}
               </p>
             </div>
 
@@ -199,6 +199,7 @@ import type {
 import SettlementHistoryTable from "~/components/tables/SettlementHistoryTable.vue";
 import type { SettlementHistoryDetailQuery } from "~/models/settlement";
 import { useCurrency } from "~/composables/utils/useCurrency";
+import { useFormat } from "~/composables/utils/useFormat";
 const supplierApi = useSupplierApi();
 
 definePageMeta({

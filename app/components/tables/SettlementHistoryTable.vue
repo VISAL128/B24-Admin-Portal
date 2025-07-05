@@ -67,12 +67,12 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     size: 150,
     maxSize: 150,
   },
-  {
-    accessorKey: "settlement_bank_name",
-    header: () => t("settlement.settlement_bank"),
-    size: 100,
-    maxSize: 100,
-  },
+  // {
+  //   accessorKey: "settlement_bank_name",
+  //   header: () => t("settlement.settlement_bank"),
+  //   size: 100,
+  //   maxSize: 100,
+  // },
   {
     accessorKey: "status",
     header: () => t("settlement.status"),

@@ -165,7 +165,7 @@ export interface SettlementHistoryMainDetails {
   created_date: string,
   total_supplier: number
   total_amount: string
-  currency: string
+  currency_id: string
   supplier_id: string
   supplier: Supplier
   settled_by: string
