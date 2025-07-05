@@ -205,11 +205,11 @@ const formatTimeDisplay = computed(() => {
 
 const { t } = useI18n();
 
-const items: StepperItem[] = [
+const items = computed<StepperItem[]>(() => [
   {
     value: "Supplier",
-    title: useI18n().t("settlement.generate.steps.supplier.title"),
-    description: useI18n().t("settlement.generate.steps.supplier.description"),
+    title: t("settlement.generate.steps.supplier.title"),
+    description: t("settlement.generate.steps.supplier.description"),
     icon: "i-lucide-users",
   },
   {
@@ -224,7 +224,7 @@ const items: StepperItem[] = [
     description: t("settlement.generate.steps.confirmation.description"),
     icon: "i-lucide-check-circle",
   },
-];
+]);
 
 const supplierKeys = ref<Supplier[]>([]);
 const isLoadingSupplier = ref(false);
@@ -508,7 +508,7 @@ function handleStepChange(newIndex: number) {
 
 // Computed property to validate if current step can proceed
 const canProceedToNext = computed(() => {
-  const currentStepTitle = items[currentStepIndex.value]?.title;
+  const currentStepTitle = items.value[currentStepIndex.value]?.title;
   // Check if can proceed to Reconcile
   if (currentStepTitle === t("settlement.generate.steps.supplier.title")) {
     return (
@@ -922,13 +922,13 @@ function useWindowSize(): { height: Ref<number> } {
               </div>
 
               <!-- Add selected row data to the CPO list -->
-              <div class="flex-1 border border-gray-200 rounded-lg">
+              <div class="flex-1">
                 <UTable
                   ref="table"
                   :data="filteredCpoList"
                   :columns="columns"
                   sticky
-                  class="min-w-[800px] w-full h-100"
+                  class="min-w-[800px] w-full h-100 border border-gray-200 dark:border-gray-700 rounded-lg"
                   @row:click="(row: Cpo) => toggleRowSelection(row)"
                 >
                   <template #empty>
@@ -948,7 +948,7 @@ function useWindowSize(): { height: Ref<number> } {
             <div class="flex flex-col lg:flex-row gap-6 mt-4">
               <!-- Master Table -->
               <div
-                class="flex-2 overflow-x-auto border border-gray-200 rounded-lg"
+                class="flex-2 overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg"
               >
                 <div class="overflow-x-auto">
                   <UTable
@@ -981,7 +981,7 @@ function useWindowSize(): { height: Ref<number> } {
                     selectedCpoSettlement?.transaction_allocations &&
                     selectedCpoSettlement.transaction_allocations.length > 0
                   "
-                  class="lg:w-1/3 lg:flex-1 p-4 border border-gray-200 rounded-lg min-h-[300px] flex flex-col shadow-lg"
+                  class="lg:w-1/3 lg:flex-1 p-4 border border-gray-200 dark:border-gray-700 rounded-lg min-h-[300px] flex flex-col shadow-lg"
                 >
                   <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">
@@ -997,7 +997,7 @@ function useWindowSize(): { height: Ref<number> } {
                     />
                   </div>
                   <div
-                    class="flex-1 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
+                    class="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                   >
                     <UTable
                         ref="table"

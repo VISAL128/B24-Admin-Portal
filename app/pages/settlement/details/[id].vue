@@ -30,7 +30,7 @@
           <p class="text-sm text-gray-500 dark:text-gray-400">
             {{ $t("settlement_history_details.total_amount") }}
           </p>
-          <p class="text-2xl font-semibold text-primary dark:text-white">
+          <p class="text-2xl font-semibold text-primary">
             {{
               useCurrency().formatAmount(settlementDetails.records.total_amount)
             }}
