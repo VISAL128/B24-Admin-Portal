@@ -35,7 +35,7 @@ export default defineNuxtConfig({
         baseUrl: process.env.KEYCLOAK_URL || "http://localhost:8080/realms/nuxt-oidc-test",
         clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
         clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "CLIENT_SECRET",
-        redirectUri: process.env.KEYCLOAK_REDIRECT_URI || "http://localhost:3000/auth/keycloak/callback",
+        redirectUri: process.env.KEYCLOAK_REDIRECT_URI || "https://admin-staing.bill24.io/auth/keycloak/callback",
       },
     },
   },
@@ -91,7 +91,7 @@ export default defineNuxtConfig({
     // },
     // Public runtime config
     public: {
-      appVersion: process.env.APP_VERSION || 'v1.0.0'
+      appVersion: process.env.APP_VERSION || 'v1.0.1'
     }
   },
   // ssr: false, // Important: OIDC works better with SPA mode

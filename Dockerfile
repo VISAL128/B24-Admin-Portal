@@ -1,12 +1,15 @@
-FROM node:18-alpine
-
+FROM node:20-slim
 WORKDIR /app
+
+
 
 # Copy package files first
 COPY package.json package-lock.json* ./
+RUN npm install @oxc-parser/binding-linux-x64-gnu
+RUN npm install @rollup/rollup-linux-x64-gnu
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm install --production
 
 # Copy the built application
 COPY .output .output
