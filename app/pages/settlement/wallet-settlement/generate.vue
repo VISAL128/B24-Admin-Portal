@@ -257,7 +257,7 @@ const currencyOptions = computed(() =>
 
 // Set default currency based on user preferences
 const setDefaultCurrency = () => {
-  if (!selectedCurrency.value && currencyOptions.value.length > 0) {
+  if (!selectedCurrency.value && (currencyOptions.value.length || 0) > 0) {
     // Try to find currency from user preferences
     const preferredCurrency = currencyOptions.value.find(
       (option) => option.value.code === userPreferences.value.currency
@@ -325,15 +325,15 @@ const toggleAllSelection = (selectAll: boolean) => {
 
 const isAllSelected = computed(() => {
   return (
-    cpoList.value.length > 0 &&
-    selectedCpoIds.value.size === cpoList.value.length
+    (cpoList.value.length || 0) > 0 &&
+    selectedCpoIds.value.size === (cpoList.value.length || 0)
   );
 });
 
 const isSomeSelected = computed(() => {
   return (
     selectedCpoIds.value.size > 0 &&
-    selectedCpoIds.value.size < cpoList.value.length
+    selectedCpoIds.value.size < (cpoList.value.length || 0)
   );
 });
 
@@ -512,10 +512,10 @@ const canProceedToNext = computed(() => {
   // Check if can proceed to Reconcile
   if (currentStepTitle === t("settlement.generate.steps.supplier.title")) {
     return (
-      selectedSuppliers.value.length > 0 &&
+      (selectedSuppliers.value.length || 0) > 0 &&
       cutOffDatetime.value !== null &&
       selectedCurrency.value !== undefined &&
-      selectedCpo.value.length > 0
+      (selectedCpo.value.length || 0) > 0
     );
   }
   return true; // Allow proceeding for other steps
@@ -566,7 +566,7 @@ const fetchSuppliers = async () => {
 };
 
 const fetchInquirySettlementCpo = async () => {
-  if (selectedSuppliers.value.length === 0) return;
+  if ((selectedSuppliers.value.length || 0) === 0) return;
   try {
     const request: InitQuerySettlement = {
       parties:
@@ -613,13 +613,13 @@ const handleSupplierMenuChanged = async () => {
   if (!selectedSupplier.value) return;
   selectedSuppliers.value = [selectedSupplier.value!];
   // This for multiple suppliers
-  if (selectedSuppliers.value.length === 0) return;
+  if ((selectedSuppliers.value.length || 0) === 0) return;
   cpoList.value = await supplierApi.getListCPOApi({
     parent_supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
   });
   
   // Auto-select all CPOs by default
-  if (cpoList.value.length > 0) {
+  if ((cpoList.value.length || 0) > 0) {
     toggleAllSelection(true);
     selectedCpo.value = [...cpoList.value];
   }
@@ -979,7 +979,7 @@ function useWindowSize(): { height: Ref<number> } {
                 <div
                   v-if="
                     selectedCpoSettlement?.transaction_allocations &&
-                    selectedCpoSettlement.transaction_allocations.length > 0
+                    (selectedCpoSettlement.transaction_allocations.length || 0) > 0
                   "
                   class="lg:w-1/3 lg:flex-1 p-4 border border-gray-200 dark:border-gray-700 rounded-lg min-h-[300px] flex flex-col shadow-lg"
                 >
