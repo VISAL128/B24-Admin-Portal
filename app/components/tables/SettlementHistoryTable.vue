@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
 import type { min } from "date-fns";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import { useStatusColor } from "~/composables/utils/useStatusColor";
 import type {
   SettlementHistoryDetail,
   SettlementHistoryQuery,
+  SettlementHistoryDetailQuery,
 } from "~/models/settlement";
 
 const { t } = useI18n();
@@ -17,15 +18,30 @@ interface Props {
   settlement_id: string;
   totalPage: number;
   total: number;
-  onSearchSubmit?: (query: SettlementHistoryQuery) => void;
+  currentQuery: SettlementHistoryDetailQuery;
+  onSearchSubmit?: (query: SettlementHistoryDetailQuery) => void;
 }
 const props = defineProps<Props>();
 const settlementHistoryQuery = ref({
   settlement_history_id: props.settlement_id,
-  search: "",
-  page: 1,
-  page_size: 10,
+  search: props.currentQuery.search || "",
+  page: props.currentQuery.page || 1,
+  page_size: props.currentQuery.page_size || 10,
 });
+
+// Watch for changes in the parent's currentQuery and sync with local state
+watch(
+  () => props.currentQuery,
+  (newQuery) => {
+    settlementHistoryQuery.value = {
+      settlement_history_id: newQuery.settlement_history_id || props.settlement_id,
+      search: newQuery.search || "",
+      page: newQuery.page || 1,
+      page_size: newQuery.page_size || 10,
+    };
+  },
+  { deep: true, immediate: true }
+);
 const pageSize = ref<{label: string; value: number}>({ label: "10", value: 10 });
 const onPageSizeChange = () => {
   settlementHistoryQuery.value.page = 1;
@@ -38,7 +54,31 @@ function onPageUpdate(page: number) {
   // Emit the search event with the updated query
   props.onSearchSubmit?.(settlementHistoryQuery.value);
 }
-const table = useTemplateRef("table");
+
+const handleSearchSubmit = () => {
+  settlementHistoryQuery.value.page = 1;
+  props.onSearchSubmit?.(settlementHistoryQuery.value);
+};
+
+// This function is search locally in the table
+import { computed } from "vue";
+
+const filteredSettlementHistorys = computed(() => {
+  const searchTerm = (settlementHistoryQuery.value.search || "").toLowerCase();
+  if (searchTerm) {
+    return props.settlementHistorys.filter((item) => {
+      return (
+        item.supplier.name.toLowerCase().includes(searchTerm) ||
+        item.cpo?.code?.toLowerCase().includes(searchTerm) ||
+        item.cpo?.name?.toLowerCase().includes(searchTerm) ||
+        item.settle_amount.toString().includes(searchTerm) ||
+        item.status.toLowerCase().includes(searchTerm)
+      );
+    });
+  }
+  return props.settlementHistorys;
+});
+
 const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     accessorKey: "supplier.name",
@@ -96,10 +136,7 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
           :placeholder="$t('settlement.search_placeholder')"
           class="w-64"
           icon="i-lucide-search"
-          @keyup.enter="
-            settlementHistoryQuery.page = 1;
-            props.onSearchSubmit?.(settlementHistoryQuery);
-          "
+          @keyup.enter="handleSearchSubmit"
         />
       </div>
     </template>

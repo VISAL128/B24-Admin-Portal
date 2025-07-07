@@ -464,7 +464,7 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
     size: 100,
     maxSize: 100,
   },
-];
+]; 
 
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   {

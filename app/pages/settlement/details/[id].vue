@@ -21,10 +21,7 @@
     </UAlert>
 
     <!-- Content when data is loaded -->
-    <div
-      v-else-if="settlementDetails"
-      class="gap-4 flex flex-row"
-    >
+    <div v-else-if="settlementDetails" class="gap-4 flex flex-row">
       <div class="flex flex-1 flex-col gap-4">
         <UCard>
           <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -34,7 +31,10 @@
             {{
               useCurrency().formatAmount(settlementDetails.records.total_amount)
             }}
-            {{ settlementDetails.records.currency_id }}
+            {{
+              settlementDetails.records.currency_id ||
+              settlementDetails.records.currency
+            }}
           </p>
         </UCard>
         <!-- Settlement overview card -->
@@ -64,14 +64,20 @@
             </div>
           </template>
 
-          <div class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-3">
+          <div
+            class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-3"
+          >
             <div class="flex flex-col items-start text-center">
               <UIcon name="i-lucide-calendar" class="w-8 h-8 mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t("settlement_history_details.settlement_date") }}
               </h3>
               <p class="text-gray-700 dark:text-gray-300">
-                {{ useFormat().formatDateTime(settlementDetails.records.settlement_date) }}
+                {{
+                  useFormat().formatDateTime(
+                    settlementDetails.records.settlement_date
+                  )
+                }}
               </p>
             </div>
 
@@ -107,7 +113,7 @@
 
         <div class="grid grid-rows-1 md:grid-rows-3 gap-3">
           <!-- Total transactions card -->
-          <div class="bg-primary/50 rounded-xl p-3 text-white shadow-sm">
+          <div class="bg-primary/70 rounded-xl p-3 text-white shadow-sm">
             <div class="flex items-center gap-2">
               <div
                 class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
@@ -126,7 +132,7 @@
           </div>
 
           <!-- Success transactions card -->
-          <div class="bg-success/50 rounded-xl p-3 text-white shadow-sm">
+          <div class="bg-success/60 rounded-xl p-3 text-white shadow-sm">
             <div class="flex items-center gap-2">
               <div
                 class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
@@ -145,15 +151,17 @@
           </div>
 
           <!-- Failed transactions card -->
-          <div class="bg-error/50 rounded-xl p-3 text-white shadow-sm">
+          <div class="bg-error/60 rounded-xl p-3 text-white shadow-sm">
             <div class="flex items-center gap-2">
               <div
                 class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
               >
-                <UIcon name="i-lucide-x" class="w-4 h-4" />
+                <UIcon name="i-lucide-x text-white" class="w-4 h-4" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-xs font-medium opacity-95 mb-0.5 truncate">
+                <h3
+                  class="text-xs font-medium text-white text-shadow-xs mb-0.5 truncate"
+                >
                   {{ $t("settlement.failed") }}
                 </h3>
                 <p class="text-lg font-bold">
@@ -172,6 +180,7 @@
       :totalPage="settlementDetails?.total_page || 1"
       :settlement_id="settlementId"
       :total="settlementDetails?.total_record || 0"
+      :currentQuery="settlementHistoryQuery"
       :onSearchSubmit="handleSearchSubmit"
     />
   </div>
@@ -289,9 +298,16 @@ const fetchSettlementDetails = async () => {
     const response = await supplierApi.getSettlementHistoryById(
       settlementHistoryQuery.value
     );
+    if (response && response.records) {
+      settlementDetails.value = response;
+      settlementHistoryDetails.value = response.records.settle_details || [];
+    }
+    else {
+      if (settlementHistoryDetails.value) {
+        settlementHistoryDetails.value = [];
+      }
+    }
 
-    settlementDetails.value = response;
-    settlementHistoryDetails.value = response.records.settle_details || [];
   } catch (e: any) {
     console.error("Error fetching settlement details:", e);
     error.value = e.message || "Failed to load settlement details";

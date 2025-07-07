@@ -166,6 +166,7 @@ export interface SettlementHistoryMainDetails {
   total_supplier: number
   total_amount: string
   currency_id: string
+  currency: string // Added currency prevent backend passing wrong currency_id
   supplier_id: string
   supplier: Supplier
   settled_by: string
