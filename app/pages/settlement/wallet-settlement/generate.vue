@@ -599,10 +599,16 @@ const handleSupplierMenuChanged = async () => {
   selectedSuppliers.value = [selectedSupplier.value!];
   // This for multiple suppliers
   if ((selectedSuppliers.value.length || 0) === 0) return;
-  cpoList.value = await supplierApi.getListCPOApi({
+  const result = await supplierApi.getListCPOApi({
     parent_supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
   });
-  
+
+  // Prevent error if result is undefined
+  if (result) {
+    cpoList.value = result;
+  } else {
+    cpoList.value = [];
+  }
   // Auto-select all CPOs by default
   if ((cpoList.value.length || 0) > 0) {
     toggleAllSelection(true);
