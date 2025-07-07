@@ -48,6 +48,14 @@
     "status_failed": "Failed"
   },
   "settings": {
+    "date_format_short": "Short (MM/DD/YYYY)",
+    "date_format_medium": "Medium (MMM DD, YYYY)",
+    "date_format_long": "Long (MMMM DD, YYYY)",
+    "date_format_full": "Full (EEEE, MMMM DD, YYYY)",
+    "time_format_short": "Short",
+    "time_format_medium": "Medium",
+    "time_format_long": "Long",
+    "time_format_full": "Full",
     "title": "Settings",
     "subtitle": "Manage your account preferences and settings",
     "user_preferences": "User Preferences",

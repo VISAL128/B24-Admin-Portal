@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
 import type { UserPreferences } from '~/models/userPreference'
+import { useDateFormat } from '@vueuse/core'
+import { useFormat } from '~/composables/utils/useFormat'
 
 definePageMeta({
   auth: true
@@ -23,11 +25,12 @@ const showErrorMessage = ref(false)
 const storage = useStorage<UserPreferences>()
 
 type Option = { label: string; value: string }
+type DateAndTimeOption = { label: string; value: 'short' | 'medium' | 'long' | 'full' }
 
 const selectedLanguage = ref<Option>({ label: t('settings.languages.en'), value: 'en' })
 const selectedTimezone = ref<Option>({ label: t('settings.timezones.utc'), value: 'UTC' })
-const selectedDateFormat = ref<Option>({ label: 'DD/MM/YYYY', value: 'DD/MM/YYYY' })
-const selectedTimeFormat = ref<{ label: string; value: '24h' | '12h' }>({ label: t('settings.time_format_24h'), value: '24h' })
+const selectedDateFormat = ref<DateAndTimeOption>({ label: t('settings.date_format_short'), value: 'short' })
+const selectedTimeFormat = ref<DateAndTimeOption>({ label: t('settings.time_format_short'), value: 'short' })
 const selectedCurrency = ref<Option>({ label: t('settings.currencies.usd'), value: 'USD' })
 
 // Load preferences from localStorage or use defaults
@@ -40,7 +43,8 @@ const loadPreferences = (): UserPreferences => {
   
   // Sync theme with current color mode
   basePreferences.theme = colorMode.preference as 'light' | 'dark' | 'system'
-  
+  basePreferences.dateFormat = selectedDateFormat.value.value || 'short'
+  basePreferences.timeFormat = selectedTimeFormat.value.value || 'short'
   return basePreferences
 }
 
@@ -61,19 +65,27 @@ const timezoneOptions = computed(() => [
 ])
 
 const dateFormatOptions = [
-  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }
+  { value: 'short', label: t('settings.date_format_short') },
+  { value: 'medium', label: t('settings.date_format_medium') },
+  { value: 'long', label: t('settings.date_format_long') },
+  { value: 'full', label: t('settings.date_format_full') }
+  // { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+  // { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+  // { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }
 ]
 
 const timeFormatOptions = computed(() => [
-  { value: '24h', label: t('settings.time_format_24h') },
-  { value: '12h', label: t('settings.time_format_12h') }
+  { value: 'short', label: t('settings.time_format_short') },
+  { value: 'medium', label: t('settings.time_format_medium') },
+  { value: 'long', label: t('settings.time_format_long') },
+  { value: 'full', label: t('settings.time_format_full') }
+  // { value: '24h', label: t('settings.time_format_24h') },
+  // { value: '12h', label: t('settings.time_format_12h') }
 ])
 
 const currencyOptions = computed(() => [
-  { value: 'USD', label: t('settings.currencies.usd') },
-  { value: 'KHR', label: t('settings.currencies.khr') }
+  { value: 'KHR', label: t('settings.currencies.khr') },
+  { value: 'USD', label: t('settings.currencies.usd') }
 ])
 
 // Watch for language changes and update i18n locale
@@ -138,32 +150,39 @@ const getDatePreview = computed(() => {
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const year = now.getFullYear()
 
-  switch (preferences.value.dateFormat) {
-    case 'DD/MM/YYYY':
-      return `${day}/${month}/${year}`
-    case 'MM/DD/YYYY':
-      return `${month}/${day}/${year}`
-    case 'YYYY-MM-DD':
-      return `${year}-${month}-${day}`
-    default:
-      return `${day}/${month}/${year}`
-  }
+  return useFormat().formatDate(now, {
+    dateStyle : preferences.value.dateFormat
+  })
+
+  // switch (preferences.value.dateFormat) {
+  //   case 'DD/MM/YYYY':
+  //     return `${day}/${month}/${year}`
+  //   case 'MM/DD/YYYY':
+  //     return `${month}/${day}/${year}`
+  //   case 'YYYY-MM-DD':
+  //     return `${year}-${month}-${day}`
+  //   default:
+  //     return `${day}/${month}/${year}`
+  // }
 })
 
 const getTimePreview = computed(() => {
   const now = new Date()
+  return useFormat().formatTime(now, {
+    timeStyle: preferences.value.timeFormat
+  })
   
-  if (preferences.value.timeFormat === '24h') {
-    const hours = String(now.getHours()).padStart(2, '0')
-    const minutes = String(now.getMinutes()).padStart(2, '0')
-    return `${hours}:${minutes}`
-  } else {
-    const hours = now.getHours()
-    const minutes = String(now.getMinutes()).padStart(2, '0')
-    const period = hours >= 12 ? t('settings.pm') : t('settings.am')
-    const displayHours = hours % 12 || 12
-    return `${displayHours}:${minutes} ${period}`
-  }
+  // if (preferences.value.timeFormat === '24h') {
+  //   const hours = String(now.getHours()).padStart(2, '0')
+  //   const minutes = String(now.getMinutes()).padStart(2, '0')
+  //   return `${hours}:${minutes}`
+  // } else {
+  //   const hours = now.getHours()
+  //   const minutes = String(now.getMinutes()).padStart(2, '0')
+  //   const period = hours >= 12 ? t('settings.pm') : t('settings.am')
+  //   const displayHours = hours % 12 || 12
+  //   return `${displayHours}:${minutes} ${period}`
+  // }
 })
 
 const savePreferences = async () => {
@@ -256,11 +275,11 @@ const initializeSelectedOptions = (loadedPref: UserPreferences) => {
   
   }
   selectedDateFormat.value = {
-    label: dateFormatOptions.find(option => option.value === loadedPref.dateFormat)?.label || 'DD/MM/YYYY',
+    label: dateFormatOptions.find(option => option.value === loadedPref.dateFormat)?.label || 'Short',
     value: loadedPref.dateFormat
   }
   selectedTimeFormat.value = {
-    label: loadedPref.timeFormat === '24h' ? t('settings.time_format_24h') : t('settings.time_format_12h'),
+    label: loadedPref.timeFormat === 'short' ? t('settings.time_format_short') : t('settings.time_format_long'),
     value: loadedPref.timeFormat
   }
 }

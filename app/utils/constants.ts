@@ -24,7 +24,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   theme: 'system',
   language: 'en',
   timezone: 'UTC',
-  dateFormat: 'DD/MM/YYYY',
-  timeFormat: '12h',
+  dateFormat: 'short',
+  timeFormat: 'short', // '12h' | '24h'
   currency: 'KHR'
 }

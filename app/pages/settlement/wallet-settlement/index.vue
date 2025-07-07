@@ -427,8 +427,8 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date, {
-        dateStyle: "medium",
-        timeStyle: "medium",
+        dateStyle: userPreference?.dateFormat ?? "short",
+        timeStyle: userPreference?.timeFormat ?? "medium",
       }) || new Date(row.original.created_date).toLocaleDateString("en-GB", {
         year: "numeric",
         month: "2-digit",
