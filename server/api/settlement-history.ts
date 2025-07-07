@@ -1,7 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import { ApiResponse } from '~/models/baseModel'
-import { parseISO, isAfter, isBefore } from 'date-fns'
-import { SettlementHistoryQuery, SettlementHistoryRecord, SettlementHistoryResponse } from '~/models/settlement'
+import { SettlementHistoryQuery, SettlementHistoryResponse } from '~/models/settlement'
 import { getSettlementHistory } from '../logic/management_api_logic'
 
 export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryResponse>> => {

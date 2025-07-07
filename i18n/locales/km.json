@@ -284,5 +284,25 @@
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
     "search_placeholder": "ស្វែងរក..."
-  }
+  },
+
+  "error": {
+    "server_error": "កំហុសម៉ាស៊ីនមេ",
+    "internal_server_error": "មានកំហុសម៉ាស៊ីនមេកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
+    "internal_server_error_title": "កំហុសម៉ាស៊ីនមេខាងក្នុង",
+    "internal_server_error_desc": "ម៉ាស៊ីនមេបានជួបកំហុស ហើយមិនអាចបំពេញសំណើរបស់អ្នកបានទេ។",
+    "bad_gateway": "Gateway មិនល្អ",
+    "bad_gateway_desc": "ម៉ាស៊ីនមេបានទទួលការឆ្លើយតបមិនត្រឹមត្រូវពីម៉ាស៊ីនមេខាងលើ។",
+    "service_unavailable": "សេវាកម្មមិនអាចប្រើបាន",
+    "service_unavailable_desc": "សេវាកម្មមិនអាចប្រើបានជាបណ្តោះអាសន្ន។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។",
+    "gateway_timeout": "Gateway អស់ពេល",
+    "gateway_timeout_desc": "ម៉ាស៊ីនមេត្រូវការពេលយូរពេកដើម្បីឆ្លើយតប។",
+    "network_error": "កំហុសបណ្តាញ",
+    "network_error_desc": "មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេបានទេ។ សូមពិនិត្យការភ្ជាប់អ៊ីនធឺណិតរបស់អ្នក។",
+    "server_error_code": "កំហុសម៉ាស៊ីនមេ ({0})"
+  },
+
+  "success": "ជោគជ័យ",
+  "operation_completed": "ប្រតិបត្តិការបានបញ្ចប់ដោយជោគជ័យ",
+  "validation_error": "កំហុសក្នុងការផ្ទៀងផ្ទាត់"
 }

@@ -295,7 +295,7 @@ const copySettlementId = async () => {
 };
 
 // Fetch settlement details
-const fetchSettlementDetails = async () => {
+const fetchSettlementDetails = async (showError = true) => {
   loading.value = true;
   error.value = "";
 
@@ -309,14 +309,21 @@ const fetchSettlementDetails = async () => {
       settlementHistoryDetails.value = response.records.settle_details || [];
     }
     else {
+      if (showError) {
+        await useNotification().showError({
+          title: "No Settlement Details Found",
+          description: "No settlement details found for this ID.",
+        });
+      }
       if (settlementHistoryDetails.value) {
         settlementHistoryDetails.value = [];
       }
     }
 
   } catch (e: any) {
-    console.error("Error fetching settlement details:", e);
     error.value = e.message || "Failed to load settlement details";
+    useErrorHandler().handleApiError(e);
+    // Optionally, you can show a toast notification here
   } finally {
     loading.value = false;
   }
@@ -326,7 +333,7 @@ const fetchSettlementDetails = async () => {
 const handleSearchSubmit = (query: SettlementHistoryDetailQuery) => {
   console.log("Search query submitted:", query);
   settlementHistoryQuery.value = query;
-  fetchSettlementDetails();
+  fetchSettlementDetails(false);
 };
 
 // Load data on component mount

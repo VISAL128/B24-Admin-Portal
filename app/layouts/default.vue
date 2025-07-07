@@ -203,6 +203,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Toast notifications -->
+    <UToaster />
   </div>
 </template>
 <script setup lang="ts">

@@ -150,12 +150,11 @@ import { useCurrency } from "~/composables/utils/useCurrency";
 import { useFormat } from "~/composables/utils/useFormat";
 
 const { t } = useI18n();
-const { getSettlementHistory, getSuppliers } = useSupplierApi();
-const { execute } = useApiExecutor();
+const { getSettlementHistory } = useSupplierApi();
+const errorHandler = useErrorHandler();
 
 const table = useTemplateRef("table");
 const router = useRouter();
-const { copy } = useClipboard();
 const toast = useToast();
 
 const page = ref(1);
@@ -225,6 +224,8 @@ const fetchSettlementHistory = async () => {
   } catch (error: any) {
     console.error("Error loading settlement history:", error.message);
     errorMsg.value = error.message || "Failed to load settlement history.";
+    // Show error notification to user
+    errorHandler.handleApiError(error);
   } finally {
     loading.value = false;
   }
@@ -243,6 +244,12 @@ const filteredData = computed(() =>
 );
 
 onBeforeMount(() => {
+  // Get last day of current month
+  const lastDayOfMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    0
+  ).getDate();
   // Set default date range to current month
   startDate.value = new CalendarDate(
     today.getFullYear(),
@@ -252,7 +259,7 @@ onBeforeMount(() => {
   endDate.value = new CalendarDate(
     today.getFullYear(),
     today.getMonth() + 1,
-    30
+    lastDayOfMonth // Use last day of month
   ).toString();
   modelValue.value.start = new CalendarDate(
     today.getFullYear(),
@@ -262,7 +269,7 @@ onBeforeMount(() => {
   modelValue.value.end = new CalendarDate(
     today.getFullYear(),
     today.getMonth() + 1,
-    30
+    lastDayOfMonth
   );
 });
 

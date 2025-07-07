@@ -54,7 +54,16 @@ export async function getToken(): Promise<string | null> {
 export async function requestToManagementApi(endpoint: string, method: string = 'POST', body: any = null): Promise<any> {
     const token = await getToken();
     if (!token) {
-        throw new Error('Authentication failed or token not received');
+        throw createError({
+            statusCode: 401,
+            statusMessage: 'Authentication failed or token not received',
+            data: {
+                showNotification: true,
+                notificationType: 'error',
+                title: 'Authentication Error',
+                description: 'Failed to authenticate with the server. Please try logging in again.'
+            }
+        });
     }
     let url = `${useRuntimeConfig().management_api_url}${endpoint}`;
      const options: RequestInit = {
@@ -71,8 +80,34 @@ export async function requestToManagementApi(endpoint: string, method: string = 
   }
 
   const response = await fetch(url, options);
+  if(response.status >= 500) {
+    console.error(`Internal Server Error: ${response.status} ${response.statusText}`);
+    throw createError({
+        statusCode: response.status,
+        statusMessage: response.statusText || 'Internal Server Error',
+        data: {
+            showNotification: true,
+            notificationType: 'error',
+            title: 'Server Error',
+            description: `The server encountered an error (${response.status}). Please try again later.`,
+            statusCode: response.status
+        }
+    });
+  }
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errorData = {
+        showNotification: true,
+        notificationType: 'error',
+        title: 'Request Failed',
+        description: `Request failed with status ${response.status}`,
+        statusCode: response.status
+    };
+    
+    throw createError({
+        statusCode: response.status,
+        statusMessage: response.statusText || 'Request Failed',
+        data: errorData
+    });
   }
 
     return response.json();

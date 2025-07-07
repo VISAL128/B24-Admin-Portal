@@ -257,5 +257,25 @@
         "am/pm": "AM/PM"
       }
     }
-  }
+  },
+
+  "error": {
+    "server_error": "Server Error",
+    "internal_server_error": "An internal server error occurred. Please try again later.",
+    "internal_server_error_title": "Internal Server Error",
+    "internal_server_error_desc": "The server encountered an error and could not complete your request.",
+    "bad_gateway": "Bad Gateway",
+    "bad_gateway_desc": "The server received an invalid response from an upstream server.",
+    "service_unavailable": "Service Unavailable",
+    "service_unavailable_desc": "The service is temporarily unavailable. Please try again later.",
+    "gateway_timeout": "Gateway Timeout",
+    "gateway_timeout_desc": "The server took too long to respond.",
+    "network_error": "Network Error",
+    "network_error_desc": "Unable to connect to the server. Please check your internet connection.",
+    "server_error_code": "Server Error ({0})"
+  },
+
+  "success": "Success",
+  "operation_completed": "Operation completed successfully",
+  "validation_error": "Validation Error"
 }
