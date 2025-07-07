@@ -426,14 +426,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     header: useI18n().t("settlement.settlement_date"),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
-      useFormat().formatDateTime(row.original.created_date, {
-        dateStyle: userPreference?.dateFormat ?? "short",
-        timeStyle: userPreference?.timeFormat ?? "medium",
-      }) || new Date(row.original.created_date).toLocaleDateString("en-GB", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      })
+      useFormat().formatDateTime(row.original.created_date)
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {

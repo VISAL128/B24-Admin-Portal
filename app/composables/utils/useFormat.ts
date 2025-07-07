@@ -3,7 +3,7 @@ import {
   DateFormatter,
   getLocalTimeZone,
 } from "@internationalized/date";
-import { LOCAL_STORAGE_KEYS } from "~/utils/constants";
+import { useUserPreferences } from "./useUserPreferences";
 
 export interface FormatOptions {
   dateStyle?: "full" | "long" | "medium" | "short";
@@ -18,24 +18,14 @@ export const useFormat = () => {
   const { locale } = useI18n();
   
   // Get user preferences from localStorage
-  const storage = useStorage();
-  const userPreferences = computed(() => {
-    const prefs = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES);
-    return prefs || { 
-      timeFormat: "24h", 
-      currency: "USD",
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      dateStyle: "medium",
-      timeStyle: "short"
-    };
-  });
+  const userPreferences =  computed(() => useUserPreferences().getPreferences() || DEFAULT_USER_PREFERENCES)
   
   // Default format options based on user preferences
   const defaultOptions = computed((): FormatOptions => ({
-    dateStyle: userPreferences.value.dateStyle || "medium",
-    timeStyle: userPreferences.value.timeStyle || "short",
+    dateStyle: userPreferences.value.dateFormat || "medium",
+    timeStyle: userPreferences.value.timeFormat || "short",
     locale: locale.value || "en-GB",
-    hour12: userPreferences.value.timeFormat === "12h",
+    hour12: userPreferences.value.hour12 !== undefined ? userPreferences.value.hour12 : true,
     showTime: true,
   }));
 
@@ -78,11 +68,11 @@ export const useFormat = () => {
       );
 
       // Create DateFormatter with options based on user preferences
-      const formatter = new DateFormatter(mergedOptions.locale!, {
+      const formatter = new DateFormatter("en-GB", {
         dateStyle: mergedOptions.dateStyle,
         timeStyle: mergedOptions.showTime ? mergedOptions.timeStyle : undefined,
-        hour12: true,// mergedOptions.hour12,
-        timeZone: userPreferences.value.timezone,
+        hour12: userPreferences.value.hour12,
+        // timeZone: userPreferences.value.timezone,
       });
 
       // Format and return
@@ -131,7 +121,7 @@ export const useFormat = () => {
       const formatter = new DateFormatter(mergedOptions.locale!, {
         timeStyle: mergedOptions.timeStyle || "short",
         hour12: mergedOptions.hour12,
-        timeZone: userPreferences.value.timezone,
+        // timeZone: userPreferences.value.timezone,
       });
 
       const calendarDate = new CalendarDateTime(

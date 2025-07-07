@@ -28,9 +28,9 @@ type Option = { label: string; value: string }
 type DateAndTimeOption = { label: string; value: 'short' | 'medium' | 'long' | 'full' }
 
 const selectedLanguage = ref<Option>({ label: t('settings.languages.en'), value: 'en' })
-const selectedTimezone = ref<Option>({ label: t('settings.timezones.utc'), value: 'UTC' })
 const selectedDateFormat = ref<DateAndTimeOption>({ label: t('settings.date_format_short'), value: 'short' })
 const selectedTimeFormat = ref<DateAndTimeOption>({ label: t('settings.time_format_short'), value: 'short' })
+const selectedHourFormat = ref<Option>({ label: t('settings.hour_format_12h'), value: '12h' })
 const selectedCurrency = ref<Option>({ label: t('settings.currencies.usd'), value: 'USD' })
 
 // Load preferences from localStorage or use defaults
@@ -81,6 +81,11 @@ const timeFormatOptions = computed(() => [
   { value: 'full', label: t('settings.time_format_full') }
   // { value: '24h', label: t('settings.time_format_24h') },
   // { value: '12h', label: t('settings.time_format_12h') }
+])
+
+const hourFormatOptions = computed(() => [
+  { value: '12h', label: t('settings.hour_format_12h') },
+  { value: '24h', label: t('settings.hour_format_24h') }
 ])
 
 const currencyOptions = computed(() => [
@@ -169,7 +174,8 @@ const getDatePreview = computed(() => {
 const getTimePreview = computed(() => {
   const now = new Date()
   return useFormat().formatTime(now, {
-    timeStyle: preferences.value.timeFormat
+    timeStyle: preferences.value.timeFormat,
+    hour12: preferences.value.hour12
   })
   
   // if (preferences.value.timeFormat === '24h') {
@@ -269,11 +275,6 @@ const initializeSelectedOptions = (loadedPref: UserPreferences) => {
     label: loadedPref.currency === 'USD' ? t('settings.currencies.usd') : t('settings.currencies.khr'),
     value: loadedPref.currency
   }
-  selectedTimezone.value = {
-    label: timezoneOptions.value.find(option => option.value === loadedPref.timezone)?.label || t('settings.timezones.utc'),
-    value: loadedPref.timezone
-  
-  }
   selectedDateFormat.value = {
     label: dateFormatOptions.find(option => option.value === loadedPref.dateFormat)?.label || 'Short',
     value: loadedPref.dateFormat
@@ -291,12 +292,6 @@ watch(selectedLanguage, (newValue) => {
   }
 })
 
-watch(selectedTimezone, (newValue) => {
-  if (newValue && preferences.value.timezone !== newValue.value) {
-    preferences.value.timezone = newValue.value
-  }
-})
-
 watch(selectedDateFormat, (newValue) => {
   if (newValue && preferences.value.dateFormat !== newValue.value) {
     preferences.value.dateFormat = newValue.value
@@ -306,6 +301,12 @@ watch(selectedDateFormat, (newValue) => {
 watch(selectedTimeFormat, (newValue) => {
   if (newValue && preferences.value.timeFormat !== newValue.value) {
     preferences.value.timeFormat = newValue.value
+  }
+})
+
+watch(selectedHourFormat, (newValue) => {
+  if (newValue && preferences.value.hour12 !== (newValue.value === '12h')) {
+    preferences.value.hour12 = newValue.value === '12h'
   }
 })
 
@@ -470,7 +471,7 @@ onMounted(() => {
               />
             </div>
 
-            <div>
+            <!-- <div>
               <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
                 {{ $t('settings.timezone') }}
               </label>
@@ -483,7 +484,7 @@ onMounted(() => {
                 :search-input="false"
                 class="w-full"
               />
-            </div>
+            </div> -->
           </div>
 
           <!-- Format Preferences -->
@@ -516,6 +517,21 @@ onMounted(() => {
                   option-attribute="label"
                   value-attribute="value"
                   placeholder="Select time format"
+                  :search-input="false"
+                  class="w-full"
+                />
+              </div>
+              <!-- AM/PM Selection -->
+              <div>
+                <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
+                  {{ $t('settings.hour_format') }}
+                </label>
+                <USelectMenu
+                  v-model="selectedHourFormat"
+                  :items="hourFormatOptions"
+                  option-attribute="label"
+                  value-attribute="value"
+                  placeholder="Select hour format"
                   :search-input="false"
                   class="w-full"
                 />

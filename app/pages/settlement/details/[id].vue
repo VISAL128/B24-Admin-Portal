@@ -75,7 +75,10 @@
               <p class="text-gray-700 dark:text-gray-300">
                 {{
                   useFormat().formatDateTime(
-                    settlementDetails.records.settlement_date
+                    settlementDetails.records.settlement_date, {
+                      dateStyle: userPreferences?.dateFormat || "medium",
+                      timeStyle: userPreferences?.timeFormat || "short",
+                    }
                   )
                 }}
               </p>
@@ -209,6 +212,7 @@ import SettlementHistoryTable from "~/components/tables/SettlementHistoryTable.v
 import type { SettlementHistoryDetailQuery } from "~/models/settlement";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import { useFormat } from "~/composables/utils/useFormat";
+import { useUserPreferences } from "~/composables/utils/useUserPreferences";
 const supplierApi = useSupplierApi();
 
 definePageMeta({
@@ -232,6 +236,8 @@ const { copy, isCopied } = useClipboard();
 
 // Get settlement ID from route params
 const settlementId = route.params.id as string;
+
+const userPreferences = useUserPreferences().getPreferences();
 
 // State management
 const loading = ref(true);

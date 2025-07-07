@@ -33,19 +33,11 @@ const UBadge = resolveComponent("UBadge");
 const supplierApi = useSupplierApi();
 
 // Load user preferences for time format
-const storage = useStorage();
-const userPreferences = computed(() => {
-  const prefs = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES);
-  return prefs || { 
-    timeFormat: "24h", 
-    currency: "USD",
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone // Default to browser timezone
-  };
-});
+const userPreferences = useUserPreferences().getPreferences();
 
 const df = new DateFormatter("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
+  dateStyle: userPreferences?.dateFormat || "medium",
+  timeStyle: userPreferences?.timeFormat || "short",
 });
 
 // Create a CalendarDate for today in the local time zone
@@ -62,7 +54,7 @@ const cutOffDatetime = shallowRef(now); // Default with time
 // Create computed properties that sync with cutOffDatetime
 // Generate hour options based on user preference
 const getHourOptions = computed(() => {
-  if (userPreferences.value.timeFormat === "12h") {
+  if (userPreferences?.hour12) {
     return Array.from({ length: 12 }, (_, i) => {
       const hour = i + 1; // Start from 1 to 12
       return {
@@ -105,7 +97,7 @@ const getPeriodOptions = computed(() => {
 // Handle hour selection based on format
 const cutOffDateHour = computed({
   get: () => {
-    if (userPreferences.value.timeFormat === "12h") {
+    if (userPreferences?.hour12 || false) {
       const hour24 = cutOffDatetime.value.hour;
       const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
       return {
@@ -120,7 +112,7 @@ const cutOffDateHour = computed({
     }
   },
   set: (hour: { label: string; value: number }) => {
-    if (userPreferences.value.timeFormat === "12h") {
+    if (userPreferences?.hour12 || false) {
       // Convert 12-hour to 24-hour format
       const period = cutOffDatePeriod.value.value;
       let hour24 = hour.value;
@@ -188,7 +180,7 @@ const formatTimeDisplay = computed(() => {
   // Get locale base on current language
   const locale = useI18n().locale.value || "en-US";
 
-  if (userPreferences.value.timeFormat === "12h") {
+  if (userPreferences?.hour12 || false) {
     return new DateFormatter(locale, {
       dateStyle: "medium",
       timeStyle: "medium",
@@ -260,7 +252,7 @@ const setDefaultCurrency = () => {
   if (!selectedCurrency.value && (currencyOptions.value.length || 0) > 0) {
     // Try to find currency from user preferences
     const preferredCurrency = currencyOptions.value.find(
-      (option) => option.value.code === userPreferences.value.currency
+      (option) => option.value.code === userPreferences?.currency
     );
 
     if (preferredCurrency) {
@@ -474,14 +466,7 @@ const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
     maxSize: 150,
     cell: ({ row }) => {
       return row.original.transaction_date
-        ? useFormat().formatDateTime(row.original.transaction_date, {
-            dateStyle: "medium",
-            timeStyle: "medium",
-          }) || new Date(row.original.transaction_date).toLocaleDateString("en-GB", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
+        ? useFormat().formatDateTime(row.original.transaction_date, {})
         : "-";
     },
   },
@@ -576,7 +561,7 @@ const fetchInquirySettlementCpo = async () => {
         })) || [],
       main_supplier_id: selectedSupplier.value?.value.id || "",
       cutoff_date: cutOffDatetime.value
-        ? cutOffDatetime.value.toDate(userPreferences.value.timezone).toISOString()
+        ? cutOffDatetime.value.toDate("UTC").toISOString()
         : new Date().toISOString(),
       currency: selectedCurrency.value?.value.code || defaultCurrency.code,
     };
@@ -701,6 +686,7 @@ definePageMeta({
 
 import { ref, onMounted, onUnmounted } from "vue";
 import { useFormat } from "~/composables/utils/useFormat";
+import { useUserPreferences } from "~/composables/utils/useUserPreferences";
 
 function useWindowSize(): { height: Ref<number> } {
   if (typeof window === "undefined") {
@@ -846,7 +832,7 @@ function useWindowSize(): { height: Ref<number> } {
                               :search-input="false"
                             />
                             <USelectMenu
-                              v-if="userPreferences.timeFormat === '12h'"
+                              v-if="userPreferences?.hour12 || false"
                               v-model="cutOffDatePeriod"
                               :items="getPeriodOptions"
                               :placeholder="t('settlement.generate.form.am/pm')"

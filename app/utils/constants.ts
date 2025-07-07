@@ -23,8 +23,8 @@ export const LOCAL_STORAGE_KEYS = {
 export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   theme: 'system',
   language: 'en',
-  timezone: 'UTC',
   dateFormat: 'short',
   timeFormat: 'short', // '12h' | '24h'
+  hour12: true,
   currency: 'KHR'
 }
