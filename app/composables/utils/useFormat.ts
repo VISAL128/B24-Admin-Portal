@@ -67,16 +67,31 @@ export const useFormat = () => {
         date.getSeconds()
       );
 
-      // Create DateFormatter with options based on user preferences
-      const formatter = new DateFormatter("en-GB", {
+      const dateObj = calendarDate.toDate(getLocalTimeZone());
+
+      // If only date is needed (no time)
+      if (!mergedOptions.showTime) {
+        const formatter = new DateFormatter("en-GB", {
+          dateStyle: mergedOptions.dateStyle,
+        });
+        return formatter.format(dateObj);
+      }
+
+      // Format date and time separately to avoid comma
+      const dateFormatter = new DateFormatter("en-GB", {
         dateStyle: mergedOptions.dateStyle,
-        timeStyle: mergedOptions.showTime ? mergedOptions.timeStyle : undefined,
-        hour12: userPreferences.value.hour12,
-        // timeZone: userPreferences.value.timezone,
       });
 
-      // Format and return
-      return formatter.format(calendarDate.toDate(getLocalTimeZone()));
+      const timeFormatter = new DateFormatter("en-GB", {
+        timeStyle: mergedOptions.timeStyle,
+        hour12: userPreferences.value.hour12,
+      });
+
+      const formattedDate = dateFormatter.format(dateObj);
+      const formattedTime = timeFormatter.format(dateObj);
+
+      // Join with space instead of comma
+      return `${formattedDate} ${formattedTime}`;
     } catch (error) {
       console.error("Error formatting datetime:", error, "Input:", dateInput);
       return typeof dateInput === "string" ? dateInput : "-";

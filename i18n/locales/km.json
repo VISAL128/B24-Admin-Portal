@@ -7,6 +7,18 @@
     "english": "អង់គ្លេស",
     "khmer": "ខ្មែរ"
   },
+  "status": {
+    "header": "ស្ថានភាព",
+    "active": "សកម្ម",
+    "inactive": "អសកម្ម",
+    "pending": "រង់ចាំ",
+    "completed": "បានបញ្ចប់",
+    "failed": "បរាជ័យ",
+    "success": "ជោគជ័យ",
+    "error": "កំហុស"
+  },
+  "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
+  "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
   "currency": "រូបិយប័ណ្ណ",
   "12h": "12 ម៉ោង",
   "24h": "24 ម៉ោង",
@@ -14,11 +26,12 @@
   "settlements": "ការទូទាត់",
   "wallet_settlements": "ការទូទាត់ នៅលើ wallet",
   "user_profile": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
+  "details": "ព័ត៌មានលម្អិត",
   "settings": {
-    "date_format_short": "ខ្លី (MM/DD/YYYY)",
-    "date_format_medium": "មធ្យម (MMM DD, YYYY)",
-    "date_format_long": "វែង (MMMM DD, YYYY)",
-    "date_format_full": "ពេញ (EEEE, MMMM DD, YYYY)",
+    "date_format_short": "ខ្លី (DD/MM/YYYY)",
+    "date_format_medium": "មធ្យម (DD MMM YYYY)",
+    "date_format_long": "វែង (DD MMMM YYYY)",
+    "date_format_full": "ពេញ (EEEE DD MMMM YYYY)",
     "time_format_short": "ខ្លី",
     "time_format_medium": "មធ្យម",
     "time_format_long": "វែង",
@@ -118,7 +131,6 @@
   "total_supplier": "ចំនួនអ្នកផ្គត់ផ្គង់សរុប",
   "total_amount": "ចំនួនទឹកប្រាក់សរុប",
   "settled_by": "ទូទាត់ដោយ",
-  "status": "ស្ថានភាព",
   "no_data_to_export": "គ្មានទិន្នន័យដើម្បីទាញយក",
   "please_ensure_there_is_data_to_export": "សូមធានាថាមានទិន្នន័យដើម្បីទាញយក",
   "export_successful": "ទាញយកបានជោគជ័យ",
@@ -182,6 +194,7 @@
         "next": "បន្ទាប់"
       },
       "form": {
+        "total_transactions": "ប្រតិបត្តិការសរុប",
         "no_cpo_settlement_title": "មិនមាន CPO",
         "no_cpo_settlement_message": "មិនមាន CPO សម្រាប់ការទូទាត់។",
         "no_cpo_settlement_description": "សូមជ្រើសរើសអ្នកផ្គត់ផ្គង់, កាលបរិច្ឆេទកាត់ផ្តាច់ និងរូបិយប័ណ្ណ។ រួចព្យាយាមម្តងទៀត។",
@@ -235,7 +248,7 @@
         "minute": "នាទី",
         "second": "វិនាទី",
         "search_cpo": "ស្វែងរក CPO",
-        "search_biller": "ស្វែងរកម្ចាស់អាជីវកម្មតាមលេខកូដ ឬឈ្មោះ",
+        "search_biller": "ស្វែងរកតាមលេខកូដ ឬឈ្មោះ",
         "search_placeholder": "ស្វែងរកតាមលេខកូដ CPO, ឈ្មោះ, អ៊ីមែល, ឬអាសយដ្ឋាន",
         "confirm_settlement_message": "តើអ្នកប្រាកដជាចង់បញ្ជាក់ការទូទាត់?",
         "confirm_settlement_title": "ការបញ្ជាក់",
@@ -284,6 +297,28 @@
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
     "search_placeholder": "ស្វែងរក..."
+  },
+
+  "no_permission": {
+    "title": "ការចូលត្រូវបានកំណត់",
+    "access_denied": "បដិសេធការចូល",
+    "insufficient_role": "តួនាទីមិនគ្រប់គ្រាន់",
+    "feature_restricted": "មុខងារត្រូវបានកំណត់",
+    "resource_access_denied": "បដិសេធការចូលធនធាន",
+    "action_not_permitted": "មិនអនុញ្ញាតសកម្មភាព",
+    "general_message": "អ្នកមិនមានការអនុញ្ញាតក្នុងការចូលប្រើធនធាននេះទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងសម្រាប់ជំនួយ។",
+    "role_message": "តួនាទីបច្ចុប្បន្នរបស់អ្នកមិនមានសិទ្ធិគ្រប់គ្រាន់ដើម្បីចូលប្រើ{resource}។ សូមទាក់ទងអ្នកគ្រប់គ្រងដើម្បីស្នើសុំការអនុញ្ញាតសមស្រប។",
+    "feature_message": "មុខងារនេះ{resource} ត្រូវបានកំណត់ ហើយមិនអាចប្រើបានសម្រាប់គណនីរបស់អ្នកទេ។ ទាក់ទងអ្នកគ្រប់គ្រងប្រសិនបើអ្នកត្រូវការចូលប្រើមុខងារនេះ។",
+    "resource_message": "អ្នកមិនមានការអនុញ្ញាតក្នុងការចូលប្រើធនធាន{resource}{action}។ សូមផ្ទៀងផ្ទាត់សិទ្ធិការចូលរបស់អ្នក ឬទាក់ទងការគាំទ្រ។",
+    "action_message": "អ្នកមិនត្រូវបានអនុញ្ញាតឱ្យធ្វើ {action} លើ{resource}។ សូមទាក់ទងអ្នកគ្រប់គ្រងដើម្បីស្នើសុំការអនុញ្ញាតចាំបាច់។",
+    "additional_info": "ពត៌មានបន្ថែម",
+    "required_permissions": "ការអនុញ្ញាតដែលត្រូវការ",
+    "go_back": "ថយក្រោយ",
+    "go_home": "ទៅទំព័រដើម",
+    "request_access": "ស្នើសុំការចូល",
+    "user": "អ្នកប្រើប្រាស់",
+    "current_roles": "តួនាទីបច្ចុប្បន្ន",
+    "request_id": "លេខសម្គាល់សំណើ"
   },
 
   "error": {

@@ -205,8 +205,6 @@ import { useClipboard } from "~/composables/useClipboard";
 import type {
   SettlementHistoryDetail,
   SettlementHistoryDetailResponse,
-  SettlementHistoryRecord,
-  SettlementHistoryResponse,
 } from "~/models/settlement";
 import SettlementHistoryTable from "~/components/tables/SettlementHistoryTable.vue";
 import type { SettlementHistoryDetailQuery } from "~/models/settlement";
@@ -215,24 +213,26 @@ import { useFormat } from "~/composables/utils/useFormat";
 import { useUserPreferences } from "~/composables/utils/useUserPreferences";
 const supplierApi = useSupplierApi();
 
-definePageMeta({
-  auth: true,
-  breadcrumbs: [
-    {
-      label: "Wallet Settlement",
-      to: "/settlement/wallet-settlement",
-    },
-    {
-      label: "Details",
-      active: true,
-    },
-  ],
-});
+
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { execute } = useApiExecutor();
 const { copy, isCopied } = useClipboard();
+
+definePageMeta({
+  auth: true,
+  breadcrumbs: [
+    {
+      label: "wallet_settlements",
+      to: "/settlement/wallet-settlement",
+    },
+    {
+      label: "details",
+      active: true,
+    },
+  ],
+});
 
 // Get settlement ID from route params
 const settlementId = route.params.id as string;

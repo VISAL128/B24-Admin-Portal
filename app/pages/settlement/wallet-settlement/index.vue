@@ -76,7 +76,8 @@
     <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
       <span>
         {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t("row_selected") }}
+        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }}
+        {{ t("row_selected") }}
       </span>
       <div class="flex items-center gap-4">
         <!-- <USelect
@@ -113,7 +114,7 @@
 <script setup lang="ts">
 definePageMeta({
   auth: false,
-  breadcrumbs: [{ label: "Wallet Settlement", active: true }],
+  breadcrumbs: [{ label: "wallet_settlements", active: true }],
 });
 import {
   h,
@@ -125,9 +126,7 @@ import {
   resolveComponent,
 } from "vue";
 import { useRouter } from "vue-router";
-import { useClipboard } from "@vueuse/core";
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
-import { useApiExecutor } from "~/composables/api/useApiExecutor";
 import type { DropdownMenuItem, TableColumn } from "@nuxt/ui";
 import {
   CalendarDate,
@@ -156,6 +155,7 @@ const errorHandler = useErrorHandler();
 const table = useTemplateRef("table");
 const router = useRouter();
 const toast = useToast();
+const notification = useNotification()
 
 const page = ref(1);
 const pageSize = ref<{ label: string; value: number }>({
@@ -405,6 +405,17 @@ const handleExport = (item: { click: () => void }) => {
   }
 };
 
+const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
+  if (record.success === 0 && record.fail === 0) {
+    await notification.showWarning({
+      title: t("no_transactions_found"),
+      description: t("no_transactions_found_desc"),
+    });
+    return;
+  }
+  navigateToDetails(record.id);
+};
+
 const columns: TableColumn<SettlementHistoryRecord>[] = [
   {
     id: "select",
@@ -427,25 +438,42 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+  {
+    id: "row_number",
+    header: () => "#",
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
+    size: 30,
+    maxSize: 30,
+    enableSorting: false,
+  },
   // { accessorKey: "id", header: t("Settlement ID") },
   {
     accessorKey: "created_date",
-    header: useI18n().t("settlement.settlement_date"),
+    header: t("settlement.settlement_date"),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
-      useFormat().formatDateTime(row.original.created_date)
+      useFormat().formatDateTime(row.original.created_date),
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     accessorKey: "total_amount",
-    header: useI18n().t("total_amount"),
-    cell: ({ row }) => useCurrency().formatAmount(row.original.total_amount, row.original.currency_id),
+    header: () =>
+      h("div", { class: "text-right" }, t("total_amount")),
+    cell: ({ row }) =>
+      h(
+        "div",
+        { class: "text-right" },
+        useCurrency().formatAmount(
+          row.original.total_amount,
+          row.original.currency_id
+        )
+      ),
   },
-  { accessorKey: "currency_id", header: useI18n().t("settlement.currency") },
-  { accessorKey: "created_by", header: useI18n().t("settled_by") },
+  { accessorKey: "currency_id", header: t("settlement.currency") },
+  { accessorKey: "created_by", header: t("settled_by") },
   {
     accessorKey: "status", // optional if you need sorting/filtering
-    header: useI18n().t("status"),
+    header: t("status.header"),
     cell: ({ row }) => {
       // return h('span', {
       //   class: `text-sm font-medium`
@@ -506,7 +534,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   // Add an action column for viewing details
   {
     id: "actions",
-    header: useI18n().t("actions"),
+    header: t("actions"),
     cell: ({ row }) =>
       h("div", { class: "flex items-center gap-2" }, [
         h(resolveComponent("UButton"), {
@@ -514,7 +542,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
           variant: "ghost",
           icon: "i-lucide-eye",
           size: "sm",
-          onClick: () => navigateToDetails(row.original.id),
+          onClick: handleViewDetails(row.original),
           // title: translations.view_details
         }),
       ]),

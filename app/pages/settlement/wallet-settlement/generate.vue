@@ -329,6 +329,10 @@ const isSomeSelected = computed(() => {
   );
 });
 
+const isShowRowNumber = computed(() => {
+  return true;
+});
+
 const columns: TableColumn<Cpo>[] = [
   {
     id: "select",
@@ -349,8 +353,16 @@ const columns: TableColumn<Cpo>[] = [
       }),
     enableSorting: false,
     enableHiding: false,
-    size: 50,
+    // size: 40,
+    // maxSize: 40
+  },
+  {
+    id: "row_number",
+    header: () => "#",
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
+    size: 30,
     maxSize: 50,
+    enableSorting: false,
   },
   // {
   //   accessorKey: "parent_supplier.code",
@@ -398,6 +410,14 @@ const columns: TableColumn<Cpo>[] = [
 
 const cpoSettlementColumns: TableColumn<Settlement>[] = [
   {
+    id: "row_number",
+    header: () => "#",
+    cell: ({ row }) => row.index + 1,
+    size: 30,
+    maxSize: 30,
+    enableSorting: false,
+  },
+  {
     accessorKey: "cpo.code",
     header: () => t("settlement.generate.form.cpo_code"),
     size: 120,
@@ -419,8 +439,8 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
   },
   {
     accessorKey: "amount",
-    header: () => t("settlement.generate.form.amount"),
-    cell: ({row}) => useCurrency().formatAmount(row.original.amount, row.original.currency || 'USD'),
+    header: () => h('div', {class: 'text-right'}, t("settlement.generate.form.amount")),
+    cell: ({row}) => h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount, row.original.currency || 'USD')),
     size: 140,
     maxSize: 140,
   },
@@ -435,6 +455,15 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
     header: () => t("settlement.generate.form.settle_to_bank"),
     size: 150,
     maxSize: 150,
+  },
+  {
+    accessorKey: "total_transactions",
+    header: () => t("settlement.generate.form.total_transactions"),
+    size: 80,
+    cell: ({ row }) => {
+      const transactions = row.original.transaction_allocations || [];
+      return transactions.length > 0 ? transactions.length : "-";
+    },
   },
   {
     id: "actions",
@@ -460,6 +489,14 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
 
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   {
+    id: "row_number",
+    header: () => "#",
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
+    size: 30,
+    maxSize: 30,
+    enableSorting: false,
+  },
+  {
     accessorKey: "transaction_date",
     header: () => t("settlement.generate.form.date"),
     size: 150,
@@ -472,7 +509,7 @@ const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   },
   {
     accessorKey: "amount",
-    header: () => h('div', {class: 'text-center'}, t("settlement.generate.form.amount"),),
+    header: () => h('div', {class: 'text-right'}, t("settlement.generate.form.amount"),),
     cell: ({ row }) => h('div', { class: 'text-right' }, useCurrency().formatCurrency(row.original.amount, row.original.currency_id || 'USD')),
     size: 150,
     maxSize: 150,
@@ -619,14 +656,6 @@ const handleSupplierMenuChanged = async () => {
 // Add viewport height tracking
 const { height: windowHeight } = useWindowSize();
 
-// Calculate responsive table heights
-const tableHeight = computed(() => {
-  const baseHeight = windowHeight.value || 768;
-  // Reserve space for header, stepper, and other UI elements
-  const availableHeight = Math.max(baseHeight, 300);
-  return `${Math.min(availableHeight * 0.4, 400)}px`;
-});
-
 const detailTableHeight = computed(() => {
   const baseHeight = windowHeight.value || 768;
   const availableHeight = Math.max(baseHeight, 300);
@@ -685,8 +714,8 @@ const getCpoById = (cpoId: string): Cpo | undefined => {
 definePageMeta({
   auth: false,
   breadcrumbs: [
-    { label: "Wallet Settlement", to: "/settlement/wallet-settlement" },
-    { label: "Generate Settlement", active: true },
+    { label: "wallet_settlements", to: "/settlement/wallet-settlement" },
+    { label: "generate_settlement", active: true },
   ],
 });
 
@@ -861,16 +890,14 @@ function useWindowSize(): { height: Ref<number> } {
                     v-model="selectedCurrency"
                     :items="currencyOptions"
                     option-attribute="value"
-                    icon="i-lucide-dollar-sign"
                     :placeholder="t('settlement.generate.form.choose_currency')"
                     class="w-full"
                     :search-input="false"
                   >
                     <template #leading>
-                      <UIcon
-                        name="i-lucide-dollar-sign"
-                        class="mr-2 text-gray-500"
-                      />
+                      <span class="mr-2 text-gray-500 font-medium">
+                        {{ selectedCurrency?.value.symbol || '' }}
+                      </span>
                     </template>
                   </USelectMenu>
                 </div>
@@ -1004,26 +1031,34 @@ function useWindowSize(): { height: Ref<number> } {
                       />
                   </div>
                   <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                      {{ t("settlement.generate.form.total_amount") }}:
-                      <span class="font-bold text-gray-800 dark:text-gray-200 ml-1">
-                        {{
-                          useCurrency().formatAmount(
-                            selectedCpoSettlement.amount,
-                            selectedCpoSettlement.currency
-                              ? selectedCpoSettlement.currency
-                              : defaultCurrency.code
-                          )
-                        }}
-                        <span class="ml-1">
+                    <div class="flex justify-between items-center">
+                      <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                        {{ t("settlement.generate.form.total_transactions") }}:
+                        <span class="font-bold text-gray-800 dark:text-gray-200 ml-1">
+                          {{ selectedCpoSettlement.transaction_allocations?.length || 0 }}
+                        </span>
+                      </p>
+                      <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                        {{ t("settlement.generate.form.total_amount") }}:
+                        <span class="font-bold text-gray-800 dark:text-gray-200 ml-1">
                           {{
-                            selectedCpoSettlement.currency
-                              ? selectedCpoSettlement.currency
-                              : defaultCurrency.code
-                          }}</span
-                        >
-                      </span>
-                    </p>
+                            useCurrency().formatAmount(
+                              selectedCpoSettlement.amount,
+                              selectedCpoSettlement.currency
+                                ? selectedCpoSettlement.currency
+                                : defaultCurrency.code
+                            )
+                          }}
+                          <span class="ml-1">
+                            {{
+                              selectedCpoSettlement.currency
+                                ? selectedCpoSettlement.currency
+                                : defaultCurrency.code
+                            }}</span
+                          >
+                        </span>
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Transition>

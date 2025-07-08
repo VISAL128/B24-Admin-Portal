@@ -81,11 +81,12 @@ function activateCurrentRoute() {
     activeStates.value.dashboard = true;
   } else if (currentPath === '/settings') {
     activeStates.value.settings = true;
-  } else if (currentPath.startsWith('/settlement/wallet-settlement')) {
+  } else if (currentPath.startsWith('/settlement/wallet-settlement') || currentPath.startsWith('/settlement/wallet-settlement/generate') || currentPath.startsWith('/settlement/details')) {
     activeStates.value.settlements = true;
     activeStates.value.settlementsOpen = true;
     activeStates.value.walletSettlements = true;
-  } else if (currentPath.startsWith('/settlement')) {
+  }
+  else if (currentPath.startsWith('/settlement')) {
     activeStates.value.settlements = true;
     activeStates.value.settlementsOpen = true;
   }

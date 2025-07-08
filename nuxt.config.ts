@@ -36,6 +36,8 @@ export default defineNuxtConfig({
         clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
         clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "CLIENT_SECRET",
         redirectUri: process.env.KEYCLOAK_REDIRECT_URI || "https://admin-staing.bill24.io/auth/keycloak/callback",
+        optionalClaims: ['resource_access', 'roles', 'email', 'profile'],
+        // exposeAccessToken: true
       },
     },
   },
@@ -72,23 +74,6 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     management_api_url: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
-    // Server-side runtime config
-    // openidConnect: {
-    //   op: {
-    //     issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
-    //     clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
-    //     clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
-    //     callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/get-started`,
-    //   },
-    //   config: {
-    //     cookieFlags: {
-    //       access_token: {
-    //         httpOnly: true,
-    //         secure: process.env.NODE_ENV === 'production',
-    //       }
-    //     }
-    //   }
-    // },
     // Public runtime config
     public: {
       appVersion: process.env.APP_VERSION || 'v1.0.1'
