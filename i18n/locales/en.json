@@ -313,5 +313,12 @@
 
   "success": "Success",
   "operation_completed": "Operation completed successfully",
-  "validation_error": "Validation Error"
+  "validation_error": "Validation Error",
+
+  "splash": {
+    "title": "Bill24 Admin Portal",
+    "subtitle": "Management & Settlement Platform",
+    "loading": "Initializing...",
+    "version": "Version"
+  }
 }

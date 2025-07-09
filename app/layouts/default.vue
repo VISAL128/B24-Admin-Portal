@@ -191,8 +191,6 @@
                           {{ t("settings") }}
                         </UButton>
 
-                        <UDivider class="my-2" />
-
                         <UButton
                           @click="handleLogout"
                           variant="ghost"
