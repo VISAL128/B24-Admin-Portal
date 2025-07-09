@@ -1,6 +1,6 @@
 import { defineEventHandler, getRouterParam } from 'h3'
 import type { ApiResponse } from '~/models/baseModel'
-import { SettlementHistoryDetail, SettlementHistoryDetailQuery, SettlementHistoryRecord, SettlementHistoryDetailResponse } from '~/models/settlement'
+import { SettlementHistoryDetailQuery, SettlementHistoryRecord, SettlementHistoryDetailResponse } from '~/models/settlement'
 import { getSettlementHistoryById } from '~~/server/logic/management_api_logic'
 
 // export default defineEventHandler(async (event): Promise<ApiResponse<SettlementHistoryRecord>> => {

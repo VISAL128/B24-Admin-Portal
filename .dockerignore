@@ -1,0 +1,12 @@
+# *.pyc
+# *.lock
+# *.sock
+**/node_modules/
+# .nuxt
+# # .output
+# dist
+# .git
+# .gitignore
+# README.md
+# .env
+# .env.*

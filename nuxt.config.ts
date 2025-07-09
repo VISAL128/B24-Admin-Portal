@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     host: 'localhost',
     port: 3000
   },
-  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss', '@nuxtjs/i18n', 'nuxt-oidc-auth'],
+  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss', '@nuxtjs/i18n', 'nuxt-oidc-auth',  '@nuxt/eslint',],
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
@@ -35,7 +35,9 @@ export default defineNuxtConfig({
         baseUrl: process.env.KEYCLOAK_URL || "http://localhost:8080/realms/nuxt-oidc-test",
         clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
         clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "CLIENT_SECRET",
-        redirectUri: process.env.KEYCLOAK_REDIRECT_URI || "https://admin-staing.bill24.io/auth/keycloak/callback",
+        redirectUri: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/auth/keycloak/callback' : process.env.KEYCLOAK_REDIRECT_URI || "https://admin-staging.bill24.io/auth/keycloak/callback",
+        optionalClaims: ['resource_access', 'roles', 'email', 'profile'],
+        // exposeAccessToken: true
       },
     },
   },
@@ -72,23 +74,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     management_api_url: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
-    // Server-side runtime config
-    // openidConnect: {
-    //   op: {
-    //     issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
-    //     clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
-    //     clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
-    //     callbackUrl: process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/get-started`,
-    //   },
-    //   config: {
-    //     cookieFlags: {
-    //       access_token: {
-    //         httpOnly: true,
-    //         secure: process.env.NODE_ENV === 'production',
-    //       }
-    //     }
-    //   }
-    // },
+    pgw_module_api_url: process.env.PGW_MODULE_API_URL || 'https://staging.bill24.io:22043',
     // Public runtime config
     public: {
       appVersion: process.env.APP_VERSION || 'v1.0.1'

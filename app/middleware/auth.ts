@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
   const oidc = useOidcAuth()
 
-  // If user is not authenticated, redirect to get-started for callback handling
+  // If user is not authenticated, redirect to login
   if (!oidc.loggedIn) {
     oidc.login()
   }

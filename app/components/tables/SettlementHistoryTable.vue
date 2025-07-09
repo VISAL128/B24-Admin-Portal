@@ -81,6 +81,14 @@ const filteredSettlementHistorys = computed(() => {
 
 const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
+    id: "row_number",
+    header: () => "#",
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
+    size: 30,
+    maxSize: 30,
+    enableSorting: false,
+  },
+  {
     accessorKey: "supplier.name",
     header: () => t("settlement.supplier"),
     size: 150,
@@ -102,8 +110,8 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   },
   {
     accessorKey: "settle_amount",
-    header: () => t("settlement.settle_amount"),
-    cell: ({ row }) => useCurrency().formatAmount(row.original.settle_amount),
+    header: () => h('div', {class: 'text-right'}, t("settlement.settle_amount")),
+    cell: ({ row }) => h('div', {class: 'text-right'}, useCurrency().formatAmount(row.original.settle_amount)),
     size: 150,
     maxSize: 150,
   },

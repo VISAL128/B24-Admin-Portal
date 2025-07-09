@@ -13,6 +13,18 @@
     "no_records_found": "No records found",
     "search_placeholder": "Search..."
   },
+  "status": {
+    "header": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed",
+    "success": "Success",
+    "error": "Error"
+  },
+  "no_transactions_found": "No transactions found",
+  "no_transactions_found_desc": "No transactions found for the selected criteria.",
   "settled_by": "Settled By",
   "total_amount": "Total Amount",
   "currency": "Currency",
@@ -49,10 +61,10 @@
     "status_failed": "Failed"
   },
   "settings": {
-    "date_format_short": "Short (MM/DD/YYYY)",
-    "date_format_medium": "Medium (MMM DD, YYYY)",
-    "date_format_long": "Long (MMMM DD, YYYY)",
-    "date_format_full": "Full (EEEE, MMMM DD, YYYY)",
+    "date_format_short": "Short (DD/MM/YYYY)",
+    "date_format_medium": "Medium (DD MMM YYYY)",
+    "date_format_long": "Long (DD MMMM YYYY)",
+    "date_format_full": "Full (EEEE DD MMMM YYYY)",
     "time_format_short": "Short",
     "time_format_medium": "Medium",
     "time_format_long": "Long",
@@ -158,6 +170,7 @@
     "currency": "Currency",
     "dashboard_title": "Settlement Dashboard",
     "details_title": "Settlement Details",
+    "details": "Details",
     "overview": "Settlement Overview",
     "statistics": "Settlement Statistics",
     "transactions": "Settlement Transactions",
@@ -185,6 +198,7 @@
         "next": "Next"
       },
       "form": {
+        "total_transactions": "Total Transactions",
         "no_cpo_settlement_title": "No CPO",
         "no_cpo_settlement_message": "No CPO available for settlement.",
         "no_cpo_settlement_description": "Please select a supplier, cutoff date, and currency. Then try again.",
@@ -237,7 +251,7 @@
         "minute": "Minute",
         "second": "Second",
         "search_cpo": "Search CPO",
-        "search_biller": "Search Biller by Code or Name",
+        "search_biller": "Search by Code or Name",
         "search_placeholder": "Search by CPO Code, Name, Email, or Address",
         "confirm_settlement_message": "Are you sure you want to confirm the settlement?",
         "confirm_settlement_title": "Confirmation",
@@ -258,6 +272,28 @@
         "am/pm": "AM/PM"
       }
     }
+  },
+
+  "no_permission": {
+    "title": "Access Restricted",
+    "access_denied": "Access Denied",
+    "insufficient_role": "Insufficient Role",
+    "feature_restricted": "Feature Restricted",
+    "resource_access_denied": "Resource Access Denied",
+    "action_not_permitted": "Action Not Permitted",
+    "general_message": "You do not have permission to access this resource. Please contact your administrator for assistance.",
+    "role_message": "Your current role does not have sufficient privileges to access{resource}. Please contact your administrator to request the appropriate permissions.",
+    "feature_message": "This feature{resource} is restricted and not available for your account. Contact your administrator if you need access to this functionality.",
+    "resource_message": "You do not have permission to access the resource{resource}{action}. Please verify your access rights or contact support.",
+    "action_message": "You are not permitted to perform {action} on{resource}. Please contact your administrator to request the necessary permissions.",
+    "additional_info": "Additional Information",
+    "required_permissions": "Required Permissions",
+    "go_back": "Go Back",
+    "go_home": "Go to Dashboard",
+    "request_access": "Request Access",
+    "user": "User",
+    "current_roles": "Current Roles",
+    "request_id": "Request ID"
   },
 
   "error": {
@@ -304,5 +340,17 @@
   "failed_to_export_to_excel": "Failed to export to Excel",
   "selected": "selected",
   "settlement_history_title": "Settlement History",
-  "settlement_history_subtitle": "Generated on {date}"
+  "settlement_history_subtitle": "Generated on {date}",
+  "splash": {
+    "title": "Bill24 Admin Portal",
+    "subtitle": "Management & Settlement Platform",
+    "loading": "Initializing...",
+    "version": "Version"
+  },
+  "transactions": "Transactions",
+  "transaction_date": "Transaction Date",
+  "number_of_transaction": "Number of Transactions",
+  "transaction_type": "Transaction Type",
+  "total_settlement_amount": "Total Settlement Amount",
+  "failed_transactions": "Failed Transactions"
 }
