@@ -1,5 +1,14 @@
 {
-    "cSpell.words": [
+      "cSpell.words": [
         "vueuse"
-    ]
+    ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "eslint.validate": ["javascript", "typescript", "vue"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "vue.enable": true,
+  "volar.takeOverMode.enabled": true
 }

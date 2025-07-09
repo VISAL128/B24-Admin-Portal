@@ -313,5 +313,11 @@
 
   "success": "Success",
   "operation_completed": "Operation completed successfully",
-  "validation_error": "Validation Error"
+  "validation_error": "Validation Error",
+  "transactions": "Transactions",
+  "transaction_date": "Transaction Date",
+  "number_of_transaction": "Number of Transactions",
+  "transaction_type": "Transaction Type",
+  "total_settlement_amount": "Total Settlement Amount",
+  "failed_transactions": "Failed Transactions"
 }

@@ -339,5 +339,11 @@
 
   "success": "ជោគជ័យ",
   "operation_completed": "ប្រតិបត្តិការបានបញ្ចប់ដោយជោគជ័យ",
-  "validation_error": "កំហុសក្នុងការផ្ទៀងផ្ទាត់"
+  "validation_error": "កំហុសក្នុងការផ្ទៀងផ្ទាត់",
+  "transactions": "ប្រតិបត្តិការ",
+  "transaction_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+    "number_of_transaction": "ចំនួនប្រតិបត្តិការ",
+    "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+    "total_settlement_amount": "ចំនួនទឹកប្រាក់សរុបដែលបានទូទាត់",
+    "failed_transactions": "ប្រតិបត្តិការបរាជ័យ"
 }

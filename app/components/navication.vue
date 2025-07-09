@@ -20,6 +20,7 @@ const activeStates = ref({
   settlementsOpen: false,
   walletSettlements: false,
   settings: false,
+  transactions: false,
 })
 
 const items = computed<NavigationMenuItem[][]>(() => [
@@ -30,6 +31,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
       size: 'lg',
       to: '/',
       active: activeStates.value.dashboard,
+    },
+    {
+      label: t("transactions"),
+      icon: 'i-material-symbols-sticky-note-2-rounded',
+      size: 'lg',
+      to: '/transactions',
+      active: activeStates.value.transactions,    
     },
     {
       label: t("settlements"),
@@ -75,13 +83,28 @@ function activateCurrentRoute() {
   activeStates.value.settlementsOpen = false;
   activeStates.value.walletSettlements = false;
   activeStates.value.settings = false;
+  activeStates.value.transactions = false;
   
   // Set active based on current path
   if (currentPath === '/') {
     activeStates.value.dashboard = true;
   } else if (currentPath === '/settings') {
     activeStates.value.settings = true;
-  } else if (currentPath.startsWith('/settlement/wallet-settlement') || currentPath.startsWith('/settlement/wallet-settlement/generate') || currentPath.startsWith('/settlement/details')) {
+  }
+  else if (currentPath === '/transactions') {
+    activeStates.value.transactions = true;
+  }
+  else if (currentPath.startsWith('/settlement/wallet-settlement/generate')) {
+    activeStates.value.settlements = true;
+    activeStates.value.settlementsOpen = true;
+    activeStates.value.walletSettlements = true;
+  }
+  else if (currentPath.startsWith('/settlement/wallet-settlement')) {
+    activeStates.value.settlements = true;
+    activeStates.value.settlementsOpen = true;
+    activeStates.value.walletSettlements = true;
+  }
+  else if (currentPath.startsWith('/settlement/wallet-settlement') || currentPath.startsWith('/settlement/wallet-settlement/generate') || currentPath.startsWith('/settlement/details')) {
     activeStates.value.settlements = true;
     activeStates.value.settlementsOpen = true;
     activeStates.value.walletSettlements = true;

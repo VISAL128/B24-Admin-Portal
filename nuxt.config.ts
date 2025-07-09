@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     host: 'localhost',
     port: 3000
   },
-  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss', '@nuxtjs/i18n', 'nuxt-oidc-auth'],
+  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss', '@nuxtjs/i18n', 'nuxt-oidc-auth',  '@nuxt/eslint',],
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
