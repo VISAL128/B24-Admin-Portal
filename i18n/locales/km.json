@@ -111,6 +111,7 @@
   "of": "ពី",
   "row_selected": "ជួរដេកបានជ្រើស",
   "total": "សរុប",
+  "to": "ដល់",
   "pdf": "PDF",
   "excel": "Excel",
   "settlement_id": "លេខសម្គាល់ការទូទាត់",
@@ -304,5 +305,16 @@
 
   "success": "ជោគជ័យ",
   "operation_completed": "ប្រតិបត្តិការបានបញ្ចប់ដោយជោគជ័យ",
-  "validation_error": "កំហុសក្នុងការផ្ទៀងផ្ទាត់"
+  "validation_error": "កំហុសក្នុងការផ្ទៀងផ្ទាត់",
+  
+  "pdf_export": {
+    "settlement_report": "របាយការណ៍ការបញ្ជាក់",
+    "direct_debit_settlement_summary": "របាយការណ៍សង្ខេប Direct Debit Settlement",
+    "period": "រយៈពេល",
+    "company": "ក្រុមហ៊ុន",
+    "currency_label": "រូបិយប័ណ្ណ",
+    "total": "សរុប",
+    "generated_on": "បង្កើតនៅថ្ងៃទី",
+    "page": "ទំព័រ"
+  }
 }

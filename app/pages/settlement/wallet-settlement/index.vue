@@ -141,15 +141,19 @@ import type {
 } from "~/models/settlement";
 import {
   exportToExcelStyled,
-  exportToPDF,
+  exportToExcelWithUnicodeSupport,
+  // exportToPDF,
+  exportToPDFStyled,
+  exportToPDFWithUnicodeSupport,
 } from "~/composables/utils/exportUtils";
+import { getPDFHeaders } from "~/composables/utils/pdfFonts";
 import { useI18n } from "vue-i18n";
 import TableEmptyState from "~/components/TableEmptyState.vue";
 import { useUserPreferences } from "~/composables/utils/useUserPreferences";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import { useFormat } from "~/composables/utils/useFormat";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { getSettlementHistory } = useSupplierApi();
 const errorHandler = useErrorHandler();
 
@@ -288,13 +292,16 @@ const navigateToDetails = (settlementId: string) => {
 };
 
 const exportHeaders = [
-  { key: "settlementId", label: t("settlement_id") },
-  { key: "settlementDate", label: t("settlement_date") },
-  { key: "totalSupplier", label: t("total_supplier") },
-  { key: "totalAmount", label: t("total_amount") },
-  { key: "settledBy", label: t("settled_by") },
-  { key: "status", label: t("status") },
+  { key: "currency_id", label: t("settlement.currency") },
+  { key: "created_date", label: t("settlement_history_details.settlement_date") },
+  { key: "total_supplier", label: t("settlement_history_details.total_supplier") },
+  { key: "created_by", label: t("settled_by") },
+  { key: "total_amount", label: t("total_amount") }
+  // { key: "status", label: t("status") },
 ];
+
+// Dynamic headers for PDF that support both languages
+const pdfExportHeaders = computed(() => getPDFHeaders(t));
 
 const exportToExcelHandler = async () => {
   try {
@@ -312,15 +319,48 @@ const exportToExcelHandler = async () => {
       });
       return;
     }
-    await exportToExcelStyled(
-      dataToExport,
-      exportHeaders,
-      "settlement-history.xlsx",
-      t("settlement_history_title"),
-      t("settlement_history_subtitle", {
-        date: new Date().toLocaleDateString(),
-      })
-    );
+
+    // Calculate total amount
+    const totalAmount = dataToExport.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0);
+    
+    // Get current locale from the existing locale ref
+    const currentLocale = locale.value as 'km' | 'en';
+    
+    // Create period string from date range
+    const periodText = `${startDate.value} ${t('to')} ${endDate.value}`;
+
+    // Try the new Unicode-supported Excel export first, fallback to regular if it fails
+    try {
+      await exportToExcelWithUnicodeSupport(
+        dataToExport,
+        exportHeaders,
+        "settlement-history.xlsx",
+        t("settlement_history_title"),
+        t("settlement_history_subtitle", {
+          date: new Date().toLocaleDateString(currentLocale === 'km' ? 'km-KH' : 'en-US'),
+        }),
+        {
+          locale: currentLocale,
+          t: t,
+          currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          period: periodText
+        }
+      );
+    } catch (unicodeError) {
+      console.warn('Unicode Excel export failed, falling back to standard Excel:', unicodeError);
+      // Fallback to standard Excel export
+      await exportToExcelStyled(
+        dataToExport,
+        exportHeaders,
+        "settlement-history.xlsx",
+        t("settlement_history_title"),
+        t("settlement_history_subtitle", {
+          date: new Date().toLocaleDateString(),
+        })
+      );
+    }
+
     toast.add({
       title: t("export_successful"),
       description: t("exported_records_to_excel", {
@@ -355,7 +395,52 @@ const exportToPDFHandler = async () => {
       });
       return;
     }
-    await exportToPDF(dataToExport, exportHeaders, "settlement-history.pdf");
+
+    // Calculate total amount
+    const totalAmount = dataToExport.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0);
+    
+    // Get current locale from the existing locale ref
+    const currentLocale = locale.value as 'km' | 'en';
+    
+    // Create period string from date range
+    const periodText = `${startDate.value} to ${endDate.value}`;
+    
+    try {
+      await exportToPDFWithUnicodeSupport(
+        dataToExport, 
+        pdfExportHeaders.value,
+        "settlement-history.pdf",
+        '', // Let the function use dynamic titles
+        '', // Let the function use dynamic titles
+        periodText,
+        {
+          // company: 'WINGKH',
+          // currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          locale: currentLocale,
+          t: t // Pass the translation function
+        }
+      );
+    } catch (unicodeError) {
+      console.warn('Unicode PDF export failed, falling back to standard PDF:', unicodeError);
+      // Fallback to standard PDF export
+      await exportToPDFStyled(
+        dataToExport, 
+        pdfExportHeaders.value,
+        "settlement-history.pdf",
+        '', // Let the function use dynamic titles
+        '', // Let the function use dynamic titles
+        periodText,
+        {
+          company: 'WINGKH',
+          currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          locale: currentLocale,
+          t: t // Pass the translation function
+        }
+      );
+    }
+    
     toast.add({
       title: t("export_successful"),
       description: t("exported_records_to_pdf", {

@@ -1,14 +1,17 @@
+/* Import Google Fonts for Khmer support */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 @import "tailwindcss";
 @import "@nuxt/ui";
 
 @theme {
-    --font-display: "Preahvihear","DM Sans", sans-serif;
+    --font-display: "Noto Sans Khmer", "Preahvihear","DM Sans", sans-serif;
 }
 
 :root {
   /* Bill24 Primary Color Configuration */
   --ui-primary: #3F83F8;
-    font-family: "Kantumruy Pro","DM Sans", sans-serif;
+    font-family: "Noto Sans Khmer", "Kantumruy Pro","DM Sans", sans-serif;
 }
 
 .dark {
