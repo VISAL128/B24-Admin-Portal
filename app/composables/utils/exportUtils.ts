@@ -90,80 +90,246 @@ export async function exportToExcel(
 //   doc.save(filename)
 // }
 
+// export async function exportToExcelStyled(
+//   data: any[],
+//   headers: { key: string, label: string }[],
+//   filename = 'export.xlsx',
+//   title = 'Settlement History',
+//   subtitle = ''
+// ) {
+//   const ExcelJS = (await import('exceljs')).default;
+//   const workbook = new ExcelJS.Workbook();
+//   const worksheet = workbook.addWorksheet('Sheet1');
+
+//   // Add title row
+//   worksheet.mergeCells(1, 1, 1, headers.length);
+//   const titleCell = worksheet.getCell(1, 1);
+//   titleCell.value = title;
+//   titleCell.font = { size: 16, bold: true };
+//   titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+//   // Add subtitle row if provided
+//   let headerRowIndex = 2;
+//   if (subtitle) {
+//     worksheet.mergeCells(2, 1, 2, headers.length);
+//     const subtitleCell = worksheet.getCell(2, 1);
+//     subtitleCell.value = subtitle;
+//     subtitleCell.font = { size: 12, italic: true };
+//     subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+//     headerRowIndex = 3;
+//   }
+
+//   // Add header row
+//   worksheet.addRow(headers.map(h => h.label));
+//   const headerRow = worksheet.getRow(headerRowIndex);
+//   headerRow.font = { bold: true };
+//   headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+//   headerRow.eachCell(cell => {
+//     cell.fill = {
+//       type: 'pattern',
+//       pattern: 'solid',
+//       fgColor: { argb: 'FFDDEEFF' }
+//     };
+//     cell.border = {
+//       top: { style: 'thin' },
+//       left: { style: 'thin' },
+//       bottom: { style: 'thin' },
+//       right: { style: 'thin' }
+//     };
+//   });
+
+//   // Add data rows
+//   data.forEach(item => {
+//     worksheet.addRow(headers.map(h => item[h.key]));
+//   });
+
+//   // Auto width
+//   worksheet.columns.forEach(column => {
+//     if (!column) return;
+//     let maxLength = 10;
+//     column.eachCell?.({ includeEmpty: true }, cell => {
+//       maxLength = Math.max(maxLength, (cell.value ? cell.value.toString().length : 0));
+//     });
+//     column.width = maxLength + 2;
+//   });
+  
+
+//   // Freeze header
+//   worksheet.views = [{ state: 'frozen', ySplit: headerRowIndex }];
+
+//   // Save
+//   const buffer = await workbook.xlsx.writeBuffer();
+//   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+//   const link = document.createElement('a');
+//   link.href = URL.createObjectURL(blob);
+//   link.download = filename;
+//   link.click();
+// }
+
+
+
 export async function exportToExcelStyled(
   data: any[],
   headers: { key: string, label: string }[],
   filename = 'export.xlsx',
   title = 'Settlement History',
-  subtitle = ''
+  subtitle = '',
+  options: {
+    locale?: 'km' | 'en';
+    t?: Function;
+    currency?: string;
+    totalAmount?: number;
+    period?: string;
+  } = {}
 ) {
-  const ExcelJS = (await import('exceljs')).default;
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet1');
 
-  // Add title row
-  worksheet.mergeCells(1, 1, 1, headers.length);
-  const titleCell = worksheet.getCell(1, 1);
-  titleCell.value = title;
-  titleCell.font = { size: 16, bold: true };
-  titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    console.log('Optimizing column width for:');
 
-  // Add subtitle row if provided
-  let headerRowIndex = 2;
-  if (subtitle) {
-    worksheet.mergeCells(2, 1, 2, headers.length);
-    const subtitleCell = worksheet.getCell(2, 1);
-    subtitleCell.value = subtitle;
-    subtitleCell.font = { size: 12, italic: true };
-    subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-    headerRowIndex = 3;
-  }
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
 
-  // Add header row
-  worksheet.addRow(headers.map(h => h.label));
-  const headerRow = worksheet.getRow(headerRowIndex);
-  headerRow.font = { bold: true };
-  headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-  headerRow.eachCell(cell => {
-    cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFDDEEFF' }
-    };
-    cell.border = {
-      top: { style: 'thin' },
-      left: { style: 'thin' },
-      bottom: { style: 'thin' },
-      right: { style: 'thin' }
-    };
-  });
+    // Add title row
+    worksheet.mergeCells(1, 1, 1, headers.length);
+    const titleCell = worksheet.getCell(1, 1);
+    titleCell.value = title;
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-  // Add data rows
-  data.forEach(item => {
-    worksheet.addRow(headers.map(h => item[h.key]));
-  });
+    // Add subtitle row if provided
+    let headerRowIndex = 2;
+    if (subtitle) {
+      worksheet.mergeCells(2, 1, 2, headers.length);
+      const subtitleCell = worksheet.getCell(2, 1);
+      subtitleCell.value = subtitle;
+      subtitleCell.font = { size: 12, italic: true };
+      subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      headerRowIndex = 3;
+    }
 
-  // Auto width
-  worksheet.columns.forEach(column => {
-    if (!column) return;
-    let maxLength = 10;
-    column.eachCell?.({ includeEmpty: true }, cell => {
-      maxLength = Math.max(maxLength, (cell.value ? cell.value.toString().length : 0));
+    // Add header row
+    worksheet.addRow(headers.map(h => h.label));
+    const headerRow = worksheet.getRow(headerRowIndex);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+    headerRow.eachCell(cell => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFDDEEFF' }
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
     });
-    column.width = maxLength + 2;
-  });
 
-  // Freeze header
-  worksheet.views = [{ state: 'frozen', ySplit: headerRowIndex }];
+    // Add data rows
+    data.forEach(item => {
+      worksheet.addRow(headers.map(h => item[h.key]));
+    });
 
-  // Save
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
+    // Add total row if provided with proper formatting
+    if (options.totalAmount !== undefined && options.t) {
+      // Add empty row for spacing
+      worksheet.addRow([]);
+      
+      // Create a properly formatted total section
+      const totalLabel = options.t('pdf_export.total');
+      const totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`;
+      
+      // Add total row spanning multiple columns for better layout
+      const totalRowData = new Array(headers.length).fill('');
+      totalRowData[headers.length - 2] = totalLabel; // Second to last column
+      totalRowData[headers.length - 1] = totalValue; // Last column
+      
+      const totalRow = worksheet.addRow(totalRowData);
+      
+      // Style the total row
+      totalRow.font = { 
+        bold: true,
+        size: 12,
+        name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+      };
+      totalRow.alignment = { horizontal: 'right', vertical: 'middle' };
+      
+      // Add background color and borders to make it stand out
+      totalRow.eachCell((cell, colNumber) => {
+        if (colNumber >= headers.length - 1) { // Last two columns
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE6F3FF' } // Light blue background
+          };
+          cell.border = {
+            top: { style: 'medium', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'medium', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+        }
+      });
+      
+      // Make the total value cell right-aligned and bold
+      const totalValueCell = totalRow.getCell(headers.length);
+      totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };
+      totalValueCell.font = { 
+        bold: true,
+        size: 12,
+        color: { argb: 'FF0066CC' }, // Blue color for emphasis
+        name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+      };
+    }
+
+    // Set reasonable column widths - compact and globally applicable
+    worksheet.columns.forEach(column => {
+      if (!column) return;
+      
+      let maxLength = 8; // Reduced minimum width
+      let calculatedWidth = 12; // Reduced default width
+      
+      // Calculate width based on actual content
+      column.eachCell?.({ includeEmpty: true }, cell => {
+        if (cell.value) {
+          const cellLength = cell.value.toString().length;
+          maxLength = Math.max(maxLength, cellLength);
+        }
+      });
+      
+      // Apply intelligent width limits based on content length
+      if (maxLength <= 10) {
+        calculatedWidth = Math.min(maxLength + 2, 12); // Short content
+      } else if (maxLength <= 20) {
+        calculatedWidth = Math.min(maxLength + 2, 18); // Medium content
+      } else if (maxLength <= 30) {
+        calculatedWidth = Math.min(maxLength + 2, 25); // Long content
+      } else {
+        calculatedWidth = Math.min(maxLength + 2, 30); // Very long content
+      }
+      
+      // Ensure minimum readability but keep compact
+      column.width = Math.max(calculatedWidth, 10);
+    });
+
+    // Adjust row height
+    worksheet.eachRow((row, rowIndex) => {
+      row.height = 20;  // Set a default row height to reduce space
+    });
+
+    // Freeze header
+    worksheet.views = [{ state: 'frozen', ySplit: headerRowIndex }];
+
+    // Save
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
 }
+
 
 export async function exportToPDFStyled(
   data: any[],
@@ -651,7 +817,7 @@ export async function exportToExcelWithUnicodeSupport(
   const worksheet = workbook.addWorksheet('Sheet1');
 
   // Set worksheet properties for better Unicode support
-  worksheet.properties.defaultColWidth = 15;
+  worksheet.properties.defaultColWidth = 5;
 
   // Get dynamic titles if translation function is available
   const displayTitle = options.t ? options.t('settlement_history_title') : title;
@@ -743,7 +909,7 @@ export async function exportToExcelWithUnicodeSupport(
     
     // Set font for data rows
     row.font = {
-      name: options.locale === 'km' ? 'Khmer OS' : 'Arial'
+      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
     };
     
     // Add borders to data cells
@@ -757,42 +923,88 @@ export async function exportToExcelWithUnicodeSupport(
     });
   });
 
-  // Add total row if provided
+  // Add total row if provided with proper formatting
   if (options.totalAmount !== undefined && options.t) {
     // Add empty row for spacing
     worksheet.addRow([]);
     
-    // Add total row
-    const totalRow = worksheet.addRow([
-      '', // Empty first columns
-      ...Array(headers.length - 2).fill(''),
-      options.t('pdf_export.total'),
-      `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`
-    ]);
+    // Create a properly formatted total section
+    const totalLabel = options.t('pdf_export.total');
+    const totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`;
     
+    // Add total row spanning multiple columns for better layout
+    const totalRowData = new Array(headers.length).fill('');
+    totalRowData[headers.length - 2] = totalLabel; // Second to last column
+    totalRowData[headers.length - 1] = totalValue; // Last column
+    
+    const totalRow = worksheet.addRow(totalRowData);
+    
+    // Style the total row
     totalRow.font = { 
       bold: true,
-      name: options.locale === 'km' ? 'Khmer OS' : 'Arial'
+      size: 12,
+      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
     };
-    totalRow.alignment = { horizontal: 'right' };
+    totalRow.alignment = { horizontal: 'right', vertical: 'middle' };
+    
+    // Add background color and borders to make it stand out
+    totalRow.eachCell((cell, colNumber) => {
+      if (colNumber >= headers.length - 1) { // Last two columns
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE6F3FF' } // Light blue background
+        };
+        cell.border = {
+          top: { style: 'medium', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'medium', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } }
+        };
+      }
+    });
+    
+    // Make the total value cell right-aligned and bold
+    const totalValueCell = totalRow.getCell(headers.length);
+    totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };
+    totalValueCell.font = { 
+      bold: true,
+      size: 12,
+      color: { argb: 'FF0066CC' }, // Blue color for emphasis
+      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+    };
   }
 
-  // Auto-adjust column widths with better Unicode character support
+  // Set reasonable column widths - more compact and globally applicable
   worksheet.columns.forEach((column, index) => {
     if (!column) return;
-    let maxLength = 15; // Minimum width
     
+    let maxLength = 8; // Reduced minimum width
+    let calculatedWidth = 12; // Reduced default width
+    
+    // Calculate width based on actual content
     column.eachCell?.({ includeEmpty: true }, cell => {
       if (cell.value) {
         const cellLength = cell.value.toString().length;
-        // For Khmer text, we need to account for wider characters
-        const adjustedLength = options.locale === 'km' ? cellLength * 1.5 : cellLength;
+        // For Khmer text, account for wider characters but keep it reasonable
+        const adjustedLength = options.locale === 'km' ? cellLength * 1.2 : cellLength;
         maxLength = Math.max(maxLength, adjustedLength);
       }
     });
     
-    // Set a reasonable maximum width
-    column.width = Math.min(maxLength + 3, 50);
+    // Apply intelligent width limits based on content length rather than column names
+    if (maxLength <= 10) {
+      calculatedWidth = Math.min(maxLength + 2, 12); // Short content
+    } else if (maxLength <= 20) {
+      calculatedWidth = Math.min(maxLength + 2, 18); // Medium content
+    } else if (maxLength <= 30) {
+      calculatedWidth = Math.min(maxLength + 2, 25); // Long content
+    } else {
+      calculatedWidth = Math.min(maxLength + 2, 30); // Very long content
+    }
+    
+    // Ensure minimum readability but keep compact
+    column.width = Math.max(calculatedWidth, 10);
   });
 
   // Freeze header row

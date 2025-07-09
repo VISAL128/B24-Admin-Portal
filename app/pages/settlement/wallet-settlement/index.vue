@@ -334,7 +334,7 @@ const exportToExcelHandler = async () => {
       await exportToExcelWithUnicodeSupport(
         dataToExport,
         exportHeaders,
-        "settlement-history.xlsx",
+        `settlement-history-${new Date().toISOString().slice(0, 10)}.xlsx`,
         t("settlement_history_title"),
         t("settlement_history_subtitle", {
           date: new Date().toLocaleDateString(currentLocale === 'km' ? 'km-KH' : 'en-US'),
@@ -409,7 +409,7 @@ const exportToPDFHandler = async () => {
       await exportToPDFWithUnicodeSupport(
         dataToExport, 
         pdfExportHeaders.value,
-        "settlement-history.pdf",
+        `settlement-history-${new Date().toISOString().slice(0, 10)}.pdf`,
         '', // Let the function use dynamic titles
         '', // Let the function use dynamic titles
         periodText,
