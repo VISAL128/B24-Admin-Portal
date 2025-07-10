@@ -1,16 +1,9 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-const emit = defineEmits<{
-  'menu-state-changed': [collapsed: boolean, expanded: boolean]
-}>()
-
 const { t } = useI18n()
 
 const route = useRoute()
-
-// Internal state for controlling submenu dropdowns
-const isExpandedAll = ref(false)
 
 // Reactive state for active navigation items
 const activeStates = ref({
@@ -29,7 +22,7 @@ const activeStates = ref({
   settings: false,
 })
 
-const items = ref<NavigationMenuItem[][]>([
+const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: t('dashboard'),
@@ -50,7 +43,6 @@ const items = ref<NavigationMenuItem[][]>([
       icon: 'i-material-symbols-light-account-balance-wallet',
       size: 'lg',
       active: activeStates.value.digitalWallet,
-      open: isExpandedAll.value,
       children: [
         {
           label: t('wallet'),
@@ -73,7 +65,6 @@ const items = ref<NavigationMenuItem[][]>([
       icon: 'i-material-symbols-light-home-work',
       size: 'lg',
       active: activeStates.value.organization,
-      open: isExpandedAll.value,
       children: [
         {
           label: t('navigation.banks'),
@@ -103,7 +94,6 @@ const items = ref<NavigationMenuItem[][]>([
       icon: 'i-material-symbols-light-bar-chart',
       size: 'lg',
       active: activeStates.value.reports,
-      open: isExpandedAll.value,
       children: [
         {
           label: t('navigation.transaction_summary'),
@@ -133,7 +123,7 @@ const items = ref<NavigationMenuItem[][]>([
 
 watch(
   () => route.path,
-  (newPath, oldPath) => {
+  () => {
     activateCurrentRoute()
   }
 )
@@ -202,37 +192,10 @@ function activateCurrentRoute() {
 // Get version from runtime config
 const { $config } = useNuxtApp()
 const appVersion = ref($config.public.appVersion || 'v1.0.0')
-
-// Toggle expand all submenus
-function toggleExpandAll() {
-  isExpandedAll.value = !isExpandedAll.value
-  console.log('Toggle expand all:', isExpandedAll.value)
-}
 </script>
 
 <template>
   <div class="flex flex-col h-full">
-    <!-- Menu Control Buttons -->
-    <!-- <div class="p-2 border-b border-gray-200 dark:border-gray-700 space-y-2">
-      <UButton
-        :icon="isExpandedAll ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
-        variant="ghost"
-        color="neutral"
-        size="sm"
-        class="w-full justify-start px-3"
-        @click="toggleExpandAll"
-        :title="
-          isExpandedAll ? t('navigation.collapse_all_menus') : t('navigation.expand_all_menus')
-        "
-      >
-        <span class="ml-2 text-sm">
-          {{
-            isExpandedAll ? t('navigation.collapse_all_menus') : t('navigation.expand_all_menus')
-          }}
-        </span>
-      </UButton>
-    </div> -->
-
     <UNavigationMenu
       highlight
       popover
