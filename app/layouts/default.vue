@@ -1,10 +1,10 @@
 <template>
   <!-- Show loading screen while checking permissions -->
-  <PermissionLoadingScreen 
-    v-if="isCheckingPermissions" 
+  <PermissionLoadingScreen
+    v-if="isCheckingPermissions"
     message="Verifying admin access..."
   />
-  
+
   <!-- Main layout (only shown after permission check passes) -->
   <div v-else>
     <div
@@ -188,21 +188,72 @@
                             name="heroicons:cog-6-tooth"
                             class="w-4 h-4 mr-2"
                           />
-                          {{ t("settings") }}
+                          {{ t("profile_popup.settings") }}
                         </UButton>
 
-                        <UButton
-                          @click="handleLogout"
-                          variant="ghost"
-                          size="md"
-                          class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        <!-- Confirmation Logout Modal -->
+                        <UModal
+                          :title="t('confirmation')"
+                          v-model:open="isShowLogoutConfirmModal"
+                          :transition="true"
+                          :description="t('logout')"
+                          :close="{
+                            class: 'rounded-full',
+                            onClick: () => logoutEmit('close', false),
+                          }"
                         >
-                          <Icon
-                            name="heroicons:arrow-right-on-rectangle"
-                            class="w-4 h-4 mr-2"
-                          />
-                          {{ t("logout") }}
-                        </UButton>
+                          <UButton
+                            variant="ghost"
+                            size="md"
+                            class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Icon
+                              name="heroicons:arrow-right-on-rectangle"
+                              class="w-4 h-4 mr-2"
+                            />
+                            {{ t("logout") }}
+                          </UButton>
+
+                          <template #body>
+                            <div
+                              class="flex flex-col items-center text-center py-6"
+                            >
+                              <!-- Icon with circle background using Bill24 colors -->
+                              <div
+                                class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                                style="background-color: #eaf6fc"
+                              >
+                                <UIcon
+                                  name="i-lucide-alert-triangle"
+                                  class="text-3xl opacity-80"
+                                  style="color: #43b3de"
+                                />
+                              </div>
+
+                              <!-- Question text -->
+                              <h4 class="text-md font-semibold mb-1">
+                                {{ t("logout_confirmation") }}
+                              </h4>
+                            </div>
+                          </template>
+                          <template #footer>
+                            <div class="w-full flex flex-row justify-end gap-2">
+                              <UButton
+                                :label="t('no')"
+                                color="neutral"
+                                variant="outline"
+                                @click="closeConfirmationModal"
+                                class="w-16 justify-center"
+                              />
+                              <UButton
+                                :label="t('yes')"
+                                color="primary"
+                                @click="handleLogout"
+                                class="w-16 justify-center"
+                              />
+                            </div>
+                          </template>
+                        </UModal>
                       </div>
                     </div>
                   </template>
@@ -227,14 +278,15 @@
 import { ref, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 const { locale, t, setLocale } = useI18n();
-const { setLanguage, initializeLanguage } =
-  useLanguage();
+const { setLanguage, initializeLanguage } = useLanguage();
 const popoverRef = ref<{ close: () => void } | null>(null);
+const logoutEmit = defineEmits<{ close: [boolean] }>();
 
 const isNavExpanded = ref(true);
 
 // Permission checking state
 const isCheckingPermissions = ref(false);
+const isShowLogoutConfirmModal = ref(false);
 
 const auth = useAuth();
 const user = auth.user;
@@ -263,6 +315,14 @@ const handleSettings = () => {
   navigateTo("/settings");
 };
 
+const showConfirmationModal = () => {
+  isShowLogoutConfirmModal.value = true;
+};
+
+const closeConfirmationModal = () => {
+  isShowLogoutConfirmModal.value = false;
+};
+
 const handleLogout = async () => {
   try {
     console.log("🔄 User initiated logout...");
@@ -273,45 +333,44 @@ const handleLogout = async () => {
     // Fallback: navigate to logout page if auth.logout fails
     await navigateTo("/logout", { replace: true });
   }
-}
+};
 
 // Check if user has admin role and redirect if not
 const checkAdminAccess = async () => {
   // Only run on client side to avoid hydration issues
-  if (process.client && user.value) {
-    if (!auth.hasRole('admin')) {
-      console.warn('🚫 Access denied: User does not have admin role')
+  if (import.meta.client && user.value) {
+    if (!auth.hasRole("admin")) {
+      console.warn("🚫 Access denied: User does not have admin role");
       // If user is authenticated but not admin, redirect to no permission
       await navigateTo({
-        path: '/no-permission',
+        path: "/no-permission",
         query: {
-          type: 'role',
-          resource: 'Admin Portal',
-          action: 'access',
-          permissions: 'admin'
-        }
-      })
+          type: "role",
+          resource: "Admin Portal",
+          action: "access",
+          permissions: "admin",
+        },
+      });
     } else {
-      console.log('✅ Admin access granted')
+      console.log("✅ Admin access granted");
       // Permission check passed, hide loading screen
-      isCheckingPermissions.value = false
+      isCheckingPermissions.value = false;
     }
-  } else if (process.client && !user.value) {
+  } else if (import.meta.client && !user.value) {
     // No user, let auth middleware handle redirect
-    console.log('🔄 No user found, auth middleware will handle redirect')
-    isCheckingPermissions.value = false
+    console.log("🔄 No user found, auth middleware will handle redirect");
+    isCheckingPermissions.value = false;
   }
-}
+};
 
 // Watch for user changes and check admin access immediately
-watch(user, checkAdminAccess, { immediate: true })
+watch(user, checkAdminAccess, { immediate: true });
 
 // Also check on mounted to catch any missed cases
 onMounted(async () => {
   // // Wait for auth to stabilize
   // await nextTick()
   // await checkAdminAccess()
-  
   // // Fallback: always hide loading after 5 seconds to prevent infinite loading
   // setTimeout(() => {
   //   if (isCheckingPermissions.value) {
@@ -319,7 +378,7 @@ onMounted(async () => {
   //     isCheckingPermissions.value = false
   //   }
   // }, 5000)
-})
+});
 
 definePageMeta({
   middleware: [

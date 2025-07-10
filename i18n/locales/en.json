@@ -2,7 +2,18 @@
   "yes": "Yes",
   "no": "No",
   "hello": "Hello",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "confirmation": "Confirmation",
+  "logout_confirmation": "Are you sure you want to log out?",
   "welcome": "Welcome to Bill24 Management Portal",
+  "profile_popup": {
+    "title": "User Profile",
+    "settings": "Settings",
+    "subtitle": "Manage your information and settings",
+    "edit_profile": "Edit Profile",
+    "logout": "Logout"
+  },
   "lang": {
     "english": "English",
     "khmer": "Khmer"

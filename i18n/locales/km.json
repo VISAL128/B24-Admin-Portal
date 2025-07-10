@@ -2,7 +2,18 @@
   "yes": "បាទ",
   "no": "ទេ",
   "hello": "សួស្តី",
+  "cancel": "បោះបង់",
+  "confirm": "បញ្ជាក់",
+  "confirmation": "ការបញ្ជាក់",
+  "logout_confirmation": "តើអ្នកប្រាកដជាចង់ចាកចេញទេ?",
   "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24 Admin Portal",
+  "profile_popup": {
+    "title": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
+    "settings": "ការកំណត់",
+    "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់របស់អ្នក",
+    "edit_profile": "កែប្រែប្រវត្តិរូប",
+    "logout": "ចាកចេញ"
+  },
   "lang": {
     "english": "អង់គ្លេស",
     "khmer": "ខ្មែរ"

@@ -25,7 +25,6 @@ import {
 import { useSupplierApi } from "~/composables/api/useSupplierApi";
 import { useCurrency } from "~/composables/utils/useCurrency";
 import EmptyState from "~/components/TableEmptyState.vue";
-import { LOCAL_STORAGE_KEYS } from "~/utils/constants";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");

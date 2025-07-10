@@ -28,3 +28,11 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   hour12: true,
   currency: 'KHR'
 }
+
+export const DEFAULT_CURRENCY_CONFIG = {
+  code: 'KHR',
+  symbol: '៛',
+  name: 'Cambodian Riel',
+  decimals: 0,
+  locale: 'km-KH'
+}
