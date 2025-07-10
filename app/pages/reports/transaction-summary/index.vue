@@ -1,3 +1,3 @@
 <template>
-  <UnderDevelopment />
+  <UnderDevelopment :showBackButton="false" />
 </template>

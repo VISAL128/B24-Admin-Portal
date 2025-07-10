@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StepperItem, TableRow, TableColumn } from "@nuxt/ui";
+import type { StepperItem, TableRow, TableColumn } from '@nuxt/ui'
 import type {
   Cpo,
   Supplier,
@@ -10,241 +10,233 @@ import type {
   TransactionAllocation,
   ConfirmSettlementRequest,
   ConfirmSettlementResponse,
-} from "~/models/settlement";
-import type {
-  CurrencyConfig,
-  CurrencyFormatOptions,
-} from "~/composables/utils/useCurrency";
+} from '~/models/settlement'
+import type { CurrencyConfig, CurrencyFormatOptions } from '~/composables/utils/useCurrency'
 import {
   CalendarDate,
   CalendarDateTime,
   DateFormatter,
   getLocalTimeZone,
   Time,
-} from "@internationalized/date";
-import { useSupplierApi } from "~/composables/api/useSupplierApi";
-import { useCurrency } from "~/composables/utils/useCurrency";
-import EmptyState from "~/components/TableEmptyState.vue";
+} from '@internationalized/date'
+import { useSupplierApi } from '~/composables/api/useSupplierApi'
+import { useCurrency } from '~/composables/utils/useCurrency'
+import EmptyState from '~/components/TableEmptyState.vue'
 
-const UButton = resolveComponent("UButton");
-const UBadge = resolveComponent("UBadge");
+const UButton = resolveComponent('UButton')
+const UBadge = resolveComponent('UBadge')
 
-const supplierApi = useSupplierApi();
+const supplierApi = useSupplierApi()
 
 // Load user preferences for time format
-const userPreferences = useUserPreferences().getPreferences();
+const userPreferences = useUserPreferences().getPreferences()
 
-const df = new DateFormatter("en-US", {
-  dateStyle: userPreferences?.dateFormat || "medium",
-  timeStyle: userPreferences?.timeFormat || "short",
-});
+const df = new DateFormatter('en-US', {
+  dateStyle: userPreferences?.dateFormat || 'medium',
+  timeStyle: userPreferences?.timeFormat || 'short',
+})
 
 // Create a CalendarDate for today in the local time zone
-const today = new Date();
-const now = new CalendarDateTime(
-  today.getFullYear(),
-  today.getMonth() + 1,
-  today.getDate(),
-  23,
-  59
-);
-const cutOffDatetime = shallowRef(now); // Default with time
+const today = new Date()
+const now = new CalendarDateTime(today.getFullYear(), today.getMonth() + 1, today.getDate(), 23, 59)
+const cutOffDatetime = shallowRef(now) // Default with time
 
 // Create computed properties that sync with cutOffDatetime
 // Generate hour options based on user preference
 const getHourOptions = computed(() => {
   if (userPreferences?.hour12) {
     return Array.from({ length: 12 }, (_, i) => {
-      const hour = i + 1; // Start from 1 to 12
+      const hour = i + 1 // Start from 1 to 12
       return {
-        label: hour.toString().padStart(2, "0"),
+        label: hour.toString().padStart(2, '0'),
         value: hour,
-      };
-    });
+      }
+    })
   } else {
     return Array.from({ length: 24 }, (_, i) => ({
-      label: i.toString().padStart(2, "0"),
+      label: i.toString().padStart(2, '0'),
       value: i,
-    }));
+    }))
   }
-});
+})
 
 // Generate minute options (same for both formats)
 const getMinuteOptions = computed(() => {
   return Array.from({ length: 60 }, (_, i) => ({
-    label: i.toString().padStart(2, "0"),
+    label: i.toString().padStart(2, '0'),
     value: i,
-  }));
-});
+  }))
+})
 
 // Generate second options (same for both formats)
 const getSecondOptions = computed(() => {
   return Array.from({ length: 60 }, (_, i) => ({
-    label: i.toString().padStart(2, "0"),
+    label: i.toString().padStart(2, '0'),
     value: i,
-  }));
-});
+  }))
+})
 
 // AM/PM options for 12-hour format
 const getPeriodOptions = computed(() => {
   return [
-    { label: t('settlement.generate.form.time_format.am'), value: "AM" },
-    { label: t('settlement.generate.form.time_format.pm'), value: "PM" },
-  ];
-});
+    { label: t('settlement.generate.form.time_format.am'), value: 'AM' },
+    { label: t('settlement.generate.form.time_format.pm'), value: 'PM' },
+  ]
+})
 
 // Handle hour selection based on format
 const cutOffDateHour = computed({
   get: () => {
     if (userPreferences?.hour12 || false) {
-      const hour24 = cutOffDatetime.value.hour;
-      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+      const hour24 = cutOffDatetime.value.hour
+      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24
       return {
-        label: hour12.toString().padStart(2, "0"),
+        label: hour12.toString().padStart(2, '0'),
         value: hour12,
-      };
+      }
     } else {
       return {
-        label: cutOffDatetime.value.hour.toString().padStart(2, "0"),
+        label: cutOffDatetime.value.hour.toString().padStart(2, '0'),
         value: cutOffDatetime.value.hour,
-      };
+      }
     }
   },
   set: (hour: { label: string; value: number }) => {
     if (userPreferences?.hour12 || false) {
       // Convert 12-hour to 24-hour format
-      const period = cutOffDatePeriod.value.value;
-      let hour24 = hour.value;
-      if (period === "AM" && hour.value === 12) {
-        hour24 = 0;
-      } else if (period === "PM" && hour.value !== 12) {
-        hour24 = hour.value + 12;
+      const period = cutOffDatePeriod.value.value
+      let hour24 = hour.value
+      if (period === 'AM' && hour.value === 12) {
+        hour24 = 0
+      } else if (period === 'PM' && hour.value !== 12) {
+        hour24 = hour.value + 12
       }
-      cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour24 });
+      cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour24 })
     } else {
-      cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour.value });
+      cutOffDatetime.value = cutOffDatetime.value.set({ hour: hour.value })
     }
   },
-});
+})
 
 // Handle minute selection
 const cutOffDateMinute = computed({
   get: () => ({
-    label: cutOffDatetime.value.minute.toString().padStart(2, "0"),
+    label: cutOffDatetime.value.minute.toString().padStart(2, '0'),
     value: cutOffDatetime.value.minute,
   }),
   set: (minute: { label: string; value: number }) => {
-    cutOffDatetime.value = cutOffDatetime.value.set({ minute: minute.value });
+    cutOffDatetime.value = cutOffDatetime.value.set({ minute: minute.value })
   },
-});
+})
 
 // Handle second selection
 const cutOffDateSecond = computed({
   get: () => ({
-    label: cutOffDatetime.value.second.toString().padStart(2, "0"),
+    label: cutOffDatetime.value.second.toString().padStart(2, '0'),
     value: cutOffDatetime.value.second,
   }),
   set: (second: { label: string; value: number }) => {
-    cutOffDatetime.value = cutOffDatetime.value.set({ second: second.value });
+    cutOffDatetime.value = cutOffDatetime.value.set({ second: second.value })
   },
-});
+})
 
 // Handle AM/PM selection for 12-hour format
 const cutOffDatePeriod = computed({
   get: () => {
-    const hour = cutOffDatetime.value.hour;
-    const period = hour >= 12 ? "PM" : "AM";
-    const labelPeriod = t(`settlement.generate.form.time_format.${period.toLowerCase()}`);
-    return { label: labelPeriod, value: period };
+    const hour = cutOffDatetime.value.hour
+    const period = hour >= 12 ? 'PM' : 'AM'
+    const labelPeriod = t(`settlement.generate.form.time_format.${period.toLowerCase()}`)
+    return { label: labelPeriod, value: period }
   },
   set: (period: { label: string; value: string }) => {
-    const currentHour = cutOffDatetime.value.hour;
-    let newHour = currentHour;
+    const currentHour = cutOffDatetime.value.hour
+    let newHour = currentHour
 
-    if (period.value === "AM" && currentHour >= 12) {
-      newHour = currentHour - 12;
-    } else if (period.value === "PM" && currentHour < 12) {
-      newHour = currentHour + 12;
+    if (period.value === 'AM' && currentHour >= 12) {
+      newHour = currentHour - 12
+    } else if (period.value === 'PM' && currentHour < 12) {
+      newHour = currentHour + 12
     }
 
-    cutOffDatetime.value = cutOffDatetime.value.set({ hour: newHour });
+    cutOffDatetime.value = cutOffDatetime.value.set({ hour: newHour })
   },
-});
+})
 
 // Format time display based on user preference
 const formatTimeDisplay = computed(() => {
-  if (!cutOffDatetime.value) return "";
+  if (!cutOffDatetime.value) return ''
 
-  const date = cutOffDatetime.value.toDate(getLocalTimeZone());
+  const date = cutOffDatetime.value.toDate(getLocalTimeZone())
   // Get locale base on current language
-  const locale = useI18n().locale.value || "en-US";
+  const locale = useI18n().locale.value || 'en-US'
 
   if (userPreferences?.hour12 || false) {
     return new DateFormatter(locale, {
-      dateStyle: "medium",
-      timeStyle: "medium",
+      dateStyle: 'medium',
+      timeStyle: 'medium',
       hour12: true,
-    }).format(date);
+    }).format(date)
   } else {
     return new DateFormatter(locale, {
-      dateStyle: "medium",
-      timeStyle: "medium",
+      dateStyle: 'medium',
+      timeStyle: 'medium',
       hour12: false,
-    }).format(date);
+    }).format(date)
   }
-});
+})
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 const items = computed<StepperItem[]>(() => [
   {
-    value: "Supplier",
-    title: t("settlement.generate.steps.supplier.title"),
-    description: t("settlement.generate.steps.supplier.description"),
-    icon: "i-lucide-users",
+    value: 'Supplier',
+    title: t('settlement.generate.steps.supplier.title'),
+    description: t('settlement.generate.steps.supplier.description'),
+    icon: 'i-lucide-users',
   },
   {
-    value: "Reconciliation",
-    title: t("settlement.generate.steps.reconciliation.title"),
-    description: t("settlement.generate.steps.reconciliation.description"),
-    icon: "i-lucide-check-square",
+    value: 'Reconciliation',
+    title: t('settlement.generate.steps.reconciliation.title'),
+    description: t('settlement.generate.steps.reconciliation.description'),
+    icon: 'i-lucide-check-square',
   },
   {
-    value: "Confirmation",
-    title: t("settlement.generate.steps.confirmation.title"),
-    description: t("settlement.generate.steps.confirmation.description"),
-    icon: "i-lucide-check-circle",
+    value: 'Confirmation',
+    title: t('settlement.generate.steps.confirmation.title'),
+    description: t('settlement.generate.steps.confirmation.description'),
+    icon: 'i-lucide-check-circle',
   },
-]);
+])
 
-const supplierKeys = ref<Supplier[]>([]);
-const isLoadingSupplier = ref(false);
-const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([]);
-const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(
-  undefined
-);
-const cpoList = ref<Cpo[]>([]);
-const selectedCurrency = ref<
-  { label: string; value: CurrencyConfig } | undefined
->(undefined);
+const supplierKeys = ref<Supplier[]>([])
+const isLoadingSupplier = ref(false)
+const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([])
+const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(undefined)
+const cpoList = ref<Cpo[]>([])
+const selectedCurrency = ref<{ label: string; value: CurrencyConfig } | undefined>(undefined)
 const defaultCurrency: CurrencyConfig = {
-  code: "KHR",
-  symbol: "៛",
-  name: "Cambodian Riel",
+  code: 'KHR',
+  symbol: '៛',
+  name: 'Cambodian Riel',
   decimals: 0,
-  locale: "km-KH",
-};
+  locale: 'km-KH',
+}
 
-const isConfirmModalShow = ref(false);
-const isProcessWithMockupDate = false;
+const isConfirmModalShow = ref(false)
+const isProcessWithMockupDate = false
 
 // Add currency options computed property
 const currencyOptions = computed(() =>
   useCurrency().getAllCurrencies.value.map((currency) => ({
-    label: currency.code === 'USD' ? t("settlement.generate.form.currency_options.usd_label") : currency.code === 'KHR' ? t("settlement.generate.form.currency_options.khr_label") : currency.name,
+    label:
+      currency.code === 'USD'
+        ? t('settlement.generate.form.currency_options.usd_label')
+        : currency.code === 'KHR'
+          ? t('settlement.generate.form.currency_options.khr_label')
+          : currency.name,
     value: currency,
   }))
-);
+)
 
 // Set default currency based on user preferences
 const setDefaultCurrency = () => {
@@ -252,103 +244,96 @@ const setDefaultCurrency = () => {
     // Try to find currency from user preferences
     const preferredCurrency = currencyOptions.value.find(
       (option) => option.value.code === userPreferences?.currency
-    );
+    )
 
     if (preferredCurrency) {
-      selectedCurrency.value = preferredCurrency;
+      selectedCurrency.value = preferredCurrency
     } else {
       // Fall back to default currency if user preference currency is not available
       const fallbackCurrency = currencyOptions.value.find(
         (option) => option.value.code === defaultCurrency.code
-      );
-      selectedCurrency.value = fallbackCurrency || currencyOptions.value[0];
+      )
+      selectedCurrency.value = fallbackCurrency || currencyOptions.value[0]
     }
   }
-};
+}
 
 // Step 2 reconciliation
-const selectedCpo = ref<Cpo[]>([]);
-const selectedCpoIds = ref<Set<string>>(new Set());
+const selectedCpo = ref<Cpo[]>([])
+const selectedCpoIds = ref<Set<string>>(new Set())
 
 // Add search functionality
-const searchQuery = ref("");
+const searchQuery = ref('')
 
 // Add computed property for filtered CPO list
 const filteredCpoList = computed(() => {
   if (!searchQuery.value.trim()) {
-    return cpoList.value;
+    return cpoList.value
   }
 
-  const query = searchQuery.value.toLowerCase().trim();
+  const query = searchQuery.value.toLowerCase().trim()
   return cpoList.value.filter(
     (cpo) =>
       cpo.code.toLowerCase().includes(query) ||
       cpo.name.toLowerCase().includes(query) ||
       cpo.email?.includes(query) ||
       cpo.address?.includes(query)
-  );
-});
+  )
+})
 
 // Add methods to handle selection
 const isRowSelected = (cpo: Cpo) => {
-  return selectedCpoIds.value.has(cpo.id);
-};
+  return selectedCpoIds.value.has(cpo.id)
+}
 
 const toggleRowSelection = (cpo: Cpo) => {
   if (selectedCpoIds.value.has(cpo.id)) {
-    selectedCpoIds.value.delete(cpo.id);
-    selectedCpo.value = selectedCpo.value.filter((item) => item.id !== cpo.id);
+    selectedCpoIds.value.delete(cpo.id)
+    selectedCpo.value = selectedCpo.value.filter((item) => item.id !== cpo.id)
   } else {
-    selectedCpoIds.value.add(cpo.id);
-    selectedCpo.value.push(cpo);
+    selectedCpoIds.value.add(cpo.id)
+    selectedCpo.value.push(cpo)
   }
-};
+}
 
 const toggleAllSelection = (selectAll: boolean) => {
   if (selectAll) {
-    selectedCpoIds.value = new Set(cpoList.value.map((cpo) => cpo.id));
-    selectedCpo.value = [...cpoList.value];
+    selectedCpoIds.value = new Set(cpoList.value.map((cpo) => cpo.id))
+    selectedCpo.value = [...cpoList.value]
   } else {
-    selectedCpoIds.value.clear();
-    selectedCpo.value = [];
+    selectedCpoIds.value.clear()
+    selectedCpo.value = []
   }
-};
+}
 
 const isAllSelected = computed(() => {
   return (
-    (cpoList.value.length || 0) > 0 &&
-    selectedCpoIds.value.size === (cpoList.value.length || 0)
-  );
-});
+    (cpoList.value.length || 0) > 0 && selectedCpoIds.value.size === (cpoList.value.length || 0)
+  )
+})
 
 const isSomeSelected = computed(() => {
-  return (
-    selectedCpoIds.value.size > 0 &&
-    selectedCpoIds.value.size < (cpoList.value.length || 0)
-  );
-});
+  return selectedCpoIds.value.size > 0 && selectedCpoIds.value.size < (cpoList.value.length || 0)
+})
 
 const isShowRowNumber = computed(() => {
-  return true;
-});
+  return true
+})
 
 const columns: TableColumn<Cpo>[] = [
   {
-    id: "select",
+    id: 'select',
     header: () =>
-      h(resolveComponent("UCheckbox"), {
-        modelValue: isSomeSelected.value
-          ? "indeterminate"
-          : isAllSelected.value,
-        "onUpdate:modelValue": (value: boolean | "indeterminate") =>
-          toggleAllSelection(!!value),
-        "aria-label": "Select all",
+      h(resolveComponent('UCheckbox'), {
+        modelValue: isSomeSelected.value ? 'indeterminate' : isAllSelected.value,
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') => toggleAllSelection(!!value),
+        'aria-label': 'Select all',
       }),
     cell: ({ row }) =>
-      h(resolveComponent("UCheckbox"), {
+      h(resolveComponent('UCheckbox'), {
         modelValue: isRowSelected(row.original),
-        "onUpdate:modelValue": () => toggleRowSelection(row.original),
-        "aria-label": "Select row",
+        'onUpdate:modelValue': () => toggleRowSelection(row.original),
+        'aria-label': 'Select row',
       }),
     enableSorting: false,
     enableHiding: false,
@@ -356,8 +341,8 @@ const columns: TableColumn<Cpo>[] = [
     // maxSize: 40
   },
   {
-    id: "row_number",
-    header: () => "#",
+    id: 'row_number',
+    header: () => '#',
     cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
     size: 30,
     maxSize: 50,
@@ -375,27 +360,27 @@ const columns: TableColumn<Cpo>[] = [
   //   size: 180,
   //   maxSize: 200,
   // },
-  { 
-    accessorKey: "code", 
-    header: () => t("settlement.generate.form.biller_code"),
+  {
+    accessorKey: 'code',
+    header: () => t('settlement.generate.form.biller_code'),
     size: 120,
     maxSize: 120,
   },
-  { 
-    accessorKey: "name", 
-    header: () => t("settlement.generate.form.biller_name"),
+  {
+    accessorKey: 'name',
+    header: () => t('settlement.generate.form.biller_name'),
     size: 200,
     maxSize: 250,
   },
-  { 
-    accessorKey: "phone", 
-    header: () => t("settlement.generate.form.phone"),
+  {
+    accessorKey: 'phone',
+    header: () => t('settlement.generate.form.phone'),
     size: 130,
     maxSize: 130,
   },
-  { 
-    accessorKey: "email", 
-    header: () => t("settlement.generate.form.email"),
+  {
+    accessorKey: 'email',
+    header: () => t('settlement.generate.form.email'),
     size: 200,
     maxSize: 250,
   },
@@ -405,145 +390,160 @@ const columns: TableColumn<Cpo>[] = [
   //   size: 200,
   //   maxSize: 300,
   // },
-];
+]
 
 const cpoSettlementColumns: TableColumn<Settlement>[] = [
   {
-    id: "row_number",
-    header: () => "#",
+    id: 'row_number',
+    header: () => '#',
     cell: ({ row }) => row.index + 1,
     size: 30,
     maxSize: 30,
     enableSorting: false,
   },
   {
-    accessorKey: "cpo.code",
-    header: () => t("settlement.generate.form.cpo_code"),
+    accessorKey: 'cpo.code',
+    header: () => t('settlement.generate.form.cpo_code'),
     size: 120,
     maxSize: 120,
-    cell: ({row}) => {
-      const cpo = getCpoById(row.original.party_id);
-      return cpo ? cpo.code : row.original.cpo.code;
+    cell: ({ row }) => {
+      const cpo = getCpoById(row.original.party_id)
+      return cpo ? cpo.code : row.original.cpo.code
     },
   },
   {
-    accessorKey: "cpo.name",
-    header: () => t("settlement.generate.form.cpo_name"),
+    accessorKey: 'cpo.name',
+    header: () => t('settlement.generate.form.cpo_name'),
     size: 200,
     maxSize: 250,
-    cell: ({row}) => {
-      const cpo = getCpoById(row.original.party_id);
-      return cpo ? cpo.name : row.original.cpo.name;
+    cell: ({ row }) => {
+      const cpo = getCpoById(row.original.party_id)
+      return cpo ? cpo.name : row.original.cpo.name
     },
   },
   {
-    accessorKey: "amount",
-    header: () => h('div', {class: 'text-right'}, t("settlement.generate.form.amount")),
-    cell: ({row}) => h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount, row.original.currency || 'USD')),
+    accessorKey: 'amount',
+    header: () => h('div', { class: 'text-right' }, t('settlement.generate.form.amount')),
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-right' },
+        useCurrency().formatAmount(row.original.amount, row.original.currency || 'USD')
+      ),
     size: 140,
     maxSize: 140,
   },
   {
-    accessorKey: "currency",
-    header: () => t("settlement.generate.form.currency"),
+    accessorKey: 'currency',
+    header: () => t('settlement.generate.form.currency'),
     size: 80,
     maxSize: 80,
   },
   {
-    accessorKey: "settlement_bank_id",
-    header: () => t("settlement.generate.form.settle_to_bank"),
+    accessorKey: 'settlement_bank_id',
+    header: () => t('settlement.generate.form.settle_to_bank'),
     size: 150,
     maxSize: 150,
   },
   {
-    accessorKey: "total_transactions",
-    header: () => t("settlement.generate.form.total_transactions"),
+    accessorKey: 'total_transactions',
+    header: () => t('settlement.generate.form.total_transactions'),
     size: 80,
     cell: ({ row }) => {
-      const transactions = row.original.transaction_allocations || [];
-      return transactions.length > 0 ? transactions.length : "-";
+      const transactions = row.original.transaction_allocations || []
+      return transactions.length > 0 ? transactions.length : '-'
     },
   },
   {
-    id: "actions",
-    header: () => t("settlement.generate.form.actions"),
+    id: 'actions',
+    header: () => t('settlement.generate.form.actions'),
     cell: ({ row }) => {
-      const isCurrentlyViewing = selectedCpoSettlement.value?.party_id === row.original.party_id;
+      const isCurrentlyViewing = selectedCpoSettlement.value?.party_id === row.original.party_id
       return h(
-        resolveComponent("UButton"),
+        resolveComponent('UButton'),
         {
-          size: "xs",
-          color: isCurrentlyViewing ? "neutral" : "primary",
+          size: 'xs',
+          color: isCurrentlyViewing ? 'neutral' : 'primary',
           onClick: () => handleViewCpo(row.original),
         },
-        { default: () => isCurrentlyViewing ? t("settlement.generate.form.viewing") : t("settlement.generate.form.view") }
-      );
+        {
+          default: () =>
+            isCurrentlyViewing
+              ? t('settlement.generate.form.viewing')
+              : t('settlement.generate.form.view'),
+        }
+      )
     },
     enableSorting: false,
     enableHiding: false,
     size: 100,
     maxSize: 100,
   },
-]; 
+]
 
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   {
-    id: "row_number",
-    header: () => "#",
+    id: 'row_number',
+    header: () => '#',
     cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
     size: 30,
     maxSize: 30,
     enableSorting: false,
   },
   {
-    accessorKey: "transaction_date",
-    header: () => t("settlement.generate.form.date"),
+    accessorKey: 'transaction_date',
+    header: () => t('settlement.generate.form.date'),
     size: 150,
     maxSize: 150,
     cell: ({ row }) => {
       return row.original.transaction_date
         ? useFormat().formatDateTime(row.original.transaction_date, {})
-        : "-";
+        : '-'
     },
   },
   {
-    accessorKey: "amount",
-    header: () => h('div', {class: 'text-right'}, t("settlement.generate.form.amount"),),
-    cell: ({ row }) => h('div', { class: 'text-right' }, useCurrency().formatCurrency(row.original.amount, row.original.currency_id || 'USD')),
+    accessorKey: 'amount',
+    header: () => h('div', { class: 'text-right' }, t('settlement.generate.form.amount')),
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-right' },
+        useCurrency().formatCurrency(row.original.amount, row.original.currency_id || 'USD')
+      ),
     size: 150,
     maxSize: 150,
   },
-];
+]
 
 const stepper = ref<{
-  next: () => void;
-  prev: () => void;
-  hasNext?: boolean;
-  hasPrev?: boolean;
-} | null>(null);
-const currentStepIndex = ref(0);
+  next: () => void
+  prev: () => void
+  hasNext?: boolean
+  hasPrev?: boolean
+} | null>(null)
+const currentStepIndex = ref(0)
 
 function handleStepChange(newIndex: number) {
-  currentStepIndex.value = newIndex;
+  currentStepIndex.value = newIndex
 }
 
 // Computed property to validate if current step can proceed
 const canProceedToNext = computed(() => {
-  const currentStepTitle = items.value[currentStepIndex.value]?.title;
+  const currentStepTitle = items.value[currentStepIndex.value]?.title
   // Check if can proceed to Reconcile
-  if (currentStepTitle === t("settlement.generate.steps.supplier.title")) {
+  if (currentStepTitle === t('settlement.generate.steps.supplier.title')) {
     return (
       (selectedSuppliers.value.length || 0) > 0 &&
       cutOffDatetime.value !== null &&
       selectedCurrency.value !== undefined &&
       (selectedCpo.value.length || 0) > 0
-    );
+    )
   }
-  return true; // Allow proceeding for other steps
-});
-let listInquirySettlement = ref<SettlementInquiryResponse>();
-let confirmSettlementResponse = ref<ConfirmSettlementResponse | null>(null);
-let selectedCpoSettlement = ref<Settlement | null>(null);
+  return true // Allow proceeding for other steps
+})
+let listInquirySettlement = ref<SettlementInquiryResponse>()
+let confirmSettlementResponse = ref<ConfirmSettlementResponse | null>(null)
+let selectedCpoSettlement = ref<Settlement | null>(null)
 function handleRowClick(row: SettlementInquiryResponse) {
   // selectedCpo.value = row;
 }
@@ -551,197 +551,195 @@ function handleRowClick(row: SettlementInquiryResponse) {
 function handleViewCpo(cpo: Settlement) {
   // Replace with your logic, e.g., open a modal or navigate
   // alert(`View CPO: ${cpo.id} (${cpo.amount})`);
-  selectedCpoSettlement.value = cpo;
+  selectedCpoSettlement.value = cpo
 }
 
 onMounted(() => {
   // Fetch suppliers when the component is mounted
-  fetchSuppliers();
+  fetchSuppliers()
   // Set default currency based on user preferences
-  setDefaultCurrency();
-});
+  setDefaultCurrency()
+})
 
 // Watch for currency options changes to set default currency
 watch(
   currencyOptions,
   () => {
-    setDefaultCurrency();
+    setDefaultCurrency()
   },
   { immediate: true }
-);
+)
 
 const fetchSuppliers = async () => {
   try {
-    isLoadingSupplier.value = true;
-    supplierKeys.value = await supplierApi.getSuppliers();
+    isLoadingSupplier.value = true
+    supplierKeys.value = await supplierApi.getSuppliers()
     if (isProcessWithMockupDate) {
       // Simulate loading delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000))
     }
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000))
   } catch (error) {
-    console.error("Failed to fetch suppliers:", error);
+    console.error('Failed to fetch suppliers:', error)
   } finally {
-    isLoadingSupplier.value = false;
+    isLoadingSupplier.value = false
   }
-};
+}
 
 const fetchInquirySettlementCpo = async () => {
-  if ((selectedSuppliers.value.length || 0) === 0) return;
+  if ((selectedSuppliers.value.length || 0) === 0) return
   try {
     const request: InitQuerySettlement = {
       parties:
         selectedCpo.value?.map((cpo) => ({
           id: cpo.id,
-          type: "2",
+          type: '2',
         })) || [],
-      main_supplier_id: selectedSupplier.value?.value.id || "",
+      main_supplier_id: selectedSupplier.value?.value.id || '',
       cutoff_date: cutOffDatetime.value
-        ? cutOffDatetime.value.toDate("UTC").toISOString()
+        ? cutOffDatetime.value.toDate('UTC').toISOString()
         : new Date().toISOString(),
       currency: selectedCurrency.value?.value.code || defaultCurrency.code,
-    };
+    }
 
-    const response = await supplierApi.getInquirySettlement(request);
-    if (isProcessWithMockupDate)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    listInquirySettlement.value = response;
+    const response = await supplierApi.getInquirySettlement(request)
+    if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000))
+    listInquirySettlement.value = response
   } catch (error) {
-    console.error("Failed to fetch CPOs:", error);
+    console.error('Failed to fetch CPOs:', error)
   } finally {
     // Optionally handle loading state or errors
   }
-};
+}
 
 const onReconciliationNext = async () => {
-  await fetchInquirySettlementCpo();
-  stepper.value?.next();
-};
+  await fetchInquirySettlementCpo()
+  stepper.value?.next()
+}
 
-const router = useRouter();
+const router = useRouter()
 function onConfirm() {
-  router.push("/settlement/wallet-settlement");
+  router.push('/digital-wallet')
 }
 
 // Clear selection when supplier changes
 const handleSupplierMenuChanged = async () => {
   // Reset CPO list and selection when suppliers change
-  cpoList.value = [];
-  selectedCpo.value = [];
-  selectedCpoIds.value.clear();
-  searchQuery.value = ""; // Clear search when supplier changes
+  cpoList.value = []
+  selectedCpo.value = []
+  selectedCpoIds.value.clear()
+  searchQuery.value = '' // Clear search when supplier changes
 
-  if (!selectedSupplier.value) return;
-  selectedSuppliers.value = [selectedSupplier.value!];
+  if (!selectedSupplier.value) return
+  selectedSuppliers.value = [selectedSupplier.value!]
   // This for multiple suppliers
-  if ((selectedSuppliers.value.length || 0) === 0) return;
+  if ((selectedSuppliers.value.length || 0) === 0) return
   const result = await supplierApi.getListCPOApi({
     parent_supplier_ids: selectedSuppliers.value.map((s) => s.value.id),
-  });
+  })
 
   // Prevent error if result is undefined
   if (result) {
-    cpoList.value = result;
+    cpoList.value = result
   } else {
-    cpoList.value = [];
+    cpoList.value = []
   }
   // Auto-select all CPOs by default
   if ((cpoList.value.length || 0) > 0) {
-    toggleAllSelection(true);
-    selectedCpo.value = [...cpoList.value];
+    toggleAllSelection(true)
+    selectedCpo.value = [...cpoList.value]
   }
-};
+}
 
 // Add viewport height tracking
-const { height: windowHeight } = useWindowSize();
+const { height: windowHeight } = useWindowSize()
 
 const detailTableHeight = computed(() => {
-  const baseHeight = windowHeight.value || 768;
-  const availableHeight = Math.max(baseHeight, 300);
-  return `${Math.min(availableHeight * 0.6, 500)}px`;
-});
+  const baseHeight = windowHeight.value || 768
+  const availableHeight = Math.max(baseHeight, 300)
+  return `${Math.min(availableHeight * 0.6, 500)}px`
+})
 
 // Handle submit settlement function
 const handleSubmitSettlement = async () => {
   try {
     const payload: ConfirmSettlementRequest = {
-      settlement_token: listInquirySettlement.value?.token || "",
-    };
-    const response = await supplierApi.confirmSettlementAPI(payload);
-    if (isProcessWithMockupDate)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      settlement_token: listInquirySettlement.value?.token || '',
+    }
+    const response = await supplierApi.confirmSettlementAPI(payload)
+    if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000))
     // Check if response is valid
     if (response.error) {
-      console.error("Error confirming settlement:", response.error);
-      alert(`Error confirming settlement: ${response.error}`);
-      return;
+      console.error('Error confirming settlement:', response.error)
+      alert(`Error confirming settlement: ${response.error}`)
+      return
     }
     if (response.data) {
       // Handle successful settlement submission
-      console.log("Settlement submitted successfully:", response);
-      confirmSettlementResponse.value = response.data; // Store the response
-      isConfirmModalShow.value = false; // Close confirmation modal
+      console.log('Settlement submitted successfully:', response)
+      confirmSettlementResponse.value = response.data // Store the response
+      isConfirmModalShow.value = false // Close confirmation modal
       // Process to next step
-      stepper.value?.next();
+      stepper.value?.next()
     } else {
       // Handle error in submission
-      console.error("Settlement submission failed:", response);
+      console.error('Settlement submission failed:', response)
     }
   } catch (error) {
-    console.error("Failed to submit settlement:", error);
+    console.error('Failed to submit settlement:', error)
   }
-};
+}
 
 // Clear reconciliation data when going back to supplier selection
 const clearReconciliationData = () => {
-  listInquirySettlement.value = undefined;
-  selectedCpoSettlement.value = null;
-  confirmSettlementResponse.value = null;
-};
+  listInquirySettlement.value = undefined
+  selectedCpoSettlement.value = null
+  confirmSettlementResponse.value = null
+}
 
 // Handle back navigation from reconciliation step
 const handleBackToSupplierSelection = () => {
-  clearReconciliationData();
-  stepper.value?.prev();
-};
+  clearReconciliationData()
+  stepper.value?.prev()
+}
 
 // Get Cpo by cpo id
 const getCpoById = (cpoId: string): Cpo | undefined => {
-  return cpoList.value.find((cpo) => cpo.id === cpoId);
-};
+  return cpoList.value.find((cpo) => cpo.id === cpoId)
+}
 
 definePageMeta({
   auth: false,
   breadcrumbs: [
-    { label: "wallet_settlements", to: "/settlement/wallet-settlement" },
-    { label: "generate_settlement", active: true },
+    { label: 'settlement_menu', to: '/digital-wallet/settlement' },
+    { label: 'generate_settlement', active: true },
   ],
-});
+})
 
-import { ref, onMounted, onUnmounted } from "vue";
-import { useFormat } from "~/composables/utils/useFormat";
-import { useUserPreferences } from "~/composables/utils/useUserPreferences";
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useFormat } from '~/composables/utils/useFormat'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 
 function useWindowSize(): { height: Ref<number> } {
-  if (typeof window === "undefined") {
-    return { height: ref(0) }; // Return 0 if not in browser context
+  if (typeof window === 'undefined') {
+    return { height: ref(0) } // Return 0 if not in browser context
   }
-  const height = ref(window.innerHeight);
+  const height = ref(window.innerHeight)
 
   const updateHeight = () => {
-    height.value = window.innerHeight;
-  };
+    height.value = window.innerHeight
+  }
 
   onMounted(() => {
-    window.addEventListener("resize", updateHeight);
-    updateHeight();
-  });
+    window.addEventListener('resize', updateHeight)
+    updateHeight()
+  })
 
   onUnmounted(() => {
-    window.removeEventListener("resize", updateHeight);
-  });
+    window.removeEventListener('resize', updateHeight)
+  })
 
-  return { height };
+  return { height }
 }
 
 // function onCpoListTableSelect(row: TableRow<Cpo>, e?: Event) {
@@ -762,16 +760,13 @@ function useWindowSize(): { height: Ref<number> } {
       <template #content="{ item }">
         <div class="flex flex-col h-full justify-between">
           <!-- Step 1: Supplier Selection -->
-          <UCard
-            class="flex-1 mt-4"
-            v-if="item.value === 'Supplier'"
-          >
+          <UCard class="flex-1 mt-4" v-if="item.value === 'Supplier'">
             <template #header>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Supplier Selector -->
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">
-                    {{ t("settlement.generate.form.select_main_supplier") }}
+                    {{ t('settlement.generate.form.select_main_supplier') }}
                   </h1>
                   <div class="flex flex-row items-center gap-2">
                     <USelectMenu
@@ -787,8 +782,9 @@ function useWindowSize(): { height: Ref<number> } {
                       icon="i-lucide-user"
                       label="Select Suppliers"
                       :placeholder="
-                        isLoadingSupplier 
-                          ? t('settlement.generate.form.loading_suppliers') || 'Loading suppliers...'
+                        isLoadingSupplier
+                          ? t('settlement.generate.form.loading_suppliers') ||
+                            'Loading suppliers...'
                           : t('settlement.generate.form.choose_suppliers')
                       "
                       :disabled="isLoadingSupplier"
@@ -817,7 +813,7 @@ function useWindowSize(): { height: Ref<number> } {
                 <!-- Cutoff Date -->
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">
-                    {{ t("settlement.generate.form.select_cutoff_date") }}
+                    {{ t('settlement.generate.form.select_cutoff_date') }}
                   </h1>
                   <UPopover class="w-full">
                     <UButton
@@ -829,7 +825,7 @@ function useWindowSize(): { height: Ref<number> } {
                       {{
                         cutOffDatetime
                           ? formatTimeDisplay
-                          : t("settlement.generate.form.select_date")
+                          : t('settlement.generate.form.select_date')
                       }}
                     </UButton>
                     <template #content>
@@ -837,7 +833,7 @@ function useWindowSize(): { height: Ref<number> } {
                         <UCalendar v-model="cutOffDatetime" />
                         <div class="border-t pt-4">
                           <label class="block text-sm font-semibold mb-2">
-                            {{ t("settlement.generate.form.select_time") }}
+                            {{ t('settlement.generate.form.select_time') }}
                           </label>
                           <div class="flex gap-2">
                             <USelectMenu
@@ -850,18 +846,14 @@ function useWindowSize(): { height: Ref<number> } {
                             <USelectMenu
                               v-model="cutOffDateMinute"
                               :items="getMinuteOptions"
-                              :placeholder="
-                                t('settlement.generate.form.minute')
-                              "
+                              :placeholder="t('settlement.generate.form.minute')"
                               class="flex-1"
                               :search-input="false"
                             />
                             <USelectMenu
                               v-model="cutOffDateSecond"
                               :items="getSecondOptions"
-                              :placeholder="
-                                t('settlement.generate.form.second')
-                              "
+                              :placeholder="t('settlement.generate.form.second')"
                               class="flex-1"
                               :search-input="false"
                             />
@@ -883,7 +875,7 @@ function useWindowSize(): { height: Ref<number> } {
                 <!-- Currency Selector -->
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">
-                    {{ t("settlement.generate.form.select_currency") }}
+                    {{ t('settlement.generate.form.select_currency') }}
                   </h1>
                   <USelectMenu
                     v-model="selectedCurrency"
@@ -907,13 +899,11 @@ function useWindowSize(): { height: Ref<number> } {
             <div class="mt-4 flex flex-col">
               <div class="flex items-center justify-between mb-4">
                 <h1 class="text-sm font-semibold">
-                  {{ t("settlement.generate.form.biller_list") }} ({{
+                  {{ t('settlement.generate.form.biller_list') }} ({{
                     filteredCpoList.length || 0
                   }})
                   <span
-                    v-if="
-                      searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)
-                    "
+                    v-if="searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)"
                     class="text-gray-500"
                   >
                     of {{ cpoList.length || 0 }}
@@ -961,11 +951,7 @@ function useWindowSize(): { height: Ref<number> } {
           </UCard>
 
           <!-- Step 2: Reconciliation -->
-          <div
-            v-if="
-              item.value === 'Reconciliation'
-            "
-          >
+          <div v-if="item.value === 'Reconciliation'">
             <div class="flex flex-col lg:flex-row gap-6 mt-4">
               <!-- Master Table -->
               <div
@@ -1006,7 +992,7 @@ function useWindowSize(): { height: Ref<number> } {
                 >
                   <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">
-                      {{ t("settlement.generate.form.transaction_history") }}
+                      {{ t('settlement.generate.form.transaction_history') }}
                     </h3>
                     <UButton
                       icon="i-lucide-x"
@@ -1021,24 +1007,24 @@ function useWindowSize(): { height: Ref<number> } {
                     class="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                   >
                     <UTable
-                        ref="table"
-                        :data="selectedCpoSettlement.transaction_allocations"
-                        :columns="cpoSettlementTransactionColumns"
-                        sticky
-                        class="w-full animate-fade-in"
-                        :style="{ maxHeight: detailTableHeight }"
-                      />
+                      ref="table"
+                      :data="selectedCpoSettlement.transaction_allocations"
+                      :columns="cpoSettlementTransactionColumns"
+                      sticky
+                      class="w-full animate-fade-in"
+                      :style="{ maxHeight: detailTableHeight }"
+                    />
                   </div>
                   <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div class="flex justify-between items-center">
                       <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                        {{ t("settlement.generate.form.total_transactions") }}:
+                        {{ t('settlement.generate.form.total_transactions') }}:
                         <span class="font-bold text-gray-800 dark:text-gray-200 ml-1">
                           {{ selectedCpoSettlement.transaction_allocations?.length || 0 }}
                         </span>
                       </p>
                       <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                        {{ t("settlement.generate.form.total_amount") }}:
+                        {{ t('settlement.generate.form.total_amount') }}:
                         <span class="font-bold text-gray-800 dark:text-gray-200 ml-1">
                           {{
                             useCurrency().formatAmount(
@@ -1066,30 +1052,22 @@ function useWindowSize(): { height: Ref<number> } {
 
           <!-- Step 3: Settlement Request Success -->
           <div
-            v-if="
-              item.value === 'Confirmation'
-            "
+            v-if="item.value === 'Confirmation'"
             class="flex flex-1 items-center justify-center mt-6"
           >
             <div
               class="w-10/12 h-10/12 bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm items-center justify-center content-center"
             >
-              <UIcon
-                name="i-lucide-check-circle"
-                class="text-green-500 text-6xl mb-4"
-              />
+              <UIcon name="i-lucide-check-circle" class="text-green-500 text-6xl mb-4" />
               <h2 class="text-2xl font-bold text-green-700 mb-2">
-                {{
-                  t("settlement.generate.form.settlement_request_successful")
-                }}
+                {{ t('settlement.generate.form.settlement_request_successful') }}
               </h2>
               <p class="text-green-700 mb-6">
-                {{ t("settlement.generate.form.settlement_request_message") }}
+                {{ t('settlement.generate.form.settlement_request_message') }}
               </p>
               <UButton color="primary" size="lg" @click="onConfirm()">
                 {{
-                  t("settlement.generate.form.done") ||
-                  t("settlement.generate.form.back_to_list")
+                  t('settlement.generate.form.done') || t('settlement.generate.form.back_to_list')
                 }}
               </UButton>
             </div>
@@ -1098,25 +1076,20 @@ function useWindowSize(): { height: Ref<number> } {
           <!-- Navigation Buttons -->
           <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3">
             <UButton
-              v-if="
-                item.title ===
-                t('settlement.generate.steps.reconciliation.title')
-              "
+              v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
               :disabled="!stepper?.hasPrev"
               @click="handleBackToSupplierSelection"
             >
-              {{ t("settlement.generate.form.back") }}
+              {{ t('settlement.generate.form.back') }}
             </UButton>
 
             <UButton
-              v-if="
-                item.title === t('settlement.generate.steps.supplier.title')
-              "
+              v-if="item.title === t('settlement.generate.steps.supplier.title')"
               :disabled="!stepper?.hasNext || !canProceedToNext"
               @click="onReconciliationNext"
               loading-auto
             >
-              {{ t("settlement.generate.form.reconcile_settle") }}
+              {{ t('settlement.generate.form.reconcile_settle') }}
             </UButton>
             <!-- Show confirm modal to confirm settlement -->
             <UModal
@@ -1126,12 +1099,11 @@ function useWindowSize(): { height: Ref<number> } {
               :title="t('settlement.generate.form.confirm_settlement_title')"
               :body="t('settlement.generate.form.confirm_settlement_body')"
               v-if="
-                item.title ===
-                t('settlement.generate.steps.reconciliation.title') //&& showConfirmModal
+                item.title === t('settlement.generate.steps.reconciliation.title') //&& showConfirmModal
               "
             >
               <UButton
-              :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
+                :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
                 :label="t('settlement.generate.form.confirm_settlement')"
                 @click="isConfirmModalShow = true"
               />
@@ -1152,21 +1124,12 @@ function useWindowSize(): { height: Ref<number> } {
 
                   <!-- Question text -->
                   <h4 class="text-lg font-semibold mb-1">
-                    {{
-                      t("settlement.generate.form.confirm_settlement_message")
-                    }}
+                    {{ t('settlement.generate.form.confirm_settlement_message') }}
                   </h4>
 
                   <!-- Description text -->
-                  <p
-                    class="max-w-md text-sm leading-relaxed"
-                    style="color: #b2aaa3"
-                  >
-                    {{
-                      t(
-                        "settlement.generate.form.confirm_settlement_description"
-                      )
-                    }}
+                  <p class="max-w-md text-sm leading-relaxed" style="color: #b2aaa3">
+                    {{ t('settlement.generate.form.confirm_settlement_description') }}
                   </p>
                 </div>
               </template>
@@ -1174,31 +1137,23 @@ function useWindowSize(): { height: Ref<number> } {
                 <div class="flex justify-end gap-3 w-full">
                   <UButton
                     variant="outline"
-                    style="border-color: #d0c8c1;"
+                    style="border-color: #d0c8c1"
                     @click="isConfirmModalShow = false"
                   >
-                    {{
-                      t(
-                        "settlement.generate.form.confirm_settlement_buttons.no"
-                      )
-                    }}
+                    {{ t('settlement.generate.form.confirm_settlement_buttons.no') }}
                   </UButton>
                   <UButton
                     style="background-color: #43b3de; color: #ffffff"
                     loading-auto
                     @click="handleSubmitSettlement"
                   >
-                    {{
-                      t(
-                        "settlement.generate.form.confirm_settlement_buttons.yes"
-                      )
-                    }}
+                    {{ t('settlement.generate.form.confirm_settlement_buttons.yes') }}
                   </UButton>
                 </div>
               </template>
             </UModal>
             <!-- Show No Cpo Settlement Modal -->
-             <!-- <UModal
+            <!-- <UModal
              v-bind:open="showNoCpoSettlementModal"
              v-bind:close="false"
              transition
@@ -1258,10 +1213,14 @@ function useWindowSize(): { height: Ref<number> } {
 </template>
 
 <style scoped>
-.slide-left-enter-active, .slide-left-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
-.slide-left-enter-from, .slide-left-leave-to {
+.slide-left-enter-from,
+.slide-left-leave-to {
   transform: translateX(100%);
   opacity: 0;
 }
@@ -1296,7 +1255,7 @@ function useWindowSize(): { height: Ref<number> } {
   right: 0;
   height: 100%;
   width: 3px;
-  background-color: #43B3DE;
+  background-color: #43b3de;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1306,7 +1265,8 @@ function useWindowSize(): { height: Ref<number> } {
 }
 
 /* Add smooth flex transitions */
-.flex-2, .flex-\[2\] {
+.flex-2,
+.flex-\[2\] {
   transition: flex 0.5s ease-in-out;
 }
 </style>
