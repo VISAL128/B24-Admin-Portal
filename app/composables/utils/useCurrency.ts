@@ -62,9 +62,10 @@ export const useCurrency = () => {
     currencyCode: string = defaultCurrency.value,
     options: CurrencyFormatOptions = {}
   ): string => {
-    const currency = getCurrency(currencyCode)
+    var currency = getCurrency(currencyCode)
     if (!currency) {
-      return String(amount)
+      currency = DEFAULT_CURRENCY_CONFIG // Fallback to default currency
+      // return String(amount)
     }
 
     const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount

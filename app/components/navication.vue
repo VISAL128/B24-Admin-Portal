@@ -1,129 +1,201 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui";
+import type { NavigationMenuItem } from '@nuxt/ui'
 
-interface Props {
-  collapsed?: boolean;
-}
+const { t } = useI18n()
 
-const props = withDefaults(defineProps<Props>(), {
-  collapsed: false,
-});
-
-const { t } = useI18n();
-
-const route = useRoute();
+const route = useRoute()
 
 // Reactive state for active navigation items
 const activeStates = ref({
   dashboard: false,
-  settlements: false,
-  settlementsOpen: false,
-  walletSettlements: false,
-  settings: false,
   transactions: false,
-});
+  digitalWallet: false,
+  wallet: false,
+  settlement: false,
+  organization: false,
+  banks: false,
+  subBillers: false,
+  users: false,
+  reports: false,
+  transactionSummary: false,
+  transactionAllocation: false,
+  settings: false,
+})
 
 const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
-      label: t("dashboard"),
-      icon: "i-material-symbols-light-space-dashboard-rounded",
-      size: "lg",
-      to: "/",
+      label: t('dashboard'),
+      icon: 'i-material-symbols-light-space-dashboard-rounded',
+      size: 'lg',
+      to: '/',
       active: activeStates.value.dashboard,
     },
     {
-      label: t("transactions"),
-      icon: 'i-material-symbols-sticky-note-2-rounded',
+      label: t('transactions'),
+      icon: 'i-material-symbols-light-receipt-long',
       size: 'lg',
       to: '/transactions',
-      active: activeStates.value.transactions,    
+      active: activeStates.value.transactions,
     },
     {
-      label: t("settlements"),
-      icon: "i-material-symbols-light-lab-profile-rounded",
-      size: "lg",
-      active: activeStates.value.settlements,
-      open: activeStates.value.settlementsOpen,
+      label: t('digital_wallet'),
+      icon: 'i-material-symbols-light-account-balance-wallet',
+      size: 'lg',
+      active: activeStates.value.digitalWallet,
       children: [
         {
-          label: t("wallet_settlements"),
-          icon: "i-material-symbols-light-lab-profile-rounded",
-          size: "lg",
-          to: "/settlement/wallet-settlement",
-          active: activeStates.value.walletSettlements,
+          label: t('wallet'),
+          icon: 'i-material-symbols-light-wallet',
+          size: 'lg',
+          to: '/digital-wallet/wallet',
+          active: activeStates.value.wallet,
+        },
+        {
+          label: t('settlement_menu'),
+          icon: 'i-material-symbols-light-payments',
+          size: 'lg',
+          to: '/digital-wallet/settlement',
+          active: activeStates.value.settlement,
         },
       ],
     },
     {
-      label: t("settings.title"),
-      icon: "i-material-symbols-light-settings-rounded",
-      size: "lg",
-      to: "/settings",
+      label: t('navigation.organization'),
+      icon: 'i-material-symbols-light-home-work',
+      size: 'lg',
+      active: activeStates.value.organization,
+      children: [
+        {
+          label: t('navigation.banks'),
+          icon: 'i-material-symbols-light-account-balance',
+          size: 'lg',
+          to: '/organization/banks',
+          active: activeStates.value.banks,
+        },
+        {
+          label: t('navigation.sub_billers'),
+          icon: 'i-material-symbols-light:article-person',
+          size: 'lg',
+          to: '/organization/sub-billers',
+          active: activeStates.value.subBillers,
+        },
+        {
+          label: t('navigation.users'),
+          icon: 'i-material-symbols-light-group',
+          size: 'lg',
+          to: '/organization/users',
+          active: activeStates.value.users,
+        },
+      ],
+    },
+    {
+      label: t('navigation.reports'),
+      icon: 'i-material-symbols-light-bar-chart',
+      size: 'lg',
+      active: activeStates.value.reports,
+      children: [
+        {
+          label: t('navigation.transaction_summary'),
+          icon: 'i-material-symbols-light-summarize',
+          size: 'lg',
+          to: '/reports/transaction-summary',
+          active: activeStates.value.transactionSummary,
+        },
+        {
+          label: t('navigation.transaction_allocate'),
+          icon: 'i-material-symbols-light-switch-access-shortcut',
+          size: 'lg',
+          to: '/reports/transaction-allocation',
+          active: activeStates.value.transactionAllocation,
+        },
+      ],
+    },
+    {
+      label: t('settings.title'),
+      icon: 'i-material-symbols-light-settings',
+      size: 'lg',
+      to: '/settings',
       active: activeStates.value.settings,
     },
   ],
-]);
+])
 
 watch(
   () => route.path,
-  (newPath, oldPath) => {
-    activateCurrentRoute();
+  () => {
+    activateCurrentRoute()
   }
-);
+)
 
 onMounted(() => {
-  activateCurrentRoute();
-});
+  activateCurrentRoute()
+})
 
 // Initialize active state based on current route
 function activateCurrentRoute() {
-  const currentPath = route.path;
+  const currentPath = route.path
 
   // Reset all active states
-  activeStates.value.dashboard = false;
-  activeStates.value.settlements = false;
-  activeStates.value.settlementsOpen = false;
-  activeStates.value.walletSettlements = false;
-  activeStates.value.settings = false;
-  activeStates.value.transactions = false;
+  Object.keys(activeStates.value).forEach((key) => {
+    activeStates.value[key as keyof typeof activeStates.value] = false
+  })
 
   // Set active based on current path
-  if (currentPath === "/") {
-    activeStates.value.dashboard = true;
-  } else if (currentPath === "/settings") {
-    activeStates.value.settings = true;
+  if (currentPath === '/') {
+    activeStates.value.dashboard = true
+  } else if (currentPath === '/transactions') {
+    activeStates.value.transactions = true
+  } else if (currentPath === '/settings') {
+    activeStates.value.settings = true
   }
-  else if (
-    currentPath === '/transactions') {
-    activeStates.value.transactions = true;
-  }
-  else if (currentPath.startsWith('/settlement/wallet-settlement/generate')) {
-    activeStates.value.settlements = true;
-    activeStates.value.settlementsOpen = true;
-    activeStates.value.walletSettlements = true;
-  }
-  else if (currentPath.startsWith('/settlement/wallet-settlement')) {
-    activeStates.value.settlements = true;
-    activeStates.value.settlementsOpen = true;
-    activeStates.value.walletSettlements = true;
-  }
-  else if (currentPath.startsWith("/settlement/wallet-settlement") ||
-    currentPath.startsWith("/settlement/wallet-settlement/generate") ||
-    currentPath.startsWith("/settlement/details")
+  // Digital Wallet routes
+  else if (currentPath === '/digital-wallet/wallet') {
+    activeStates.value.digitalWallet = true
+    activeStates.value.wallet = true
+  } else if (
+    currentPath === '/digital-wallet/settlement' ||
+    currentPath === '/digital-wallet/settlement/generate' ||
+    currentPath.startsWith('/digital-wallet/settlement/details')
   ) {
-    activeStates.value.settlements = true;
-    activeStates.value.settlementsOpen = true;
-    activeStates.value.walletSettlements = true;
-  } else if (currentPath.startsWith("/settlement")) {
-    activeStates.value.settlements = true;
-    activeStates.value.settlementsOpen = true;
+    activeStates.value.digitalWallet = true
+    activeStates.value.settlement = true
+  } else if (currentPath.startsWith('/digital-wallet')) {
+    activeStates.value.digitalWallet = true
+  }
+  // Organization routes
+  else if (currentPath === '/organization/banks') {
+    activeStates.value.organization = true
+    activeStates.value.banks = true
+  } else if (currentPath === '/organization/sub-billers') {
+    activeStates.value.organization = true
+    activeStates.value.subBillers = true
+  } else if (currentPath === '/organization/users') {
+    activeStates.value.organization = true
+    activeStates.value.users = true
+  } else if (currentPath.startsWith('/organization')) {
+    activeStates.value.organization = true
+  }
+  // Reports routes
+  else if (currentPath === '/reports/transaction-summary') {
+    activeStates.value.reports = true
+    activeStates.value.transactionSummary = true
+  } else if (currentPath === '/reports/transaction-allocation') {
+    activeStates.value.reports = true
+    activeStates.value.transactionAllocation = true
+  } else if (currentPath.startsWith('/reports')) {
+    activeStates.value.reports = true
+  }
+  // Legacy settlement routes (keeping for backwards compatibility)
+  else if (currentPath.startsWith('/settlement')) {
+    activeStates.value.digitalWallet = true
+    activeStates.value.settlement = true
   }
 }
 
 // Get version from runtime config
-const { $config } = useNuxtApp();
-const appVersion = ref($config.public.appVersion || "v1.0.0");
+const { $config } = useNuxtApp()
+const appVersion = ref($config.public.appVersion || 'v1.0.0')
 </script>
 
 <template>
@@ -131,21 +203,17 @@ const appVersion = ref($config.public.appVersion || "v1.0.0");
     <UNavigationMenu
       highlight
       popover
-      :collapsed="props.collapsed"
       orientation="vertical"
       :items="items"
-      class="w-full flex-1"
+      class="w-full flex-1 transition-all duration-200"
       :ui="{
         linkLeadingIcon: 'shrink-0 size-6',
-        linkLabel: 'text-md truncate',
-        link: 'p-2 cursor-pointer',
+        linkLabel: 'text-sm truncate',
+        link: 'p-3 cursor-pointer transition-colors duration-200',
       }"
     />
 
-    <div
-      v-if="!props.collapsed"
-      class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700"
-    >
+    <div class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">
       <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
         {{ appVersion }}
       </p>

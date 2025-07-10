@@ -1,42 +1,6 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-4">
+  <div class="flex flex-col h-full w-full space-y-4 overflow-hidden">
     <!-- Header -->
-    <div
-      class="flex flex-wrap items-center justify-between gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
-    >
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-bold text-primary dark:text-white">
-          {{ t('number_of_transaction') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-          {{ 100 }}
-        </h1>
-      </div>
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-semibold text-primary dark:text-white">
-          {{ t('total_amount') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">KHR 1000000</h1>
-      </div>
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-semibold text-primary dark:text-white">
-          {{ t('total_settlement_amount') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">100</h1>
-      </div>
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-semibold text-primary dark:text-white">
-          {{ t('failed_transactions') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-          {{ 100 }}
-        </h1>
-      </div>
-    </div>
     <div
       class="flex flex-wrap items-center justify-between gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
     >
@@ -77,7 +41,7 @@
     </div>
 
     <!-- Table -->
-    <!-- <UTable
+    <UTable
       ref="table"
       :data="filteredData"
       :columns="columns"
@@ -87,18 +51,7 @@
       <template #empty>
         <TableEmptyState />
       </template>
-    </UTable> -->
-    <BaseTable
-      ref="table"
-      :data="filteredData"
-      :columns="columns"
-      table-id="settlement-history-table"
-      border-class="border-gray-200 dark:border-gray-700"
-    >
-      <template #empty>
-        <TableEmptyState />
-      </template>
-    </BaseTable>
+    </UTable>
 
     <!-- Table Footer -->
     <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
@@ -140,11 +93,9 @@
 </template>
 
 <script setup lang="ts">
-const showSidebar = ref(false)
-const selectedRecord = ref<SettlementHistoryRecord | null>(null)
 definePageMeta({
   auth: false,
-  breadcrumbs: [{ label: 'transactions', active: true }],
+  breadcrumbs: [{ label: 'settlement_menu', active: true }],
 })
 import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
 import { useRouter } from 'vue-router'
@@ -152,21 +103,25 @@ import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
-import { exportToExcelStyled, exportToPDF } from '~/composables/utils/exportUtils'
+import {
+  exportToExcelStyled,
+  exportToExcelWithUnicodeSupport,
+  // exportToPDF,
+  exportToPDFStyled,
+  exportToPDFWithUnicodeSupport,
+} from '~/composables/utils/exportUtils'
+import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useI18n } from 'vue-i18n'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
-import BaseTable from '~/components/tables/BaseTable.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
 const errorHandler = useErrorHandler()
-const table = ref<InstanceType<typeof BaseTable> | null>(null)
 
-const selectedRows = computed(() => table.value?.getSelectedRows() ?? [])
-const allRows = computed(() => table.value?.getAllRows() ?? [])
+const table = useTemplateRef('table')
 const router = useRouter()
 const toast = useToast()
 const notification = useNotification()
@@ -269,39 +224,31 @@ onMounted(() => {
 })
 
 const onGenerateSettlement = () => {
-  router.push('/digital-wallet/generate')
+  router.push('/digital-wallet/settlement/generate')
 }
 
 // Handle navigation to details page
 const navigateToDetails = (settlementId: string) => {
-  router.push(`/settlement/details/${settlementId}`)
-}
-  router.push(`/settlement/details/${settlementId}`)
+  router.push(`/digital-wallet/settlement/details/${settlementId}`)
 }
 
 const exportHeaders = [
-  { key: 'settlementId', label: t('settlement_id') },
-  { key: 'settlementDate', label: t('settlement_date') },
-  { key: 'totalSupplier', label: t('total_supplier') },
-  { key: 'totalAmount', label: t('total_amount') },
-  { key: 'settledBy', label: t('settled_by') },
-  { key: 'status', label: t('status') },
+  { key: 'currency_id', label: t('settlement.currency') },
+  { key: 'created_date', label: t('settlement_history_details.settlement_date') },
+  { key: 'total_supplier', label: t('settlement_history_details.total_supplier') },
+  { key: 'created_by', label: t('settled_by') },
+  { key: 'total_amount', label: t('total_amount') },
+  // { key: "status", label: t("status") },
 ]
-  { key: 'settlementId', label: t('settlement_id') },
-  { key: 'settlementDate', label: t('settlement_date') },
-  { key: 'totalSupplier', label: t('total_supplier') },
-  { key: 'totalAmount', label: t('total_amount') },
-  { key: 'settledBy', label: t('settled_by') },
-  { key: 'status', label: t('status') },
-]
+
+// Dynamic headers for PDF that support both languages
+const pdfExportHeaders = computed(() => getPDFHeaders(t))
 
 const exportToExcelHandler = async () => {
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
-      selectedRows.length > 0
-        ? selectedRows.map((row: { original: SettlementHistoryRecord }) => row.original)
-        : filteredData.value
+      selectedRows.length > 0 ? selectedRows.map((row) => row.original) : filteredData.value
     if (dataToExport.length === 0) {
       toast.add({
         title: t('no_data_to_export'),
@@ -310,15 +257,51 @@ const exportToExcelHandler = async () => {
       })
       return
     }
-    await exportToExcelStyled(
-      dataToExport,
-      exportHeaders,
-      'settlement-history.xlsx',
-      t('settlement_history_title'),
-      t('settlement_history_subtitle', {
-        date: new Date().toLocaleDateString(),
-      })
+
+    // Calculate total amount
+    const totalAmount = dataToExport.reduce(
+      (sum, item) => sum + (Number(item.total_amount) || 0),
+      0
     )
+
+    // Get current locale from the existing locale ref
+    const currentLocale = locale.value as 'km' | 'en'
+
+    // Create period string from date range
+    const periodText = `${startDate.value} ${t('to')} ${endDate.value}`
+
+    // Try the new Unicode-supported Excel export first, fallback to regular if it fails
+    try {
+      await exportToExcelWithUnicodeSupport(
+        dataToExport,
+        exportHeaders,
+        `settlement-history-${new Date().toISOString().slice(0, 10)}.xlsx`,
+        t('settlement_history_title'),
+        t('settlement_history_subtitle', {
+          date: new Date().toLocaleDateString(currentLocale === 'km' ? 'km-KH' : 'en-US'),
+        }),
+        {
+          locale: currentLocale,
+          t: t,
+          currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          period: periodText,
+        }
+      )
+    } catch (unicodeError) {
+      console.warn('Unicode Excel export failed, falling back to standard Excel:', unicodeError)
+      // Fallback to standard Excel export
+      await exportToExcelStyled(
+        dataToExport,
+        exportHeaders,
+        'settlement-history.xlsx',
+        t('settlement_history_title'),
+        t('settlement_history_subtitle', {
+          date: new Date().toLocaleDateString(),
+        })
+      )
+    }
+
     toast.add({
       title: t('export_successful'),
       description: t('exported_records_to_excel', {
@@ -341,9 +324,7 @@ const exportToPDFHandler = async () => {
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
-      selectedRows.length > 0
-        ? selectedRows.map((row: { original: SettlementHistoryRecord }) => row.original)
-        : filteredData.value
+      selectedRows.length > 0 ? selectedRows.map((row) => row.original) : filteredData.value
     if (dataToExport.length === 0) {
       toast.add({
         title: t('no_data_to_export'),
@@ -352,7 +333,55 @@ const exportToPDFHandler = async () => {
       })
       return
     }
-    await exportToPDF(dataToExport, exportHeaders, 'settlement-history.pdf')
+
+    // Calculate total amount
+    const totalAmount = dataToExport.reduce(
+      (sum, item) => sum + (Number(item.total_amount) || 0),
+      0
+    )
+
+    // Get current locale from the existing locale ref
+    const currentLocale = locale.value as 'km' | 'en'
+
+    // Create period string from date range
+    const periodText = `${startDate.value} to ${endDate.value}`
+
+    try {
+      await exportToPDFWithUnicodeSupport(
+        dataToExport,
+        pdfExportHeaders.value,
+        `settlement-history-${new Date().toISOString().slice(0, 10)}.pdf`,
+        '', // Let the function use dynamic titles
+        '', // Let the function use dynamic titles
+        periodText,
+        {
+          // company: 'WINGKH',
+          // currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          locale: currentLocale,
+          t: t, // Pass the translation function
+        }
+      )
+    } catch (unicodeError) {
+      console.warn('Unicode PDF export failed, falling back to standard PDF:', unicodeError)
+      // Fallback to standard PDF export
+      await exportToPDFStyled(
+        dataToExport,
+        pdfExportHeaders.value,
+        'settlement-history.pdf',
+        '', // Let the function use dynamic titles
+        '', // Let the function use dynamic titles
+        periodText,
+        {
+          company: 'WINGKH',
+          currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          locale: currentLocale,
+          t: t, // Pass the translation function
+        }
+      )
+    }
+
     toast.add({
       title: t('export_successful'),
       description: t('exported_records_to_pdf', {
@@ -410,8 +439,7 @@ const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
     })
     return
   }
-  selectedRecord.value = record
-  showSidebar.value = true
+  navigateToDetails(record.id)
 }
 
 const columns: TableColumn<SettlementHistoryRecord>[] = [
@@ -445,16 +473,14 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   },
   // { accessorKey: "id", header: t("Settlement ID") },
   {
-    id: "created_date",
     accessorKey: 'created_date',
-    header: t('transaction_date'),
+    header: t('settlement.settlement_date'),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
-    id: 'total_amount',
     accessorKey: 'total_amount',
     header: () => h('div', { class: 'text-right' }, t('total_amount')),
     cell: ({ row }) =>
@@ -464,10 +490,9 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
         useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
       ),
   },
-  {id: "currency_id", accessorKey: 'currency_id', header: t('settlement.currency') },
-  { id: "created_by", accessorKey: 'created_by', header: t('settled_by') },
+  { accessorKey: 'currency_id', header: t('settlement.currency') },
+  { accessorKey: 'created_by', header: t('settled_by') },
   {
-    id: "status",
     accessorKey: 'status', // optional if you need sorting/filtering
     header: t('status.header'),
     cell: ({ row }) => {

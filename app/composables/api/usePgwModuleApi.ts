@@ -3,7 +3,7 @@ import type { PgwModuleResponse } from '~/models/baseModel'
 import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 
 export const usePgwModuleApi = () => {
-  const { execute } = useApiExecutor()
+  const { executeV2 } = useApiExecutor()
 
   const pgwModuleApiUrl = useRuntimeConfig().public.pgw_module_api_url
 
@@ -11,12 +11,12 @@ export const usePgwModuleApi = () => {
    * Get current user profile from PGW Module API
    */
   const getProfile = async () => {
-    return await execute(() =>
+    return await executeV2(() =>
       $fetch<PgwModuleResponse<PgwModuleProfile>>(`/api/pgw-module/get-profile`, {
         method: 'GET',
         onResponseError({ response }) {
           console.error('Error fetching profile from PGW Module:', response.status, response._data)
-        }
+        },
       })
     )
   }
@@ -36,7 +36,7 @@ export const usePgwModuleApi = () => {
       method,
       onResponseError({ response }: any) {
         console.error(`Error calling PGW Module API ${endpoint}:`, response.status, response._data)
-      }
+      },
     }
 
     // Add body for non-GET requests
@@ -44,13 +44,13 @@ export const usePgwModuleApi = () => {
       options.body = body
     }
 
-    return await execute(() =>
+    return await executeV2(() =>
       $fetch<PgwModuleResponse<T>>(`/api/pgw-module${endpoint}`, options)
     )
   }
 
   return {
     getProfile,
-    callPgwModuleApi
+    callPgwModuleApi,
   }
 }

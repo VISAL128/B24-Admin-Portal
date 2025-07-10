@@ -1,10 +1,7 @@
 <template>
   <!-- Show loading screen while checking permissions -->
-  <PermissionLoadingScreen 
-    v-if="isCheckingPermissions" 
-    message="Verifying admin access..."
-  />
-  
+  <PermissionLoadingScreen v-if="isCheckingPermissions" message="Verifying admin access..." />
+
   <!-- Main layout (only shown after permission check passes) -->
   <div v-else>
     <div
@@ -29,11 +26,7 @@
           class="absolute bottom-2 right-2 p-1"
         >
           <Icon
-            :name="
-              isNavExpanded
-                ? 'heroicons:chevron-left'
-                : 'heroicons:chevron-right'
-            "
+            :name="isNavExpanded ? 'heroicons:chevron-left' : 'heroicons:chevron-right'"
             class="w-4 h-4"
           />
         </UButton>
@@ -43,21 +36,18 @@
       <div class="flex flex-col h-full w-full rounded-lg">
         <div class="flex-row">
           <UCard class="top-0 right-0 z-50" variant="soft">
-            <div
-              class="flex flex-row items-center justify-between gap-2 w-full h-5"
-            >
+            <div class="flex flex-row items-center justify-between gap-2 w-full h-5">
               <breadcrumb />
               <div class="flex flex-row items-center justify-end gap-4 h-full">
                 <div class="flex items-center gap-2">
+                  <!-- If dev mode is enabled, you can use the -->
+                  <!-- <span v-if="isDevMode" class="text-xs text-gray-500">
+                    {{ useCookie('profile').value || 'No profile available' }}
+                  </span> -->
                   <UPopover placement="bottom-end" :offset="[0, 10]">
-                    <UButton
-                      icon="heroicons:globe-alt"
-                      variant="ghost"
-                      size="sm"
-                      class="px-2"
-                    >
+                    <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2">
                       <span class="ml-1 font-medium">{{
-                        locale === "en" ? "English" : "ភាសាខ្មែរ"
+                        locale === 'en' ? 'English' : 'ភាសាខ្មែរ'
                       }}</span>
                     </UButton>
                     <template #content>
@@ -67,7 +57,7 @@
                           class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
                           @click="
                             () => {
-                              setLanguage('en');
+                              setLanguage('en')
                             }
                           "
                           block
@@ -85,7 +75,7 @@
                           class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
                           @click="
                             () => {
-                              setLanguage('km');
+                              setLanguage('km')
                             }
                           "
                           block
@@ -103,11 +93,7 @@
                   </UPopover>
                   <!-- Theme Switcher -->
                   <UButton
-                    :icon="
-                      colorMode?.preference === 'dark'
-                        ? 'heroicons:sun'
-                        : 'heroicons:moon'
-                    "
+                    :icon="colorMode?.preference === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
                     variant="ghost"
                     size="sm"
                     class="px-2"
@@ -117,50 +103,33 @@
                   </UButton>
                 </div>
                 <!-- User Popover -->
-                <UPopover
-                  ref="popoverRef"
-                  placement="bottom-end"
-                  :offset="[0, 10]"
-                  class="z-50"
-                >
+                <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
                   <UAvatar
                     :src="user?.picture"
                     size="xl"
                     class="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
                   >
                     <template v-if="!user?.picture" #default>
-                      <Icon
-                        name="heroicons:user"
-                        class="w-6 h-6 text-primary"
-                      />
+                      <Icon name="heroicons:user" class="w-6 h-6 text-primary" />
                     </template>
                   </UAvatar>
 
                   <template #content>
                     <div class="w-48 p-2">
                       <!-- User Info Section -->
-                      <div
-                        class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3"
-                      >
+                      <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
                         <div class="flex items-center gap-3">
                           <UAvatar :src="user?.picture" size="sm">
                             <template v-if="!user?.picture" #default>
-                              <Icon
-                                name="heroicons:user"
-                                class="w-4 h-4 text-[#43B3DE]"
-                              />
+                              <Icon name="heroicons:user" class="w-4 h-4 text-[#43B3DE]" />
                             </template>
                           </UAvatar>
                           <div class="flex flex-col">
-                            <span
-                              class="text-sm font-medium text-gray-900 dark:text-gray-100"
-                            >
-                              {{ user?.fullName || "User" }}
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {{ user?.fullName || 'User' }}
                             </span>
-                            <span
-                              class="text-xs text-gray-500 dark:text-gray-400"
-                            >
-                              {{ user?.email || "user@example.com" }}
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ user?.email || 'user@example.com' }}
                             </span>
                           </div>
                         </div>
@@ -175,7 +144,7 @@
                           class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
                           <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
-                          {{ t("user_profile") }}
+                          {{ t('user_profile') }}
                         </UButton>
 
                         <UButton
@@ -184,25 +153,68 @@
                           size="md"
                           class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
-                          <Icon
-                            name="heroicons:cog-6-tooth"
-                            class="w-4 h-4 mr-2"
-                          />
-                          {{ t("settings") }}
+                          <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
+                          {{ t('profile_popup.settings') }}
                         </UButton>
 
-                        <UButton
-                          @click="handleLogout"
-                          variant="ghost"
-                          size="md"
-                          class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        <!-- Confirmation Logout Modal -->
+                        <UModal
+                          :title="t('confirmation')"
+                          v-model:open="isShowLogoutConfirmModal"
+                          :transition="true"
+                          :description="t('logout')"
+                          :close="{
+                            class: 'rounded-full',
+                            onClick: () => logoutEmit('close', false),
+                          }"
                         >
-                          <Icon
-                            name="heroicons:arrow-right-on-rectangle"
-                            class="w-4 h-4 mr-2"
-                          />
-                          {{ t("logout") }}
-                        </UButton>
+                          <UButton
+                            variant="ghost"
+                            size="md"
+                            class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
+                            {{ t('logout') }}
+                          </UButton>
+
+                          <template #body>
+                            <div class="flex flex-col items-center text-center py-6">
+                              <!-- Icon with circle background using Bill24 colors -->
+                              <div
+                                class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                                style="background-color: #eaf6fc"
+                              >
+                                <UIcon
+                                  name="i-lucide-alert-triangle"
+                                  class="text-3xl opacity-80"
+                                  style="color: #43b3de"
+                                />
+                              </div>
+
+                              <!-- Question text -->
+                              <h4 class="text-md font-semibold mb-1">
+                                {{ t('logout_confirmation') }}
+                              </h4>
+                            </div>
+                          </template>
+                          <template #footer>
+                            <div class="w-full flex flex-row justify-end gap-2">
+                              <UButton
+                                :label="t('no')"
+                                color="neutral"
+                                variant="outline"
+                                @click="closeConfirmationModal"
+                                class="w-16 justify-center"
+                              />
+                              <UButton
+                                :label="t('yes')"
+                                color="primary"
+                                @click="handleLogout"
+                                class="w-16 justify-center"
+                              />
+                            </div>
+                          </template>
+                        </UModal>
                       </div>
                     </div>
                   </template>
@@ -224,61 +236,71 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
-const { locale, t, setLocale } = useI18n();
-const { setLanguage, initializeLanguage } =
-  useLanguage();
-const popoverRef = ref<{ close: () => void } | null>(null);
+import { ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-const isNavExpanded = ref(true);
+const { locale, t, setLocale } = useI18n()
+const { setLanguage, initializeLanguage } = useLanguage()
+const popoverRef = ref<{ close: () => void } | null>(null)
+const logoutEmit = defineEmits<{ close: [boolean] }>()
+
+const isNavExpanded = ref(true)
 
 // Permission checking state
-const isCheckingPermissions = ref(false);
+const isCheckingPermissions = ref(false)
+const isShowLogoutConfirmModal = ref(false)
 
-const auth = useAuth();
-const user = auth.user;
+const auth = useAuth()
+const user = auth.user
 
 // Initialize language on mount
 onMounted(() => {
-  initializeLanguage();
-});
+  initializeLanguage()
+})
 
-const colorMode = useColorMode ? useColorMode() : null;
+const colorMode = useColorMode ? useColorMode() : null
 const toggleTheme = () => {
-  if (!colorMode) return;
-  colorMode.preference = colorMode.preference === "dark" ? "light" : "dark";
-};
+  if (!colorMode) return
+  colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark'
+}
 
 const toggleNavigation = () => {
-  isNavExpanded.value = !isNavExpanded.value;
-};
+  isNavExpanded.value = !isNavExpanded.value
+}
 
 // User menu handlers
 const handleUserProfile = () => {
-  navigateTo("/profile");
-};
+  navigateTo('/profile')
+}
 
 const handleSettings = () => {
-  navigateTo("/settings");
-};
+  navigateTo('/settings')
+}
+
+const showConfirmationModal = () => {
+  isShowLogoutConfirmModal.value = true
+}
+
+const closeConfirmationModal = () => {
+  isShowLogoutConfirmModal.value = false
+}
 
 const handleLogout = async () => {
   try {
-    console.log("🔄 User initiated logout...");
-    await auth.logout();
+    console.log('🔄 User initiated logout...')
+    await auth.logout()
     // Don't manually navigate - let the auth composable handle the redirect
   } catch (error) {
-    console.error("Logout failed:", error);
+    console.error('Logout failed:', error)
     // Fallback: navigate to logout page if auth.logout fails
-    await navigateTo("/logout", { replace: true });
+    await navigateTo('/logout', { replace: true })
   }
 }
 
 // Check if user has admin role and redirect if not
 const checkAdminAccess = async () => {
   // Only run on client side to avoid hydration issues
-  if (process.client && user.value) {
+  if (import.meta.client && user.value) {
     if (!auth.hasRole('admin')) {
       console.warn('🚫 Access denied: User does not have admin role')
       // If user is authenticated but not admin, redirect to no permission
@@ -288,15 +310,15 @@ const checkAdminAccess = async () => {
           type: 'role',
           resource: 'Admin Portal',
           action: 'access',
-          permissions: 'admin'
-        }
+          permissions: 'admin',
+        },
       })
     } else {
       console.log('✅ Admin access granted')
       // Permission check passed, hide loading screen
       isCheckingPermissions.value = false
     }
-  } else if (process.client && !user.value) {
+  } else if (import.meta.client && !user.value) {
     // No user, let auth middleware handle redirect
     console.log('🔄 No user found, auth middleware will handle redirect')
     isCheckingPermissions.value = false
@@ -311,7 +333,6 @@ onMounted(async () => {
   // // Wait for auth to stabilize
   // await nextTick()
   // await checkAdminAccess()
-  
   // // Fallback: always hide loading after 5 seconds to prevent infinite loading
   // setTimeout(() => {
   //   if (isCheckingPermissions.value) {
@@ -323,7 +344,7 @@ onMounted(async () => {
 
 definePageMeta({
   middleware: [
-    "auth",
+    'auth',
     // "permission"
   ],
   // Proper permission options for admin requirement
@@ -334,5 +355,5 @@ definePageMeta({
   //   requireAll: true
   // },
   auth: true, // Ensure this layout requires authentication
-});
+})
 </script>
