@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col items-center justify-center min-h-[400px] p-8 bg-gradient-to-b from-[#43B3DE] to-white rounded-lg shadow-lg"
+    class="flex flex-col items-center justify-center min-h-[400px] p-8 bg-primary/70 rounded-lg shadow-lg"
   >
     <div class="text-center max-w-md mx-auto">
       <!-- Icon -->
@@ -55,13 +55,9 @@
       </div>
 
       <!-- Action Button (Optional) -->
-      <button
-        v-if="showBackButton"
-        @click="goBack"
-        class="bg-white text-[#43B3DE] px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-200 shadow-md hover:shadow-lg"
-      >
+      <UButton v-if="showBackButton" @click="goBack" color="neutral" variant="outline" size="lg">
         {{ t('underDevelopment.goBack') }}
-      </button>
+      </UButton>
     </div>
 
     <!-- Decorative Elements -->

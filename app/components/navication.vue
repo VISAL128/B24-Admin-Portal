@@ -153,7 +153,11 @@ function activateCurrentRoute() {
   else if (currentPath === '/digital-wallet/wallet') {
     activeStates.value.digitalWallet = true
     activeStates.value.wallet = true
-  } else if (currentPath === '/digital-wallet/settlement') {
+  } else if (
+    currentPath === '/digital-wallet/settlement' ||
+    currentPath === '/digital-wallet/settlement/generate' ||
+    currentPath.startsWith('/digital-wallet/settlement/details')
+  ) {
     activeStates.value.digitalWallet = true
     activeStates.value.settlement = true
   } else if (currentPath.startsWith('/digital-wallet')) {
