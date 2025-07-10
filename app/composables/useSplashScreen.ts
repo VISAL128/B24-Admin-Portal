@@ -1,4 +1,4 @@
-import { usePgwModuleApi } from "./api/usePgwModuleApi"
+import { usePgwModuleApi } from './api/usePgwModuleApi'
 
 /**
  * Composable for managing splash screen state and functionality
@@ -6,6 +6,7 @@ import { usePgwModuleApi } from "./api/usePgwModuleApi"
 export const useSplashScreen = () => {
   const isAppReady = ref(false)
   const showSplash = ref(true)
+  const pgwApi = usePgwModuleApi()
 
   /**
    * Mark the app as ready and hide splash screen
@@ -36,25 +37,25 @@ export const useSplashScreen = () => {
       const cookie = useCookie('profile', { path: '/', maxAge: 60 * 60 * 24 * 30 })
       // Check authentication state
       const { isAuthenticated } = useAuth()
-      
+
       // Check if user preferences are loaded
       const storage = useStorage()
       const _preferences = storage.getItem('user-preferences')
-      
+
       // Add any other initialization checks here
       await nextTick()
-      
-      cookie.value = JSON.stringify({code: '1234'})
+
+      // cookie.value = JSON.stringify({code: '1234'})
       // You can add additional readiness checks here
       console.log('App initialization complete, authenticated:', isAuthenticated.value)
-    //   const profile = await usePgwModuleApi().getProfile()
-    //   if (profile) {
-    //     cookie.value = JSON.stringify(profile)
-    //   }
+      const profile = await pgwApi.getProfile()
+      if (profile && profile.code === '000' && profile.data) {
+        cookie.value = JSON.stringify(profile.data)
+      }
 
       // Mark app as ready after checks
       setAppReady()
-      
+
       return true
     } catch (error) {
       console.error('Error during app initialization:', error)
@@ -70,6 +71,6 @@ export const useSplashScreen = () => {
     setAppReady,
     onSplashComplete,
     hideSplashScreen,
-    checkAppReadiness
+    checkAppReadiness,
   }
 }

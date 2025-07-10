@@ -326,7 +326,7 @@
   "success": "Success",
   "operation_completed": "Operation completed successfully",
   "validation_error": "Validation Error",
-  
+
   "pdf_export": {
     "settlement_report": "Settlement Report",
     "direct_debit_settlement_summary": "Direct Debit Settlement Summary Report",
@@ -337,7 +337,7 @@
     "generated_on": "Generated on",
     "page": "Page"
   },
-  
+
   "export": "Export",
   "pdf": "PDF",
   "excel": "Excel",
@@ -363,5 +363,11 @@
   "number_of_transaction": "Number of Transactions",
   "transaction_type": "Transaction Type",
   "total_settlement_amount": "Total Settlement Amount",
-  "failed_transactions": "Failed Transactions"
+  "failed_transactions": "Failed Transactions",
+  "underDevelopment": {
+    "title": "Under Development",
+    "description": "This feature is currently being developed and will be available soon.",
+    "workingOnIt": "We're working on it...",
+    "goBack": "Go Back"
+  }
 }

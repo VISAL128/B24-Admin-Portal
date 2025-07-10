@@ -7,34 +7,31 @@
             :fullscreen="false"
         />
     </div>
-    <UCard class="h-full">
-                <template #header>
-                    <h2 class="text-lg font-semibold text-[#43B3DE]">{{ $t('index.system_status') }}</h2>
-                </template>
-                <UButton
+    <UButton
                     class="mb-4"
                     @click="getProfile"
                 >
                     {{ $t('index.refresh') }}
                 </UButton>
-            </UCard>
 
             <h2>
-code: {{ cookie || 'No code available' }}
+profile data: {{ profileSupplier || 'No code available' }}
             </h2>
+
+            <SimpleSplashScreen />
 </template>
 
 <script lang="ts" setup>
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi';
 const { t } = useI18n()
 const api = usePgwModuleApi()
-const cookie = useCookie('profile')
+const profileSupplier = useCookie('profile')
 
 
 const getProfile = async () => {
     try {
         const profile = await api.getProfile()
-        console.log('Profile:', profile)
+        profileSupplier.value = JSON.stringify(profile.data) || 'No code available'
     } catch (error) {
         console.error('Error fetching profile:', error)
     }
