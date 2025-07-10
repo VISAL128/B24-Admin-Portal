@@ -11,11 +11,11 @@
 
 <script setup>
 definePageMeta({
-  auth: true
+  auth: true,
 })
 
 useHead({
-  title: 'Settlement Dashboard - Bill24 Admin Portal'
+  title: 'Settlement Dashboard - Bill24 Admin Portal',
 })
 
 // const { data: settlements } = await useFetch('/api/settlement/list')
