@@ -135,6 +135,7 @@
   "of": "ពី",
   "row_selected": "ជួរដេកបានជ្រើស",
   "total": "សរុប",
+  "to": "ដល់",
   "pdf": "PDF",
   "excel": "Excel",
   "settlement_id": "លេខសម្គាល់ការទូទាត់",
@@ -351,11 +352,27 @@
   "success": "ជោគជ័យ",
   "operation_completed": "ប្រតិបត្តិការបានបញ្ចប់ដោយជោគជ័យ",
   "validation_error": "កំហុសក្នុងការផ្ទៀងផ្ទាត់",
-
+  
+  "pdf_export": {
+    "settlement_report": "របាយការណ៍ការបញ្ជាក់",
+    "direct_debit_settlement_summary": "របាយការណ៍សង្ខេប Direct Debit Settlement",
+    "period": "រយៈពេល",
+    "company": "ក្រុមហ៊ុន",
+    "currency_label": "រូបិយប័ណ្ណ",
+    "total": "សរុប",
+    "generated_on": "បង្កើតនៅថ្ងៃទី",
+    "page": "ទំព័រ"
+  },
   "splash": {
     "title": "Bill24 វិបផតថលគ្រប់គ្រង",
     "subtitle": "វេទិកាគ្រប់គ្រង និងទូទាត់ការបង់ប្រាក់",
     "loading": "កំពុងចាប់ផ្តើម...",
     "version": "កំណែ"
-  }
+  },
+  "transactions": "ប្រតិបត្តិការ",
+  "transaction_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+    "number_of_transaction": "ចំនួនប្រតិបត្តិការ",
+    "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+    "total_settlement_amount": "ចំនួនទឹកប្រាក់សរុបដែលបានទូទាត់",
+    "failed_transactions": "ប្រតិបត្តិការបរាជ័យ"
 }

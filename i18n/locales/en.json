@@ -44,6 +44,7 @@
   "actions": "Actions",
   "row_selected": "row(s) selected",
   "total": "Total",
+  "to": "to",
   "generate_settlement": "Generate Settlement",
   "search_by_settler": "Search by Settler...",
   "pick_a_date": "Pick a Date",
@@ -325,11 +326,42 @@
   "success": "Success",
   "operation_completed": "Operation completed successfully",
   "validation_error": "Validation Error",
-
+  
+  "pdf_export": {
+    "settlement_report": "Settlement Report",
+    "direct_debit_settlement_summary": "Direct Debit Settlement Summary Report",
+    "period": "Period",
+    "company": "Company",
+    "currency_label": "Currency",
+    "total": "Total",
+    "generated_on": "Generated on",
+    "page": "Page"
+  },
+  
+  "export": "Export",
+  "pdf": "PDF",
+  "excel": "Excel",
+  "export_successful": "Export Successful",
+  "export_failed": "Export Failed",
+  "no_data_to_export": "No Data to Export",
+  "please_ensure_there_is_data_to_export": "Please ensure there is data to export",
+  "exported_records_to_pdf": "Exported {count} {selected} records to PDF",
+  "exported_records_to_excel": "Exported {count} {selected} records to Excel",
+  "failed_to_export_to_pdf": "Failed to export to PDF",
+  "failed_to_export_to_excel": "Failed to export to Excel",
+  "selected": "selected",
+  "settlement_history_title": "Settlement History",
+  "settlement_history_subtitle": "Generated on {date}",
   "splash": {
     "title": "Bill24 Admin Portal",
     "subtitle": "Management & Settlement Platform",
     "loading": "Initializing...",
     "version": "Version"
-  }
+  },
+  "transactions": "Transactions",
+  "transaction_date": "Transaction Date",
+  "number_of_transaction": "Number of Transactions",
+  "transaction_type": "Transaction Type",
+  "total_settlement_amount": "Total Settlement Amount",
+  "failed_transactions": "Failed Transactions"
 }
