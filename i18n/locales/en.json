@@ -50,8 +50,21 @@
   "pick_a_date": "Pick a Date",
   "user_profile": "User Profile",
   "dashboard": "Dashboard",
+  "transactions": "Transactions",
+  "digital_wallet": "Digital Wallet",
+  "wallet": "Wallet",
+  "settlement_menu": "Settlement",
   "settlements": "Settlements",
   "wallet_settlements": "Wallet Settlements",
+  "navigation": {
+    "organization": "Organization",
+    "banks": "Banks",
+    "sub_billers": "Sub Billers",
+    "users": "Users",
+    "reports": "Reports",
+    "transaction_summary": "Transaction Summary",
+    "transaction_allocate": "Transaction Allocation"
+  },
   "settlement_history": "Settlement History",
   "settlement_history_details": {
     "title": "Settlement History Details",
@@ -358,7 +371,6 @@
     "loading": "Initializing...",
     "version": "Version"
   },
-  "transactions": "Transactions",
   "transaction_date": "Transaction Date",
   "number_of_transaction": "Number of Transactions",
   "transaction_type": "Transaction Type",

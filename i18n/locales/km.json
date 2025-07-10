@@ -34,8 +34,21 @@
   "12h": "12 ម៉ោង",
   "24h": "24 ម៉ោង",
   "dashboard": "ទំព័រដើម",
+  "transactions": "ប្រតិបត្តិការ",
+  "digital_wallet": "កាបូបឌីជីថល",
+  "wallet": "កាបូប",
+  "settlement_menu": "ការទូទាត់",
   "settlements": "ការទូទាត់",
   "wallet_settlements": "ការទូទាត់ នៅលើ wallet",
+  "navigation": {
+    "organization": "ស្ថាប័ន",
+    "banks": "ធនាគារ",
+    "sub_billers": "ម្ចាស់អាជីវកម្ម",
+    "users": "អ្នកប្រើប្រាស់",
+    "reports": "របាយការណ៍",
+    "transaction_summary": "សេចក្តីសង្ខេបប្រតិបត្តិការ",
+    "transaction_allocate": "ការបែងចែកប្រតិបត្តិការ"
+  },
   "user_profile": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
   "details": "ព័ត៌មានលម្អិត",
   "settings": {
@@ -369,7 +382,6 @@
     "loading": "កំពុងចាប់ផ្តើម...",
     "version": "កំណែ"
   },
-  "transactions": "ប្រតិបត្តិការ",
   "transaction_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
   "number_of_transaction": "ចំនួនប្រតិបត្តិការ",
   "transaction_type": "ប្រភេទប្រតិបត្តិការ",
