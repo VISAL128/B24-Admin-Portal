@@ -26,7 +26,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: t('dashboard'),
-      icon: 'i-material-symbols-light-dashboard',
+      icon: 'i-material-symbols-light-space-dashboard-rounded',
       size: 'lg',
       to: '/',
       active: activeStates.value.dashboard,
