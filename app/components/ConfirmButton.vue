@@ -1,6 +1,6 @@
 <template>
     <UModal :transition="transition" :title="title" :body="body" @close="$emit('close')">
-    <UButton label="Open" color="neutral" variant="subtle" />
+    <UButton label="Open" color="neutral" variant="subtle" v-on:click="onClicked"/>
 
     <template #body>
       <p>{{ body }}</p>
@@ -18,12 +18,14 @@ interface Props {
   body?: string
   btnLabel?: string
   btnColor?: string
+  onClicked?: () => void
 }
 const props = withDefaults(defineProps<Props>(), {
   transition: false,
   title: t('confirm_button.title'),
   body: t('confirm_button.body'),
   btnLabel: t('confirm_button.confirm'),
-  btnColor: 'primary'
+  btnColor: 'primary',
+  onClicked: () => {}
 })
 </script>

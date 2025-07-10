@@ -26,7 +26,7 @@ watch(() => props.isNavExpanded, (newVal) => {
     <img 
       :src="isNavExpanded ? '/images/payment-logo.png' : '/images/Bill24 logo.png'" 
       alt="Bill24 Logo"
-      :class="isNavExpanded ? 'w-full h-auto' : 'w-10 h-10'"
+      :class="isNavExpanded ? 'w-full h-auto scale-80' : 'w-10 h-10 scale-80'"
     />
   </div>
 </template>

@@ -29,22 +29,22 @@ export const useApiExecutor = () => {
     }
   }
 
-  // const executeV2 = async <T>(
-  //   requestFn: () => Promise<T>
-  // ): Promise<T> => {
-  //   try {
-  //     const response = await requestFn()
-  //     return response
-  //   } catch (error: any) {
-  //     console.error('Request failed:', error)
-  //     // Handle and show error notification
-  //     errorHandler.handleApiError(error)
-  //     throw error // Re-throw to allow caller to handle if needed
-  //   }
-  // }
+  const executeV2 = async <T>(
+    requestFn: () => Promise<T>
+  ): Promise<T> => {
+    try {
+      const response = await requestFn()
+      return response
+    } catch (error: any) {
+      console.error('Request failed:', error)
+      // Handle and show error notification
+      errorHandler.handleApiError(error)
+      throw error // Re-throw to allow caller to handle if needed
+    }
+  }
 
   return { 
     execute ,
-    // executeV2
+    executeV2
   }
 }
