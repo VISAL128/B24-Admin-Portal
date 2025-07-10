@@ -152,7 +152,7 @@ import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
-import { exportToExcelStyled, exportToPDF } from '~/composables/utils/exportUtils'
+import { exportToExcelStyled, exportToPDFStyled } from '~/composables/utils/exportUtils'
 import { useI18n } from 'vue-i18n'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
@@ -276,17 +276,8 @@ const onGenerateSettlement = () => {
 const navigateToDetails = (settlementId: string) => {
   router.push(`/settlement/details/${settlementId}`)
 }
-  router.push(`/settlement/details/${settlementId}`)
-}
 
 const exportHeaders = [
-  { key: 'settlementId', label: t('settlement_id') },
-  { key: 'settlementDate', label: t('settlement_date') },
-  { key: 'totalSupplier', label: t('total_supplier') },
-  { key: 'totalAmount', label: t('total_amount') },
-  { key: 'settledBy', label: t('settled_by') },
-  { key: 'status', label: t('status') },
-]
   { key: 'settlementId', label: t('settlement_id') },
   { key: 'settlementDate', label: t('settlement_date') },
   { key: 'totalSupplier', label: t('total_supplier') },
@@ -352,7 +343,7 @@ const exportToPDFHandler = async () => {
       })
       return
     }
-    await exportToPDF(dataToExport, exportHeaders, 'settlement-history.pdf')
+    await exportToPDFStyled(dataToExport, exportHeaders, 'settlement-history.pdf')
     toast.add({
       title: t('export_successful'),
       description: t('exported_records_to_pdf', {
