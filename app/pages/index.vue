@@ -30,6 +30,15 @@
             <div class="font-medium text-primary">{{ $t('settings.title') }}</div>
             <div class="text-sm text-gray-600">{{ $t('index.settings_desc') }}</div>
           </NuxtLink>
+          <button
+            @click="openTransactionDrawer"
+            class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-[#EAF6FC] dark:hover:bg-gray-500 transition-colors w-full text-left"
+          >
+            <div class="font-medium text-primary">View Transaction Details</div>
+            <div class="text-sm text-gray-600">
+              Click to View Transaction Details Sideover ID X001
+            </div>
+          </button>
         </div>
       </UCard>
 
@@ -49,18 +58,35 @@
                 </div>
             </UCard> -->
     </div>
+    <!-- Drawer -->
+    <TransactionDetailDrawer
+      :model-value="showTransactionDrawer"
+      :transaction-id="selectedTransactionId"
+      @update:modelValue="showTransactionDrawer = $event"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-const { user } = useAuth()
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
+import { useAuth } from '~/composables/useAuth'
+
 const { t } = useI18n()
+const { user } = useAuth()
+
+const showTransactionDrawer = ref(false)
+const selectedTransactionId = ref('X001')
+
+const openTransactionDrawer = () => {
+  selectedTransactionId.value = 'X001'
+  showTransactionDrawer.value = true
+}
+
+definePageMeta({ auth: true })
 
 useHead({
   title: `${t('dashboard')} - Bill24 Admin Portal`,
-})
-
-definePageMeta({
-  auth: true,
 })
 </script>
