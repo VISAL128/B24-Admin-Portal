@@ -532,7 +532,7 @@ export async function exportToPDFWithUnicodeSupport(
     const jsPDF = (await import('jspdf')).default;
     
     // Get dynamic titles if translation function is available
-    const displayTitle = options.t ? options.t('pdf_export.settlement_report') : title;
+const displayTitle = title?.trim() ? title : (options.t ? options.t('pdf_export.settlement_report') : '');
     const displaySubtitle = options.t ? options.t('pdf_export.direct_debit_settlement_summary') : subtitle;
     
     // Create a temporary container with proper fonts

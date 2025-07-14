@@ -52,7 +52,58 @@
   "dashboard": "Dashboard",
   "transactions": "Transactions",
   "digital_wallet": "Digital Wallet",
+  "wallet_page": {
+    "title": "Digital Wallet",
+    "subtitle": "Manage your wallet balances and transactions",
+    "refresh": "Refresh",
+    "view_history": "View History",
+    "khr_wallet": "KHR Wallet",
+    "usd_wallet": "USD Wallet",
+    "primary_account": "Primary Account",
+    "secondary_account": "Secondary Account",
+    "active": "Active",
+    "available_balance": "Balance",
+    "account_number": "Account Number",
+    "last_transaction": "Last Transaction",
+    "copy_success": "Copied!",
+    "copy_success_message": "Account number copied to clipboard",
+    "wallet_type": "Wallet Type",
+    "personal_wallet": "Personal Wallet",
+    "business_wallet": "Business Wallet",
+    "savings_wallet": "Savings Wallet",
+    "investment_wallet": "Investment Wallet",
+    "top_up": "Top Up",
+    "transfer": "Transfer",
+    "transaction_summary": "Transaction Summary",
+    "today": "Today",
+    "this_week": "This Week",
+    "this_month": "This Month",
+    "date": "Date",
+    "period": "Period",
+    "transactions": "Transactions",
+    "received": "Received",
+    "settlement": "Settlement",
+    "biller_categories": "Biller Categories",
+    "view_all": "View All",
+    "recent_transactions": "Recent Transactions",
+    "no_transactions": "No recent transactions",
+    "billers": {
+      "ev_charging": "EV Charging",
+      "electricity": "Electricity",
+      "water": "Water",
+      "telecom": "Telecom",
+      "internet": "Internet",
+      "insurance": "Insurance"
+    }
+  },
   "wallet": "Wallet",
+  "transaction": {
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed"
+    }
+  },
   "settlement_menu": "Settlement",
   "settlements": "Settlements",
   "wallet_settlements": "Wallet Settlements",
@@ -450,5 +501,14 @@
       "api_success": "API test '{api}' completed successfully",
       "api_error": "API test '{api}' failed"
     }
-  }
+  },
+
+  "bank_ref": "Bank Ref",
+  "settlement_bank": "Settlement Bank",
+  "collection_bank": "Collection Bank",
+  "settlement_type": "Settlement Type",
+  "date": "Date",
+  "sort_by": "Sort by",
+  "clear": "Clear",
+  "all": "All"
 }
