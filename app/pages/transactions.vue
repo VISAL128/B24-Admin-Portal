@@ -1,99 +1,64 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-4">
-    <!-- Header -->
-    <div
-      class="flex flex-wrap items-center justify-between gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
-    >
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-bold text-primary dark:text-white">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-stretch">
+      <div class="bg-white dark:bg-gray-900 rounded-md shadow p-4 h-full">
+        <h2 class="text-sm text-primary dark:text-white">
           {{ t('number_of_transaction') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+        </h2>
+        <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
           {{ 100 }}
-        </h1>
+        </p>
       </div>
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-semibold text-primary dark:text-white">
+      <div class="bg-white dark:bg-gray-900 rounded-md shadow p-4 h-full">
+        <h2 class="text-sm text-primary dark:text-white">
           {{ t('total_amount') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">KHR 1000000</h1>
+        </h2>
+        <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">KHR 1,000,000</p>
       </div>
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-semibold text-primary dark:text-white">
+      <div class="bg-white dark:bg-gray-900 rounded-md shadow p-4 h-full">
+        <h2 class="text-sm text-primary dark:text-white">
           {{ t('total_settlement_amount') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">100</h1>
+        </h2>
+        <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">100</p>
       </div>
-      <div class="flex flex-col flex-1 items-start justify-between gap-2 px-4 py-4">
-        <h1 class="text-sm font-semibold text-primary dark:text-white">
+      <div class="bg-white dark:bg-gray-900 rounded-md shadow p-4 h-full">
+        <h2 class="text-sm text-primary dark:text-white">
           {{ t('failed_transactions') }}
-        </h1>
-
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+        </h2>
+        <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
           {{ 100 }}
-        </h1>
-      </div>
-    </div>
-    <div
-      class="flex flex-wrap items-center justify-between gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
-    >
-      <div class="flex flex-wrap items-center gap-2">
-        <UInput v-model="search" :placeholder="t('search_by_settler')" class="w-64" />
-        <UPopover>
-          <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
-            <template v-if="modelValue.start">
-              <template v-if="modelValue.end">
-                {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
-                {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
-              </template>
-              <template v-else>
-                {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }}
-              </template>
-            </template>
-            <template v-else>
-              {{ t('pick_a_date') }}
-            </template>
-          </UButton>
-
-          <template #content>
-            <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
-          </template>
-        </UPopover>
-      </div>
-      <div class="flex items-center gap-2">
-        <UButton color="primary" icon="i-lucide-play" @click="onGenerateSettlement">
-          {{ t('generate_settlement') }}
-        </UButton>
-
-        <UDropdownMenu :items="exportItems" :content="{ align: 'end' }" @select="handleExport">
-          <UButton icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">{{
-            t('export')
-          }}</UButton>
-        </UDropdownMenu>
+        </p>
       </div>
     </div>
 
     <!-- Table -->
     <!-- <UTable
-      ref="table"
-      :data="filteredData"
-      :columns="columns"
-      sticky
-      class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-    >
-      <template #empty>
-        <TableEmptyState />
-      </template>
-    </UTable> -->
+        ref="table"
+        :data="filteredData"
+        :columns="columns"
+        sticky
+        class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+      >
+        <template #empty>
+          <TableEmptyState />
+        </template>
+      </UTable> -->
     <BaseTable
-      ref="table"
       :data="filteredData"
       :columns="columns"
       table-id="settlement-history-table"
       border-class="border-gray-200 dark:border-gray-700"
+      @filter-change="handleFilterChange"
+      @row-click="(row) => navigateToDetails(row.id)"
+      @search-change="(val) => (search = val)"
+      @date-range-change="
+        ({ start, end }) => {
+          startDate = start
+          endDate = end
+          fetchSettlementHistory()
+        }
+      "
     >
       <template #empty>
         <TableEmptyState />
@@ -109,11 +74,11 @@
       </span>
       <div class="flex items-center gap-4">
         <!-- <USelect
-          v-model="pageSize"
-          :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
-          class="w-24"
-          @change="onPageSizeChange"
-        /> -->
+            v-model="pageSize"
+            :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
+            class="w-24"
+            @change="onPageSizeChange"
+          /> -->
         <USelectMenu
           v-model="pageSize"
           :items="[
@@ -152,20 +117,27 @@ import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
-import { exportToExcelStyled, exportToPDFStyled } from '~/composables/utils/exportUtils'
+import {
+  exportToExcelStyled,
+  exportToExcelWithUnicodeSupport,
+  exportToPDFStyled,
+  exportToPDFWithUnicodeSupport,
+} from '~/composables/utils/exportUtils'
 import { useI18n } from 'vue-i18n'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import BaseTable from '~/components/tables/BaseTable.vue'
+import type { BaseTableColumn } from '~/components/tables/table'
+import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
 const errorHandler = useErrorHandler()
 const table = ref<InstanceType<typeof BaseTable> | null>(null)
 
-const selectedRows = computed(() => table.value?.getSelectedRows() ?? [])
+const selectedRows = computed(() => table.value?.getSelectedRows?.() ?? [])
 const allRows = computed(() => table.value?.getAllRows() ?? [])
 const router = useRouter()
 const toast = useToast()
@@ -207,6 +179,11 @@ watch(modelValue, (val) => {
 
 // Watch pagination
 watch([page, pageSize], () => {
+  fetchSettlementHistory()
+})
+
+watch(search, () => {
+  page.value = 1 // Reset to first page on search
   fetchSettlementHistory()
 })
 
@@ -273,26 +250,31 @@ const onGenerateSettlement = () => {
 }
 
 // Handle navigation to details page
-const navigateToDetails = (settlementId: string) => {
-  router.push(`/settlement/details/${settlementId}`)
+const navigateToDetails = (rowId: string) => {
+  console.log('Row clicked:')
+  router.push(`/settlement/details/${rowId}`)
 }
 
 const exportHeaders = [
-  { key: 'settlementId', label: t('settlement_id') },
-  { key: 'settlementDate', label: t('settlement_date') },
-  { key: 'totalSupplier', label: t('total_supplier') },
-  { key: 'totalAmount', label: t('total_amount') },
-  { key: 'settledBy', label: t('settled_by') },
-  { key: 'status', label: t('status') },
+  { key: 'currency_id', label: t('settlement.currency') },
+  { key: 'created_date', label: t('settlement_history_details.settlement_date') },
+  { key: 'total_supplier', label: t('settlement_history_details.total_supplier') },
+  { key: 'created_by', label: t('settled_by') },
+  { key: 'total_amount', label: t('total_amount') },
+  // { key: "status", label: t("status") },
 ]
+
+// Dynamic headers for PDF that support both languages
+const pdfExportHeaders = computed(() => getPDFHeaders(t))
 
 const exportToExcelHandler = async () => {
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
       selectedRows.length > 0
-        ? selectedRows.map((row: { original: SettlementHistoryRecord }) => row.original)
+        ? selectedRows.map((row: { original: any }) => row.original)
         : filteredData.value
+
     if (dataToExport.length === 0) {
       toast.add({
         title: t('no_data_to_export'),
@@ -301,15 +283,52 @@ const exportToExcelHandler = async () => {
       })
       return
     }
-    await exportToExcelStyled(
-      dataToExport,
-      exportHeaders,
-      'settlement-history.xlsx',
-      t('settlement_history_title'),
-      t('settlement_history_subtitle', {
-        date: new Date().toLocaleDateString(),
-      })
+
+    // Calculate total amount
+    const totalAmount = dataToExport.reduce(
+      (sum: number, item: { total_amount: number | string }) =>
+        sum + (Number(item.total_amount) || 0),
+      0
     )
+
+    // Get current locale from the existing locale ref
+    const currentLocale = locale.value as 'km' | 'en'
+
+    // Create period string from date range
+    const periodText = `${startDate.value} ${t('to')} ${endDate.value}`
+
+    // Try the new Unicode-supported Excel export first, fallback to regular if it fails
+    try {
+      await exportToExcelWithUnicodeSupport(
+        dataToExport,
+        exportHeaders,
+        `settlement-history-${new Date().toISOString().slice(0, 10)}.xlsx`,
+        t('settlement_history_title'),
+        t('settlement_history_subtitle', {
+          date: new Date().toLocaleDateString(currentLocale === 'km' ? 'km-KH' : 'en-US'),
+        }),
+        {
+          locale: currentLocale,
+          t: t,
+          currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          period: periodText,
+        }
+      )
+    } catch (unicodeError) {
+      console.warn('Unicode Excel export failed, falling back to standard Excel:', unicodeError)
+      // Fallback to standard Excel export
+      await exportToExcelStyled(
+        dataToExport,
+        exportHeaders,
+        'settlement-history.xlsx',
+        t('settlement_history_title'),
+        t('settlement_history_subtitle', {
+          date: new Date().toLocaleDateString(),
+        })
+      )
+    }
+
     toast.add({
       title: t('export_successful'),
       description: t('exported_records_to_excel', {
@@ -333,7 +352,7 @@ const exportToPDFHandler = async () => {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
       selectedRows.length > 0
-        ? selectedRows.map((row: { original: SettlementHistoryRecord }) => row.original)
+        ? selectedRows.map((row: { original: any }) => row.original)
         : filteredData.value
     if (dataToExport.length === 0) {
       toast.add({
@@ -343,7 +362,56 @@ const exportToPDFHandler = async () => {
       })
       return
     }
-    await exportToPDFStyled(dataToExport, exportHeaders, 'settlement-history.pdf')
+
+    // Calculate total amount
+    const totalAmount = dataToExport.reduce(
+      (sum: number, item: { total_amount: number | string }) =>
+        sum + (Number(item.total_amount) || 0),
+      0
+    )
+
+    // Get current locale from the existing locale ref
+    const currentLocale = locale.value as 'km' | 'en'
+
+    // Create period string from date range
+    const periodText = `${startDate.value} to ${endDate.value}`
+
+    try {
+      await exportToPDFWithUnicodeSupport(
+        dataToExport,
+        pdfExportHeaders.value,
+        `settlement-history-${new Date().toISOString().slice(0, 10)}.pdf`,
+        'Transaction Report', // Let the function use dynamic titles
+        'Transaction Report', // Let the function use dynamic titles
+        periodText,
+        {
+          // company: 'WINGKH',
+          // currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          locale: currentLocale,
+          t: t, // Pass the translation function
+        }
+      )
+    } catch (unicodeError) {
+      console.warn('Unicode PDF export failed, falling back to standard PDF:', unicodeError)
+      // Fallback to standard PDF export
+      await exportToPDFStyled(
+        dataToExport,
+        pdfExportHeaders.value,
+        'settlement-history.pdf',
+        'Transaction Report', // Let the function use dynamic titles
+        'Transaction Report', // Let the function use dynamic titles
+        periodText,
+        {
+          company: 'WINGKH',
+          currency: dataToExport[0]?.currency_id || 'USD',
+          totalAmount: totalAmount,
+          locale: currentLocale,
+          t: t, // Pass the translation function
+        }
+      )
+    }
+
     toast.add({
       title: t('export_successful'),
       description: t('exported_records_to_pdf', {
@@ -361,7 +429,6 @@ const exportToPDFHandler = async () => {
     })
   }
 }
-
 const exportItems = ref<DropdownMenuItem[]>([
   {
     label: t('pdf'),
@@ -404,8 +471,12 @@ const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
   selectedRecord.value = record
   showSidebar.value = true
 }
+const handleFilterChange = (columnId: string, value: string) => {
+  console.log('Filter changed:', columnId, value)
+  // Optional: trigger fetch or other logic
+}
 
-const columns: TableColumn<SettlementHistoryRecord>[] = [
+const columns: BaseTableColumn<any>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -436,12 +507,32 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   },
   // { accessorKey: "id", header: t("Settlement ID") },
   {
-    id: "created_date",
+    id: 'created_date',
     accessorKey: 'created_date',
-    header: t('transaction_date'),
+    header: t('date'),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
+  },
+  {
+    id: 'bank_ref',
+    accessorKey: 'bank_ref',
+    header: t('bank_ref'),
+  },
+  {
+    id: 'collection_bank',
+    accessorKey: 'collection_bank',
+    header: t('collection_bank'),
+  },
+  {
+    id: 'settlement_bank',
+    accessorKey: 'settlement_bank',
+    header: t('settlement_bank'),
+  },
+  {
+    id: 'settlement_type',
+    accessorKey: 'settlement_type',
+    header: t('settlement_type'),
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
@@ -455,12 +546,30 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
         useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
       ),
   },
-  {id: "currency_id", accessorKey: 'currency_id', header: t('settlement.currency') },
-  { id: "created_by", accessorKey: 'created_by', header: t('settled_by') },
   {
-    id: "status",
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    header: t('settlement.currency'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('completed'), value: 'completed' },
+      { label: t('pending'), value: 'pending' },
+      { label: t('failed'), value: 'failed' },
+    ],
+    enableSorting: true,
+  },
+  // { id: 'created_by', accessorKey: 'created_by', header: t('settled_by') },
+  {
+    id: 'status',
     accessorKey: 'status', // optional if you need sorting/filtering
     header: t('status.header'),
+    enableSorting: true,
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('completed'), value: 'completed' },
+      { label: t('pending'), value: 'pending' },
+      { label: t('failed'), value: 'failed' },
+    ],
     cell: ({ row }) => {
       // return h('span', {
       //   class: `text-sm font-medium`
@@ -513,20 +622,20 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     },
   },
   // Add an action column for viewing details
-  {
-    id: 'actions',
-    header: t('actions'),
-    cell: ({ row }) =>
-      h('div', { class: 'flex items-center gap-2' }, [
-        h(resolveComponent('UButton'), {
-          color: 'primary',
-          variant: 'ghost',
-          icon: 'i-lucide-eye',
-          size: 'sm',
-          onClick: handleViewDetails(row.original),
-          // title: translations.view_details
-        }),
-      ]),
-  },
+  // {
+  //   id: 'actions',
+  //   header: t('actions'),
+  //   cell: ({ row }) =>
+  //     h('div', { class: 'flex items-center gap-2' }, [
+  //       h(resolveComponent('UButton'), {
+  //         color: 'primary',
+  //         variant: 'ghost',
+  //         icon: 'i-lucide-eye',
+  //         size: 'sm',
+  //         onClick: handleViewDetails(row.original),
+  //         // title: translations.view_details
+  //       }),
+  //     ]),
+  // },
 ]
 </script>
