@@ -552,9 +552,8 @@ const columns: BaseTableColumn<any>[] = [
     header: t('settlement.currency'),
     enableColumnFilter: true,
     filterOptions: [
-      { label: t('completed'), value: 'completed' },
-      { label: t('pending'), value: 'pending' },
-      { label: t('failed'), value: 'failed' },
+      { label: 'USD', value: 'USD' },
+      { label: 'KHR', value: 'KHR' },
     ],
     enableSorting: true,
   },
