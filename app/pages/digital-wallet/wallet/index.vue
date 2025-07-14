@@ -16,12 +16,15 @@
         <!-- Wallet Type Switcher -->
         <USelectMenu
           v-model="selectedWalletType"
-          :options="walletTypes"
-          option-attribute="name"
-          value-attribute="id"
+          :items="walletTypes"
+          value-key="id"
           class="min-w-40 transition-all duration-300"
+          :search-input="{
+            placeholder: 'Search wallet types...',
+            icon: 'i-heroicons-magnifying-glass',
+          }"
         >
-          <template #default="{ open }">
+          <template #default>
             <UButton
               variant="outline"
               size="sm"
@@ -32,11 +35,20 @@
                 <div
                   class="w-2 h-2 rounded-full transition-colors duration-300"
                   :class="{
-                    'bg-blue-500': selectedWalletType === 'personal',
-                    'bg-green-500': selectedWalletType === 'business',
-                    'bg-yellow-500': selectedWalletType === 'savings',
-                    'bg-purple-500': selectedWalletType === 'investment',
+                    'bg-gradient-to-r from-blue-500 to-indigo-600':
+                      selectedWalletType === 'personal',
+                    'bg-gradient-to-r from-emerald-500 to-teal-600':
+                      selectedWalletType === 'business',
+                    'bg-gradient-to-r from-amber-500 to-orange-500':
+                      selectedWalletType === 'savings',
+                    'bg-gradient-to-r from-purple-500 to-violet-600':
+                      selectedWalletType === 'investment',
                   }"
+                />
+                <UIcon
+                  v-if="selectedWalletTypeData?.icon"
+                  :name="selectedWalletTypeData.icon"
+                  class="w-4 h-4 text-gray-500 dark:text-gray-400"
                 />
                 {{
                   t(
@@ -47,7 +59,7 @@
               </div>
               <UIcon
                 name="i-heroicons-chevron-down-20-solid"
-                :class="[open && 'rotate-180', 'transition-transform duration-300']"
+                class="transition-transform duration-300"
               />
             </UButton>
           </template>
@@ -78,15 +90,39 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
       <!-- KHR Wallet Card -->
       <UCard
-        class="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 transition-all duration-500 ease-in-out transform hover:scale-105 hover:shadow-lg"
-        :class="isWalletLoading ? 'animate-pulse' : ''"
+        class="relative overflow-hidden transition-all duration-500 ease-in-out transform hover:scale-105 hover:shadow-lg"
+        :class="[
+          isWalletLoading ? 'animate-pulse' : '',
+          {
+            'bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-800/30 border-blue-200 dark:border-blue-600':
+              selectedWalletType === 'personal',
+            'bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-900/30 dark:to-teal-800/30 border-emerald-200 dark:border-emerald-600':
+              selectedWalletType === 'business',
+            'bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/30 dark:to-orange-800/30 border-amber-200 dark:border-amber-600':
+              selectedWalletType === 'savings',
+            'bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/30 dark:to-violet-800/30 border-purple-200 dark:border-purple-600':
+              selectedWalletType === 'investment',
+          },
+        ]"
       >
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="p-2 bg-blue-500 rounded-lg transition-transform duration-300"
-                :class="isWalletLoading ? 'animate-spin' : ''"
+                class="p-2 rounded-lg transition-transform duration-300"
+                :class="[
+                  isWalletLoading ? 'animate-spin' : '',
+                  {
+                    'bg-gradient-to-r from-blue-500 to-indigo-600':
+                      selectedWalletType === 'personal',
+                    'bg-gradient-to-r from-emerald-500 to-teal-600':
+                      selectedWalletType === 'business',
+                    'bg-gradient-to-r from-amber-500 to-orange-500':
+                      selectedWalletType === 'savings',
+                    'bg-gradient-to-r from-purple-500 to-violet-600':
+                      selectedWalletType === 'investment',
+                  },
+                ]"
               >
                 <Icon
                   name="i-material-symbols-light-account-balance-wallet"
@@ -121,8 +157,19 @@
               <p
                 :key="'khr-' + selectedWalletType + '-' + walletBalances.khr"
                 :class="isWalletLoading ? 'scale-110 animate-bounce' : 'scale-100'"
-                class="text-3xl font-bold text-blue-600 dark:text-blue-400 transition-all duration-500 transform"
+                class="text-3xl font-bold transition-all duration-500 transform flex items-center justify-center gap-2"
+                :style="{
+                  color:
+                    selectedWalletType === 'personal'
+                      ? '#3b82f6'
+                      : selectedWalletType === 'business'
+                        ? '#10b981'
+                        : selectedWalletType === 'savings'
+                          ? '#f59e0b'
+                          : '#8b5cf6',
+                }"
               >
+                <span class="text-2xl font-medium opacity-80">KHR</span>
                 {{ formatCurrency(walletBalances.khr, 'KHR') }}
               </p>
               <!-- Loading overlay -->
@@ -137,15 +184,26 @@
           <div
             class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2 transition-all duration-300 hover:bg-white/70 dark:hover:bg-gray-800/70"
           >
-            <div class="flex justify-between text-sm transition-colors duration-300">
+            <div class="flex justify-between items-center text-sm transition-colors duration-300">
               <span class="text-gray-600 dark:text-gray-400">{{
                 t('wallet_page.account_number', 'Account Number')
               }}</span>
-              <span
-                :key="'khr-acc-' + selectedWalletType"
-                class="font-mono text-gray-900 dark:text-white transition-all duration-300"
-                >****{{ khrAccountNumber.slice(-4) }}</span
-              >
+              <div class="flex items-center gap-2">
+                <span
+                  :key="'khr-acc-' + selectedWalletType"
+                  class="font-mono text-gray-900 dark:text-white transition-all duration-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs"
+                >
+                  {{ khrAccountNumber.slice(0, 4) }}•••{{ khrAccountNumber.slice(-4) }}
+                </span>
+                <UButton
+                  icon="i-heroicons-clipboard-document"
+                  size="xs"
+                  variant="ghost"
+                  color="neutral"
+                  class="hover:bg-gray-200 dark:hover:bg-gray-600"
+                  @click="copyToClipboard(khrAccountNumber)"
+                />
+              </div>
             </div>
             <div class="flex justify-between text-sm transition-colors duration-300">
               <span class="text-gray-600 dark:text-gray-400">{{
@@ -161,15 +219,37 @@
 
       <!-- USD Wallet Card -->
       <UCard
-        class="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700 transition-all duration-500 ease-in-out transform hover:scale-105 hover:shadow-lg"
-        :class="isWalletLoading ? 'animate-pulse' : ''"
+        class="relative overflow-hidden transition-all duration-500 ease-in-out transform hover:scale-105 hover:shadow-lg"
+        :class="[
+          isWalletLoading ? 'animate-pulse' : '',
+          {
+            'bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900/30 dark:to-gray-800/30 border-slate-200 dark:border-slate-600':
+              selectedWalletType === 'personal',
+            'bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-900/30 dark:to-cyan-800/30 border-teal-200 dark:border-teal-600':
+              selectedWalletType === 'business',
+            'bg-gradient-to-br from-orange-50 to-red-100 dark:from-orange-900/30 dark:to-red-800/30 border-orange-200 dark:border-orange-600':
+              selectedWalletType === 'savings',
+            'bg-gradient-to-br from-violet-50 to-pink-100 dark:from-violet-900/30 dark:to-pink-800/30 border-violet-200 dark:border-violet-600':
+              selectedWalletType === 'investment',
+          },
+        ]"
       >
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="p-2 bg-green-500 rounded-lg transition-transform duration-300"
-                :class="isWalletLoading ? 'animate-spin' : ''"
+                class="p-2 rounded-lg transition-transform duration-300"
+                :class="[
+                  isWalletLoading ? 'animate-spin' : '',
+                  {
+                    'bg-gradient-to-r from-slate-500 to-gray-600':
+                      selectedWalletType === 'personal',
+                    'bg-gradient-to-r from-teal-500 to-cyan-600': selectedWalletType === 'business',
+                    'bg-gradient-to-r from-orange-500 to-red-500': selectedWalletType === 'savings',
+                    'bg-gradient-to-r from-violet-500 to-pink-600':
+                      selectedWalletType === 'investment',
+                  },
+                ]"
               >
                 <Icon
                   name="i-material-symbols-light-account-balance-wallet"
@@ -198,14 +278,25 @@
           <!-- Balance Display -->
           <div class="text-center transition-all duration-500 ease-in-out">
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
-              {{ t('wallet_page.available_balance', 'Available Balance') }}
+              {{ t('wallet_page.available_balance', 'Balance') }}
             </p>
             <div class="relative">
               <p
                 :key="'usd-' + selectedWalletType + '-' + walletBalances.usd"
                 :class="isWalletLoading ? 'scale-110 animate-bounce' : 'scale-100'"
-                class="text-3xl font-bold text-green-600 dark:text-green-400 transition-all duration-500 transform"
+                class="text-3xl font-bold transition-all duration-500 transform flex items-center justify-center gap-2"
+                :style="{
+                  color:
+                    selectedWalletType === 'personal'
+                      ? '#64748b'
+                      : selectedWalletType === 'business'
+                        ? '#0891b2'
+                        : selectedWalletType === 'savings'
+                          ? '#ea580c'
+                          : '#7c3aed',
+                }"
               >
+                <span class="text-2xl font-medium opacity-80">USD</span>
                 {{ formatCurrency(walletBalances.usd, 'USD') }}
               </p>
               <!-- Loading overlay -->
@@ -220,15 +311,26 @@
           <div
             class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2 transition-all duration-300 hover:bg-white/70 dark:hover:bg-gray-800/70"
           >
-            <div class="flex justify-between text-sm transition-colors duration-300">
+            <div class="flex justify-between items-center text-sm transition-colors duration-300">
               <span class="text-gray-600 dark:text-gray-400">{{
                 t('wallet_page.account_number', 'Account Number')
               }}</span>
-              <span
-                :key="'usd-acc-' + selectedWalletType"
-                class="font-mono text-gray-900 dark:text-white transition-all duration-300"
-                >****{{ usdAccountNumber.slice(-4) }}</span
-              >
+              <div class="flex items-center gap-2">
+                <span
+                  :key="'usd-acc-' + selectedWalletType"
+                  class="font-mono text-gray-900 dark:text-white transition-all duration-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs"
+                >
+                  {{ usdAccountNumber.slice(0, 4) }}•••{{ usdAccountNumber.slice(-4) }}
+                </span>
+                <UButton
+                  icon="i-heroicons-clipboard-document"
+                  size="xs"
+                  variant="ghost"
+                  color="neutral"
+                  class="hover:bg-gray-200 dark:hover:bg-gray-600"
+                  @click="copyToClipboard(usdAccountNumber)"
+                />
+              </div>
             </div>
             <div class="flex justify-between text-sm transition-colors duration-300">
               <span class="text-gray-600 dark:text-gray-400">{{
@@ -246,14 +348,46 @@
     <!-- Transaction Summary Section -->
     <UCard class="transition-all duration-500 ease-in-out">
       <template #header>
-        <div class="flex items-center justify-between">
-          <h2
-            class="text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-300"
-          >
-            {{ t('wallet_page.transaction_summary', 'Transaction Summary') }}
-          </h2>
-          <div class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-            {{ selectedWalletTypeData?.name || 'Personal Wallet' }}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <h2
+              class="text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-300"
+            >
+              {{ t('wallet_page.transaction_summary', 'Transaction Summary') }}
+            </h2>
+            <UBadge
+              :color="
+                selectedWalletType === 'personal'
+                  ? 'primary'
+                  : selectedWalletType === 'business'
+                    ? 'success'
+                    : selectedWalletType === 'savings'
+                      ? 'warning'
+                      : 'secondary'
+              "
+              variant="subtle"
+              class="transition-all duration-300"
+            >
+              {{ selectedWalletTypeData?.name || 'Personal Wallet' }}
+            </UBadge>
+          </div>
+          <div class="flex items-center gap-2">
+            <UButton
+              :icon="
+                currentSummaryData.today.currency === 'KHR'
+                  ? 'i-heroicons-currency-dollar'
+                  : 'i-heroicons-banknotes'
+              "
+              variant="ghost"
+              size="xs"
+              class="text-xs"
+              @click="toggleSummaryCurrency"
+            >
+              {{ currentSummaryData.today.currency }}
+            </UButton>
+            <div class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+              {{ formatCurrency(0, currentSummaryData.today.currency).replace(/[\d.,]/g, '') }}
+            </div>
           </div>
         </div>
       </template>
@@ -284,7 +418,7 @@
               <span
                 :key="'today-date-' + selectedWalletType"
                 class="font-medium text-blue-900 dark:text-blue-100 transition-all duration-500"
-                >{{ summaryData.today.date }}</span
+                >{{ currentSummaryData.today.date }}</span
               >
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -294,7 +428,7 @@
               <span
                 :key="'today-trans-' + selectedWalletType"
                 class="font-medium text-blue-900 dark:text-blue-100 transition-all duration-500"
-                >{{ summaryData.today.totalTransactions }}</span
+                >{{ currentSummaryData.today.totalTransactions }}</span
               >
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -303,9 +437,15 @@
               }}</span>
               <span
                 :key="'today-received-' + selectedWalletType"
-                class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500"
+                class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500 flex items-center gap-1"
               >
-                {{ formatCurrency(summaryData.today.totalReceived, summaryData.today.currency) }}
+                <span class="text-xs opacity-75">{{ currentSummaryData.today.currency }}</span>
+                {{
+                  formatCurrency(
+                    currentSummaryData.today.totalReceived,
+                    currentSummaryData.today.currency
+                  )
+                }}
               </span>
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -314,9 +454,15 @@
               }}</span>
               <span
                 :key="'today-settlement-' + selectedWalletType"
-                class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500"
+                class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500 flex items-center gap-1"
               >
-                {{ formatCurrency(summaryData.today.totalSettlement, summaryData.today.currency) }}
+                <span class="text-xs opacity-75">{{ currentSummaryData.today.currency }}</span>
+                {{
+                  formatCurrency(
+                    currentSummaryData.today.totalSettlement,
+                    currentSummaryData.today.currency
+                  )
+                }}
               </span>
             </div>
           </div>
@@ -347,7 +493,7 @@
               <span
                 :key="'week-date-' + selectedWalletType"
                 class="font-medium text-green-900 dark:text-green-100 text-xs transition-all duration-500"
-                >{{ summaryData.week.date }}</span
+                >{{ currentSummaryData.week.date }}</span
               >
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -357,7 +503,7 @@
               <span
                 :key="'week-trans-' + selectedWalletType"
                 class="font-medium text-green-900 dark:text-green-100 transition-all duration-500"
-                >{{ summaryData.week.totalTransactions }}</span
+                >{{ currentSummaryData.week.totalTransactions }}</span
               >
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -366,9 +512,15 @@
               }}</span>
               <span
                 :key="'week-received-' + selectedWalletType"
-                class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500"
+                class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500 flex items-center gap-1"
               >
-                {{ formatCurrency(summaryData.week.totalReceived, summaryData.week.currency) }}
+                <span class="text-xs opacity-75">{{ currentSummaryData.week.currency }}</span>
+                {{
+                  formatCurrency(
+                    currentSummaryData.week.totalReceived,
+                    currentSummaryData.week.currency
+                  )
+                }}
               </span>
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -377,9 +529,15 @@
               }}</span>
               <span
                 :key="'week-settlement-' + selectedWalletType"
-                class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500"
+                class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500 flex items-center gap-1"
               >
-                {{ formatCurrency(summaryData.week.totalSettlement, summaryData.week.currency) }}
+                <span class="text-xs opacity-75">{{ currentSummaryData.week.currency }}</span>
+                {{
+                  formatCurrency(
+                    currentSummaryData.week.totalSettlement,
+                    currentSummaryData.week.currency
+                  )
+                }}
               </span>
             </div>
           </div>
@@ -410,7 +568,7 @@
               <span
                 :key="'month-date-' + selectedWalletType"
                 class="font-medium text-purple-900 dark:text-purple-100 text-xs transition-all duration-500"
-                >{{ summaryData.month.date }}</span
+                >{{ currentSummaryData.month.date }}</span
               >
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -420,7 +578,7 @@
               <span
                 :key="'month-trans-' + selectedWalletType"
                 class="font-medium text-purple-900 dark:text-purple-100 transition-all duration-500"
-                >{{ summaryData.month.totalTransactions }}</span
+                >{{ currentSummaryData.month.totalTransactions }}</span
               >
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -429,9 +587,15 @@
               }}</span>
               <span
                 :key="'month-received-' + selectedWalletType"
-                class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500"
+                class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500 flex items-center gap-1"
               >
-                {{ formatCurrency(summaryData.month.totalReceived, summaryData.month.currency) }}
+                <span class="text-xs opacity-75">{{ currentSummaryData.month.currency }}</span>
+                {{
+                  formatCurrency(
+                    currentSummaryData.month.totalReceived,
+                    currentSummaryData.month.currency
+                  )
+                }}
               </span>
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
@@ -440,9 +604,15 @@
               }}</span>
               <span
                 :key="'month-settlement-' + selectedWalletType"
-                class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500"
+                class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500 flex items-center gap-1"
               >
-                {{ formatCurrency(summaryData.month.totalSettlement, summaryData.month.currency) }}
+                <span class="text-xs opacity-75">{{ currentSummaryData.month.currency }}</span>
+                {{
+                  formatCurrency(
+                    currentSummaryData.month.totalSettlement,
+                    currentSummaryData.month.currency
+                  )
+                }}
               </span>
             </div>
           </div>
@@ -454,6 +624,8 @@
 
 <script setup lang="ts">
 import { useCurrency } from '~/composables/utils/useCurrency'
+import { useClipboard } from '~/composables/useClipboard'
+import { useNotification } from '~/composables/useNotification'
 
 // Define page meta
 definePageMeta({
@@ -464,17 +636,44 @@ definePageMeta({
 // Composables
 const { t } = useI18n()
 const { formatCurrency } = useCurrency()
+const { copy } = useClipboard()
+const { showSuccess } = useNotification()
 
 // Reactive data
 const isRefreshing = ref(false)
 const isWalletLoading = ref(false)
+const summaryDisplayCurrency = ref('KHR')
 
 // Wallet types
 const walletTypes = ref([
-  { id: 'personal', name: 'Personal Wallet', nameKey: 'wallet_page.personal_wallet' },
-  { id: 'business', name: 'Business Wallet', nameKey: 'wallet_page.business_wallet' },
-  { id: 'savings', name: 'Savings Wallet', nameKey: 'wallet_page.savings_wallet' },
-  { id: 'investment', name: 'Investment Wallet', nameKey: 'wallet_page.investment_wallet' },
+  {
+    id: 'personal',
+    label: 'Personal Wallet',
+    name: 'Personal Wallet',
+    nameKey: 'wallet_page.personal_wallet',
+    icon: 'i-heroicons-user',
+  },
+  {
+    id: 'business',
+    label: 'Business Wallet',
+    name: 'Business Wallet',
+    nameKey: 'wallet_page.business_wallet',
+    icon: 'i-heroicons-building-office',
+  },
+  {
+    id: 'savings',
+    label: 'Savings Wallet',
+    name: 'Savings Wallet',
+    nameKey: 'wallet_page.savings_wallet',
+    icon: 'i-heroicons-banknotes',
+  },
+  {
+    id: 'investment',
+    label: 'Investment Wallet',
+    name: 'Investment Wallet',
+    nameKey: 'wallet_page.investment_wallet',
+    icon: 'i-heroicons-chart-bar',
+  },
 ])
 
 // Selected wallet type (single source of truth)
@@ -553,95 +752,160 @@ const summaryDataByType = ref({
     today: {
       date: '2025-01-15',
       totalTransactions: 3,
-      totalReceived: 24500.0,
-      totalSettlement: 195000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 24500.0,
+        totalSettlement: 195000.0,
+      },
+      usd: {
+        totalReceived: 5.95,
+        totalSettlement: 47.5,
+      },
     },
     week: {
       date: '2025-01-13 to 2025-01-19',
       totalTransactions: 18,
-      totalReceived: 185200.0,
-      totalSettlement: 425500.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 185200.0,
+        totalSettlement: 425500.0,
+      },
+      usd: {
+        totalReceived: 45.2,
+        totalSettlement: 103.75,
+      },
     },
     month: {
       date: '2025-01-01 to 2025-01-31',
       totalTransactions: 67,
-      totalReceived: 725000.0,
-      totalSettlement: 1250000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 725000.0,
+        totalSettlement: 1250000.0,
+      },
+      usd: {
+        totalReceived: 176.8,
+        totalSettlement: 304.75,
+      },
     },
   },
   business: {
     today: {
       date: '2025-01-15',
       totalTransactions: 45,
-      totalReceived: 2850000.0,
-      totalSettlement: 4125000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 2850000.0,
+        totalSettlement: 4125000.0,
+      },
+      usd: {
+        totalReceived: 695.0,
+        totalSettlement: 1006.25,
+      },
     },
     week: {
       date: '2025-01-13 to 2025-01-19',
       totalTransactions: 234,
-      totalReceived: 15750000.0,
-      totalSettlement: 22500000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 15750000.0,
+        totalSettlement: 22500000.0,
+      },
+      usd: {
+        totalReceived: 3842.5,
+        totalSettlement: 5487.5,
+      },
     },
     month: {
       date: '2025-01-01 to 2025-01-31',
       totalTransactions: 892,
-      totalReceived: 45750000.0,
-      totalSettlement: 68250000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 45750000.0,
+        totalSettlement: 68250000.0,
+      },
+      usd: {
+        totalReceived: 11156.25,
+        totalSettlement: 16656.25,
+      },
     },
   },
   savings: {
     today: {
       date: '2025-01-15',
       totalTransactions: 2,
-      totalReceived: 95000.0,
-      totalSettlement: 125000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 95000.0,
+        totalSettlement: 125000.0,
+      },
+      usd: {
+        totalReceived: 23.15,
+        totalSettlement: 30.5,
+      },
     },
     week: {
       date: '2025-01-13 to 2025-01-19',
       totalTransactions: 8,
-      totalReceived: 485000.0,
-      totalSettlement: 625000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 485000.0,
+        totalSettlement: 625000.0,
+      },
+      usd: {
+        totalReceived: 118.25,
+        totalSettlement: 152.5,
+      },
     },
     month: {
       date: '2025-01-01 to 2025-01-31',
       totalTransactions: 28,
-      totalReceived: 1850000.0,
-      totalSettlement: 2450000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 1850000.0,
+        totalSettlement: 2450000.0,
+      },
+      usd: {
+        totalReceived: 451.25,
+        totalSettlement: 597.5,
+      },
     },
   },
   investment: {
     today: {
       date: '2025-01-15',
       totalTransactions: 8,
-      totalReceived: 4250000.0,
-      totalSettlement: 6850000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 4250000.0,
+        totalSettlement: 6850000.0,
+      },
+      usd: {
+        totalReceived: 1037.5,
+        totalSettlement: 1670.0,
+      },
     },
     week: {
       date: '2025-01-13 to 2025-01-19',
       totalTransactions: 34,
-      totalReceived: 18500000.0,
-      totalSettlement: 28750000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 18500000.0,
+        totalSettlement: 28750000.0,
+      },
+      usd: {
+        totalReceived: 4512.5,
+        totalSettlement: 7012.5,
+      },
     },
     month: {
       date: '2025-01-01 to 2025-01-31',
       totalTransactions: 156,
-      totalReceived: 82500000.0,
-      totalSettlement: 125000000.0,
-      currency: 'KHR',
+      khr: {
+        totalReceived: 82500000.0,
+        totalSettlement: 125000000.0,
+      },
+      usd: {
+        totalReceived: 20112.5,
+        totalSettlement: 30500.0,
+      },
     },
   },
 })
+
+// Toggle summary currency display
+const toggleSummaryCurrency = () => {
+  summaryDisplayCurrency.value = summaryDisplayCurrency.value === 'KHR' ? 'USD' : 'KHR'
+}
 
 // Computed summary data based on selected wallet type
 const summaryData = computed(
@@ -649,6 +913,33 @@ const summaryData = computed(
     summaryDataByType.value[selectedWalletType.value as keyof typeof summaryDataByType.value] ||
     summaryDataByType.value.personal
 )
+
+// Computed property for current summary data based on selected currency
+const currentSummaryData = computed(() => {
+  const currentCurrency = summaryDisplayCurrency.value.toLowerCase() as 'khr' | 'usd'
+  const data = summaryData.value
+
+  return {
+    today: {
+      ...data.today,
+      totalReceived: data.today[currentCurrency].totalReceived,
+      totalSettlement: data.today[currentCurrency].totalSettlement,
+      currency: summaryDisplayCurrency.value,
+    },
+    week: {
+      ...data.week,
+      totalReceived: data.week[currentCurrency].totalReceived,
+      totalSettlement: data.week[currentCurrency].totalSettlement,
+      currency: summaryDisplayCurrency.value,
+    },
+    month: {
+      ...data.month,
+      totalReceived: data.month[currentCurrency].totalReceived,
+      totalSettlement: data.month[currentCurrency].totalSettlement,
+      currency: summaryDisplayCurrency.value,
+    },
+  }
+})
 
 // Watch for wallet type changes to trigger animations
 watch(selectedWalletType, async (newType, oldType) => {
@@ -673,6 +964,18 @@ const refreshBalances = async () => {
 const navigateToHistory = () => {
   // Navigate to transaction history page
   console.log('Navigate to transaction history')
+}
+
+const copyToClipboard = async (text: string) => {
+  try {
+    await copy(text)
+    showSuccess({
+      title: t('wallet_page.copy_success', 'Copied!'),
+      description: t('wallet_page.copy_success_message', 'Account number copied to clipboard'),
+    })
+  } catch (error) {
+    console.error('Failed to copy:', error)
+  }
 }
 </script>
 
