@@ -2,170 +2,208 @@
   <USlideover
     :open="isOpen"
     @close="close"
-    title="Transaction Details"
-    :description="`Transaction ID: ${transactionId}`"
-    class="w-full sm:w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-none right-0"
+    :ui="{
+      close: 'hidden',
+    }"
+    dismissible
+    class="w-full sm:w-[90vw] md:w-[50vw] lg:w-[50vw] max-w-none right-0"
   >
+    <template #header>
+      <div class="flex items-center gap-3 px-4 py-1 sm:px-0">
+        <UButton
+          variant="ghost"
+          size="sm"
+          icon="i-heroicons-arrow-left"
+          @click="close"
+          aria-label="Close transaction details"
+          class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        />
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction Details</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Transaction No:
+            <span
+              class="text-primary dark:text-primary cursor-pointer hover:underline font-mono"
+              @click="copyToClipboard(transactionId)"
+              >{{ transactionId }}</span
+            >
+          </p>
+        </div>
+      </div>
+    </template>
     <template #body>
       <div class="flex h-full flex-col">
         <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
-          <!-- Transaction Overview -->
-          <UCard>
-            <template #header>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                Transaction Overview
-              </h3>
-            </template>
+        <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 md:space-y-6">
+          <!-- Top Section: Amount and Status -->
+          <div class="px-4 sm:px-0 mb-6">
+            <div
+              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+            >
+              <!-- Transaction Amount -->
+              <div class="text-left">
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  Transaction Amount
+                </p>
+                <div class="flex items-baseline gap-1">
+                  <span class="text-2xl font-bold text-gray-900 dark:text-white">
+                    ${{ transactionData.transactionAmount.toFixed(2) }}
+                  </span>
+                  <span class="text-lg font-medium text-gray-600 dark:text-gray-400">
+                    {{ transactionData.currency }}
+                  </span>
+                </div>
+              </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Status -->
+              <div class="flex items-center">
+                <UBadge
+                  :color="getStatusBadgeColor(transactionData.status)"
+                  variant="soft"
+                  size="lg"
+                  class="px-3 py-1"
+                >
+                  <UIcon :name="getStatusIcon(transactionData.status)" class="w-4 h-4 mr-2" />
+                  {{ transactionData.status }}
+                </UBadge>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Overview Section -->
+          <div class="px-4 sm:px-0">
+            <!-- Transaction Overview Title -->
+            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
+              Transaction Overview
+            </h4>
+
+            <!-- Divider Line -->
+            <div class="border-b border-gray-200 dark:border-gray-700 mb-6"></div>
+
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <!-- Left Column -->
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Transaction ID</label
+              <div class="space-y-0">
+                <div
+                  v-for="(field, index) in leftColumnFields"
+                  :key="index"
+                  :class="[
+                    'flex justify-between items-start py-3',
+                    index < leftColumnFields.length - 1
+                      ? 'border-b border-dotted border-gray-200 dark:border-gray-700'
+                      : '',
+                  ]"
+                >
+                  <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
+                    {{ field.label }}
+                  </span>
+
+                  <!-- Badge Type -->
+                  <UBadge
+                    v-if="field.type === 'badge'"
+                    :color="field.badgeColor"
+                    variant="soft"
+                    size="sm"
                   >
-                  <p class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ transactionId }}
-                  </p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Status</label
-                  >
-                  <UBadge color="success" variant="soft" size="lg" class="mt-1">
-                    <UIcon name="i-heroicons-check-circle" class="w-4 h-4 mr-2" />
-                    Success
+                    {{ field.value }}
                   </UBadge>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Amount</label
+
+                  <!-- Amount Type -->
+                  <span
+                    v-else-if="field.type === 'amount'"
+                    class="text-sm text-gray-900 dark:text-white"
                   >
-                  <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
-                    $100.00 USD
-                  </p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Payment Method</label
+                    {{ field.value }}
+                  </span>
+
+                  <!-- Copyable Code Type -->
+                  <span
+                    v-else-if="field.type === 'code' && field.copyable"
+                    class="text-sm text-primary dark:text-primary cursor-pointer hover:underline font-mono break-all"
+                    @click="copyToClipboard(field.rawValue || field.value)"
                   >
-                  <UBadge color="primary" variant="soft" class="mt-1">
-                    <UIcon name="i-heroicons-credit-card" class="w-4 h-4 mr-2" />
-                    Credit Card
-                  </UBadge>
+                    {{ field.value }}
+                  </span>
+
+                  <!-- Regular Text -->
+                  <span
+                    v-else
+                    :class="[
+                      'text-sm text-gray-900 dark:text-white',
+                      field.type === 'code' ? 'font-mono break-all' : '',
+                    ]"
+                  >
+                    {{ field.value }}
+                  </span>
                 </div>
               </div>
 
               <!-- Right Column -->
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Created Date</label
+              <div class="space-y-0">
+                <div
+                  v-for="(field, index) in rightColumnFields"
+                  :key="index"
+                  :class="[
+                    'flex justify-between items-start py-3',
+                    index < rightColumnFields.length - 1
+                      ? 'border-b border-dotted border-gray-200 dark:border-gray-700'
+                      : '',
+                  ]"
+                >
+                  <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
+                    {{ field.label }}
+                  </span>
+
+                  <!-- Badge Type -->
+                  <UBadge
+                    v-if="field.type === 'badge'"
+                    :color="field.badgeColor"
+                    variant="soft"
+                    size="sm"
                   >
-                  <p class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {{ new Date().toLocaleString() }}
-                  </p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Merchant</label
+                    {{ field.value }}
+                  </UBadge>
+
+                  <!-- Amount Type -->
+                  <span
+                    v-else-if="field.type === 'amount'"
+                    class="text-sm text-gray-900 dark:text-white"
                   >
-                  <p class="mt-1 text-sm text-gray-900 dark:text-white">Bill24 Demo Store</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Customer Email</label
+                    {{ field.value }}
+                  </span>
+
+                  <!-- Copyable Code Type -->
+                  <span
+                    v-else-if="field.type === 'code' && field.copyable"
+                    class="text-sm text-primary dark:text-primary cursor-pointer hover:underline font-mono break-all"
+                    @click="copyToClipboard(field.rawValue || field.value)"
                   >
-                  <p class="mt-1 text-sm text-gray-900 dark:text-white">customer@example.com</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >Reference ID</label
+                    {{ field.value }}
+                  </span>
+
+                  <!-- Regular Text -->
+                  <span
+                    v-else
+                    :class="[
+                      'text-sm text-gray-900 dark:text-white',
+                      field.type === 'code' ? 'font-mono break-all' : '',
+                    ]"
                   >
-                  <div class="mt-1 flex items-center space-x-2">
-                    <p
-                      class="text-sm text-gray-900 dark:text-white"
-                      @click="copyToClipboard(`REF-${transactionId}-2024`)"
-                    >
-                      REF-{{ transactionId }}-2024
-                    </p>
-                    <!-- <UButton
-                      variant="ghost"
-                      size="xs"
-                      icon="i-heroicons-clipboard-document"
-                      @click="copyToClipboard(`REF-${transactionId}-2024`)"
-                    /> -->
-                  </div>
+                    {{ field.value }}
+                  </span>
                 </div>
               </div>
             </div>
-          </UCard>
-
-          <!-- Customer Details -->
-          <!-- <UCard>
-            <template #header>
-              <div class="flex justify-between items-center">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Customer Details</h3>
-                <UBadge color="info" variant="soft" size="sm">
-                  <UIcon name="i-heroicons-user" class="w-4 h-4 mr-1" />
-                  Bill24 Customer
-                </UBadge>
-              </div>
-            </template>
-            <UTable
-              :rows="customerDetails"
-              :columns="customerColumns as any"
-              class="w-full"
-              hover
-              @click:row="(row: any) => onSelectCustomerDetail(row as CustomerDetail)"
-            >
-              <template #billNumber-data="{ row }">
-                <div class="flex items-center">
-                  <span>{{ (row as unknown as CustomerDetail).billNumber }}</span>
-                  <UButton
-                    variant="ghost"
-                    size="xs"
-                    icon="i-heroicons-eye"
-                    class="ml-2 text-gray-500 hover:text-blue-600"
-                    @click.stop="viewBillDetails(row as unknown as CustomerDetail)"
-                  />
-                </div>
-              </template>
-              <template #totalAmount-data="{ row }">
-                <span class="font-medium text-green-600 dark:text-green-400">{{
-                  (row as unknown as CustomerDetail).totalAmount
-                }}</span>
-              </template>
-              <template #currency-data="{ row }">
-                <UBadge color="neutral" variant="soft" size="xs">{{
-                  (row as unknown as CustomerDetail).currency
-                }}</UBadge>
-              </template>
-              <template #empty-state>
-                <div class="flex flex-col items-center justify-center py-4">
-                  <UIcon name="i-heroicons-information-circle" class="w-8 h-8 text-gray-400" />
-                  <p class="mt-2 text-sm text-gray-500">No customer details available</p>
-                </div>
-              </template>
-              <template #footer>
-                <div class="flex justify-between py-2 px-3 text-xs text-gray-500 border-t">
-                  <span>Total: 2 records</span>
-                  <span>Last updated: {{ new Date().toLocaleString() }}</span>
-                </div>
-              </template>
-            </UTable>
-          </UCard> -->
+          </div>
 
           <!-- Timeline -->
-          <UCard>
+          <!-- <UCard>
             <template #header>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                 Transaction Timeline
               </h3>
             </template>
             <div class="space-y-4">
-              <!-- Each step -->
               <div v-for="(item, index) in timeline" :key="index" class="relative flex items-start">
                 <div
                   class="relative z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-2 rounded-full"
@@ -186,21 +224,21 @@
                 </div>
               </div>
             </div>
-          </UCard>
+          </UCard> -->
         </div>
 
         <!-- Bottom Actions -->
         <div
-          class="flex justify-end space-x-2 p-3 sm:p-4 md:p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+          class="flex justify-end p-3 sm:p-4 md:p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
         >
           <UButton variant="outline" @click="exportTransaction">
             <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-2" />
             Export Details
           </UButton>
-          <UButton color="primary" @click="close">
+          <!-- <UButton color="primary" @click="close">
             <UIcon name="i-heroicons-check" class="w-4 h-4 mr-2" />
             Done
-          </UButton>
+          </UButton> -->
         </div>
       </div>
     </template>
@@ -233,7 +271,7 @@ const isOpen = computed({
 })
 
 const close = () => {
-  isOpen.value = false
+  emit('update:modelValue', false)
 }
 
 const { copy } = useClipboard()
@@ -271,71 +309,148 @@ const exportTransaction = () => {
   })
 }
 
-// Customer details handling
-const selectedCustomerDetail = ref<CustomerDetail | null>(null)
-
-const onSelectCustomerDetail = (row: CustomerDetail) => {
-  selectedCustomerDetail.value = row
-  notification.showInfo({
-    title: 'Customer Detail Selected',
-    description: `Selected bill ${row.billNumber}`,
-    duration: 3000,
-  })
+// Transaction data
+const transactionData = {
+  transactionNo: props.transactionId || 'TX000001',
+  date: '7/11/2025, 2:09:11 PM',
+  transactionType: 'Deeplink / Checkout',
+  currency: 'USD',
+  status: 'Success',
+  transactionAmount: 150.75,
+  settlementAmount: 148.25,
+  customerFee: 0.0,
+  supplierFee: 2.5,
+  bankReference: 'AC0123243253',
+  settlementBank: 'ACLEDA',
+  accountNumber: 'BANK-12345678',
 }
 
-const viewBillDetails = (row: CustomerDetail) => {
-  notification.showInfo({
-    title: 'View Bill Details',
-    description: `Viewing details for bill ${row.billNumber}`,
-    duration: 3000,
-  })
+// Helper function to get status badge color
+const getStatusBadgeColor = (
+  status: string
+): 'primary' | 'success' | 'error' | 'warning' | 'secondary' | 'info' | 'neutral' => {
+  switch (status) {
+    case 'Success':
+      return 'success'
+    case 'Failed':
+      return 'error'
+    case 'Unpaid':
+      return 'warning'
+    case 'Canceled':
+      return 'neutral'
+    case 'Expired':
+      return 'neutral'
+    case 'Reversed':
+      return 'warning'
+    default:
+      return 'neutral'
+  }
 }
 
-// Define the customer detail type
-interface CustomerDetail {
-  customerCode: string
-  billNumber: string
-  totalAmount: string
-  currency: string
+// Helper function to get transaction type badge color
+const getTransactionTypeBadgeColor = (
+  type: string
+): 'primary' | 'success' | 'error' | 'warning' | 'secondary' | 'info' | 'neutral' => {
+  switch (type) {
+    case 'Wallet Top up':
+      return 'info'
+    case 'Deeplink / Checkout':
+      return 'primary'
+    case 'Wallet Payment':
+      return 'success'
+    case 'QR Pay':
+      return 'secondary'
+    default:
+      return 'neutral'
+  }
 }
 
-// Customer details table
-const customerColumns = [
+// Helper function to get status icon
+const getStatusIcon = (status: string): string => {
+  switch (status) {
+    case 'Success':
+      return 'i-heroicons-check-circle'
+    case 'Failed':
+      return 'i-heroicons-x-circle'
+    case 'Unpaid':
+      return 'i-heroicons-clock'
+    case 'Canceled':
+      return 'i-heroicons-no-symbol'
+    case 'Expired':
+      return 'i-heroicons-calendar-x'
+    case 'Reversed':
+      return 'i-heroicons-arrow-uturn-left'
+    default:
+      return 'i-heroicons-question-mark-circle'
+  }
+}
+
+// Transaction overview fields
+const transactionOverviewFields = computed(() => [
+  // Transaction details (Amount and Status now displayed prominently at the top)
   {
-    key: 'customerCode',
-    label: 'Customer Code',
-    sortable: true,
+    label: 'Transaction No',
+    value: transactionData.transactionNo,
+    type: 'code',
+    copyable: true,
+    rawValue: transactionData.transactionNo,
   },
   {
-    key: 'billNumber',
-    label: 'Bill Number',
-    sortable: true,
+    label: 'Date',
+    value: transactionData.date,
+    type: 'text',
   },
   {
-    key: 'totalAmount',
-    label: 'Total Amount',
-    sortable: true,
+    label: 'Transaction Type',
+    value: transactionData.transactionType,
+    type: 'badge',
+    badgeColor: getTransactionTypeBadgeColor(transactionData.transactionType),
   },
   {
-    key: 'currency',
     label: 'Currency',
+    value: transactionData.currency,
+    type: 'text',
   },
-]
+  {
+    label: 'Settlement Amount',
+    value: `$${transactionData.settlementAmount.toFixed(2)} ${transactionData.currency}`,
+    type: 'amount',
+  },
+  {
+    label: 'Customer Fee',
+    value: `$${transactionData.customerFee.toFixed(2)} ${transactionData.currency}`,
+    type: 'amount',
+  },
+  {
+    label: 'Supplier Fee',
+    value: `$${transactionData.supplierFee.toFixed(2)} ${transactionData.currency}`,
+    type: 'amount',
+  },
+  {
+    label: 'Bank Reference',
+    value: transactionData.bankReference,
+    type: 'code',
+    copyable: true,
+    rawValue: transactionData.bankReference,
+  },
+  {
+    label: 'Settlement Bank',
+    value: transactionData.settlementBank,
+    type: 'text',
+  },
+  {
+    label: 'Account Number',
+    value: transactionData.accountNumber,
+    type: 'code',
+    copyable: true,
+    rawValue: transactionData.accountNumber,
+  },
+])
 
-const customerDetails: CustomerDetail[] = [
-  {
-    customerCode: 'CUST-001',
-    billNumber: `BILL-${props.transactionId}-A`,
-    totalAmount: '$75.50',
-    currency: 'USD',
-  },
-  {
-    customerCode: 'CUST-001',
-    billNumber: `BILL-${props.transactionId}-B`,
-    totalAmount: '$24.50',
-    currency: 'USD',
-  },
-]
+// Split fields into left and right columns
+// Split fields into left and right columns
+const leftColumnFields = computed(() => transactionOverviewFields.value.slice(0, 5))
+const rightColumnFields = computed(() => transactionOverviewFields.value.slice(5))
 
 // Dummy timeline data
 const timeline = [

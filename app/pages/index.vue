@@ -62,7 +62,7 @@
     <TransactionDetailDrawer
       :model-value="showTransactionDrawer"
       :transaction-id="selectedTransactionId"
-      @update:modelValue="showTransactionDrawer = $event"
+      @update:modelValue="onUpdateModelValue"
     />
   </div>
 </template>
@@ -82,6 +82,11 @@ const selectedTransactionId = ref('X001')
 const openTransactionDrawer = () => {
   selectedTransactionId.value = 'X001'
   showTransactionDrawer.value = true
+}
+
+const onUpdateModelValue = (value: boolean) => {
+  console.log('update:modelValue emitted with value:', value)
+  showTransactionDrawer.value = value
 }
 
 definePageMeta({ auth: true })

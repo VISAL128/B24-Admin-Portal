@@ -432,5 +432,14 @@
     "description": "This feature is currently being developed and will be available soon.",
     "workingOnIt": "We're working on it...",
     "goBack": "Go Back"
-  }
+  },
+
+  "bank_ref": "Bank Ref",
+  "settlement_bank": "Settlement Bank",
+  "collection_bank": "Collection Bank",
+  "settlement_type": "Settlement Type",
+  "date": "Date",
+  "sort_by": "Sort by",
+  "clear": "Clear",
+  "all": "All"
 }
