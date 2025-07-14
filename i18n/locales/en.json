@@ -73,7 +73,9 @@
     "no_records_found": "No records found",
     "loading": "Loading settlement history...",
     "total_settled": "Total Settled",
-    "total_supplier": "Total Supplier",
+    "total_supplier": "Total Biller",
+    "total_sub_biller": "Total Sub Biller",
+    "total_transactions": "Total Transactions",
     "settled_by": "Settled By",
     "total_failed": "Total Failed",
     "total_amount": "Total Amount",
@@ -160,7 +162,7 @@
     "navigation_instructions": "Use the navigation menu to explore different sections.",
     "current_version": "Current version",
     "quick_actions": "Quick Actions",
-    "generate_settlement_desc": "Generate settlement for suppliers",
+    "generate_settlement_desc": "Generate settlement for billers",
     "settings_desc": "Configure system preferences",
     "system_status": "System Status",
     "authentication": "Authentication",
@@ -178,13 +180,18 @@
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
     "settle_amount": "Settle Amount",
+    "amount": "Amount",
     "settlement_bank": "Settlement Bank",
     "status": "Status",
     "history": "History",
-    "supplier": "Main Supplier",
+    "supplier": "Biller",
     "biller": {
-      "code": "Biller Code",
-      "name": "Biller Name"
+      "code": "Sub Biller Code",
+      "name": "Sub Biller Name"
+    },
+    "sub_biller": {
+      "code": "Sub Biller Code",
+      "name": "Sub Biller Name"
     },
     "cpo": {
       "code": "CPO Code",
@@ -205,8 +212,8 @@
     "generate": {
       "steps": {
         "supplier": {
-          "title": "Supplier Selection",
-          "description": "Select the suppliers for which you want to generate the settlement."
+          "title": "Biller Selection",
+          "description": "Select the billers for which you want to generate the settlement."
         },
         "reconciliation": {
           "title": "Reconciliation",
@@ -222,15 +229,16 @@
         "next": "Next"
       },
       "form": {
+        "type": "Type",
         "total_transactions": "Total Transactions",
         "no_cpo_settlement_title": "No CPO",
         "no_cpo_settlement_message": "No CPO available for settlement.",
-        "no_cpo_settlement_description": "Please select a supplier, cutoff date, and currency. Then try again.",
-        "select_suppliers": "Select Supplier for Settlement",
-        "select_main_supplier": "Select a Main Supplier for Settlement",
+        "no_cpo_settlement_description": "Please select a biller, cutoff date, and currency. Then try again.",
+        "select_suppliers": "Select Biller for Settlement",
+        "select_main_supplier": "Select a Biller for Settlement",
         "select_cutoff_date": "Select Cut-off Date",
         "select_currency": "Select Currency",
-        "choose_suppliers": "Choose a supplier...",
+        "choose_suppliers": "Choose a biller...",
         "choose_currency": "Choose a currency...",
         "currency_options": {
           "usd": "USD",
@@ -240,12 +248,12 @@
         },
         "select_date": "Select a date",
         "cpo_list": "Cpo List",
-        "supplier_code": "Supplier Code",
-        "supplier_name": "Supplier Name",
+        "supplier_code": "Biller Code",
+        "supplier_name": "Biller Name",
         "cpo_code": "CPO Code",
         "cpo_name": "CPO Name",
-        "biller_code": "Biller Code",
-        "biller_name": "Biller Name",
+        "biller_code": "Sub Biller Code",
+        "biller_name": "Sub Biller Name",
         "biller_list": "Biller List",
         "phone": "Phone",
         "email": "Email",
@@ -255,17 +263,18 @@
         "settle_to_bank": "Settle To Bank",
         "actions": "Actions",
         "view": "View",
+        "view_details": "View Details",
+        "bank": "Bank",
+        "back": "Back",
         "viewing": "Viewing",
         "transaction_date": "Transaction Date",
         "date": "Date",
         "bank_ref": "Bank Ref",
-        "bank_name": "Bank Name",
         "transaction_amount": "Transaction Amount",
         "transaction_history": "Transaction History",
-        "back": "Back",
         "reconcile_settle": "Reconcile & Settle",
-        "confirm_settlement": "Confirm To Settlement",
-        "settlement_request_successful": "Settlement Request Successful!",
+        "confirm_settlement": "Confirm to settlement",
+        "settlement_request_successful": "Settlement request successful!",
         "settlement_request_message": "Your settlement request has been submitted successfully.",
         "done": "Done",
         "back_to_list": "Back to List",
@@ -285,7 +294,7 @@
           "no": "No"
         },
         "total_amount": "Total Amount",
-        "loading_suppliers": "Loading Suppliers...",
+        "loading_suppliers": "Loading Billers...",
         "time_period": "Time Period",
         "time_format": {
           "12h": "12-hour format",
@@ -366,10 +375,35 @@
   "settlement_history_title": "Settlement History",
   "settlement_history_subtitle": "Generated on {date}",
   "splash": {
-    "title": "Bill24 Admin Portal",
+    "title": "Bill24 Payment Management Portal",
     "subtitle": "Management & Settlement Platform",
     "loading": "Initializing...",
     "version": "Version"
+  },
+  "profile_error": {
+    "title": "Profile Access Error",
+    "message": "We're unable to retrieve your profile information. This prevents you from accessing the system safely.",
+    "possible_reasons": "Possible reasons:",
+    "reason_1": "Your profile may not exist in the system",
+    "reason_2": "Network connectivity issues",
+    "reason_3": "Temporary server problems",
+    "try_again": "Try Again",
+    "retrying": "Retrying...",
+    "contact_support": "Contact Support",
+    "logout": "Logout",
+    "support_info": "If this problem persists, please contact our support team for assistance."
+  },
+  "profile_error_test": {
+    "title": "Profile Error System Test",
+    "current_status": "Current Profile Status",
+    "profile_exists": "Profile Exists",
+    "profile_valid": "Profile Valid",
+    "test_actions": "Test Actions",
+    "simulate_error": "Simulate Profile Error",
+    "clear_profile": "Clear Profile Data",
+    "check_profile": "Check Profile Status",
+    "note_title": "Note",
+    "note_message": "This page is for testing the profile error handling system. Use the buttons above to simulate different profile error scenarios."
   },
   "transaction_date": "Transaction Date",
   "number_of_transaction": "Number of Transactions",
@@ -381,5 +415,40 @@
     "description": "This feature is currently being developed and will be available soon.",
     "workingOnIt": "We're working on it...",
     "goBack": "Go Back"
+  },
+  "test": {
+    "server_auth": {
+      "title": "Server Authentication Test",
+      "description": "Test server-side authentication middleware and API endpoints with different permission levels.",
+      "auth_status": "Authentication Status",
+      "authenticated": "Authenticated",
+      "not_authenticated": "Not Authenticated",
+      "anonymous_user": "Anonymous User",
+      "api_tests": "API Tests",
+      "health_check": "Health Check",
+      "health_description": "Public endpoint with optional auth",
+      "user_profile": "User Profile",
+      "profile_description": "Requires authentication",
+      "suppliers": "Billers",
+      "suppliers_description": "Requires 'suppliers.read' permission",
+      "settlement_operations": "Settlement Operations",
+      "read_settlements": "Read Settlements",
+      "read_description": "Requires 'settlements.read' permission",
+      "create_settlements": "Create Settlements",
+      "write_description": "Requires 'settlements.write' permission",
+      "execute_settlements": "Execute Settlements",
+      "execute_description": "Requires 'settlements.execute' permission",
+      "delete_settlements": "Delete Settlements",
+      "delete_description": "Requires 'admin' role",
+      "test_api": "Test API",
+      "test_read": "Test Read",
+      "test_write": "Test Write",
+      "test_execute": "Test Execute",
+      "test_delete": "Test Delete",
+      "test_success": "Test Successful",
+      "test_failed": "Test Failed",
+      "api_success": "API test '{api}' completed successfully",
+      "api_error": "API test '{api}' failed"
+    }
   }
 }
