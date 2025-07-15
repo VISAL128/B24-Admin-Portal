@@ -67,13 +67,13 @@
                   </span>
 
                   <!-- Copyable Code Type -->
-                  <span
+                  <CopyableText
                     v-else-if="field.type === 'code' && field.copyable"
-                    class="text-sm text-primary dark:text-primary cursor-pointer hover:underline font-mono break-all"
-                    @click="copyToClipboard(field.rawValue || field.value)"
-                  >
-                    {{ field.value }}
-                  </span>
+                    :text="field.rawValue || field.value"
+                    :display-text="field.value"
+                    text-class="text-sm text-primary dark:text-primary"
+                    font-class="font-mono break-all"
+                  />
 
                   <!-- Grey Text -->
                   <span
@@ -128,13 +128,13 @@
                   </span>
 
                   <!-- Copyable Code Type -->
-                  <span
+                  <CopyableText
                     v-else-if="field.type === 'code' && field.copyable"
-                    class="text-sm text-primary dark:text-primary cursor-pointer hover:underline font-mono break-all"
-                    @click="copyToClipboard(field.rawValue || field.value)"
-                  >
-                    {{ field.value }}
-                  </span>
+                    :text="field.rawValue || field.value"
+                    :display-text="field.value"
+                    text-class="text-sm text-primary dark:text-primary"
+                    font-class="font-mono break-all"
+                  />
 
                   <!-- Regular Text -->
                   <span
@@ -308,6 +308,7 @@
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
+import CopyableText from '~/components/CopyableText.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
 import { useClipboard } from '~/composables/useClipboard'
@@ -404,7 +405,7 @@ const transactionAllocateData: TransactionAllocateData[] = [
     id: '1',
     customer: 'John Doe',
     transactionAmount: 50.0,
-    billerName: 'GreenCharge Cambodia (Station A)',
+    billerName: 'Charge Station A',
     amount: 25.0,
     outstandingAmount: 25.0,
     currency: 'USD',
@@ -625,7 +626,7 @@ const webhookColumns = [
   },
   {
     id: 'date',
-    header: () => 'Datetime',
+    header: () => 'Date',
     accessorKey: 'date',
     size: 150,
   },
@@ -634,17 +635,11 @@ const webhookColumns = [
     header: () => 'Status',
     accessorKey: 'status',
     cell: ({ row }: any) =>
-      h(
-        'button',
-        {
-          class: `inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-default ${
-            row.original.status === 'Failed'
-              ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-              : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-          }`,
-        },
-        row.original.status
-      ),
+      h(StatusBadge, {
+        status: row.original.status,
+        variant: 'table',
+        size: 'sm',
+      }),
     size: 100,
   },
   {
@@ -652,20 +647,13 @@ const webhookColumns = [
     header: () => 'Webhook URL',
     accessorKey: 'url',
     cell: ({ row }: any) =>
-      h(
-        'a',
-        {
-          href: row.original.url,
-          target: '_blank',
-          class: 'text-primary hover:underline text-sm truncate block max-w-[200px] cursor-pointer',
-          title: row.original.url,
-          onClick: (e: Event) => {
-            e.preventDefault()
-            copyToClipboard(row.original.url)
-          },
-        },
-        row.original.url
-      ),
+      h(CopyableText, {
+        text: row.original.url,
+        displayText: row.original.url,
+        textClass: 'text-primary hover:underline text-sm truncate block max-w-[200px]',
+        fontClass: '',
+        notificationTitle: 'URL Copied!',
+      }),
     size: 200,
   },
   {
@@ -674,39 +662,39 @@ const webhookColumns = [
     accessorKey: 'payload',
     cell: ({ row }: any) => {
       const parsedPayload = JSON.parse(row.original.payload)
-      return h(
-        'div',
-        { class: 'space-y-1 cursor-pointer', onClick: () => copyToClipboard(row.original.payload) },
-        [
-          h(
-            'div',
-            {
-              class:
-                'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
-            },
-            [
-              h('span', { class: 'font-medium' }, 'Transaction ID: '),
-              h('span', { class: 'font-mono' }, parsedPayload.transaction_id),
-            ]
-          ),
-          h(
-            'div',
-            {
-              class:
-                'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
-            },
-            [
-              h('span', { class: 'font-medium' }, 'Status: '),
-              h(StatusBadge, {
-                status: parsedPayload.status,
-                variant: 'table',
-                size: 'sm',
-              }),
-            ]
-          ),
-          h('div', { class: 'text-xs text-gray-400 mt-1 italic' }, 'Click to copy full payload'),
-        ]
-      )
+      return h('div', { class: 'space-y-1' }, [
+        h(
+          'div',
+          {
+            class: 'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
+          },
+          [
+            h('span', { class: 'font-medium' }, 'Transaction ID: '),
+            h('span', { class: 'font-mono' }, parsedPayload.transaction_id),
+          ]
+        ),
+        h(
+          'div',
+          {
+            class: 'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
+          },
+          [
+            h('span', { class: 'font-medium' }, 'Status: '),
+            h(StatusBadge, {
+              status: parsedPayload.status,
+              variant: 'table',
+              size: 'sm',
+            }),
+          ]
+        ),
+        h(CopyableText, {
+          text: row.original.payload,
+          displayText: 'Click to copy full payload',
+          textClass: 'text-xs text-gray-400 italic',
+          fontClass: '',
+          notificationTitle: 'Payload Copied!',
+        }),
+      ])
     },
     size: 250,
   },
