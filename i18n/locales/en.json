@@ -13,7 +13,9 @@
     "settings": "Settings",
     "subtitle": "Manage your information and settings",
     "edit_profile": "Edit Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "current_profile": "Current Profile",
+    "business_profile": "Business Profile"
   },
   "lang": {
     "english": "English",

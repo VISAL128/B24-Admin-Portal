@@ -139,6 +139,34 @@
                             </span>
                           </div>
                         </div>
+
+                        <!-- Current Profile Section -->
+                        <div
+                          v-if="auth.currentProfile.value"
+                          class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-600"
+                        >
+                          <div class="flex flex-col gap-1">
+                            <span
+                              class="text-xs font-medium text-gray-600 dark:text-gray-400 tracking-wide"
+                            >
+                              {{ t('profile_popup.business_profile') }}
+                            </span>
+                            <div class="flex pl-3 items-center gap-2">
+                              <Icon
+                                name="heroicons:building-office"
+                                class="w-4 h-4 text-primary"
+                              />
+                              <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                  {{ auth.currentProfile.value.name }}
+                                </span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                  {{ auth.currentProfile.value.code }}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
                       <!-- Menu Items -->
@@ -287,13 +315,9 @@ const closeConfirmationModal = () => {
 
 const handleLogout = async () => {
   try {
-    console.log('🔄 User initiated logout...')
     await auth.logout()
-    // Don't manually navigate - let the auth composable handle the redirect
   } catch (error) {
     console.error('Logout failed:', error)
-    // Fallback: navigate to logout page if auth.logout fails
-    await navigateTo('/logout', { replace: true })
   }
 }
 

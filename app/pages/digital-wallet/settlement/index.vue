@@ -45,6 +45,9 @@
       ref="table"
       :data="filteredData"
       :columns="columns"
+      :loading="loading"
+      :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+      :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
       sticky
       class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
     >

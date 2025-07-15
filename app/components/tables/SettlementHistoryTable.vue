@@ -51,7 +51,9 @@ watch(
   },
   { deep: true, immediate: true }
 )
-const pageSize = ref<{ label: string; value: number }>({ label: '10', value: 10 })
+const pageSize = ref<{ label: string; value: number }>(props.currentQuery.page_size
+  ? { label: props.currentQuery.page_size.toString(), value: props.currentQuery.page_size }
+  : APP_CONSTANTS.DEFAULT_PAGE_SIZE)
 const onPageSizeChange = () => {
   settlementHistoryQuery.value.page = 1
   settlementHistoryQuery.value.page_size = pageSize.value?.value || 10
@@ -345,7 +347,7 @@ const allocationColumns = ref<TableColumn<TransactionAllocation>[]>([
       </template>
     </USlideover>
     <template #footer>
-      <div class="flex items-center gap-4">
+      <div v-if="false" class="flex items-center gap-4">
         <USelectMenu
           v-model="pageSize"
           :items="APP_CONSTANTS.DEFAULT_PAGE_SIZE_OPTIONS"

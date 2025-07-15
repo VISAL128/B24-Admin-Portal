@@ -20,7 +20,7 @@
 const colorMode = useColorMode()
 
 // Splash screen management
-const { showSplash, onSplashComplete, checkAppReadiness } = useSplashScreen()
+const { showSplash, onSplashComplete } = useSplashScreen()
 
 // Initialize theme on app startup
 onMounted(async () => {
@@ -30,8 +30,6 @@ onMounted(async () => {
   if (storedPreferences?.theme) {
     colorMode.preference = storedPreferences.theme
   }
-
-  // Check app readiness for splash screen
-  await checkAppReadiness()
+  // App readiness check is now handled by SplashScreen component
 })
 </script>

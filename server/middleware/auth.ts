@@ -73,9 +73,9 @@ interface KeycloakJwtPayload extends JwtPayload {
 async function extractToken(event: any): Promise<string | null> {
   const session = await getUserSession(event)
 
-  if (!session?.idToken) return null
+  if (!session?.accessToken) return null
 
-  return session.idToken
+  return session.accessToken
 }
 
 /**
@@ -218,6 +218,7 @@ export default defineEventHandler(async (event) => {
   try {
     // Extract token from request
     const token = await extractToken(event)
+    console.log('🔑 Extracted token:', token)
 
     if (!token) {
       // No token provided - set anonymous context

@@ -27,10 +27,11 @@ const supplierApi = useSupplierApi()
 const auth = useAuth()
 const { t, locale: i18nLocale } = useI18n()
 
-
 // Load user preferences for time format
 const userPreferences = useUserPreferences().getPreferences()
 const { createSortableHeader, createRowNumberCell } = useTable<Settlement>()
+
+const isLoadingCpoList = ref(false)
 
 // Create a CalendarDate for today in the local time zone
 const today = new Date()
@@ -627,6 +628,7 @@ watch(
 
 // Update handleSupplierMenuChanged to work with default supplier
 const handleSupplierMenuChanged = async () => {
+  isLoadingCpoList.value = true
   // Reset CPO list and selection when suppliers change
   cpoList.value = []
   selectedCpo.value = []
@@ -650,6 +652,8 @@ const handleSupplierMenuChanged = async () => {
     toggleAllSelection(true)
     selectedCpo.value = [...cpoList.value]
   }
+
+  isLoadingCpoList.value = false
 }
 
 // Fetch inquiry settlement CPOs
@@ -1006,6 +1010,9 @@ definePageMeta({
                         v-model:row-pinning="rowPinning"
                         :data="filteredCpoList"
                         :columns="columns"
+                        :loading="isLoadingCpoList"
+                        :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+                        :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
                         sticky
                         class="min-w-[800px] w-full"
                         @row:click="(row: Cpo) => toggleRowSelection(row)"

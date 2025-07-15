@@ -3,7 +3,6 @@
  * Handles profile-related errors and validation logic
  */
 
-import type { PgwModuleResponse } from '~/models/baseModel'
 import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 
 export const useProfileValidation = () => {
@@ -11,20 +10,10 @@ export const useProfileValidation = () => {
    * Validate if profile data is valid and complete
    */
   const validateProfile = (
-    profile: PgwModuleResponse<PgwModuleProfile> | null | undefined
+    profile: PgwModuleProfile | null | undefined
   ): boolean => {
     if (!profile) {
       console.error('Profile validation failed: Profile is null or undefined')
-      return false
-    }
-
-    if (profile.code !== '000') {
-      console.error('Profile validation failed: Invalid response code', profile.code)
-      return false
-    }
-
-    if (!profile.data) {
-      console.error('Profile validation failed: Profile data is missing')
       return false
     }
 
