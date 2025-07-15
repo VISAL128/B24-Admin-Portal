@@ -33,7 +33,7 @@
       </div>
 
       <!-- Main content area -->
-      <div class="flex flex-col h-full w-full rounded-lg">
+      <div class="flex flex-col h-full w-full overflow-x-hidden">
         <div class="flex-row">
           <UCard class="top-0 right-0 z-50" variant="soft">
             <div class="flex flex-row items-center justify-between gap-2 w-full h-5">
