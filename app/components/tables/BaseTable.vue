@@ -1,11 +1,21 @@
 <template>
-        <div
-        class="flex flex-wrap items-center justify-between gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
-      >
+  <!-- Unified Card Container -->
+  <div
+    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow p-6 space-y-4"
+  >
+    <!-- Filter / Sort / Column Configuration -->
+    <div class="flex justify-between flex-wrap items-start gap-4">
+      <!-- 🔍 Filter Buttons -->
+      <div class="flex gap-2 flex-wrap items-center">
         <div class="flex flex-wrap items-center gap-2">
           <UInput v-model="search" :placeholder="t('search_by_settler')" class="w-64" />
           <UPopover>
-            <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
+            <UButton
+              color="neutral"
+              variant="subtle"
+              icon="i-lucide-calendar"
+              class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700"
+            >
               <template v-if="modelValue.start">
                 <template v-if="modelValue.end">
                   {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
@@ -24,119 +34,67 @@
               <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
             </template>
           </UPopover>
+          <UButton variant="ghost" class="p-2" @click="showAdvancedOptions = true">
+            <UIcon name="i-lucide:filter" class="w-4 h-4" />
+          </UButton>
         </div>
-        <div class="flex items-center gap-2">
-        </div>
-      </div>
-  <!-- Unified Card Container -->
-  <div
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow p-4 space-y-4"
-  >
-    <!-- Filter / Sort / Column Configuration -->
-    <div class="flex justify-between flex-wrap items-start gap-4">
-      <!-- 🔍 Filter Buttons -->
-      <div class="flex gap-2 flex-wrap items-center">
         <template v-for="col in filteredColumns" :key="col.id">
           <template v-if="col.enableColumnFilter">
-            <UPopover v-model:open="filterPopoverOpen[col.id]">
-              <UButton variant="outline" class="w-40 justify-between">
-                {{ columnFilters[col.id] || getColumnLabel(col) }}
-                <UIcon name="i-lucide-chevron-down" class="w-4 h-4 ml-auto" />
-              </UButton>
-              <template #content>
-                <div
-                  class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-2 space-y-1"
-                >
-                  <div
-                    v-for="option in [
-                      { label: t('all'), value: '' },
-                      ...getColumnFilterOptions(col),
-                    ]"
-                    :key="option.value"
-                    @click="
-                      () => {
-                        columnFilters[col.id] = option.value
-                        emit('filter-change', col.id, option.value)
-                        filterPopoverOpen[col.id] = false
-                      }
-                    "
-                    :class="[
-                      'px-3 py-2 rounded cursor-pointer text-sm',
-                      columnFilters[col.id] === option.value
-                        ? 'bg-primary text-white dark:bg-primary dark:text-white'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800',
-                    ]"
-                  >
-                    {{ option.label }}
-                  </div>
-                </div>
-              </template>
-            </UPopover>
+            <USelectMenu
+              :model-value="{
+                label: columnFilters[col.id] || getColumnLabel(col),
+                value: columnFilters[col.id] || '',
+              }"
+              :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
+              option-attribute="label"
+              value-attribute="value"
+              class="w-40"
+              :search-input="false"
+              @update:modelValue="
+                (val) => {
+                  columnFilters[col.id] = val?.value || ''
+                  emit('filter-change', col.id, columnFilters[col.id] || '')
+                }
+              "
+            />
           </template>
         </template>
 
         <!-- 🧭 Sort Popover -->
-        <UPopover>
-          <UButton
-            variant="outline"
-            class="flex items-center justify-between gap-2 whitespace-nowrap"
-          >
-            {{ selectedSortLabel || t('sort_by') }}
-            <UIcon name="i-lucide-chevron-down" class="w-4 h-4" />
-          </UButton>
-
-          <template #content>
-            <div
-              class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-2 w-64 space-y-1"
-            >
-              <div
-                @click="clearSort"
-                class="px-3 py-2 rounded cursor-pointer text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                {{ t('clear') }}
-              </div>
-
-              <div
-                v-for="item in sortableColumnOptions"
-                :key="item.value"
-                @click="toggleSort(item.value)"
-                class="flex justify-between items-center px-3 py-2 rounded cursor-pointer text-sm"
-                :class="[
-                  selectedSortField === item.value
-                    ? 'bg-primary text-white'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800',
-                ]"
-              >
-                <span>{{ item.label }}</span>
-                <span>
-                  <UIcon
-                    v-if="selectedSortField === item.value && selectedSortDirection === 'asc'"
-                    name="i-lucide-arrow-up"
-                    class="w-4 h-4"
-                  />
-                  <UIcon
-                    v-else-if="selectedSortField === item.value && selectedSortDirection === 'desc'"
-                    name="i-lucide-arrow-down"
-                    class="w-4 h-4"
-                  />
-                </span>
-              </div>
+        <!-- 🧭 Sort Select Menu -->
+        <!-- 🧭 Sort Select Menu -->
+        <USelectMenu
+          :model-value="{
+            label: selectedSortLabel || t('sort_by'),
+            value: selectedSortField ? `${selectedSortField}:${selectedSortDirection}` : '',
+            icon: selectedSortField
+              ? selectedSortDirection === 'asc'
+                ? 'i-lucide-arrow-up'
+                : 'i-lucide-arrow-down'
+              : '',
+          }"
+          :items="sortMenuItems"
+          option-attribute="label"
+          value-attribute="value"
+          class="w-40"
+          :search-input="false"
+          @update:modelValue="handleSortMenuChange"
+        >
+          <template #item="{ item }">
+            <div class="flex items-center justify-between w-full">
+              <span>{{ item.label }}</span>
+              <UIcon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
             </div>
           </template>
-        </UPopover>
+        </USelectMenu>
       </div>
 
       <!-- ⚙️ Column Configuration -->
       <div class="flex justify-end">
         <UPopover>
-          <UButton
-            icon="i-lucide:settings"
-            variant="outline"
-            class="flex items-center justify-between gap-2 whitespace-nowrap"
-          >
-            Columns Configuration
+          <UButton variant="ghost" class="p-2">
+            <UIcon name="i-lucide:settings" class="w-4 h-4 text-gray-900 dark:text-white" />
           </UButton>
-
           <template #content>
             <div
               class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-4 min-w-[200px] space-y-2"
@@ -168,29 +126,38 @@
     </div>
 
     <!-- 📋 Main Table -->
-    <UTable
-      :key="filteredColumns.length + '-' + visibleColumnIds.join(',')"
-      ref="tableRef"
-      :data="filteredData"
-      :columns="filteredColumns"
-      :sort="sortState"
-      @update:sort="handleSortChange"
-      sticky
-      class="flex-1 overflow-auto"
-      :class="borderClass"
-      @select=onSelect
-    >
-
-      <template #empty>
-        <slot name="empty">
-          <div class="text-center text-sm text-gray-500 dark:text-gray-400 py-4">
-            No data available.
+    <div class="w-full overflow-x-auto">
+      <UTable
+        :key="filteredColumns.length + '-' + visibleColumnIds.join(',')"
+        ref="tableRef"
+        :data="filteredData"
+        :columns="filteredColumns"
+        :sort="sortState"
+        @update:sort="handleSortChange"
+        sticky
+        class="min-w-[800px]"
+        :class="borderClass"
+        @select="onSelect"
+      >
+        <template #cell="{ row, column }">
+          <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
+            <span class="block">
+              {{ (row.original as any)[column.id] }}
+            </span>
           </div>
-        </slot>
-      </template>
+        </template>
 
-      <slot />
-    </UTable>
+        <template #empty>
+          <slot name="empty">
+            <div class="text-center text-sm text-gray-500 dark:text-gray-400 py-4">
+              No data available.
+            </div>
+          </slot>
+        </template>
+
+        <slot />
+      </UTable>
+    </div>
   </div>
 </template>
 
@@ -199,7 +166,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import type { BaseTableColumn } from '~/components/tables/table'
 import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
-  import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
 const selectedSortFieldLabel = computed(() => {
   return (
@@ -214,15 +181,15 @@ const sortDirectionLabel = computed(() => {
   )
 })
 
-  const search = ref('')
-  const startDate = ref('')
-  const endDate = ref('')
-    const df = new DateFormatter('en-US', { dateStyle: 'medium' })
-  const today = new Date()
-    const modelValue = shallowRef({
-    start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-    end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-  })
+const search = ref('')
+const startDate = ref('')
+const endDate = ref('')
+const df = new DateFormatter('en-US', { dateStyle: 'medium' })
+const today = new Date()
+const modelValue = shallowRef({
+  start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+  end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+})
 const selectedSortField = ref<string | null>(null)
 const selectedSortDirection = ref<'asc' | 'desc'>('asc')
 
@@ -233,12 +200,14 @@ const selectedSortLabel = computed(() => {
   return `${col.label} (${dir})`
 })
 
+const showAdvancedOptions = ref(false)
+
 const emit = defineEmits<{
   (e: 'filter-change', columnId: string, value: string): void
   (e: 'sort-change', columnId: string, direction: 'asc' | 'desc' | null): void
   (e: 'row-click', rowData: any): void
-    (e: 'search-change', value: string): void        // ✅ Add this
-  (e: 'date-range-change', value: { start: string; end: string }): void // ✅ Add this
+  (e: 'search-change', value: string): void
+  (e: 'date-range-change', value: { start: string; end: string }): void
 }>()
 
 const sortState = ref<{ column: string; direction: 'asc' | 'desc' | null } | null>(null)
@@ -297,10 +266,52 @@ const sortableColumnOptions = computed(() =>
     }))
 )
 
+// Interface for sort menu items to ensure consistent typing
+interface SortMenuItem {
+  label: string
+  value: string
+  icon?: string
+}
+
+// Computed property for sort menu items
+const sortMenuItems = computed<SortMenuItem[]>(() => {
+  return [
+    { label: t('clear'), value: '' }, // No icon for clear option
+    ...sortableColumnOptions.value.map((col) => ({
+      label: col.label,
+      value: col.value,
+      icon:
+        selectedSortField.value === col.value
+          ? selectedSortDirection.value === 'asc'
+            ? 'i-lucide-arrow-up'
+            : 'i-lucide-arrow-down'
+          : undefined,
+    })),
+  ]
+})
+
+// Handler for sort menu changes
+function handleSortMenuChange(val: { value: string }) {
+  if (!val?.value) {
+    // Clear sort
+    clearSort()
+    return
+  }
+
+  const columnId = val.value
+  toggleSort(columnId)
+}
+
+// Reuse the existing toggleSort function
 function toggleSort(columnId: string) {
   if (selectedSortField.value === columnId) {
-    // Toggle direction
-    selectedSortDirection.value = selectedSortDirection.value === 'asc' ? 'desc' : 'asc'
+    // Toggle direction or clear if already descending
+    if (selectedSortDirection.value === 'asc') {
+      selectedSortDirection.value = 'desc'
+    } else {
+      clearSort()
+      return
+    }
   } else {
     // Set new column and default to asc
     selectedSortField.value = columnId
