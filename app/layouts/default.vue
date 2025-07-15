@@ -247,7 +247,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { locale, t } = useI18n()
-const { setLanguage, initializeLanguage } = useLanguage()
+const { setLanguage } = useLanguage()
 const popoverRef = ref<{ close: () => void } | null>(null)
 const logoutEmit = defineEmits<{ close: [boolean] }>()
 const runtimeCon = useRuntimeConfig()
@@ -260,11 +260,6 @@ const isShowLogoutConfirmModal = ref(false)
 
 const auth = useAuth()
 const user = auth.user
-
-// Initialize language on mount
-onMounted(() => {
-  initializeLanguage()
-})
 
 const colorMode = useColorMode ? useColorMode() : null
 const toggleTheme = () => {
