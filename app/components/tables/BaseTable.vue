@@ -60,8 +60,6 @@
           </template>
         </template>
 
-        <!-- 🧭 Sort Popover -->
-        <!-- 🧭 Sort Select Menu -->
         <!-- 🧭 Sort Select Menu -->
         <USelectMenu
           :model-value="{
@@ -126,7 +124,7 @@
     </div>
 
     <!-- 📋 Main Table -->
-    <div class="w-full overflow-x-auto">
+    <div class="overflow-x-auto max-w-full">
       <UTable
         :key="filteredColumns.length + '-' + visibleColumnIds.join(',')"
         ref="tableRef"
@@ -135,7 +133,7 @@
         :sort="sortState"
         @update:sort="handleSortChange"
         sticky
-        class="min-w-[800px]"
+        class="min-w-[800px] single-line-headers"
         :class="borderClass"
         @select="onSelect"
       >
@@ -160,7 +158,6 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import type { BaseTableColumn } from '~/components/tables/table'
@@ -442,3 +439,9 @@ defineExpose({
   clearSelection: () => tableRef.value?.tableApi?.resetRowSelection?.(),
 })
 </script>
+
+<style scoped>
+.single-line-headers :deep(th) {
+  white-space: nowrap;
+}
+</style>

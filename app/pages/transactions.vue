@@ -252,6 +252,8 @@ const fetchTransactionHistory = async () => {
       currency_id: i % 2 === 0 ? 'USD' : 'KHR',
       status: ['completed', 'pending', 'failed'][i % 3] as string,
       settled_by: `User ${i + 1}`,
+      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4],
+      sub_biller: `Sub Biller ${i + 1}`,
     }))
 
     // ✅ Paging
@@ -614,6 +616,26 @@ const columns: BaseTableColumn<any>[] = [
     ],
     enableSorting: true,
   },
+  {
+    id: 'transaction_type',
+    accessorKey: 'transaction_type',
+    header: t('transaction_type'),
+    enableSorting: true,
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: 'Wallet Top up', value: 'Wallet Top up' },
+      { label: 'Deeplink / Checkout', value: 'Deeplink / Checkout' },
+      { label: 'Wallet Payment', value: 'Wallet Payment' },
+      { label: 'QR Pay', value: 'QR Pay' },
+    ],
+  },
+  {
+    id: 'sub_biller',
+    accessorKey: 'sub_biller',
+    header: t('sub_biller'),
+    enableSorting: true,
+  },
+
   // { id: 'created_by', accessorKey: 'created_by', header: t('settled_by') },
   {
     id: 'status',
