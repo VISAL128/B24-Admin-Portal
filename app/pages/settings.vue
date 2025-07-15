@@ -1,22 +1,19 @@
 <script setup lang="ts">
 import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
 import type { UserPreferences } from '~/models/userPreference'
-import { useDateFormat } from '@vueuse/core'
 import { useFormat } from '~/composables/utils/useFormat'
 
 definePageMeta({
-  auth: true
+  auth: true,
 })
 
 const { t, locale, setLocale } = useI18n()
 const colorMode = useColorMode()
 
 useHead({
-  title: `${t('settings.title')} - Bill24 Admin Portal`
+  title: `${t('settings.title')} - Bill24 Admin Portal`,
 })
 
-
-const isLoading = ref(false)
 const isSaving = ref(false)
 const showSuccessMessage = ref(false)
 const showErrorMessage = ref(false)
@@ -28,24 +25,30 @@ type Option = { label: string; value: string }
 type DateAndTimeOption = { label: string; value: 'short' | 'medium' | 'long' | 'full' }
 
 const selectedLanguage = ref<Option>({ label: t('settings.languages.en'), value: 'en' })
-const selectedDateFormat = ref<DateAndTimeOption>({ label: t('settings.date_format_short'), value: 'short' })
-const selectedTimeFormat = ref<DateAndTimeOption>({ label: t('settings.time_format_short'), value: 'short' })
+const selectedDateFormat = ref<DateAndTimeOption>({
+  label: t('settings.date_format_short'),
+  value: 'short',
+})
+const selectedTimeFormat = ref<DateAndTimeOption>({
+  label: t('settings.time_format_short'),
+  value: 'short',
+})
 const selectedHourFormat = ref<Option>({ label: t('settings.hour_format_12h'), value: '12h' })
 const selectedCurrency = ref<Option>({ label: t('settings.currencies.usd'), value: 'USD' })
 
 // Load preferences from localStorage or use defaults
 const loadPreferences = (): UserPreferences => {
   const stored = storage.getItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
-  const basePreferences = stored ? { ...DEFAULT_USER_PREFERENCES, ...stored } : { ...DEFAULT_USER_PREFERENCES }
+  return stored || DEFAULT_USER_PREFERENCES
+  // const basePreferences = stored
+  //   ? { ...DEFAULT_USER_PREFERENCES, ...stored }
+  //   : { ...DEFAULT_USER_PREFERENCES }
 
-  // Sync language with current i18n locale
-  basePreferences.language = locale.value
-  
-  // Sync theme with current color mode
-  basePreferences.theme = colorMode.preference as 'light' | 'dark' | 'system'
-  basePreferences.dateFormat = selectedDateFormat.value.value || 'short'
-  basePreferences.timeFormat = selectedTimeFormat.value.value || 'short'
-  return basePreferences
+  // // Sync theme with current color mode
+  // basePreferences.theme = colorMode.preference as 'light' | 'dark' | 'system'
+  // basePreferences.dateFormat = selectedDateFormat.value.value || 'short'
+  // basePreferences.timeFormat = selectedTimeFormat.value.value || 'short'
+  // return basePreferences
 }
 
 const preferences = ref<UserPreferences>(loadPreferences())
@@ -56,76 +59,41 @@ const languageOptions = computed<Option[]>(() => [
   { value: 'km', label: t('settings.languages.km') },
 ])
 
-// Make other options reactive to locale changes
-const timezoneOptions = computed(() => [
-  { value: 'UTC', label: t('settings.timezones.utc') },
-  { value: 'Asia/Phnom_Penh', label: t('settings.timezones.cambodia') },
-  { value: 'Asia/Bangkok', label: t('settings.timezones.thailand') },
-  { value: 'Asia/Ho_Chi_Minh', label: t('settings.timezones.vietnam') }
-])
-
-const dateFormatOptions = [
+const dateFormatOptions = computed(() => [
   { value: 'short', label: t('settings.date_format_short') },
   { value: 'medium', label: t('settings.date_format_medium') },
   { value: 'long', label: t('settings.date_format_long') },
-  { value: 'full', label: t('settings.date_format_full') }
-  // { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-  // { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-  // { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }
-]
+  { value: 'full', label: t('settings.date_format_full') },
+])
 
 const timeFormatOptions = computed(() => [
   { value: 'short', label: t('settings.time_format_short') },
   { value: 'medium', label: t('settings.time_format_medium') },
   { value: 'long', label: t('settings.time_format_long') },
-  { value: 'full', label: t('settings.time_format_full') }
+  { value: 'full', label: t('settings.time_format_full') },
   // { value: '24h', label: t('settings.time_format_24h') },
   // { value: '12h', label: t('settings.time_format_12h') }
 ])
 
 const hourFormatOptions = computed(() => [
   { value: '12h', label: t('settings.hour_format_12h') },
-  { value: '24h', label: t('settings.hour_format_24h') }
+  { value: '24h', label: t('settings.hour_format_24h') },
 ])
 
 const currencyOptions = computed(() => [
   { value: 'KHR', label: t('settings.currencies.khr') },
-  { value: 'USD', label: t('settings.currencies.usd') }
+  { value: 'USD', label: t('settings.currencies.usd') },
 ])
 
-// Watch for language changes and update i18n locale
-watch(() => preferences.value.language, (newLanguage) => {
-  if (newLanguage !== locale.value) {
-    setLocale(newLanguage as 'en' | 'km')
-    // Also update localStorage for the language
-    try {
-      localStorage.setItem('user-lang', newLanguage)
-    } catch (e) {
-      console.error('Failed to save language preference:', e)
+// Watch for theme changes and update color mode
+watch(
+  () => preferences.value.theme,
+  (newTheme) => {
+    if (newTheme !== colorMode.preference) {
+      colorMode.preference = newTheme
     }
   }
-})
-
-// Watch for theme changes and update color mode
-watch(() => preferences.value.theme, (newTheme) => {
-  if (newTheme !== colorMode.preference) {
-    colorMode.preference = newTheme
-  }
-})
-
-// Watch for i18n locale changes (from other parts of the app) and update preferences
-watch(() => locale.value, (newLocale) => {
-  if (newLocale !== preferences.value.language) {
-    preferences.value.language = newLocale
-  }
-})
-
-// Watch for color mode changes (from other parts of the app) and update preferences
-watch(() => colorMode.preference, (newColorMode) => {
-  if (newColorMode !== preferences.value.theme) {
-    preferences.value.theme = newColorMode as 'light' | 'dark' | 'system'
-  }
-})
+)
 
 // Debounced auto-save functionality
 let saveTimeout: NodeJS.Timeout | null = null
@@ -134,7 +102,7 @@ const autoSavePreferences = () => {
   if (saveTimeout) {
     clearTimeout(saveTimeout)
   }
-  
+
   saveTimeout = setTimeout(async () => {
     await savePreferences()
   }, 500) // 500ms delay to debounce rapid changes
@@ -142,21 +110,21 @@ const autoSavePreferences = () => {
 
 // Auto-save preferences when any preference changes (except during initial load)
 let isInitialLoad = true
-watch(preferences, () => {
-  if (!isInitialLoad) {
-    autoSavePreferences()
-  }
-}, { deep: true })
+watch(
+  preferences,
+  () => {
+    if (!isInitialLoad) {
+      autoSavePreferences()
+    }
+  },
+  { deep: true }
+)
 
 // Preview functions for selected formats
 const getDatePreview = computed(() => {
   const now = new Date()
-  const day = String(now.getDate()).padStart(2, '0')
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const year = now.getFullYear()
-
   return useFormat().formatDate(now, {
-    dateStyle : preferences.value.dateFormat
+    dateStyle: preferences.value.dateFormat,
   })
 
   // switch (preferences.value.dateFormat) {
@@ -175,9 +143,9 @@ const getTimePreview = computed(() => {
   const now = new Date()
   return useFormat().formatTime(now, {
     timeStyle: preferences.value.timeFormat,
-    hour12: preferences.value.hour12
+    hour12: preferences.value.hour12,
   })
-  
+
   // if (preferences.value.timeFormat === '24h') {
   //   const hours = String(now.getHours()).padStart(2, '0')
   //   const minutes = String(now.getMinutes()).padStart(2, '0')
@@ -194,34 +162,23 @@ const getTimePreview = computed(() => {
 const savePreferences = async () => {
   // Don't save if we're already saving
   if (isSaving.value) return
-  
+
   isSaving.value = true
   showErrorMessage.value = false
-  
+
   try {
-    // Ensure the language preference is synchronized with current locale
-    preferences.value.language = locale.value
-    
     // Ensure the theme preference is synchronized with current color mode
     preferences.value.theme = colorMode.preference as 'light' | 'dark' | 'system'
-    
+
     // Save to localStorage
     const success = storage.setItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES, preferences.value)
-    
+
     if (!success) {
       throw new Error('Failed to save preferences to localStorage')
     }
 
-    // Save language preference separately for persistence
-    try {
-      localStorage.setItem('user-lang', preferences.value.language)
-    } catch (e) {
-      console.error('Failed to save language preference:', e)
-    }
-
     // Show brief success message only for manual operations (like reset)
     // Auto-saves are silent to avoid being intrusive
-    
   } catch (error) {
     console.error('Failed to save preferences:', error)
     showErrorMessage.value = true
@@ -236,30 +193,30 @@ const savePreferences = async () => {
 const resetToDefaults = async () => {
   // Temporarily disable auto-save during reset
   isInitialLoad = true
-  
+
+  setLocale(DEFAULT_LANGUAGE) // Reset to default language
+
   // Reset preferences to defaults
   preferences.value = { ...DEFAULT_USER_PREFERENCES }
 
-  // Update language locale
-  if (DEFAULT_USER_PREFERENCES.language === 'en' || DEFAULT_USER_PREFERENCES.language === 'km') {
-    setLocale(DEFAULT_USER_PREFERENCES.language as 'en' | 'km')
-  }
-  
   // Update color mode theme
   colorMode.preference = DEFAULT_USER_PREFERENCES.theme
 
   // Clear from localStorage
   storage.removeItem(LOCAL_STORAGE_KEYS.USER_PREFERENCES)
-  localStorage.removeItem('user-lang')
-  
+
   // Save the reset preferences
   await savePreferences()
-  
+
+  // Refresh UI to reflect default values
+  refreshUIAfterReset()
+  // initializeSelectedOptions(preferences.value)
+
   // Re-enable auto-save after a brief delay
   setTimeout(() => {
     isInitialLoad = false
   }, 100)
-  
+
   // Show success message for manual reset operation
   showSuccessMessage.value = true
   setTimeout(() => {
@@ -267,28 +224,88 @@ const resetToDefaults = async () => {
   }, 3000)
 }
 
+// Function to refresh UI elements after reset
+const refreshUIAfterReset = () => {
+  // Force refresh of all selected options to match default values
+  selectedLanguage.value = {
+    label: t('settings.languages.en'),
+    value: DEFAULT_LANGUAGE,
+  }
+
+  selectedDateFormat.value = {
+    label: t('settings.date_format_short'),
+    value: DEFAULT_USER_PREFERENCES.dateFormat,
+  }
+
+  selectedTimeFormat.value = {
+    label: t('settings.time_format_short'),
+    value: DEFAULT_USER_PREFERENCES.timeFormat,
+  }
+
+  selectedHourFormat.value = {
+    label: DEFAULT_USER_PREFERENCES.hour12
+      ? t('settings.hour_format_12h')
+      : t('settings.hour_format_24h'),
+    value: DEFAULT_USER_PREFERENCES.hour12 ? '12h' : '24h',
+  }
+
+  selectedCurrency.value = {
+    label:
+      DEFAULT_USER_PREFERENCES.currency === 'USD'
+        ? t('settings.currencies.usd')
+        : t('settings.currencies.khr'),
+    value: DEFAULT_USER_PREFERENCES.currency,
+  }
+
+  // Force reactivity update by triggering a re-render
+  nextTick(() => {
+    // Trigger computed properties to recalculate
+    const _datePreview = getDatePreview.value
+    const _timePreview = getTimePreview.value
+
+    // Force update language-dependent labels
+    initializeSelectedOptions(preferences.value)
+  })
+}
+
 // Initialize selected options based on current preferences
 const initializeSelectedOptions = (loadedPref: UserPreferences) => {
   // Find the matching option objects for each preference
-  selectedLanguage.value = { label: loadedPref.language === 'en' ? t('settings.languages.en') : t('settings.languages.km'), value: loadedPref.language }
+  selectedLanguage.value = {
+    label: locale.value === 'en' ? t('settings.languages.en') : t('settings.languages.km'),
+    value: locale.value,
+  }
+
   selectedCurrency.value = {
-    label: loadedPref.currency === 'USD' ? t('settings.currencies.usd') : t('settings.currencies.khr'),
-    value: loadedPref.currency
+    label:
+      loadedPref.currency === 'USD' ? t('settings.currencies.usd') : t('settings.currencies.khr'),
+    value: loadedPref.currency,
   }
+
   selectedDateFormat.value = {
-    label: dateFormatOptions.find(option => option.value === loadedPref.dateFormat)?.label || 'Short',
-    value: loadedPref.dateFormat
+    label:
+      dateFormatOptions.value.find((option) => option.value === loadedPref.dateFormat)?.label ||
+      t('settings.date_format_short'),
+    value: loadedPref.dateFormat,
   }
+
   selectedTimeFormat.value = {
-    label: loadedPref.timeFormat === 'short' ? t('settings.time_format_short') : t('settings.time_format_long'),
-    value: loadedPref.timeFormat
+    label:
+      timeFormatOptions.value.find((option) => option.value === loadedPref.timeFormat)?.label ||
+      t('settings.time_format_short'),
+    value: loadedPref.timeFormat,
+  }
+
+  selectedHourFormat.value = {
+    label: loadedPref.hour12 ? t('settings.hour_format_12h') : t('settings.hour_format_24h'),
+    value: loadedPref.hour12 ? '12h' : '24h',
   }
 }
 
-// Watch for changes in selected options and update preferences
+// Watch for changes in selected options and update preferences/i18n
 watch(selectedLanguage, (newValue) => {
-  if (newValue && preferences.value.language !== newValue.value) {
-    preferences.value.language = newValue.value
+  if (newValue && newValue.value !== locale.value) {
+    setLocale(newValue.value as 'en' | 'km')
   }
 })
 
@@ -317,29 +334,33 @@ watch(selectedCurrency, (newValue) => {
 })
 
 // Watch for preference changes and update selected options (for reset functionality)
-watch(() => preferences.value, (newValue) => {
-  initializeSelectedOptions(newValue)
-}, { deep: true })
+watch(
+  () => preferences.value,
+  (newValue) => {
+    initializeSelectedOptions(newValue)
+  },
+  { deep: true }
+)
+
+// Watch for locale changes and update all labels
+watch(locale, () => {
+  // Re-initialize all selected options with new language labels
+  initializeSelectedOptions(preferences.value)
+})
 
 // Load preferences on component mount
 onMounted(() => {
   isInitialLoad = true
-  
-  // Load saved language from localStorage first
-  const savedLanguage = localStorage.getItem('user-lang')
-  if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'km')) {
-    setLocale(savedLanguage as 'en' | 'km')
-  }
-  
+
   // Load saved preferences (which includes theme)
   const savedPreferences = loadPreferences()
   preferences.value = savedPreferences
-  
+
   // Apply the saved theme to color mode
   if (savedPreferences.theme) {
     colorMode.preference = savedPreferences.theme
   }
-  
+
   // Initialize selected options based on loaded preferences
   initializeSelectedOptions(savedPreferences)
 
@@ -363,40 +384,79 @@ onMounted(() => {
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-6 py-8">
       <!-- Success Message -->
-      <div 
+      <div
         v-if="showSuccessMessage"
         class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 flex items-center"
       >
-        <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        <svg
+          class="w-5 h-5 text-green-600 dark:text-green-400 mr-3"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
         </svg>
-        <span class="text-green-800 dark:text-green-200 font-medium">{{ $t('settings.preferences_saved') }}</span>
+        <span class="text-green-800 dark:text-green-200 font-medium">{{
+          $t('settings.preferences_saved')
+        }}</span>
       </div>
 
       <!-- Error Message -->
-      <div 
+      <div
         v-if="showErrorMessage"
         class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 flex items-center"
       >
-        <svg class="w-5 h-5 text-red-600 dark:text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        <svg
+          class="w-5 h-5 text-red-600 dark:text-red-400 mr-3"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clip-rule="evenodd"
+          />
         </svg>
-        <span class="text-red-800 dark:text-red-200 font-medium">{{ $t('settings.preferences_save_error') }}</span>
+        <span class="text-red-800 dark:text-red-200 font-medium">{{
+          $t('settings.preferences_save_error')
+        }}</span>
       </div>
 
       <!-- User Preferences Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+      >
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-xl font-semibold text-primary dark:text-white">{{ $t('settings.user_preferences') }}</h2>
-              <p class="text-gray-600 dark:text-gray-300 mt-1">{{ $t('settings.user_preferences_desc') }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('settings.auto_save_enabled') }}</p>
+              <h2 class="text-xl font-semibold text-primary dark:text-white">
+                {{ $t('settings.user_preferences') }}
+              </h2>
+              <p class="text-gray-600 dark:text-gray-300 mt-1">
+                {{ $t('settings.user_preferences_desc') }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {{ $t('settings.auto_save_enabled') }}
+              </p>
             </div>
             <div v-if="isSaving" class="flex items-center text-sm text-gray-500 dark:text-gray-400">
               <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               {{ $t('settings.saving') }}
             </div>
@@ -405,56 +465,57 @@ onMounted(() => {
 
         <div class="p-6 space-y-6">
           <!-- Theme Selection -->
-          <div>
-            <label class="block text-md font-bold text-primary dark:text-white mb-3">{{ $t('settings.theme') }}</label>
-            <div class="grid grid-cols-3 gap-3">
-              <label 
-                v-for="theme in ['light', 'dark', 'system']" 
-                :key="theme"
-                class="relative cursor-pointer"
-              >
-                <input
-                  v-model="preferences.theme"
-                  :value="theme"
-                  type="radio"
-                  class="sr-only"
+          <ClientOnly>
+            <div>
+              <label class="block text-md font-bold text-primary dark:text-white mb-3">{{
+                $t('settings.theme')
+              }}</label>
+              <div class="grid grid-cols-3 gap-3">
+                <label
+                  v-for="theme in ['light', 'dark', 'system']"
+                  :key="theme"
+                  class="relative cursor-pointer"
                 >
-                <div
-                  class="border-2 rounded-lg p-4 text-center transition-all duration-200"
-                  :class="preferences.theme === theme 
-                    ? 'border-[#3F83F8] bg-[#EAF6FC] dark:bg-[#43B3DE]/10' 
-                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'"
-                >
-                  <div class="flex flex-col items-center space-y-2">
-                    <!-- Theme Icons -->
-                    <div class="h-8 w-8 flex items-center justify-center">
-                      <UIcon 
-                        v-if="theme === 'light'" 
-                        name="i-heroicons-sun" 
-                        class="h-6 w-6 text-yellow-500"
-                      />
-                      <UIcon 
-                        v-else-if="theme === 'dark'" 
-                        name="i-heroicons-moon" 
-                        class="h-6 w-6 text-blue-600"
-                      />
-                      <UIcon 
-                        v-else 
-                        name="i-heroicons-computer-desktop" 
-                        class="h-6 w-6 text-gray-600 dark:text-gray-400"
-                      />
-                    </div>
-                    <div class="text-sm font-medium text-[#211e1f] dark:text-white capitalize">
-                      {{ $t(`settings.theme_${theme}`) }}
+                  <input v-model="preferences.theme" :value="theme" type="radio" class="sr-only" />
+                  <div
+                    class="border-2 rounded-lg p-4 text-center transition-all duration-200"
+                    :class="
+                      preferences.theme === theme
+                        ? 'border-[#3F83F8] bg-[#EAF6FC] dark:bg-[#43B3DE]/10'
+                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+                    "
+                  >
+                    <div class="flex flex-col items-center space-y-2">
+                      <!-- Theme Icons -->
+                      <div class="h-8 w-8 flex items-center justify-center">
+                        <UIcon
+                          v-if="theme === 'light'"
+                          name="i-heroicons-sun"
+                          class="h-6 w-6 text-yellow-500"
+                        />
+                        <UIcon
+                          v-else-if="theme === 'dark'"
+                          name="i-heroicons-moon"
+                          class="h-6 w-6 text-blue-600"
+                        />
+                        <UIcon
+                          v-else
+                          name="i-heroicons-computer-desktop"
+                          class="h-6 w-6 text-gray-600 dark:text-gray-400"
+                        />
+                      </div>
+                      <div class="text-sm font-medium text-[#211e1f] dark:text-white capitalize">
+                        {{ $t(`settings.theme_${theme}`) }}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </label>
+                </label>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {{ $t('settings.theme_description') }}
+              </p>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              {{ $t('settings.theme_description') }}
-            </p>
-          </div>
+          </ClientOnly>
 
           <!-- Language & Region -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -489,8 +550,10 @@ onMounted(() => {
 
           <!-- Format Preferences -->
           <div class="space-y-6">
-            <h3 class="text-md font-bold text-primary dark:text-white">{{ $t('settings.format_preferences') }}</h3>
-            
+            <h3 class="text-md font-bold text-primary dark:text-white">
+              {{ $t('settings.format_preferences') }}
+            </h3>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
@@ -554,19 +617,27 @@ onMounted(() => {
             </div>
 
             <!-- Preview Section -->
-            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <h4 class="text-sm font-medium text-primary dark:text-white mb-3">{{ $t('settings.preview') }}</h4>
-              
+            <div
+              class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+            >
+              <h4 class="text-sm font-medium text-primary dark:text-white mb-3">
+                {{ $t('settings.preview') }}
+              </h4>
+
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.preview_date') }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{
+                    $t('settings.preview_date')
+                  }}</span>
                   <div class="text-lg font-semibold text-[#211e1f] dark:text-white">
                     {{ getDatePreview }}
                   </div>
                 </div>
 
                 <div>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.preview_time') }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{
+                    $t('settings.preview_time')
+                  }}</span>
                   <div class="text-lg font-semibold text-[#211e1f] dark:text-white">
                     {{ getTimePreview }}
                   </div>
@@ -578,13 +649,13 @@ onMounted(() => {
           <!-- Action Buttons -->
           <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
             <UButton
-             @click="resetToDefaults"
               :loading="isSaving"
               :disabled="isSaving"
               variant="outline"
-           >
-            {{ $t('settings.reset_to_defaults') }}
-           </UButton>
+              @click="resetToDefaults"
+            >
+              {{ $t('settings.reset_to_defaults') }}
+            </UButton>
             <!-- <button
               type="button"
               @click="resetToDefaults"
@@ -600,5 +671,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -1,4 +1,4 @@
-import type { UserPreferences } from "~/models/userPreference"
+import type { UserPreferences } from '~/models/userPreference'
 
 export const APP_CONSTANTS = {
   DEFAULT_TITLE: 'Bill24 Admin Portal',
@@ -14,19 +14,15 @@ export const LOCAL_STORAGE_KEYS = {
   USER_PREFERENCES: 'user-preferences',
   SESSION_DATA: 'session-data',
   CACHE: 'cache',
-  // AUTHENTICATED_DATA: 'authenticated-data',
-  LOCALE : 'locale',
-  THEME: 'theme',
 }
 
 // Default preferences
 export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   theme: 'system',
-  language: 'en',
   dateFormat: 'short',
-  timeFormat: 'short', // '12h' | '24h'
+  timeFormat: 'short',
   hour12: true,
-  currency: 'KHR'
+  currency: 'KHR',
 }
 
 export const DEFAULT_CURRENCY_CONFIG = {
@@ -34,5 +30,7 @@ export const DEFAULT_CURRENCY_CONFIG = {
   symbol: '៛',
   name: 'Cambodian Riel',
   decimals: 0,
-  locale: 'km-KH'
+  locale: 'km-KH',
 }
+
+export const DEFAULT_LANGUAGE = 'en'
