@@ -1,4 +1,3 @@
-import type { PartyType } from "@/utils/enumModel";
 
 // 1. Get All Suppliers
 export interface Supplier {
@@ -19,6 +18,7 @@ export interface Cpo {
   id: string
   code: string
   name: string
+  type: string // e.g., 'CPO', 'CSMS'
   phone: number
   email: string
   address: string
@@ -140,7 +140,10 @@ export interface SettlementHistoryDetail {
   settle_amount: number
   settlement_bank_id: string
   settlement_bank_name: string
-  status: string
+  bank_ref_id: string
+  tran_date: string
+  status: string,
+  tran_allocates: TransactionAllocation[]
 }
 
 export interface SettlementHistoryRecord {

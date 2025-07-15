@@ -4,6 +4,7 @@
   "hello": "Hello",
   "cancel": "Cancel",
   "confirm": "Confirm",
+  "bank": "Bank",
   "confirmation": "Confirmation",
   "logout_confirmation": "Are you sure you want to log out?",
   "welcome": "Welcome to Bill24 Management Portal",
@@ -189,6 +190,12 @@
       "usd": "USD - US Dollar",
       "khr": "KHR - Cambodian Riel"
     },
+    "currency_format": {
+      "symbol_usd": "$",
+      "symbol_khr": "៛",
+      "code_usd": "USD",
+      "code_khr": "KHR"
+    },
     "am": "AM",
     "pm": "PM"
   },
@@ -213,7 +220,7 @@
     "navigation_instructions": "Use the navigation menu to explore different sections.",
     "current_version": "Current version",
     "quick_actions": "Quick Actions",
-    "generate_settlement_desc": "Generate settlement for billers",
+    "generate_settlement_desc": "Generate settlement for sub billers",
     "settings_desc": "Configure system preferences",
     "system_status": "System Status",
     "authentication": "Authentication",
@@ -236,6 +243,7 @@
     "status": "Status",
     "history": "History",
     "supplier": "Biller",
+    "transaction_allocations": "Transaction allocations",
     "biller": {
       "code": "Sub Biller Code",
       "name": "Sub Biller Name"
@@ -263,8 +271,8 @@
     "generate": {
       "steps": {
         "supplier": {
-          "title": "Biller Selection",
-          "description": "Select the billers for which you want to generate the settlement."
+          "title": "Sub Biller Selection",
+          "description": "Select the sub billers for which you want to generate the settlement."
         },
         "reconciliation": {
           "title": "Reconciliation",
@@ -315,6 +323,8 @@
         "actions": "Actions",
         "view": "View",
         "view_details": "View Details",
+        "view_transaction_details": "View transaction details",
+        "hide_transaction_details": "Hide transaction details",
         "bank": "Bank",
         "back": "Back",
         "viewing": "Viewing",

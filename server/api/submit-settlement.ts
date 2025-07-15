@@ -1,16 +1,22 @@
 import { defineEventHandler, readBody } from 'h3'
-import type { BalanceQueryRequest, ConfirmSettlementRequest, ConfirmSettlementResponse } from '~/models/settlement'
+import type { ConfirmSettlementRequest, ConfirmSettlementResponse } from '~/models/settlement'
 import type { ApiResponse } from '~/models/baseModel'
-import { SettlementInquiryRequest, SettlementInquiryResponse } from '../model/management_api/settlement'
-import { inquirySettlementWallet, submitSettlement } from '../logic/management_api_logic'
+import { submitSettlement } from '../logic/management_api_logic'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<ConfirmSettlementResponse>> => {
+export default defineEventHandler(async (event): Promise<ApiResponse<ConfirmSettlementResponse | null>> => {
   const payload = await readBody<ConfirmSettlementRequest>(event)
 
-   let response = await submitSettlement(payload);
-    return {
-        code: 'SUCCESS',
-        message: 'Success',
-        data: response.data as ConfirmSettlementResponse
-    };
+   const response = await submitSettlement(payload);
+   if (!response || !response.data) {
+       return {
+           code: 'ERROR',
+           message: 'Failed to submit settlement',
+           data: null
+       };
+   }
+   return {
+       code: 'SUCCESS',
+       message: 'Success',
+       data: response.data as ConfirmSettlementResponse
+   };
 })

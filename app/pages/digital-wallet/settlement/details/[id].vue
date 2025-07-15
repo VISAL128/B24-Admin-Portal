@@ -27,10 +27,12 @@
           <p class="text-sm text-gray-500 dark:text-gray-400">
             {{ $t('settlement_history_details.total_amount') }}
           </p>
-          <p class="text-2xl font-semibold text-primary">
-            {{ useCurrency().formatAmount(settlementDetails.records.total_amount) }}
-            {{ settlementDetails.records.currency_id || settlementDetails.records.currency }}
-          </p>
+          <AmountWithCurrency
+            :amount="settlementDetails.records.total_amount"
+            :currency="settlementDetails.records.currency || settlementDetails.records.currency_id"
+            variant="primary"
+            size="xl"
+          />
         </UCard>
         <!-- Settlement overview card -->
         <UCard class="flex-1">
@@ -57,7 +59,7 @@
             </div>
           </template>
 
-          <div class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-3">
+          <div class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-4">
             <div class="flex flex-col items-start text-center">
               <UIcon name="i-lucide-calendar" class="w-8 h-8 mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
@@ -76,10 +78,20 @@
             <div class="flex flex-col items-start text-center">
               <UIcon name="i-lucide-users" class="w-8 h-8 mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
-                {{ $t('settlement_history_details.total_supplier') }}
+                {{ $t('settlement_history_details.total_sub_biller') }}
               </h3>
               <p class="text-gray-700 dark:text-gray-300">
                 {{ settlementDetails.records.total_supplier }}
+              </p>
+            </div>
+
+            <div class="flex flex-col items-start text-center">
+              <UIcon name="i-lucide-credit-card" class="w-8 h-8 mb-2" />
+              <h3 class="text-sm font-medium opacity-90 mb-1">
+                {{ $t('settlement_history_details.total_transactions') }}
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300">
+                {{ settlementDetails.records.totalSettled }}
               </p>
             </div>
 
@@ -166,41 +178,34 @@
 
     <SettlementHistoryTable
       v-if="!loading && !error && settlementDetails"
-      :settlementHistorys="settlementHistoryDetails"
-      :totalPage="settlementDetails?.total_page || 1"
-      :settlement_id="settlementId"
+      :settlement-historys="settlementHistoryDetails"
+      :total-page="settlementDetails?.total_page || 1"
+      :settlement-id="settlementId"
       :total="settlementDetails?.total_record || 0"
-      :currentQuery="settlementHistoryQuery"
-      :onSearchSubmit="handleSearchSubmit"
+      :current-query="settlementHistoryQuery"
+      :on-search-submit="handleSearchSubmit"
+      :currency="settlementDetails.records.currency || settlementDetails.records.currency_id"
     />
   </div>
 </template>
 
-<style>
-.text-sm2 {
-  font-size: 0.775rem;
-}
-</style>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useI18n } from '#i18n'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import { useApiExecutor } from '~/composables/api/useApiExecutor'
-import { useClipboard } from '~/composables/useClipboard'
-import type { SettlementHistoryDetail, SettlementHistoryDetailResponse } from '~/models/settlement'
+import type {
+  SettlementHistoryDetail,
+  SettlementHistoryDetailResponse,
+  SettlementHistoryDetailQuery,
+} from '~/models/settlement'
 import SettlementHistoryTable from '~/components/tables/SettlementHistoryTable.vue'
-import type { SettlementHistoryDetailQuery } from '~/models/settlement'
-import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 const supplierApi = useSupplierApi()
 
 const { t } = useI18n()
 const route = useRoute()
-const router = useRouter()
-const { copy } = useClipboard()
 
 definePageMeta({
   auth: true,
@@ -234,48 +239,6 @@ const settlementHistoryQuery = ref<SettlementHistoryDetailQuery>({
   page_size: 10,
 })
 
-// Format date for display
-const formatDate = (dateString: string) => {
-  try {
-    return new Date(dateString).toLocaleDateString()
-  } catch (e) {
-    return dateString
-  }
-}
-
-// Determine status color based on status value
-const getStatusColor = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case 'completed':
-    case 'success':
-      return 'success'
-    case 'pending':
-    case 'processing':
-      return 'warning'
-    case 'failed':
-    case 'error':
-      return 'error'
-    default:
-      return 'neutral'
-  }
-}
-
-// Go back to settlement list
-const goBack = () => {
-  router.back()
-}
-
-// Copy settlement ID to clipboard
-const copySettlementId = async () => {
-  const success = await copy(
-    settlementDetails.value?.records.settlement_history_id?.toString() || ''
-  )
-  if (success) {
-    // Optional: Show toast notification
-    console.log('Settlement ID copied to clipboard')
-  }
-}
-
 // Fetch settlement details
 const fetchSettlementDetails = async (showError = true) => {
   loading.value = true
@@ -298,8 +261,8 @@ const fetchSettlementDetails = async (showError = true) => {
         settlementHistoryDetails.value = []
       }
     }
-  } catch (e: any) {
-    error.value = e.message || 'Failed to load settlement details'
+  } catch (e: unknown) {
+    error.value = (e as Error).message || 'Failed to load settlement details'
     useErrorHandler().handleApiError(e)
     // Optionally, you can show a toast notification here
   } finally {
@@ -323,3 +286,9 @@ useHead({
   title: `${t('settlement.details_title')} - Bill24 Admin Portal`,
 })
 </script>
+
+<style>
+.text-sm2 {
+  font-size: 0.775rem;
+}
+</style>

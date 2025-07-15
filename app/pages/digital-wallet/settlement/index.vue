@@ -85,7 +85,7 @@
           :page-count="totalPage"
           :items-per-page="pageSize.value"
           :total="total"
-          v-on:update:page="page = $event"
+          @update:page="page = $event"
         />
       </div>
     </div>
@@ -93,16 +93,12 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  auth: false,
-  breadcrumbs: [{ label: 'settlement_menu', active: true }],
-})
 import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
+import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -113,12 +109,19 @@ import {
 import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useI18n } from 'vue-i18n'
 import TableEmptyState from '~/components/TableEmptyState.vue'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
+import { useTable } from '~/composables/utils/useTable'
+import { UButton } from '#components'
+
+definePageMeta({
+  auth: false,
+  breadcrumbs: [{ label: 'settlement_menu', active: true }],
+})
 
 const { t, locale } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
+const { createSortableHeader, createRowNumberCell } = useTable()
 const errorHandler = useErrorHandler()
 
 const table = useTemplateRef('table')
@@ -146,8 +149,6 @@ const modelValue = shallowRef({
   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
 })
-
-const userPreference = useUserPreferences().getPreferences()
 
 // Watch and convert modelValue to string ISO
 watch(modelValue, (val) => {
@@ -182,9 +183,8 @@ const fetchSettlementHistory = async () => {
     settlements.value = data?.records ?? []
     total.value = data?.total_record ?? 0
     totalPage.value = data?.total_page ?? 0
-  } catch (error: any) {
-    console.error('Error loading settlement history:', error.message)
-    errorMsg.value = error.message || 'Failed to load settlement history.'
+  } catch (error: unknown) {
+    errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
     // Show error notification to user
     errorHandler.handleApiError(error)
   } finally {
@@ -417,14 +417,6 @@ const exportItems = ref<DropdownMenuItem[]>([
   },
 ])
 
-// Add translation keys
-const translations = {
-  actions: 'Actions',
-  view: 'View',
-  view_details: 'View Details',
-  // Add more translations as needed
-}
-
 const handleExport = (item: { click: () => void }) => {
   if (item.click) {
     item.click()
@@ -466,7 +458,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   {
     id: 'row_number',
     header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
+    cell: ({ row, table }) => createRowNumberCell(row, table, page.value, pageSize.value.value),
     size: 30,
     maxSize: 30,
     enableSorting: false,
@@ -474,27 +466,30 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   // { accessorKey: "id", header: t("Settlement ID") },
   {
     accessorKey: 'created_date',
-    header: t('settlement.settlement_date'),
+    header: ({ column }) => createSortableHeader(column, t('settlement.settlement_date')),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
+    enableSorting: true,
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     accessorKey: 'total_amount',
-    header: () => h('div', { class: 'text-right' }, t('total_amount')),
+    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
     cell: ({ row }) =>
       h(
         'div',
         { class: 'text-right' },
         useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
       ),
+    enableMultiSort: true,
+    enableSorting: true,
   },
-  { accessorKey: 'currency_id', header: t('settlement.currency') },
-  { accessorKey: 'created_by', header: t('settled_by') },
+  { accessorKey: 'currency_id', header: () => t('settlement.currency') },
+  { accessorKey: 'created_by', header: () => t('settled_by') },
   {
     accessorKey: 'status', // optional if you need sorting/filtering
-    header: t('status.header'),
+    header: () => t('status.header'),
     cell: ({ row }) => {
       // return h('span', {
       //   class: `text-sm font-medium`
@@ -549,7 +544,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   // Add an action column for viewing details
   {
     id: 'actions',
-    header: t('actions'),
+    header: () => t('actions'),
     cell: ({ row }) =>
       h('div', { class: 'flex items-center gap-2' }, [
         h(resolveComponent('UButton'), {

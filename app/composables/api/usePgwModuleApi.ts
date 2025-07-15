@@ -5,8 +5,6 @@ import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
 
-  const pgwModuleApiUrl = useRuntimeConfig().public.pgw_module_api_url
-
   /**
    * Get current user profile from PGW Module API
    */

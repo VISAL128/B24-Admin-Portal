@@ -4,38 +4,51 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   compatibilityDate: '2025-05-15',
-  debug: false,
+  debug: process.env.NODE_ENV === 'development',
   devtools: { enabled: true },
   devServer: {
     host: 'localhost',
-    port: 3000
+    port: 3000,
   },
-  modules: ['@nuxt/fonts', '@nuxt/ui', '@nuxt/icon', 'nuxt-charts', '@nuxtjs/tailwindcss', '@nuxtjs/i18n', 'nuxt-oidc-auth',  '@nuxt/eslint',],
+  modules: [
+    '@nuxt/fonts',
+    '@nuxt/ui',
+    '@nuxt/icon',
+    'nuxt-charts',
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/i18n',
+    'nuxt-oidc-auth',
+    '@nuxt/eslint',
+  ],
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
     locales: [
       { code: 'en', name: 'English', file: 'en.json' },
-      { code: 'km', name: 'Khmer', file: 'km.json' }
-    ]
+      { code: 'km', name: 'Khmer', file: 'km.json' },
+    ],
   },
   css: ['~/assets/css/main.css'],
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },
     head: {
       title: 'Bill24 Admin Portal',
-      meta: [
-        { name: 'description', content: 'Bill24 Admin Portal' }
-      ]
+      meta: [{ name: 'description', content: 'Bill24 Admin Portal' }],
     },
   },
   oidc: {
     providers: {
       keycloak: {
-        baseUrl: process.env.KEYCLOAK_URL || "http://localhost:8080/realms/nuxt-oidc-test",
-        clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
-        clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "CLIENT_SECRET",
-        redirectUri: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/auth/keycloak/callback' : process.env.KEYCLOAK_REDIRECT_URI || "https://admin-staging.bill24.io/auth/keycloak/callback",
+        baseUrl:
+          process.env.KEYCLOAK_URL + '/realms/' + process.env.KEYCLOAK_REALM ||
+          'http://localhost:8080/realms/nuxt-oidc-test',
+        clientId: process.env.KEYCLOAK_CLIENT_ID || 'b24-admin-portal',
+        clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || 'CLIENT_SECRET',
+        redirectUri:
+          process.env.NODE_ENV === 'development'
+            ? 'http://localhost:3000/auth/keycloak/callback'
+            : process.env.KEYCLOAK_REDIRECT_URI ||
+              'https://admin-staging.bill24.io/auth/keycloak/callback',
         optionalClaims: ['resource_access', 'roles', 'email', 'profile'],
         // exposeAccessToken: true
       },
@@ -70,30 +83,24 @@ export default defineNuxtConfig({
   //   },},
   sourcemap: {
     server: true,
-    client: true
+    client: true,
   },
   runtimeConfig: {
     management_api_url: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
     pgw_module_api_url: process.env.PGW_MODULE_API_URL || 'https://staging.bill24.io:22043',
     // Public runtime config
     public: {
-      appVersion: process.env.APP_VERSION || 'v1.0.1'
-    }
+      appVersion: process.env.APP_VERSION || 'v1.0.1',
+      userProfileUrl:
+        process.env.KEYCLOAK_URL + '/realms/' + process.env.KEYCLOAK_REALM + '/account' || '',
+    },
   },
   // ssr: false, // Important: OIDC works better with SPA mode
   // UI Theme Configuration for Bill24
   ui: {
     theme: {
-      colors: [
-        'primary',
-        'secondary',
-        'success',
-        'info',
-        'warning',
-        'error',
-        'neutral'
-      ],
-      transitions: true
-    }
-  }
+      colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'],
+      transitions: true,
+    },
+  },
 })

@@ -33,6 +33,6 @@ export const useClipboard = () => {
     isSupported,
     isCopied,
     error,
-    copy
+    copy,
   }
 }

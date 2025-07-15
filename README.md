@@ -449,7 +449,7 @@ i18n/
 ### Environment Variables
 ```bash
 # Keycloak Configuration
-KEYCLOAK_URL=http://localhost:8080/realms/nuxt-oidc-test
+KEYCLOAK_URL=http://localhost:8080
 KEYCLOAK_CLIENT_ID=b24-admin-portal
 KEYCLOAK_CLIENT_SECRET=your-client-secret
 KEYCLOAK_REDIRECT_URI=http://localhost:3000/auth/keycloak/callback

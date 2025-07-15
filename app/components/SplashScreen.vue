@@ -35,9 +35,9 @@
             :style="{ animationDelay: `${i * 0.2}s` }"
           ></div>
         </div>
-        <span class="ml-3 text-[#211e1f]/60 text-sm animate-fade-in">
+        <!-- <span class="ml-3 text-[#211e1f]/60 text-sm animate-fade-in">
           {{ t('splash.loading') }}
-        </span>
+        </span> -->
       </div>
 
       <!-- Progress Bar -->
@@ -52,13 +52,15 @@
 
       <!-- Version Info -->
       <div class="mt-8 text-xs text-[#211e1f]/50 animate-fade-in delay-500">
-        {{ t('splash.version') }} 1.0.0
+        {{ t('splash.version') }} {{ config.public.appVersion }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+
+const config = useRuntimeConfig()
 const { t } = useI18n()
 
 // Props
