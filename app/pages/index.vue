@@ -17,7 +17,7 @@
         </template>
         <div class="space-y-3">
           <NuxtLink
-            to="/digital-wallet/generate"
+            to="/digital-wallet/settlement/generate"
             class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-[#EAF6FC] dark:hover:bg-gray-500 transition-colors"
           >
             <div class="font-medium text-primary">{{ $t('generate_settlement') }}</div>

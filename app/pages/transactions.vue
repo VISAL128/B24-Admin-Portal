@@ -303,7 +303,7 @@ onMounted(() => {
 })
 
 const onGenerateSettlement = () => {
-  router.push('/digital-wallet/generate')
+  router.push('/digital-wallet/settlement/generate')
 }
 
 // Handle navigation to details page
