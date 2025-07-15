@@ -145,6 +145,12 @@
       "usd": "USD - ដុល្លារអាមេរិក",
       "khr": "KHR - រៀលកម្ពុជា"
     },
+    "currency_format": {
+      "symbol_usd": "$",
+      "symbol_khr": "៛",
+      "code_usd": "USD",
+      "code_khr": "KHR"
+    },
     "am": "ព្រឹក",
     "pm": "ល្ងាច"
   },
@@ -169,7 +175,7 @@
     "navigation_instructions": "ប្រើម៉ឺនុយរុករកដើម្បីរុករកផ្នែកផ្សេងៗ។",
     "current_version": "កំណែបច្ចុប្បន្ន",
     "quick_actions": "សកម្មភាពរហ័ស",
-    "generate_settlement_desc": "បង្កើតការទូទាត់សម្រាប់ម្ចាស់អាជីវកម្ម",
+    "generate_settlement_desc": "បង្កើតការទូទាត់សម្រាប់ម្ចាស់អាជីវកម្មរង",
     "settings_desc": "កំណត់រចនាសម្ព័ន្ធប្រព័ន្ធ",
     "system_status": "ស្ថានភាពប្រព័ន្ធ",
     "authentication": "ការផ្ទៀងផ្ទាត់",
@@ -181,7 +187,8 @@
   "actions": "សកម្មភាព",
   "view": "មើល",
   "view_details": "មើលព័ត៌មានលម្អិត",
-  "back": "ត្រលប់ក្រោយ",
+  "view_transaction_details": "មើលព័ត៌មានលម្អិតប្រតិបត្តិការ",
+  "hide_transaction_details": "លាក់ព័ត៌មានលម្អិតប្រតិបត្តិការ",
   "bank": "ធនាគារ",
   "bank_name": "ឈ្មោះធនាគារ",
   "search_by_settler": "ស្វែងរកតាមអ្នកទូទាត់...",
@@ -228,6 +235,8 @@
     "statistics": "ស្ថិតិនៃការទូទាត់",
     "transactions": "ប្រតិបត្តិការទូទាត់",
     "total_transactions": "ប្រតិបត្តិការសរុប",
+    "details": "ព័ត៌មានលម្អិត",
+    "transaction_allocations": "ការបែងចែកប្រតិបត្តិការ",
     "successful": "ជោគជ័យ",
     "failed": "បរាជ័យ",
     "detailed_transactions_message": "ទិន្នន័យប្រតិបត្តិការលម្អិតនឹងត្រូវបង្ហាញនៅទីនេះ",
@@ -250,8 +259,8 @@
     "generate": {
       "steps": {
         "supplier": {
-          "title": "ការជ្រើសរើសម្ចាស់អាជីវកម្ម",
-          "description": "ជ្រើសរើសម្ចាស់អាជីវកម្មដែលអ្នកចង់បង្កើតការត្រួតពិនិត្យ។"
+          "title": "ការជ្រើសរើសម្ចាស់អាជីវកម្មរង",
+          "description": "ជ្រើសរើសម្ចាស់អាជីវកម្មរងដែលអ្នកចង់បង្កើតការត្រួតពិនិត្យ។"
         },
         "reconciliation": {
           "title": "ការត្រួតពិនិត្យឡើងវិញ",

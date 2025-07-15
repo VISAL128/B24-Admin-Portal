@@ -1,16 +1,18 @@
 /**
  * Authentication composable for Bill24 Admin Portal
- * 
+ *
  * This composable provides a clean interface for authentication operations
  * using the nuxt-openid-connect module. It bridges the gap between the
  * OIDC module and the application's authentication needs.
- * 
+ *
  * Key features:
  * - Reactive authentication state
  * - User information management
  * - Role-based access control
  * - Automatic token management via OIDC
  */
+
+import type { SupplierProfile } from '~/models/supplier'
 
 interface UserInfo {
   id: string
@@ -23,15 +25,41 @@ interface UserInfo {
   picture?: string
 }
 
+interface OidcUser {
+  sub?: string
+  preferred_username?: string
+  email?: string
+  given_name?: string
+  family_name?: string
+  realm_access?: {
+    roles: string[]
+  }
+  roles?: string[]
+  picture?: string
+  [key: string]: unknown
+}
+
 export const useAuth = () => {
   const oidc = useOidcAuth()
-  
+  const cookie = useCookie('profile')
+  const { clearProfileData } = useProfileValidation()
+
   // Core reactive state - derive user directly from OIDC
   const user = computed(() => {
     if (!oidc.loggedIn || !oidc.user) return null
     return extractUserInfo()
   })
-  
+
+  const currentProfile = computed<SupplierProfile | null>(() => {
+    if (!oidc.loggedIn || !cookie.value) return null
+    return cookie.value as unknown as SupplierProfile
+  })
+
+  // Save profile to cookie for persistence
+  const setProfileToCookie = (profile: SupplierProfile) => {
+    cookie.value = JSON.stringify(profile)
+  }
+
   // Computed properties derived from OIDC state
   const isAuthenticated = computed(() => oidc.loggedIn)
   /**
@@ -40,21 +68,20 @@ export const useAuth = () => {
   const extractUserInfo = (): UserInfo | null => {
     if (!oidc.user) return null
 
-    const oidcUser = (oidc.user.value?.userInfo || oidc.user.value || {}) as Record<string, any>
+    const oidcUser = (oidc.user.value?.userInfo || oidc.user.value || {}) as OidcUser
     return {
       id: oidcUser.sub || '',
       username: oidcUser.preferred_username || oidcUser.email || '',
       email: oidcUser.email || '',
       firstName: oidcUser.given_name || '',
       lastName: oidcUser.family_name || '',
-      fullName: (
+      fullName:
         `${oidcUser.given_name || ''} ${oidcUser.family_name || ''}`.trim() ||
         oidcUser.preferred_username ||
         oidcUser.email ||
-        ''
-      ),
-      roles: ['admin'],//oidcUser.realm_access?.roles || oidcUser.roles || [],
-      picture: oidcUser.picture || ''
+        '',
+      roles: ['admin'], //oidcUser.realm_access?.roles || oidcUser.roles || [],
+      picture: oidcUser.picture || '',
     }
   }
 
@@ -75,11 +102,22 @@ export const useAuth = () => {
    */
   const logout = async (): Promise<void> => {
     try {
-      console.log('🔄 Starting logout process...')
-    
-      oidc.logout()
+      // Clear profile data before logout using the dedicated method
+      clearProfileData()
+      // Perform OIDC logout
+      await oidc.logout()
+
+      console.log('✅ Logout completed successfully')
     } catch (error) {
       console.error('❌ Logout failed:', error)
+
+      // Even if OIDC logout fails, ensure profile data is cleared
+      try {
+        clearProfileData()
+      } catch (cleanupError) {
+        console.error('❌ Failed to clear profile data during logout:', cleanupError)
+      }
+
       throw error
     }
   }
@@ -105,7 +143,7 @@ export const useAuth = () => {
   const hasAnyRole = (roles: string[]): boolean => {
     const userInfo = getUserInfo()
     if (!userInfo?.roles) return false
-    return roles.some(role => userInfo.roles.includes(role))
+    return roles.some((role) => userInfo.roles.includes(role))
   }
 
   // Watch for authentication state changes and sync to localStorage
@@ -121,14 +159,16 @@ export const useAuth = () => {
     // State
     isAuthenticated,
     user: readonly(user),
-    
+    currentProfile: readonly(currentProfile),
+    setProfileToCookie,
+
     // Methods
     login,
     logout,
     getUserInfo,
     hasRole,
     hasAnyRole,
-    
+
     // Legacy compatibility (deprecated - tokens not available in OIDC)
     getToken: () => {
       console.warn('⚠️ getToken() is deprecated - tokens are managed server-side with OIDC')

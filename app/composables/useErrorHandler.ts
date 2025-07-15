@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Error handler composable for processing API errors and showing notifications
  * Handles both client-side and server-side errors with appropriate toast messages
@@ -16,7 +17,6 @@ export const useErrorHandler = () => {
   const { t } = useI18n()
 
   const handleApiError = (error: any) => {
-    console.error('API Error:', error)
 
     // Check if error has notification data from server
     if (error?.data?.showNotification) {

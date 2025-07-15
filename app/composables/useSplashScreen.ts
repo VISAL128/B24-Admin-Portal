@@ -7,6 +7,7 @@ export const useSplashScreen = () => {
   const isAppReady = ref(false)
   const showSplash = ref(true)
   const pgwApi = usePgwModuleApi()
+  const { validateProfile, handleProfileError } = useProfileValidation()
 
   /**
    * Mark the app as ready and hide splash screen
@@ -45,13 +46,25 @@ export const useSplashScreen = () => {
       // Add any other initialization checks here
       await nextTick()
 
-      // cookie.value = JSON.stringify({code: '1234'})
       // You can add additional readiness checks here
       console.log('App initialization complete, authenticated:', isAuthenticated.value)
-      const profile = await pgwApi.getProfile()
-      if (profile && profile.code === '000' && profile.data) {
-        cookie.value = JSON.stringify(profile.data)
+
+      if (cookie.value) {
+        console.log('Profile cookie already exists, skipping profile fetch')
+        // If profile cookie exists, skip fetching profile
+        setAppReady()
+        return true
       }
+      // Try to get user profile
+      const profile = await pgwApi.getProfile()
+
+      if (!validateProfile(profile)) {
+        await handleProfileError(new Error('Profile validation failed'))
+        return false
+      }
+
+      // Store profile data
+      cookie.value = JSON.stringify(profile.data)
 
       // Mark app as ready after checks
       setAppReady()
@@ -59,8 +72,8 @@ export const useSplashScreen = () => {
       return true
     } catch (error) {
       console.error('Error during app initialization:', error)
-      // Still mark as ready to prevent infinite splash
-      setAppReady()
+      // Redirect to profile error page on any profile-related error
+      await handleProfileError(error)
       return false
     }
   }

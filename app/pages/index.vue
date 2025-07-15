@@ -31,8 +31,8 @@
             <div class="text-sm text-gray-600">{{ $t('index.settings_desc') }}</div>
           </NuxtLink>
           <button
-            @click="openTransactionDrawer"
             class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-[#EAF6FC] dark:hover:bg-gray-500 transition-colors w-full text-left"
+            @click="openTransactionDrawer"
           >
             <div class="font-medium text-primary">View Transaction Details</div>
             <div class="text-sm text-gray-600">
@@ -62,7 +62,7 @@
     <TransactionDetailDrawer
       :model-value="showTransactionDrawer"
       :transaction-id="selectedTransactionId"
-      @update:modelValue="onUpdateModelValue"
+      @update:model-value="onUpdateModelValue"
     />
   </div>
 </template>

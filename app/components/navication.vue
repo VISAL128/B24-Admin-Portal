@@ -33,7 +33,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: t('transactions'),
-      icon: 'i-material-symbols-light-receipt-long',
+      icon: 'i-material-symbols-receipt-long',
       size: 'lg',
       to: '/transactions',
       active: activeStates.value.transactions,
@@ -43,6 +43,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
       icon: 'i-material-symbols-light-account-balance-wallet',
       size: 'lg',
       active: activeStates.value.digitalWallet,
+      defaultOpen: true,
       children: [
         {
           label: t('wallet'),
@@ -68,7 +69,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('navigation.banks'),
-          icon: 'i-material-symbols-light-account-balance',
+          icon: 'i-material-symbols-account-balance-rounded',
           size: 'lg',
           to: '/organization/banks',
           active: activeStates.value.banks,

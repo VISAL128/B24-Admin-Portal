@@ -6,7 +6,7 @@ import { getCPOsBySuppliers } from '../logic/management_api_logic';
 export default defineEventHandler(async (event): Promise<ApiResponse<Cpo[]>> => {
   const body = await readBody<CpoBySupplierRequest>(event);
 
-      let response = await getCPOsBySuppliers(body);
+      const response = await getCPOsBySuppliers(body);
       return {
           code: 'SUCCESS',
           message: 'Success',

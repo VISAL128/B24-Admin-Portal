@@ -12,5 +12,5 @@ export interface PgwModuleResponse<T> {
   code: string // '000'
   message: string // 'Success'
   message_kh?: string // 'ជោគជ័យ'
-  data: T
+  data?: T
 }

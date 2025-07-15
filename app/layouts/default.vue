@@ -14,16 +14,16 @@
           isNavExpanded ? 'w-[260px]' : 'w-[60px]',
         ]"
       >
-        <B24header :isNavExpanded="isNavExpanded" />
+        <B24header :is-header-nav-open="isNavExpanded" />
 
         <Navication :collapsed="!isNavExpanded" />
 
         <!-- Toggle button for navigation -->
         <UButton
-          @click="toggleNavigation"
           variant="ghost"
           size="sm"
           class="absolute bottom-2 right-2 p-1"
+          @click="toggleNavigation"
         >
           <Icon
             :name="isNavExpanded ? 'heroicons:chevron-left' : 'heroicons:chevron-right'"
@@ -44,6 +44,12 @@
                   <!-- <span v-if="isDevMode" class="text-xs text-gray-500">
                     {{ useCookie('profile').value || 'No profile available' }}
                   </span> -->
+                  <span>
+                    {{
+                      `Mockup Profile: ${auth.currentProfile.value?.code} - ${auth.currentProfile.value?.name}` ||
+                      'No profile'
+                    }}
+                  </span>
                   <UPopover placement="bottom-end" :offset="[0, 10]">
                     <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2">
                       <span class="ml-1 font-medium">{{
@@ -55,13 +61,13 @@
                         <UButton
                           variant="ghost"
                           class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                          block
+                          size="sm"
                           @click="
                             () => {
                               setLanguage('en')
                             }
                           "
-                          block
-                          size="sm"
                           >🇬🇧
                           <span class="text-left w-full">
                             <!-- {{
@@ -73,13 +79,13 @@
                         <UButton
                           variant="ghost"
                           class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                          block
+                          size="sm"
                           @click="
                             () => {
                               setLanguage('km')
                             }
                           "
-                          block
-                          size="sm"
                           >🇰🇭
                           <span class="text-left w-full">
                             ភាសាខ្មែរ
@@ -138,84 +144,85 @@
                       <!-- Menu Items -->
                       <div class="space-y-1">
                         <UButton
-                          @click="handleUserProfile"
                           variant="ghost"
                           size="md"
                           class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          @click="handleUserProfile"
                         >
                           <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
                           {{ t('user_profile') }}
                         </UButton>
 
                         <UButton
-                          @click="handleSettings"
                           variant="ghost"
                           size="md"
                           class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          @click="handleSettings"
                         >
                           <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
                           {{ t('profile_popup.settings') }}
                         </UButton>
 
-                        <!-- Confirmation Logout Modal -->
-                        <UModal
-                          :title="t('confirmation')"
-                          v-model:open="isShowLogoutConfirmModal"
-                          :transition="true"
-                          :description="t('logout')"
-                          :close="{
-                            class: 'rounded-full',
-                            onClick: () => logoutEmit('close', false),
-                          }"
+                        <UButton
+                          variant="ghost"
+                          size="md"
+                          class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          @click="isShowLogoutConfirmModal = true"
                         >
-                          <UButton
-                            variant="ghost"
-                            size="md"
-                            class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          >
-                            <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
-                            {{ t('logout') }}
-                          </UButton>
-
-                          <template #body>
-                            <div class="flex flex-col items-center text-center py-6">
-                              <!-- Icon with circle background using Bill24 colors -->
-                              <div
-                                class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                                style="background-color: #eaf6fc"
-                              >
-                                <UIcon
-                                  name="i-lucide-alert-triangle"
-                                  class="text-3xl opacity-80"
-                                  style="color: #43b3de"
-                                />
-                              </div>
-
-                              <!-- Question text -->
-                              <h4 class="text-md font-semibold mb-1">
-                                {{ t('logout_confirmation') }}
-                              </h4>
-                            </div>
-                          </template>
-                          <template #footer>
-                            <div class="w-full flex flex-row justify-end gap-2">
-                              <UButton
-                                :label="t('no')"
-                                color="neutral"
-                                variant="outline"
-                                @click="closeConfirmationModal"
-                                class="w-16 justify-center"
-                              />
-                              <UButton
-                                :label="t('yes')"
-                                color="primary"
-                                @click="handleLogout"
-                                class="w-16 justify-center"
-                              />
-                            </div>
-                          </template>
-                        </UModal>
+                          <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
+                          {{ t('logout') }}
+                        </UButton>
                       </div>
+
+                      <!-- Confirmation Logout Modal - Moved outside of menu items -->
+                      <UModal
+                        v-model:open="isShowLogoutConfirmModal"
+                        :title="t('confirmation')"
+                        :transition="true"
+                        :description="t('logout')"
+                        :close="{
+                          class: 'rounded-full',
+                          onClick: () => logoutEmit('close', false),
+                        }"
+                      >
+                        <template #body>
+                          <div class="flex flex-col items-center text-center py-6">
+                            <!-- Icon with circle background using Bill24 colors -->
+                            <div
+                              class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                              style="background-color: #eaf6fc"
+                            >
+                              <UIcon
+                                name="i-lucide-alert-triangle"
+                                class="text-3xl opacity-80"
+                                style="color: #43b3de"
+                              />
+                            </div>
+
+                            <!-- Question text -->
+                            <h4 class="text-md font-semibold mb-1">
+                              {{ t('logout_confirmation') }}
+                            </h4>
+                          </div>
+                        </template>
+                        <template #footer>
+                          <div class="w-full flex flex-row justify-end gap-2">
+                            <UButton
+                              :label="t('no')"
+                              color="neutral"
+                              variant="outline"
+                              class="w-16 justify-center"
+                              @click="closeConfirmationModal"
+                            />
+                            <UButton
+                              :label="t('yes')"
+                              color="primary"
+                              class="w-16 justify-center"
+                              @click="handleLogout"
+                            />
+                          </div>
+                        </template>
+                      </UModal>
                     </div>
                   </template>
                 </UPopover>
@@ -239,10 +246,11 @@
 import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const { locale, t, setLocale } = useI18n()
+const { locale, t } = useI18n()
 const { setLanguage, initializeLanguage } = useLanguage()
 const popoverRef = ref<{ close: () => void } | null>(null)
 const logoutEmit = defineEmits<{ close: [boolean] }>()
+const runtimeCon = useRuntimeConfig()
 
 const isNavExpanded = ref(true)
 
@@ -270,15 +278,12 @@ const toggleNavigation = () => {
 
 // User menu handlers
 const handleUserProfile = () => {
-  navigateTo('/profile')
+  // Navigate to Keycloak's user profile
+  window.open(runtimeCon.public.userProfileUrl, '_blank')
 }
 
 const handleSettings = () => {
   navigateTo('/settings')
-}
-
-const showConfirmationModal = () => {
-  isShowLogoutConfirmModal.value = true
 }
 
 const closeConfirmationModal = () => {

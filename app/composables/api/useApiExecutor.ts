@@ -3,9 +3,7 @@ import type { ApiResponse } from '~/models/baseModel'
 export const useApiExecutor = () => {
   const errorHandler = useErrorHandler()
 
-  const execute = async <T>(
-    requestFn: () => Promise<ApiResponse<T>>
-  ): Promise<ApiResponse<T>> => {
+  const execute = async <T>(requestFn: () => Promise<ApiResponse<T>>): Promise<ApiResponse<T>> => {
     try {
       const response = await requestFn()
 
@@ -24,27 +22,25 @@ export const useApiExecutor = () => {
       return {
         code: 'ERROR',
         message: error?.message || 'Failed to fetch',
-        data: null as any
+        data: null as any,
       }
     }
   }
 
-  const executeV2 = async <T>(
-    requestFn: () => Promise<T>
-  ): Promise<T> => {
+  const executeV2 = async <T>(requestFn: () => Promise<T>): Promise<T> => {
     try {
       const response = await requestFn()
       return response
     } catch (error: any) {
-      console.error('Request failed:', error)
+      // console.error('Request failed:', error)
       // Handle and show error notification
       errorHandler.handleApiError(error)
       throw error // Re-throw to allow caller to handle if needed
     }
   }
 
-  return { 
-    execute ,
-    executeV2
+  return {
+    execute,
+    executeV2,
   }
 }
