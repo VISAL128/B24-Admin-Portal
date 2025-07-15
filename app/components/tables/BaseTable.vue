@@ -34,57 +34,81 @@
               <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
             </template>
           </UPopover>
-          <UButton variant="ghost" class="p-2" @click="showAdvancedOptions = true">
-            <UIcon name="i-lucide:filter" class="w-4 h-4" />
-          </UButton>
+          <UPopover v-model:open="showAdvancedOptions">
+            <UButton variant="ghost" class="p-2 relative">
+              <UIcon name="i-lucide:filter" class="w-4 h-4 text-gray-900 dark:text-white" />
+              <span
+                v-if="activeFilterCount > 0"
+                class="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center"
+              >
+                {{ activeFilterCount }}
+              </span>
+            </UButton>
+            <template #content>
+              <div
+                class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-4 min-w-[200px] space-y-4"
+              >
+                <!-- Column Filters -->
+                <div class="space-y-2">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Filters</h4>
+                  <div class="space-y-2">
+                    <template v-for="col in filteredColumns" :key="col.id">
+                      <template v-if="col.enableColumnFilter">
+                        <USelectMenu
+                          :model-value="{
+                            label: columnFilters[col.id] || getColumnLabel(col),
+                            value: columnFilters[col.id] || '',
+                          }"
+                          :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
+                          option-attribute="label"
+                          value-attribute="value"
+                          class="w-full"
+                          :search-input="false"
+                          @update:modelValue="
+                            (val) => {
+                              columnFilters[col.id] = val?.value || ''
+                              emit('filter-change', col.id, columnFilters[col.id] || '')
+                            }
+                          "
+                        />
+                      </template>
+                    </template>
+                  </div>
+                </div>
+                <!-- Sort Select Menu -->
+                <div class="space-y-2">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Sort By</h4>
+                  <USelectMenu
+                    :model-value="{
+                      label: selectedSortLabel || t('sort_by'),
+                      value: selectedSortField
+                        ? `${selectedSortField}:${selectedSortDirection}`
+                        : '',
+                      icon: selectedSortField
+                        ? selectedSortDirection === 'asc'
+                          ? 'i-lucide-arrow-up'
+                          : 'i-lucide-arrow-down'
+                        : '',
+                    }"
+                    :items="sortMenuItems"
+                    option-attribute="label"
+                    value-attribute="value"
+                    class="w-full"
+                    :search-input="false"
+                    @update:modelValue="handleSortMenuChange"
+                  >
+                    <template #item="{ item }">
+                      <div class="flex items-center justify-between w-full">
+                        <span>{{ item.label }}</span>
+                        <UIcon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
+                      </div>
+                    </template>
+                  </USelectMenu>
+                </div>
+              </div>
+            </template>
+          </UPopover>
         </div>
-        <template v-for="col in filteredColumns" :key="col.id">
-          <template v-if="col.enableColumnFilter">
-            <USelectMenu
-              :model-value="{
-                label: columnFilters[col.id] || getColumnLabel(col),
-                value: columnFilters[col.id] || '',
-              }"
-              :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
-              option-attribute="label"
-              value-attribute="value"
-              class="w-40"
-              :search-input="false"
-              @update:modelValue="
-                (val) => {
-                  columnFilters[col.id] = val?.value || ''
-                  emit('filter-change', col.id, columnFilters[col.id] || '')
-                }
-              "
-            />
-          </template>
-        </template>
-
-        <!-- 🧭 Sort Select Menu -->
-        <USelectMenu
-          :model-value="{
-            label: selectedSortLabel || t('sort_by'),
-            value: selectedSortField ? `${selectedSortField}:${selectedSortDirection}` : '',
-            icon: selectedSortField
-              ? selectedSortDirection === 'asc'
-                ? 'i-lucide-arrow-up'
-                : 'i-lucide-arrow-down'
-              : '',
-          }"
-          :items="sortMenuItems"
-          option-attribute="label"
-          value-attribute="value"
-          class="w-40"
-          :search-input="false"
-          @update:modelValue="handleSortMenuChange"
-        >
-          <template #item="{ item }">
-            <div class="flex items-center justify-between w-full">
-              <span>{{ item.label }}</span>
-              <UIcon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
-            </div>
-          </template>
-        </USelectMenu>
       </div>
 
       <!-- ⚙️ Column Configuration -->
@@ -158,6 +182,7 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import type { BaseTableColumn } from '~/components/tables/table'
@@ -285,6 +310,13 @@ const sortMenuItems = computed<SortMenuItem[]>(() => {
           : undefined,
     })),
   ]
+})
+
+// Computed property for active filter count
+const activeFilterCount = computed(() => {
+  const columnFilterCount = Object.values(columnFilters.value).filter((val) => val !== '').length
+  const sortFilterCount = selectedSortField.value ? 1 : 0
+  return columnFilterCount + sortFilterCount
 })
 
 // Handler for sort menu changes
