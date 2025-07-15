@@ -44,12 +44,12 @@
                   <!-- <span v-if="isDevMode" class="text-xs text-gray-500">
                     {{ useCookie('profile').value || 'No profile available' }}
                   </span> -->
-                  <span>
+                  <!-- <span>
                     {{
                       `Mockup Profile: ${auth.currentProfile.value?.code} - ${auth.currentProfile.value?.name}` ||
                       'No profile'
                     }}
-                  </span>
+                  </span> -->
                   <UPopover placement="bottom-end" :offset="[0, 10]">
                     <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2">
                       <span class="ml-1 font-medium">{{
@@ -243,7 +243,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { locale, t } = useI18n()

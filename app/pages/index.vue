@@ -30,7 +30,8 @@
             <div class="font-medium text-primary">{{ $t('settings.title') }}</div>
             <div class="text-sm text-gray-600">{{ $t('index.settings_desc') }}</div>
           </NuxtLink>
-          <button
+          <!-- <button
+            @click="openTransactionDrawer"
             class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-[#EAF6FC] dark:hover:bg-gray-500 transition-colors w-full text-left"
             @click="openTransactionDrawer"
           >
@@ -38,7 +39,7 @@
             <div class="text-sm text-gray-600">
               Click to View Transaction Details Sideover ID X001
             </div>
-          </button>
+          </button> -->
         </div>
       </UCard>
 
@@ -59,35 +60,33 @@
             </UCard> -->
     </div>
     <!-- Drawer -->
-    <TransactionDetailDrawer
+    <!-- <TransactionDetailDrawer
       :model-value="showTransactionDrawer"
       :transaction-id="selectedTransactionId"
-      @update:model-value="onUpdateModelValue"
-    />
+      @update:modelValue="onUpdateModelValue"
+    /> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
 import { useAuth } from '~/composables/useAuth'
 
 const { t } = useI18n()
 const { user } = useAuth()
 
-const showTransactionDrawer = ref(false)
-const selectedTransactionId = ref('X001')
+// const showTransactionDrawer = ref(false)
+// const selectedTransactionId = ref('X001')
 
-const openTransactionDrawer = () => {
-  selectedTransactionId.value = 'X001'
-  showTransactionDrawer.value = true
-}
+// const openTransactionDrawer = () => {
+//   selectedTransactionId.value = 'X001'
+//   showTransactionDrawer.value = true
+// }
 
-const onUpdateModelValue = (value: boolean) => {
-  console.log('update:modelValue emitted with value:', value)
-  showTransactionDrawer.value = value
-}
+// const onUpdateModelValue = (value: boolean) => {
+//   console.log('update:modelValue emitted with value:', value)
+//   showTransactionDrawer.value = value
+// }
 
 definePageMeta({ auth: true })
 

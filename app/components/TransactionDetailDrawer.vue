@@ -47,7 +47,7 @@
                 </p>
                 <div class="flex items-baseline gap-1">
                   <span class="text-2xl font-bold text-gray-900 dark:text-white">
-                    ${{ transactionData.transactionAmount.toFixed(2) }}
+                    {{ transactionData.transactionAmount.toFixed(2) }}
                   </span>
                   <span class="text-lg font-medium text-gray-600 dark:text-gray-400">
                     {{ transactionData.currency }}
@@ -73,7 +73,8 @@
           <!-- Transaction Overview Section -->
           <div class="px-4 sm:px-0">
             <!-- Transaction Overview Title -->
-            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
+            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <UIcon name="i-heroicons-document-text" class="w-5 h-5 mr-2 text-primary" />
               Transaction Overview
             </h4>
 
@@ -121,6 +122,14 @@
                     v-else-if="field.type === 'code' && field.copyable"
                     class="text-sm text-primary dark:text-primary cursor-pointer hover:underline font-mono break-all"
                     @click="copyToClipboard(field.rawValue || field.value)"
+                  >
+                    {{ field.value }}
+                  </span>
+
+                  <!-- Grey Text -->
+                  <span
+                    v-else-if="field.type === 'grey-text'"
+                    class="text-sm text-gray-500 dark:text-gray-400"
                   >
                     {{ field.value }}
                   </span>
@@ -196,6 +205,63 @@
             </div>
           </div>
 
+          <!-- Customer Details Table -->
+          <div class="px-4 sm:px-0">
+            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <UIcon name="i-heroicons-users" class="w-5 h-5 mr-2 text-primary" />
+              Customer Details
+            </h4>
+
+            <UTable
+              :data="customerDetails"
+              :columns="customerColumns"
+              class="w-full"
+              :ui="{
+                thead: 'whitespace-nowrap',
+                th: 'text-left whitespace-nowrap',
+                td: 'whitespace-nowrap',
+              }"
+            />
+          </div>
+
+          <!-- Transaction Allocation Table -->
+          <div class="px-4 sm:px-0">
+            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <UIcon name="i-heroicons-currency-dollar" class="w-5 h-5 mr-2 text-primary" />
+              Transaction Allocation
+            </h4>
+
+            <UTable
+              :data="transactionAllocateData"
+              :columns="transactionAllocateColumns"
+              class="w-full"
+              :ui="{
+                thead: 'whitespace-nowrap',
+                th: 'text-left whitespace-nowrap',
+                td: 'whitespace-nowrap align-top',
+              }"
+            />
+          </div>
+
+          <!-- Repush Transaction Table -->
+          <div class="px-4 sm:px-0">
+            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 mr-2 text-primary" />
+              Repush Transaction History
+            </h4>
+            <UTable
+              :data="webhookHistoryData"
+              :columns="webhookColumns"
+              class="w-full"
+              :ui="{
+                thead: 'whitespace-nowrap',
+                th: 'text-left whitespace-nowrap px-3 py-3',
+                td: 'whitespace-nowrap align-top px-3 py-3',
+                tbody: 'divide-y divide-gray-200 dark:divide-gray-700',
+              }"
+            />
+          </div>
+
           <!-- Timeline -->
           <!-- <UCard>
             <template #header>
@@ -246,9 +312,387 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
+
+interface CustomerDetail {
+  id: string
+  customerName: string
+  customerCode: string
+  billNumber: string
+  amount: string
+  currency: string
+}
+
+const customerDetails: CustomerDetail[] = [
+  {
+    id: '1',
+    customerName: 'John Doe',
+    customerCode: 'CUST-001',
+    billNumber: 'BILL-TX000001-A',
+    amount: '1,200.00',
+    currency: 'USD',
+  },
+  {
+    id: '2',
+    customerName: 'Jane Smith',
+    customerCode: 'CUST-002',
+    billNumber: 'BILL-TX000001-B',
+    amount: '800.00',
+    currency: 'USD',
+  },
+]
+const customerColumns = [
+  {
+    id: 'row_number',
+    header: () => '#',
+    cell: ({ row }: any) => h('div', { class: 'text-left font-medium' }, row.index + 1),
+    size: 50,
+    maxSize: 50,
+    enableSorting: false,
+  },
+  {
+    id: 'customerName',
+    header: () => 'Customer Name',
+    accessorKey: 'customerName',
+    size: 200,
+    minSize: 180,
+  },
+  {
+    id: 'customerCode',
+    header: () => 'Code',
+    accessorKey: 'customerCode',
+    size: 150,
+    minSize: 120,
+  },
+  {
+    id: 'billNumber',
+    header: () => 'Bill Number',
+    accessorKey: 'billNumber',
+    size: 180,
+    minSize: 160,
+  },
+  {
+    id: 'amount',
+    header: () => 'Amount',
+    accessorKey: 'amount',
+    cell: ({ row }: any) => h('span', { class: 'font-medium text-blue-600' }, row.original.amount),
+    size: 120,
+    minSize: 100,
+  },
+  {
+    id: 'currency',
+    header: () => 'Currency',
+    accessorKey: 'currency',
+    size: 80,
+    minSize: 70,
+  },
+] as any[]
+const transactionAllocateData = [
+  {
+    id: '1',
+    customer: 'John Doe',
+    transactionAmount: 50.0,
+    billerName: 'GreenCharge Cambodia (Station A)',
+    amount: 25.0,
+    currency: 'USD',
+    date: '15/07/2025 10:30 am',
+  },
+  {
+    id: '2',
+    customer: 'John Doe',
+    transactionAmount: 50.0,
+    billerName: 'EV Plus (Station B)',
+    amount: 25.0,
+    currency: 'USD',
+    date: '15/07/2025 12:00 pm',
+  },
+]
+
+const transactionAllocateColumns = [
+  {
+    id: 'row_number',
+    header: () => '#',
+    cell: ({ row }: any) => h('div', { class: 'text-left font-medium' }, row.index + 1),
+    size: 50,
+    maxSize: 50,
+    enableSorting: false,
+  },
+  {
+    id: 'date',
+    header: () => 'Date',
+    accessorKey: 'date',
+    size: 160,
+    minSize: 140,
+  },
+  {
+    id: 'customer',
+    header: () => 'Customer',
+    accessorKey: 'customer',
+    size: 180,
+    minSize: 160,
+  },
+  {
+    id: 'transactionAmount',
+    header: () => 'Amount',
+    accessorKey: 'transactionAmount',
+    cell: ({ row }: any) =>
+      h(
+        'span',
+        { class: 'text-right block text-gray-800 dark:text-white font-medium' },
+        `${row.original.transactionAmount.toFixed(2)}`
+      ),
+    size: 140,
+    minSize: 120,
+  },
+  {
+    id: 'billerName',
+    header: () => 'Charging Station / Operator',
+    accessorKey: 'billerName',
+    size: 160,
+    minSize: 150,
+  },
+  {
+    id: 'amount',
+    header: () => 'Allocated Amount',
+    accessorKey: 'amount',
+    cell: ({ row }: any) =>
+      h(
+        'span',
+        { class: 'text-right block text-blue-600 font-medium' },
+        `${row.original.amount.toFixed(2)}`
+      ),
+    size: 120,
+    minSize: 100,
+  },
+  {
+    id: 'currency',
+    header: () => 'Currency',
+    accessorKey: 'currency',
+    size: 80,
+    minSize: 70,
+  },
+]
+
+const webhookHistoryData = ref([
+  {
+    id: '1',
+    date: '05/02/2024 2:30 pm',
+    status: 'Failed',
+    url: 'https://example.com/webhook',
+    payload: JSON.stringify(
+      {
+        transaction_id: '9876543210',
+        status: 'failed',
+      },
+      null,
+      2
+    ),
+    retrying: false,
+  },
+  {
+    id: '2',
+    date: '06/02/2024 9:15 am',
+    status: 'Success',
+    url: 'https://example.com/webhook',
+    payload: JSON.stringify(
+      {
+        transaction_id: '9876543210',
+        status: 'success',
+      },
+      null,
+      2
+    ),
+    retrying: false,
+  },
+  {
+    id: '3',
+    date: '06/02/2024 9:45 am',
+    status: 'Failed',
+    url: 'https://example.com/webhook',
+    payload: JSON.stringify(
+      {
+        transaction_id: '9876543210',
+        status: 'failed',
+      },
+      null,
+      2
+    ),
+    retrying: false,
+  },
+])
+
+const retryWebhook = (id: string) => {
+  const item = webhookHistoryData.value.find((x) => x.id === id)
+  if (!item) return
+
+  item.retrying = true
+  notification.showInfo({
+    title: 'Retry Webhook',
+    description: `Retrying webhook for ID ${id}...`,
+  })
+
+  // Simulate retry delay
+  setTimeout(() => {
+    item.status = 'Success'
+    item.retrying = false
+    notification.showSuccess({
+      title: 'Webhook Success',
+      description: `Webhook for ID ${id} has been resent successfully.`,
+    })
+  }, 1500)
+}
+
+const webhookColumns = [
+  {
+    id: 'row_number',
+    header: () => '#',
+    cell: ({ row }: any) => h('div', { class: 'text-left font-medium' }, row.index + 1),
+    size: 50,
+    maxSize: 50,
+    enableSorting: false,
+  },
+  {
+    id: 'date',
+    header: () => 'Datetime',
+    accessorKey: 'date',
+    size: 150,
+  },
+  {
+    id: 'status',
+    header: () => 'Status',
+    accessorKey: 'status',
+    cell: ({ row }: any) =>
+      h(
+        'button',
+        {
+          class: `inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-default ${
+            row.original.status === 'Failed'
+              ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+              : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+          }`,
+        },
+        row.original.status
+      ),
+    size: 100,
+  },
+  {
+    id: 'url',
+    header: () => 'Webhook URL',
+    accessorKey: 'url',
+    cell: ({ row }: any) =>
+      h(
+        'a',
+        {
+          href: row.original.url,
+          target: '_blank',
+          class: 'text-primary hover:underline text-sm truncate block max-w-[200px] cursor-pointer',
+          title: row.original.url,
+          onClick: (e: Event) => {
+            e.preventDefault()
+            copyToClipboard(row.original.url)
+          },
+        },
+        row.original.url
+      ),
+    size: 200,
+  },
+  {
+    id: 'payload',
+    header: () => 'Payload Data',
+    accessorKey: 'payload',
+    cell: ({ row }: any) => {
+      const parsedPayload = JSON.parse(row.original.payload)
+      return h(
+        'div',
+        { class: 'space-y-1 cursor-pointer', onClick: () => copyToClipboard(row.original.payload) },
+        [
+          h(
+            'div',
+            {
+              class:
+                'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
+            },
+            [
+              h('span', { class: 'font-medium' }, 'Transaction ID: '),
+              h('span', { class: 'font-mono' }, parsedPayload.transaction_id),
+            ]
+          ),
+          h(
+            'div',
+            {
+              class:
+                'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
+            },
+            [
+              h('span', { class: 'font-medium' }, 'Status: '),
+              h(
+                'span',
+                {
+                  class: `font-mono px-1 py-0.5 rounded text-xs ${
+                    parsedPayload.status === 'failed'
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                      : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                  }`,
+                },
+                parsedPayload.status
+              ),
+            ]
+          ),
+          h('div', { class: 'text-xs text-gray-400 mt-1 italic' }, 'Click to copy full payload'),
+        ]
+      )
+    },
+    size: 250,
+  },
+  {
+    id: 'actions',
+    header: () => 'Actions',
+    cell: ({ row }: any) =>
+      row.original.status === 'Failed'
+        ? h(
+            'button',
+            {
+              class: `
+                inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md
+                transition-colors duration-200
+                ${
+                  row.original.retrying
+                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400'
+                    : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
+                }
+              `,
+              disabled: row.original.retrying,
+              onClick: () => retryWebhook(row.original.id),
+            },
+            [
+              row.original.retrying
+                ? h('svg', {
+                    class: 'animate-spin -ml-1 mr-2 h-3 w-3',
+                    xmlns: 'http://www.w3.org/2000/svg',
+                    fill: 'none',
+                    viewBox: '0 0 24 24',
+                    innerHTML: `
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    `,
+                  })
+                : h('svg', {
+                    class: '-ml-1 mr-2 h-3 w-3',
+                    xmlns: 'http://www.w3.org/2000/svg',
+                    fill: 'none',
+                    viewBox: '0 0 24 24',
+                    stroke: 'currentColor',
+                    innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />`,
+                  }),
+              row.original.retrying ? 'Retrying...' : 'Retry',
+            ]
+          )
+        : h('span', { class: 'text-xs text-gray-400' }, '—'),
+    size: 120,
+  },
+]
 
 interface Props {
   modelValue: boolean
@@ -312,10 +756,10 @@ const exportTransaction = () => {
 // Transaction data
 const transactionData = {
   transactionNo: props.transactionId || 'TX000001',
-  date: '7/11/2025, 2:09:11 PM',
+  date: '15/07/2025 10:03 am',
   transactionType: 'Deeplink / Checkout',
   currency: 'USD',
-  status: 'Success',
+  status: 'Failed',
   transactionAmount: 150.75,
   settlementAmount: 148.25,
   customerFee: 0.0,
@@ -413,17 +857,17 @@ const transactionOverviewFields = computed(() => [
   },
   {
     label: 'Settlement Amount',
-    value: `$${transactionData.settlementAmount.toFixed(2)} ${transactionData.currency}`,
+    value: `${transactionData.settlementAmount.toFixed(2)} ${transactionData.currency}`,
     type: 'amount',
   },
   {
     label: 'Customer Fee',
-    value: `$${transactionData.customerFee.toFixed(2)} ${transactionData.currency}`,
+    value: `${transactionData.customerFee.toFixed(2)} ${transactionData.currency}`,
     type: 'amount',
   },
   {
     label: 'Supplier Fee',
-    value: `$${transactionData.supplierFee.toFixed(2)} ${transactionData.currency}`,
+    value: `${transactionData.supplierFee.toFixed(2)} ${transactionData.currency}`,
     type: 'amount',
   },
   {
@@ -440,7 +884,7 @@ const transactionOverviewFields = computed(() => [
   },
   {
     label: 'Account Number',
-    value: transactionData.accountNumber,
+    value: maskAccountNumber(transactionData.accountNumber),
     type: 'code',
     copyable: true,
     rawValue: transactionData.accountNumber,
@@ -479,4 +923,12 @@ const timeline = [
     border: 'border-gray-300 dark:border-gray-600',
   },
 ]
+
+// Helper function to mask account number like credit card
+const maskAccountNumber = (accountNumber: string): string => {
+  if (!accountNumber || accountNumber.length < 4) return accountNumber
+  const lastFour = accountNumber.slice(-4)
+  const maskedPart = '*'.repeat(accountNumber.length - 4)
+  return `${maskedPart}${lastFour}`
+}
 </script>
