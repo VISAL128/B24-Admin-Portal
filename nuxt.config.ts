@@ -57,8 +57,7 @@ export default defineNuxtConfig({
             ? 'http://localhost:3000/auth/keycloak/callback'
             : process.env.KEYCLOAK_REDIRECT_URI ||
               'https://admin-staging.bill24.io/auth/keycloak/callback',
-        optionalClaims: ['resource_access', 'roles', 'email', 'profile'],
-        // exposeAccessToken: true
+        exposeAccessToken: true,
       },
     },
   },
