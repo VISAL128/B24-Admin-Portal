@@ -397,5 +397,10 @@
   "settlement_bank": "ធនាគារទូទាត់",
   "collection_bank": "ធនាគារប្រមូលប្រាក់",
   "settlement_type": "ប្រភេទទូទាត់",
-  "all": "ទាំងអស់"
+  "all": "ទាំងអស់",
+  "transaction_summary": "ប្រតិបត្តិការសង្ខេប",
+  "today": "ថ្ងៃនេះ",
+  "this_week": "សប្ដាហ៍នេះ",
+  "this_month": "ខែនេះ",
+  "this_year": "ឆ្នាំនេះ"
 }
