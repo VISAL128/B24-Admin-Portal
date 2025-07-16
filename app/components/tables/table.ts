@@ -7,3 +7,4 @@ export type BaseTableColumn<T> = TableColumn<T> & {
   filterOptions?: Array<{ label: string; value: string }>
   accessorKey?: keyof T | string
 }
+
