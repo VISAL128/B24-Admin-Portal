@@ -197,13 +197,18 @@ function activateCurrentRoute() {
 // Get version from runtime config
 const { $config } = useNuxtApp()
 const appVersion = ref($config.public.appVersion || 'v1.0.0')
+const props = defineProps<{
+  collapsed?: boolean
+}>()
 </script>
 
 <template>
   <div class="flex flex-col h-full">
     <UNavigationMenu
       highlight
+      tooltip
       popover
+      :collapsed="props.collapsed"
       orientation="vertical"
       :items="items"
       class="w-full flex-1 transition-all duration-200"
@@ -214,7 +219,7 @@ const appVersion = ref($config.public.appVersion || 'v1.0.0')
       }"
     />
 
-    <div class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">
+    <div v-if="!props.collapsed" class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">
       <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
         {{ appVersion }}
       </p>
