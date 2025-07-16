@@ -441,7 +441,16 @@
     "title": "Bill24 Payment Management Portal",
     "subtitle": "Management & Settlement Platform",
     "loading": "Initializing...",
-    "version": "Version"
+    "version": "Version",
+    "progress": {
+      "initializing": "Initializing application...",
+      "checking_auth": "Checking authentication...",
+      "loading_profile": "Loading user profile...",
+      "validating_profile": "Validating profile data...",
+      "loading_preferences": "Loading user preferences...",
+      "finalizing": "Finalizing setup...",
+      "complete": "Ready!"
+    }
   },
   "profile_error": {
     "title": "Profile Access Denied",

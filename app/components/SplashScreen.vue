@@ -50,6 +50,11 @@
         </div>
       </div>
 
+      <!-- Progress Description -->
+      <div class="mt-3 text-sm text-[#211e1f]/70 animate-fade-in">
+        {{ t(`splash.progress.${currentStep}`) }}
+      </div>
+
       <!-- Version Info -->
       <div class="mt-8 text-xs text-[#211e1f]/50 animate-fade-in delay-500">
         {{ t('splash.version') }} {{ config.public.appVersion }}
@@ -61,7 +66,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const { t } = useI18n()
-const { checkAppReadiness } = useSplashScreen()
+const { checkAppReadiness, currentStep, progress: splashProgress } = useSplashScreen()
 
 // Props
 interface Props {
@@ -78,8 +83,10 @@ const props = withDefaults(defineProps<Props>(), {
 const isVisible = ref(true)
 const isFadingOut = ref(false)
 const isAnimating = ref(false)
-const progress = ref(0)
 const isAppReady = ref(false)
+
+// Use progress from composable
+const progress = computed(() => splashProgress.value)
 
 // Emits
 const emit = defineEmits<{
@@ -89,14 +96,10 @@ const emit = defineEmits<{
 // Check app readiness and update progress
 const checkAppReadinessWithProgress = async () => {
   try {
-    // Start progress simulation
-    progress.value = 10
-
-    // Check app readiness
+    // Check app readiness (progress is managed in the composable)
     const ready = await checkAppReadiness()
 
     if (ready) {
-      progress.value = 100
       isAppReady.value = true
 
       // Wait for minimum duration before hiding
@@ -106,13 +109,9 @@ const checkAppReadinessWithProgress = async () => {
       setTimeout(() => {
         hideSplashScreen()
       }, remaining)
-    } else {
-      // If not ready, keep progress at partial completion
-      progress.value = 50
     }
   } catch (error) {
     console.error('App readiness check failed:', error)
-    progress.value = 50
   }
 }
 
@@ -139,7 +138,6 @@ onMounted(() => {
 })
 
 const hideSplashScreen = () => {
-  progress.value = 100
   isFadingOut.value = true
 
   setTimeout(() => {

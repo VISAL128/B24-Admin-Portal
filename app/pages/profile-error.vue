@@ -40,7 +40,6 @@
           {{ t('profile_error.possible_reasons') }}
         </p>
         <ul class="text-sm text-error text-left list-disc list-inside space-y-1">
-          <li>{{ t('profile_error.reason_0') }}</li>
           <li>{{ t('profile_error.reason_1') }}</li>
           <li>{{ t('profile_error.reason_2') }}</li>
           <li>{{ t('profile_error.reason_3') }}</li>

@@ -14,18 +14,50 @@
 
 import type { SupplierProfile } from '~/models/supplier'
 
-interface UserInfo {
-  id: string
-  username: string
-  email: string
-  firstName: string
-  lastName: string
+interface RealmAccess {
   roles: string[]
-  fullName: string
-  picture?: string
 }
 
-interface OidcUser {
+interface ResourceAccess {
+  [resourceName: string]: {
+    roles: string[]
+  }
+}
+
+interface _KeycloakJwtPayload {
+  exp: number
+  iat: number
+  auth_time: number
+  jti: string
+  iss: string
+  aud: string[]
+  sub: string
+  typ: string
+  azp: string
+  sid: string
+  acr: string
+  'allowed-origins': string[]
+  realm_access: RealmAccess
+  resource_access: ResourceAccess
+  scope: string
+  active_org: ActiveOrg
+  email_verified: boolean
+  name: string
+  preferred_username: string
+  given_name: string
+  family_name: string
+  picture?: string
+  email: string
+}
+
+interface ActiveOrg {
+  role: string[]
+  name: string
+  id: string
+  attributes: Record<string, string>
+}
+
+interface UserInfo {
   sub?: string
   preferred_username?: string
   email?: string
@@ -72,7 +104,7 @@ export const useAuth = () => {
   const extractUserInfo = (): UserInfo | null => {
     if (!oidc.user) return null
 
-    const oidcUser = (oidc.user.value?.userInfo || oidc.user.value || {}) as OidcUser
+    const oidcUser = (oidc.user.value?.userInfo || oidc.user.value || {}) as UserInfo
     return {
       id: oidcUser.sub || '',
       username: oidcUser.preferred_username || oidcUser.email || '',
@@ -138,7 +170,7 @@ export const useAuth = () => {
    */
   const hasRole = (role: string): boolean => {
     const userInfo = getUserInfo()
-    return userInfo?.roles.includes(role) || false
+    return userInfo?.roles?.includes(role) || false
   }
 
   /**
@@ -147,7 +179,11 @@ export const useAuth = () => {
   const hasAnyRole = (roles: string[]): boolean => {
     const userInfo = getUserInfo()
     if (!userInfo?.roles) return false
-    return roles.some((role) => userInfo.roles.includes(role))
+    return roles.some((role) => userInfo.roles?.includes(role))
+  }
+
+  const getToken = (): string | null => {
+    return oidc.user.value?.accessToken || null
   }
 
   // Watch for authentication state changes and sync to localStorage
@@ -173,11 +209,6 @@ export const useAuth = () => {
     getUserInfo,
     hasRole,
     hasAnyRole,
-
-    // Legacy compatibility (deprecated - tokens not available in OIDC)
-    getToken: () => {
-      console.warn('⚠️ getToken() is deprecated - tokens are managed server-side with OIDC')
-      return null
-    },
+    getToken
   }
 }
