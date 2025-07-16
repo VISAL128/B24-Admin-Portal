@@ -438,7 +438,7 @@
   "settlement_history_title": "Settlement History",
   "settlement_history_subtitle": "Generated on {date}",
   "splash": {
-    "title": "Bill24 Payment Management Portal",
+    "title": "Bill24 Payment Portal",
     "subtitle": "Management & Settlement Platform",
     "loading": "Initializing...",
     "version": "Version",
