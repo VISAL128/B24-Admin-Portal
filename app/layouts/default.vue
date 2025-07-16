@@ -44,12 +44,12 @@
                   <!-- <span v-if="isDevMode" class="text-xs text-gray-500">
                     {{ useCookie('profile').value || 'No profile available' }}
                   </span> -->
-                  <span>
+                  <!-- <span>
                     {{
                       `Mockup Profile: ${auth.currentProfile.value?.code} - ${auth.currentProfile.value?.name}` ||
                       'No profile'
                     }}
-                  </span>
+                  </span> -->
                   <UPopover placement="bottom-end" :offset="[0, 10]">
                     <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2">
                       <span class="ml-1 font-medium">{{
@@ -137,6 +137,34 @@
                             <span class="text-xs text-gray-500 dark:text-gray-400">
                               {{ user?.email || 'user@example.com' }}
                             </span>
+                          </div>
+                        </div>
+
+                        <!-- Current Profile Section -->
+                        <div
+                          v-if="auth.currentProfile.value"
+                          class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-600"
+                        >
+                          <div class="flex flex-col gap-1">
+                            <span
+                              class="text-xs font-medium text-gray-600 dark:text-gray-400 tracking-wide"
+                            >
+                              {{ t('profile_popup.business_profile') }}
+                            </span>
+                            <div class="flex pl-3 items-center gap-2">
+                              <Icon
+                                name="heroicons:building-office"
+                                class="w-4 h-4 text-primary"
+                              />
+                              <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                  {{ auth.currentProfile.value.name }}
+                                </span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                  {{ auth.currentProfile.value.code }}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -243,11 +271,11 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { locale, t } = useI18n()
-const { setLanguage, initializeLanguage } = useLanguage()
+const { setLanguage } = useLanguage()
 const popoverRef = ref<{ close: () => void } | null>(null)
 const logoutEmit = defineEmits<{ close: [boolean] }>()
 const runtimeCon = useRuntimeConfig()
@@ -260,11 +288,6 @@ const isShowLogoutConfirmModal = ref(false)
 
 const auth = useAuth()
 const user = auth.user
-
-// Initialize language on mount
-onMounted(() => {
-  initializeLanguage()
-})
 
 const colorMode = useColorMode ? useColorMode() : null
 const toggleTheme = () => {
@@ -292,13 +315,9 @@ const closeConfirmationModal = () => {
 
 const handleLogout = async () => {
   try {
-    console.log('🔄 User initiated logout...')
     await auth.logout()
-    // Don't manually navigate - let the auth composable handle the redirect
   } catch (error) {
     console.error('Logout failed:', error)
-    // Fallback: navigate to logout page if auth.logout fails
-    await navigateTo('/logout', { replace: true })
   }
 }
 

@@ -27,6 +27,14 @@ export default defineNuxtConfig({
       { code: 'en', name: 'English', file: 'en.json' },
       { code: 'km', name: 'Khmer', file: 'km.json' },
     ],
+    // langDir: 'i18n/locales/',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root',
+      alwaysRedirect: false,
+      fallbackLocale: 'en',
+    },
   },
   css: ['~/assets/css/main.css'],
   app: {
@@ -49,8 +57,7 @@ export default defineNuxtConfig({
             ? 'http://localhost:3000/auth/keycloak/callback'
             : process.env.KEYCLOAK_REDIRECT_URI ||
               'https://admin-staging.bill24.io/auth/keycloak/callback',
-        optionalClaims: ['resource_access', 'roles', 'email', 'profile'],
-        // exposeAccessToken: true
+        exposeAccessToken: true,
       },
     },
   },

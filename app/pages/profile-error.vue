@@ -99,7 +99,6 @@ import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 const { t } = useI18n()
 const { logout: authLogout, setProfileToCookie } = useAuth()
 const pgwApi = usePgwModuleApi()
-const { showError } = useNotification()
 const handleError = useErrorHandler()
 
 // Reactive state
@@ -113,28 +112,21 @@ definePageMeta({
 
 // Methods
 const tryAgain = async () => {
+  if (isRetrying.value) return // Prevent multiple clicks
   isRetrying.value = true
 
   try {
-    // Wait a moment for better UX
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
     // Retrying to fetch profile
     const profile = await pgwApi.getProfile()
-    if (profile.code === '000' && profile.data) {
+    if (profile) {
       // If profile is successfully fetched, set it in auth
-      setProfileToCookie(profile.data)
+      setProfileToCookie(profile)
       // Redirect to home or dashboard
       await navigateTo('/')
-    } else {
-      await showError({
-        title: profile.code,
-        description: profile.message,
-        duration: 3000,
-      })
     }
   } catch (error) {
-    console.error('Error during retry:', error)
+    // Handle error and show notification
+    handleError.handleApiError(error)
   } finally {
     isRetrying.value = false
   }

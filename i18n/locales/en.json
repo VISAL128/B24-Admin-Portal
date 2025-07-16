@@ -13,7 +13,9 @@
     "settings": "Settings",
     "subtitle": "Manage your information and settings",
     "edit_profile": "Edit Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "current_profile": "Current Profile",
+    "business_profile": "Business Profile"
   },
   "lang": {
     "english": "English",
@@ -178,7 +180,7 @@
     "preferences_save_error": "Failed to save preferences. Please try again.",
     "languages": {
       "en": "English",
-      "km": "ខ្មែរ (Khmer)"
+      "km": "ភាសាខ្មែរ"
     },
     "timezones": {
       "utc": "UTC",

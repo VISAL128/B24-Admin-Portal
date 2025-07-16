@@ -33,7 +33,7 @@
             :key="i"
             class="h-3 w-3 rounded-full bg-[#43B3DE] animate-bounce"
             :style="{ animationDelay: `${i * 0.2}s` }"
-          ></div>
+          />
         </div>
         <!-- <span class="ml-3 text-[#211e1f]/60 text-sm animate-fade-in">
           {{ t('splash.loading') }}
@@ -46,7 +46,7 @@
           <div
             class="h-full bg-[#43B3DE] rounded-full transition-all duration-1000 ease-out"
             :style="{ width: `${progress}%` }"
-          ></div>
+          />
         </div>
       </div>
 
@@ -59,9 +59,9 @@
 </template>
 
 <script setup lang="ts">
-
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { checkAppReadiness } = useSplashScreen()
 
 // Props
 interface Props {
@@ -71,7 +71,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   minDuration: 2000,
-  maxDuration: 5000
+  maxDuration: 5000,
 })
 
 // Reactive state
@@ -79,35 +79,58 @@ const isVisible = ref(true)
 const isFadingOut = ref(false)
 const isAnimating = ref(false)
 const progress = ref(0)
+const isAppReady = ref(false)
 
 // Emits
 const emit = defineEmits<{
   complete: []
 }>()
 
+// Check app readiness and update progress
+const checkAppReadinessWithProgress = async () => {
+  try {
+    // Start progress simulation
+    progress.value = 10
+
+    // Check app readiness
+    const ready = await checkAppReadiness()
+
+    if (ready) {
+      progress.value = 100
+      isAppReady.value = true
+
+      // Wait for minimum duration before hiding
+      const elapsed = Date.now() - startTime
+      const remaining = Math.max(0, props.minDuration - elapsed)
+
+      setTimeout(() => {
+        hideSplashScreen()
+      }, remaining)
+    } else {
+      // If not ready, keep progress at partial completion
+      progress.value = 50
+    }
+  } catch (error) {
+    console.error('App readiness check failed:', error)
+    progress.value = 50
+  }
+}
+
+let startTime: number
+
 // Animation and timing logic
 onMounted(() => {
+  startTime = Date.now()
+
   // Start logo animation
   setTimeout(() => {
     isAnimating.value = true
   }, 500)
 
-  // Progress bar animation
-  const progressInterval = setInterval(() => {
-    if (progress.value < 100) {
-      progress.value += Math.random() * 20
-      if (progress.value > 100) progress.value = 100
-    } else {
-      clearInterval(progressInterval)
-    }
-  }, 200)
+  // Start app readiness check
+  checkAppReadinessWithProgress()
 
-  // Hide splash screen after minimum duration
-  setTimeout(() => {
-    hideSplashScreen()
-  }, props.minDuration)
-
-  // Force hide after maximum duration
+  // Force hide after maximum duration as fallback
   setTimeout(() => {
     if (isVisible.value) {
       hideSplashScreen()
@@ -118,7 +141,7 @@ onMounted(() => {
 const hideSplashScreen = () => {
   progress.value = 100
   isFadingOut.value = true
-  
+
   setTimeout(() => {
     isVisible.value = false
     emit('complete')
@@ -127,7 +150,7 @@ const hideSplashScreen = () => {
 
 // Expose method to manually hide splash screen
 defineExpose({
-  hideSplashScreen
+  hideSplashScreen,
 })
 </script>
 
