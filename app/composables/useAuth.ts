@@ -55,6 +55,10 @@ export const useAuth = () => {
     return cookie.value as unknown as SupplierProfile
   })
 
+  const hasValidProfile = computed(() => {
+    return !!currentProfile.value && Object.keys(currentProfile.value).length > 0
+  })
+
   // Save profile to cookie for persistence
   const setProfileToCookie = (profile: SupplierProfile) => {
     cookie.value = JSON.stringify(profile)
@@ -107,7 +111,7 @@ export const useAuth = () => {
       // Perform OIDC logout
       await oidc.logout()
 
-      console.log('✅ Logout completed successfully')
+      await navigateTo('/', { replace: true })
     } catch (error) {
       console.error('❌ Logout failed:', error)
 
@@ -161,6 +165,7 @@ export const useAuth = () => {
     user: readonly(user),
     currentProfile: readonly(currentProfile),
     setProfileToCookie,
+    hasValidProfile: readonly(hasValidProfile),
 
     // Methods
     login,

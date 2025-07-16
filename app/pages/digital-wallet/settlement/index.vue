@@ -519,7 +519,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
           },
           () => [
             // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-            h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
+            h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`),
           ]
         ),
         // Success and Fail badges

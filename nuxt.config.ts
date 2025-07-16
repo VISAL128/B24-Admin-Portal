@@ -58,6 +58,7 @@ export default defineNuxtConfig({
             : process.env.KEYCLOAK_REDIRECT_URI ||
               'https://admin-staging.bill24.io/auth/keycloak/callback',
         exposeAccessToken: true,
+        logoutRedirectUri: process.env.BASE_URL || 'http://localhost:3000',
       },
     },
   },

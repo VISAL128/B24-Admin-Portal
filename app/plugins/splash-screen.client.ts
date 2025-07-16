@@ -6,8 +6,6 @@ export default defineNuxtPlugin(() => {
   // Only run on client side
   if (!import.meta.client) return
 
-  console.log('Splash screen plugin initialized')
-
   // Add any splash screen related global configuration here
   const splashConfig = {
     minDuration: 2000,

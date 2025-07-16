@@ -444,10 +444,10 @@
     "version": "Version"
   },
   "profile_error": {
-    "title": "Profile Access Error",
+    "title": "Profile Access Denied",
     "message": "We're unable to retrieve your profile information. This prevents you from accessing the system safely.",
     "possible_reasons": "Possible reasons:",
-    "reason_1": "Your profile may not exist in the system",
+    "reason_1": "Your active/current profile may not exist in the system",
     "reason_2": "Network connectivity issues",
     "reason_3": "Temporary server problems",
     "try_again": "Try Again",

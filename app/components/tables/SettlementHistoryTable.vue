@@ -51,9 +51,11 @@ watch(
   },
   { deep: true, immediate: true }
 )
-const pageSize = ref<{ label: string; value: number }>(props.currentQuery.page_size
-  ? { label: props.currentQuery.page_size.toString(), value: props.currentQuery.page_size }
-  : APP_CONSTANTS.DEFAULT_PAGE_SIZE)
+const pageSize = ref<{ label: string; value: number }>(
+  props.currentQuery.page_size
+    ? { label: props.currentQuery.page_size.toString(), value: props.currentQuery.page_size }
+    : APP_CONSTANTS.DEFAULT_PAGE_SIZE
+)
 const onPageSizeChange = () => {
   settlementHistoryQuery.value.page = 1
   settlementHistoryQuery.value.page_size = pageSize.value?.value || 10

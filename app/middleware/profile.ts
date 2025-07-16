@@ -3,6 +3,10 @@
  * Ensures user has a valid profile before accessing protected routes
  */
 export default defineNuxtRouteMiddleware((to) => {
+  const { hasValidProfile } = useAuth()
+  if (hasValidProfile.value) {
+    return navigateTo('/')
+  }
   // Skip validation for profile error page and public routes
   if (to.path === '/profile-error' || to.meta.auth === false) {
     return
