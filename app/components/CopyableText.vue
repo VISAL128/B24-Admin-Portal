@@ -58,7 +58,7 @@ const handleCopy = async () => {
   try {
     await copy(props.text)
     copied.value = true
-    
+
     if (props.showNotification) {
       notification.showSuccess({
         title: props.notificationTitle,

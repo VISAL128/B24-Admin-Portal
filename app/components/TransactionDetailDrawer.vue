@@ -2,18 +2,19 @@
   <USlideover
     :open="isOpen"
     @close="close"
-    :ui="{
-      close: 'hidden',
-    }"
-    dismissible
+    
     class="w-full sm:w-[90vw] md:w-[50vw] lg:w-[50vw] max-w-none right-0"
   >
     <template #header>
       <div class="flex items-center justify-between w-full px-4 py-1">
-        <div class="flex items-center gap-3">
-          <div>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction</h2>
-          </div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="close"
+            class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded flex items-center justify-center"
+          >
+            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          </button>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction</h2>
         </div>
         <div class="flex items-center gap-2">
           <!-- Status Transaction  -->
