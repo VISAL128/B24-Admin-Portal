@@ -1,10 +1,11 @@
 # No Permission System
 
-This feature provides a comprehensive permission system for the Bill24 Admin Portal, ensuring that users only have access to resources they are authorized to use.
+This feature provides a comprehensive permission system for the Bill24 Payment Portal, ensuring that users only have access to resources they are authorized to use.
 
 ## What's Included
 
 ### 1. No Permission Page (`/no-permission`)
+
 - Beautiful, branded error page that displays when users lack permissions
 - Supports multiple permission error types (role, permission, feature, resource, action)
 - Provides contextual information about why access was denied
@@ -13,23 +14,27 @@ This feature provides a comprehensive permission system for the Bill24 Admin Por
 - Fully internationalized (English and Khmer)
 
 ### 2. Permission Middleware (`middleware/permission.ts`)
+
 - Protects routes based on user roles and permissions
 - Configurable permission checking (requireAll vs requireAny)
 - Automatic redirection to no-permission page
 - Contextual error information
 
 ### 3. Permission Composable (`composables/usePermissions.ts`)
+
 - Reactive permission checking throughout the app
 - Helper functions for common permission patterns
 - User info management
 - Permission-based navigation
 
 ### 4. Permission Plugin (`plugins/permissions.client.ts`)
+
 - Global permission helpers available in all components
 - Automatic initialization of user permissions
 - Provides `$permissions` global object
 
 ### 5. Demo Page (`/test/permissions`)
+
 - Interactive demonstration of the permission system
 - Mock user switching for testing
 - Examples of role and permission-based access control
@@ -37,26 +42,29 @@ This feature provides a comprehensive permission system for the Bill24 Admin Por
 ## Quick Start
 
 ### 1. Protect a Route
+
 ```vue
 <script setup>
 definePageMeta({
   middleware: [
     'auth',
-    ['permission', { 
-      roles: ['admin'], 
-      resource: 'User Management'
-    }]
-  ]
+    [
+      'permission',
+      {
+        roles: ['admin'],
+        resource: 'User Management',
+      },
+    ],
+  ],
 })
 </script>
 ```
 
 ### 2. Check Permissions in Components
+
 ```vue
 <template>
-  <button v-if="isAdmin" @click="deleteUser">
-    Delete User
-  </button>
+  <button v-if="isAdmin" @click="deleteUser">Delete User</button>
 </template>
 
 <script setup>
@@ -65,6 +73,7 @@ const { isAdmin } = usePermissions()
 ```
 
 ### 3. Handle Permission Failures
+
 ```vue
 <script setup>
 const { redirectToNoPermission } = usePermissions()
@@ -74,7 +83,7 @@ const handleRestrictedAction = () => {
     type: 'permission',
     resource: 'User Data',
     action: 'delete',
-    requiredPermissions: ['user:delete']
+    requiredPermissions: ['user:delete'],
   })
 }
 </script>
@@ -90,7 +99,7 @@ const handleRestrictedAction = () => {
 ✅ **Responsive Design** - Works on all device sizes  
 ✅ **Request Tracking** - Unique request IDs for support purposes  
 ✅ **User Information** - Shows current user roles and permissions  
-✅ **Action Options** - Go back, home, or request access  
+✅ **Action Options** - Go back, home, or request access
 
 ## Navigation URLs
 

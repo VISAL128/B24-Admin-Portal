@@ -1,7 +1,7 @@
 import type { UserPreferences } from '~/models/userPreference'
 
 export const APP_CONSTANTS = {
-  DEFAULT_TITLE: 'Bill24 Admin Portal',
+  DEFAULT_TITLE: 'Bill24 Payment Portal',
   DEFAULT_PAGE_SIZE: { label: '10', value: 10 },
   DEFAULT_PAGE_SIZE_OPTIONS: [
     { label: '10', value: 10 },
@@ -36,11 +36,24 @@ export const DEFAULT_CURRENCY_CONFIG = {
 
 export const DEFAULT_LANGUAGE = 'en'
 
-export type TableLoadingAnimationType = "elastic" | "carousel" | "carousel-inverse" | "swing" | undefined
+export type TableLoadingAnimationType =
+  | 'elastic'
+  | 'carousel'
+  | 'carousel-inverse'
+  | 'swing'
+  | undefined
 
-export type TableLoadingColorType = "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral" | undefined
+export type TableLoadingColorType =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'error'
+  | 'neutral'
+  | undefined
 
 export const TABLE_CONSTANTS = {
-  LOADING_ANIMATION: "elastic" as TableLoadingAnimationType,
-  LOADING_COLOR: "primary" as TableLoadingColorType
+  LOADING_ANIMATION: 'elastic' as TableLoadingAnimationType,
+  LOADING_COLOR: 'primary' as TableLoadingColorType,
 }

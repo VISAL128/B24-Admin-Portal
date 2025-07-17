@@ -155,7 +155,7 @@
     "title": "Settings",
     "subtitle": "Manage your account preferences and settings",
     "user_preferences": "User Preferences",
-    "user_preferences_desc": "Customize your experience with Bill24 Admin Portal",
+    "user_preferences_desc": "Customize your experience with Bill24 Payment Portal",
     "theme": "Theme",
     "theme_light": "Light",
     "theme_dark": "Dark",
@@ -203,7 +203,7 @@
   },
   "logout": "Logout",
   "logout_successful": "Successfully Logged Out",
-  "logout_successful_message": "You have been safely logged out from the Bill24 Admin Portal. Thank you for using our service.",
+  "logout_successful_message": "You have been safely logged out from the Bill24 Payment Portal. Thank you for using our service.",
   "login_again": "Login Again",
   "need_help": "Need help?",
   "contact_support": "Contact Support",
@@ -452,6 +452,8 @@
       "complete": "Ready!"
     }
   },
+  "wallet_coming_soon": "Wallet Coming Soon",
+  "wallet_coming_soon_message": "This feature is currently under development and will be available soon. Stay tuned for updates!",
   "profile_error": {
     "title": "Profile Access Denied",
     "message": "We're unable to retrieve your profile information. This prevents you from accessing the system safely.",

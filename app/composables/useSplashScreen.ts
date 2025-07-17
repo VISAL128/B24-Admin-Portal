@@ -57,7 +57,7 @@ export const useSplashScreen = () => {
       try {
         // Step 1: Initialize
         updateProgress('initializing', 10)
-        await new Promise((resolve) => setTimeout(resolve, 300))
+        await new Promise((resolve) => setTimeout(resolve, 200))
 
         // Step 2: Check authentication
         updateProgress('checking_auth', 25)
@@ -72,7 +72,7 @@ export const useSplashScreen = () => {
         if (cookie.value) {
           // Step 6: Finalize if profile exists
           updateProgress('finalizing', 90)
-          await new Promise((resolve) => setTimeout(resolve, 200))
+          await new Promise((resolve) => setTimeout(resolve, 100))
 
           updateProgress('complete', 100)
           setAppReady()
@@ -80,27 +80,45 @@ export const useSplashScreen = () => {
         }
 
         // Step 4: Get user profile from API
-        const profile = await pgwApi.getProfile()
+        let profile
+        try {
+          profile = await pgwApi.getProfile()
 
-        // Step 5: Validate profile
-        updateProgress('validating_profile', 70)
-        await new Promise((resolve) => setTimeout(resolve, 200))
+          // Check if profile was returned
+          if (!profile) {
+            console.error('No profile returned from API')
+            hideSplashScreen()
+            await handleProfileError(new Error('No profile available'))
+            return false
+          }
 
-        if (!validateProfile(profile)) {
-          await handleProfileError(new Error('Profile validation failed'))
+          // Only proceed to step 5 after API response is received
+          updateProgress('validating_profile', 70)
+          await new Promise((resolve) => setTimeout(resolve, 100))
+
+          if (!validateProfile(profile)) {
+            hideSplashScreen()
+            await handleProfileError(new Error('Profile validation failed'))
+            return false
+          }
+
+          // Store profile data
+          cookie.value = JSON.stringify(profile)
+        } catch (profileError) {
+          // Handle profile API errors specifically
+          console.error('Profile API error:', profileError)
+          hideSplashScreen()
+          await handleProfileError(profileError)
           return false
         }
 
-        // Store profile data
-        cookie.value = JSON.stringify(profile)
-
         // Step 6: Load preferences (simulated)
         updateProgress('loading_preferences', 85)
-        await new Promise((resolve) => setTimeout(resolve, 200))
+        await new Promise((resolve) => setTimeout(resolve, 100))
 
         // Step 7: Finalize
         updateProgress('finalizing', 95)
-        await new Promise((resolve) => setTimeout(resolve, 200))
+        await new Promise((resolve) => setTimeout(resolve, 100))
 
         // Step 8: Complete
         updateProgress('complete', 100)
@@ -109,14 +127,17 @@ export const useSplashScreen = () => {
         return true
       } catch (error) {
         // Redirect to profile error page on any profile-related error
+        console.error('General error during app initialization:', error)
+        hideSplashScreen()
         await handleProfileError(error)
         return false
       } finally {
-        // Clear the promise after completion
+        // Clear the promise only after this execution completes
         checkAppReadinessPromise = null
       }
     })()
 
+    // Return the promise directly
     return checkAppReadinessPromise
   }
   return {

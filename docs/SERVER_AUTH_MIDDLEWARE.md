@@ -1,6 +1,6 @@
 # Server Authentication Middleware
 
-This document explains how to use the server-side authentication middleware for the Bill24 Admin Portal.
+This document explains how to use the server-side authentication middleware for the Bill24 Payment Portal.
 
 ## Overview
 

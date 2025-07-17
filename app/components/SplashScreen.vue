@@ -66,18 +66,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const { t } = useI18n()
-const { checkAppReadiness, currentStep, progress: splashProgress } = useSplashScreen()
-
-// Props
-interface Props {
-  minDuration?: number
-  maxDuration?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  minDuration: 2000,
-  maxDuration: 5000,
-})
+const { checkAppReadiness, currentStep, progress: splashProgress, showSplash } = useSplashScreen()
 
 // Reactive state
 const isVisible = ref(true)
@@ -88,12 +77,19 @@ const isAppReady = ref(false)
 // Use progress from composable
 const progress = computed(() => splashProgress.value)
 
+// Watch for showSplash changes from composable
+watch(showSplash, (newValue) => {
+  if (!newValue) {
+    hideSplashScreen()
+  }
+})
+
 // Emits
 const emit = defineEmits<{
   complete: []
 }>()
 
-// Check app readiness and update progress
+// Check app readiness and handle completion
 const checkAppReadinessWithProgress = async () => {
   try {
     // Check app readiness (progress is managed in the composable)
@@ -101,26 +97,19 @@ const checkAppReadinessWithProgress = async () => {
 
     if (ready) {
       isAppReady.value = true
-
-      // Wait for minimum duration before hiding
-      const elapsed = Date.now() - startTime
-      const remaining = Math.max(0, props.minDuration - elapsed)
-
-      setTimeout(() => {
-        hideSplashScreen()
-      }, remaining)
+      // Hide splash screen immediately when ready
+      hideSplashScreen()
     }
+    // If not ready, it means we were redirected to profile error page
+    // No need to hide splash screen as we're navigating away
   } catch (error) {
     console.error('App readiness check failed:', error)
+    // Error handling is done in the composable (redirect to profile-error)
   }
 }
 
-let startTime: number
-
 // Animation and timing logic
 onMounted(() => {
-  startTime = Date.now()
-
   // Start logo animation
   setTimeout(() => {
     isAnimating.value = true
@@ -128,13 +117,6 @@ onMounted(() => {
 
   // Start app readiness check
   checkAppReadinessWithProgress()
-
-  // Force hide after maximum duration as fallback
-  setTimeout(() => {
-    if (isVisible.value) {
-      hideSplashScreen()
-    }
-  }, props.maxDuration)
 })
 
 const hideSplashScreen = () => {

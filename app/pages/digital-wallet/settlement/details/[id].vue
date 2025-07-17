@@ -283,7 +283,7 @@ onMounted(() => {
 })
 
 useHead({
-  title: `${t('settlement.details_title')} - Bill24 Admin Portal`,
+  title: `${t('settlement.details_title')} - Bill24 Payment Portal`,
 })
 </script>
 

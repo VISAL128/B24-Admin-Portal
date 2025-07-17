@@ -18,21 +18,21 @@ export default defineNuxtPlugin({
     const routeRequiresAdmin = (route: any) => {
       // const layout = route.meta?.layout
       // const isDefaultLayout = layout === undefined || layout === 'default'
-      
+
       // Check if route explicitly requires admin permission
       const permissionOptions = route.meta?.permissionOptions || route.meta?.requiresPermission
       const requiresAdmin = permissionOptions?.roles?.includes('admin')
-      
+
       return requiresAdmin
     }
 
     // Function to perform admin permission check
     const checkAdminPermission = async () => {
       const currentRoute = router.currentRoute.value
-      
+
       // Skip check for auth pages and public routes
       const publicRoutes = ['/no-permission']
-      if (publicRoutes.some(route => currentRoute.path.startsWith(route))) {
+      if (publicRoutes.some((route) => currentRoute.path.startsWith(route))) {
         return
       }
 
@@ -51,10 +51,10 @@ export default defineNuxtPlugin({
           path: '/no-permission',
           query: {
             type: 'role',
-            resource: 'Admin Portal',
+            resource: 'Payment Portal',
             action: 'access',
-            permissions: 'admin'
-          }
+            permissions: 'admin',
+          },
         })
         return
       }
@@ -69,7 +69,7 @@ export default defineNuxtPlugin({
     router.beforeEach(async (to) => {
       // Skip check for auth pages and public routes
       const publicRoutes = ['/no-permission']
-      if (publicRoutes.some(route => to.path.startsWith(route))) {
+      if (publicRoutes.some((route) => to.path.startsWith(route))) {
         return true
       }
 
@@ -79,7 +79,7 @@ export default defineNuxtPlugin({
       }
 
       const user = auth.user.value
-      
+
       if (!user) {
         auth.login()
         return
@@ -91,14 +91,14 @@ export default defineNuxtPlugin({
           path: '/no-permission',
           query: {
             type: 'role',
-            resource: 'Admin Portal',
+            resource: 'Payment Portal',
             action: 'access',
-            permissions: 'admin'
-          }
+            permissions: 'admin',
+          },
         }
       }
 
       return true
     })
-  }
+  },
 })

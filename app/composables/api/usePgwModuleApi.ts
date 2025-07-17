@@ -12,13 +12,12 @@ export const usePgwModuleApi = () => {
       $fetch<PgwModuleProfile>(`/api/pgw-module/get-profile`, {
         method: 'GET',
         onResponseError() {
-          // console.error('Error fetching profile from PGW Module:', _response.status, _response._data)
         },
       })
     )
   }
 
   return {
-    getProfile
+    getProfile,
   }
 }

@@ -1,12 +1,7 @@
 <template>
   <UApp>
     <!-- Splash Screen -->
-    <SplashScreen
-      v-if="showSplash"
-      :min-duration="2000"
-      :max-duration="5000"
-      @complete="onSplashComplete"
-    />
+    <SplashScreen v-if="showSplash" @complete="onSplashComplete" />
 
     <!-- Main App Content -->
     <div v-show="!showSplash">

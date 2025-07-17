@@ -1,5 +1,5 @@
 /**
- * Server-side Authentication Middleware for Bill24 Admin Portal
+ * Server-side Authentication Middleware for Bill24 Payment Portal
  *
  * This middleware handles authentication verification and user data extraction
  * for server-side API routes. It integrates with the OIDC authentication system
@@ -16,6 +16,7 @@
 import jwt from 'jsonwebtoken'
 import type { JwtPayload } from 'jsonwebtoken'
 import { getUserSession } from 'nuxt-oidc-auth/runtime/server/utils/session.js'
+import type { H3Event } from 'h3'
 
 // Types for authentication data
 export interface AuthenticatedUser {
@@ -70,7 +71,7 @@ interface KeycloakJwtPayload extends JwtPayload {
 /**
  * Extract Authorization token from request headers
  */
-async function extractToken(event: any): Promise<string | null> {
+async function extractToken(event: H3Event): Promise<string | null> {
   const session = await getUserSession(event)
 
   if (!session?.accessToken) return null
@@ -253,14 +254,14 @@ export default defineEventHandler(async (event) => {
 /**
  * Helper function to get auth context from event (for use in API handlers)
  */
-export function getAuthContext(event: any): AuthContext {
+export function getAuthContext(event: H3Event): AuthContext {
   return event.context.auth || createAuthContext(null)
 }
 
 /**
  * Helper function to require authentication (throws error if not authenticated)
  */
-export function requireAuth(event: any): AuthenticatedUser {
+export function requireAuth(event: H3Event): AuthenticatedUser {
   const auth = getAuthContext(event)
 
   if (!auth.isAuthenticated || !auth.user) {
@@ -276,7 +277,7 @@ export function requireAuth(event: any): AuthenticatedUser {
 /**
  * Helper function to require specific role
  */
-export function requireRole(event: any, role: string): AuthenticatedUser {
+export function requireRole(event: H3Event, role: string): AuthenticatedUser {
   const user = requireAuth(event)
   const auth = getAuthContext(event)
 
@@ -293,7 +294,7 @@ export function requireRole(event: any, role: string): AuthenticatedUser {
 /**
  * Helper function to require any of the specified roles
  */
-export function requireAnyRole(event: any, roles: string[]): AuthenticatedUser {
+export function requireAnyRole(event: H3Event, roles: string[]): AuthenticatedUser {
   const user = requireAuth(event)
   const auth = getAuthContext(event)
 
@@ -310,7 +311,7 @@ export function requireAnyRole(event: any, roles: string[]): AuthenticatedUser {
 /**
  * Helper function to require specific permission
  */
-export function requirePermission(event: any, permission: string): AuthenticatedUser {
+export function requirePermission(event: H3Event, permission: string): AuthenticatedUser {
   const user = requireAuth(event)
   const auth = getAuthContext(event)
 

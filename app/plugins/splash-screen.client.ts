@@ -8,15 +8,13 @@ export default defineNuxtPlugin(() => {
 
   // Add any splash screen related global configuration here
   const splashConfig = {
-    minDuration: 2000,
-    maxDuration: 5000,
-    enableAnimations: true
+    enableAnimations: true,
   }
 
   // Make splash config available globally if needed
   return {
     provide: {
-      splashConfig
-    }
+      splashConfig,
+    },
   }
 })

@@ -4,7 +4,7 @@ export async function requestToPgwModuleApi(
   event: H3Event,
   endpoint: string,
   method: string = 'POST',
-  body: unknown = null
+  body: unknown | null = null
 ): Promise<unknown> {
   const url = `${useRuntimeConfig().pgw_module_api_url}${endpoint}`
   const options: RequestInit = {
@@ -28,7 +28,10 @@ export async function requestToPgwModuleApi(
 function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
   console.log('PGW Module Api Response:', response)
   if (!response.ok) {
-    throw new Error(response.statusText)
+    throw createError({
+      statusCode: response.status,
+      statusMessage: response.statusText,
+    })
   }
   return response.json()
 }

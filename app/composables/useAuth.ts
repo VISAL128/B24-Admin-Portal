@@ -1,5 +1,5 @@
 /**
- * Authentication composable for Bill24 Admin Portal
+ * Authentication composable for Bill24 Payment Portal
  *
  * This composable provides a clean interface for authentication operations
  * using the nuxt-openid-connect module. It bridges the gap between the
@@ -143,7 +143,7 @@ export const useAuth = () => {
       // Perform OIDC logout
       await oidc.logout()
 
-      await navigateTo('/', { replace: true })
+      // await navigateTo('/', { replace: true })
     } catch (error) {
       console.error('❌ Logout failed:', error)
 
@@ -209,6 +209,6 @@ export const useAuth = () => {
     getUserInfo,
     hasRole,
     hasAnyRole,
-    getToken
+    getToken,
   }
 }

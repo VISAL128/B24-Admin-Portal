@@ -40,28 +40,33 @@
               <breadcrumb />
               <div class="flex flex-row items-center justify-end gap-4 h-full">
                 <div class="flex items-center gap-2">
-                  <!-- If dev mode is enabled, you can use the -->
-                  <!-- <span v-if="isDevMode" class="text-xs text-gray-500">
-                    {{ useCookie('profile').value || 'No profile available' }}
-                  </span> -->
-                  <!-- <span>
-                    {{
-                      `Mockup Profile: ${auth.currentProfile.value?.code} - ${auth.currentProfile.value?.name}` ||
-                      'No profile'
-                    }}
-                  </span> -->
+                  <!-- Profile Display -->
+                  <div
+                    v-if="auth.currentProfile.value"
+                    class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                  >
+                    <Icon name="heroicons:building-office" class="w-4 h-4 text-primary" />
+                    <div class="flex flex-col">
+                      <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
+                        {{ auth.currentProfile.value.name }}
+                      </span>
+                      <!-- <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ auth.currentProfile.value.code }}
+                      </span> -->
+                    </div>
+                  </div>
+                  <!-- Language Switcher -->
                   <UPopover placement="bottom-end" :offset="[0, 10]">
-                    <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2">
-                      <span class="ml-1 font-medium">{{
-                        locale === 'en' ? 'English' : 'ភាសាខ្មែរ'
-                      }}</span>
-                    </UButton>
+                    <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2" />
                     <template #content>
                       <div class="flex flex-col gap-1 p-2 w-28">
                         <UButton
                           variant="ghost"
                           class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
                           block
+                          :class="
+                            locale === 'en' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
+                          "
                           size="sm"
                           @click="
                             () => {
@@ -74,11 +79,14 @@
                       t("lang.english")
                     }} -->
                             English
-                          </span></UButton
-                        >
+                          </span>
+                        </UButton>
                         <UButton
                           variant="ghost"
                           class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                          :class="
+                            locale === 'km' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
+                          "
                           block
                           size="sm"
                           @click="
@@ -97,6 +105,7 @@
                       </div>
                     </template>
                   </UPopover>
+
                   <!-- Theme Switcher -->
                   <UButton
                     :icon="colorMode?.preference === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
@@ -107,16 +116,24 @@
                   >
                     <span class="sr-only">Toggle Theme</span>
                   </UButton>
+                  <!-- Setting -->
+                  <UButton
+                    icon="heroicons:cog-6-tooth"
+                    variant="ghost"
+                    size="sm"
+                    class="px-2"
+                    @click="handleSettings"
+                  />
                 </div>
-                <!-- User Popover -->
+                <!-- User Menu -->
                 <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
                   <UAvatar
                     :src="user?.picture"
-                    size="xl"
+                    size="sm"
                     class="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
                   >
                     <template v-if="!user?.picture" #default>
-                      <Icon name="heroicons:user" class="w-6 h-6 text-primary" />
+                      <Icon name="heroicons:user" class="w-4 h-4 text-primary" />
                     </template>
                   </UAvatar>
 
@@ -137,34 +154,6 @@
                             <span class="text-xs text-gray-500 dark:text-gray-400">
                               {{ user?.email || 'user@example.com' }}
                             </span>
-                          </div>
-                        </div>
-
-                        <!-- Current Profile Section -->
-                        <div
-                          v-if="auth.currentProfile.value"
-                          class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-600"
-                        >
-                          <div class="flex flex-col gap-1">
-                            <span
-                              class="text-xs font-medium text-gray-600 dark:text-gray-400 tracking-wide"
-                            >
-                              {{ t('profile_popup.business_profile') }}
-                            </span>
-                            <div class="flex pl-3 items-center gap-2">
-                              <Icon
-                                name="heroicons:building-office"
-                                class="w-4 h-4 text-primary"
-                              />
-                              <div class="flex flex-col">
-                                <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                  {{ auth.currentProfile.value.name }}
-                                </span>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                  {{ auth.currentProfile.value.code }}
-                                </span>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -201,56 +190,6 @@
                           {{ t('logout') }}
                         </UButton>
                       </div>
-
-                      <!-- Confirmation Logout Modal - Moved outside of menu items -->
-                      <UModal
-                        v-model:open="isShowLogoutConfirmModal"
-                        :title="t('confirmation')"
-                        :transition="true"
-                        :description="t('logout')"
-                        :close="{
-                          class: 'rounded-full',
-                          onClick: () => logoutEmit('close', false),
-                        }"
-                      >
-                        <template #body>
-                          <div class="flex flex-col items-center text-center py-6">
-                            <!-- Icon with circle background using Bill24 colors -->
-                            <div
-                              class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                              style="background-color: #eaf6fc"
-                            >
-                              <UIcon
-                                name="i-lucide-alert-triangle"
-                                class="text-3xl opacity-80"
-                                style="color: #43b3de"
-                              />
-                            </div>
-
-                            <!-- Question text -->
-                            <h4 class="text-md font-semibold mb-1">
-                              {{ t('logout_confirmation') }}
-                            </h4>
-                          </div>
-                        </template>
-                        <template #footer>
-                          <div class="w-full flex flex-row justify-end gap-2">
-                            <UButton
-                              :label="t('no')"
-                              color="neutral"
-                              variant="outline"
-                              class="w-16 justify-center"
-                              @click="closeConfirmationModal"
-                            />
-                            <UButton
-                              :label="t('yes')"
-                              color="primary"
-                              class="w-16 justify-center"
-                              @click="handleLogout"
-                            />
-                          </div>
-                        </template>
-                      </UModal>
                     </div>
                   </template>
                 </UPopover>
@@ -258,6 +197,56 @@
             </div>
           </UCard>
         </div>
+
+        <!-- Confirmation Logout Modal -->
+        <UModal
+          v-model:open="isShowLogoutConfirmModal"
+          :title="t('confirmation')"
+          :transition="true"
+          :description="t('logout')"
+          :close="{
+            class: 'rounded-full',
+            onClick: () => logoutEmit('close', false),
+          }"
+        >
+          <template #body>
+            <div class="flex flex-col items-center text-center py-6">
+              <!-- Icon with circle background using Bill24 colors -->
+              <div
+                class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                style="background-color: #eaf6fc"
+              >
+                <UIcon
+                  name="i-lucide-alert-triangle"
+                  class="text-3xl opacity-80"
+                  style="color: #43b3de"
+                />
+              </div>
+
+              <!-- Question text -->
+              <h4 class="text-md font-semibold mb-1">
+                {{ t('logout_confirmation') }}
+              </h4>
+            </div>
+          </template>
+          <template #footer>
+            <div class="w-full flex flex-row justify-end gap-2">
+              <UButton
+                :label="t('no')"
+                color="neutral"
+                variant="outline"
+                class="w-16 justify-center"
+                @click="closeConfirmationModal"
+              />
+              <UButton
+                :label="t('yes')"
+                color="primary"
+                class="w-16 justify-center"
+                @click="handleLogout"
+              />
+            </div>
+          </template>
+        </UModal>
 
         <!-- Main content slot -->
         <div class="flex-1 p-2 overflow-y-auto h-full w-full">
@@ -273,6 +262,8 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { UserPreferences } from '~/models/userPreference'
 
 const { locale, t } = useI18n()
 const { setLanguage } = useLanguage()
@@ -288,11 +279,16 @@ const isShowLogoutConfirmModal = ref(false)
 
 const auth = useAuth()
 const user = auth.user
+const pref = useUserPreferences().getPreferences()
 
 const colorMode = useColorMode ? useColorMode() : null
 const toggleTheme = () => {
   if (!colorMode) return
   colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark'
+  if (pref) {
+    pref.theme = colorMode.preference as 'light' | 'dark'
+    useUserPreferences().savePreferences(pref as UserPreferences)
+  }
 }
 
 const toggleNavigation = () => {
@@ -332,7 +328,7 @@ const checkAdminAccess = async () => {
         path: '/no-permission',
         query: {
           type: 'role',
-          resource: 'Admin Portal',
+          resource: 'Payment Portal',
           action: 'access',
           permissions: 'admin',
         },
@@ -374,7 +370,7 @@ definePageMeta({
   // Proper permission options for admin requirement
   // permissionOptions: {
   //   roles: [],
-  //   resource: "Admin Portal",
+  //   resource: "Payment Portal",
   //   action: "access",
   //   requireAll: true
   // },
