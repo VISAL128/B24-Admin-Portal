@@ -237,6 +237,7 @@
     "confirm": "Confirm"
   },
   "settlement": {
+    "title": "Settlement",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
     "settle_amount": "Settle Amount",

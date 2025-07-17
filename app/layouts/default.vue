@@ -36,7 +36,7 @@
       <div class="flex flex-col h-full w-full overflow-x-hidden">
         <div class="flex-row">
           <UCard class="top-0 right-0 z-50" variant="soft">
-            <div class="flex flex-row items-center justify-between gap-2 w-full h-5">
+            <div class="flex flex-row items-center justify-between gap-2 w-full h-2">
               <breadcrumb />
               <div class="flex flex-row items-center justify-end gap-4 h-full">
                 <div class="flex items-center gap-2">
@@ -55,9 +55,23 @@
                       </span> -->
                     </div>
                   </div>
+                  <!-- Theme Switcher -->
+                  <UButton
+                    :icon="
+                      colorMode?.preference === 'dark'
+                        ? 'material-symbols:dark-mode-outline'
+                        : 'material-symbols:light-mode-outline'
+                    "
+                    variant="ghost"
+                    size="sm"
+                    class="px-2"
+                    @click="toggleTheme"
+                  >
+                    <span class="sr-only">Toggle Theme</span>
+                  </UButton>
                   <!-- Language Switcher -->
                   <UPopover placement="bottom-end" :offset="[0, 10]">
-                    <UButton icon="heroicons:globe-alt" variant="ghost" size="sm" class="px-2" />
+                    <UButton icon="material-symbols:language" variant="ghost" size="sm" class="px-2" />
                     <template #content>
                       <div class="flex flex-col gap-1 p-2 w-28">
                         <UButton
@@ -106,19 +120,9 @@
                     </template>
                   </UPopover>
 
-                  <!-- Theme Switcher -->
-                  <UButton
-                    :icon="colorMode?.preference === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
-                    variant="ghost"
-                    size="sm"
-                    class="px-2"
-                    @click="toggleTheme"
-                  >
-                    <span class="sr-only">Toggle Theme</span>
-                  </UButton>
                   <!-- Setting -->
                   <UButton
-                    icon="heroicons:cog-6-tooth"
+                    icon="material-symbols:settings-outline"
                     variant="ghost"
                     size="sm"
                     class="px-2"
@@ -249,7 +253,7 @@
         </UModal>
 
         <!-- Main content slot -->
-        <div class="flex-1 p-2 overflow-y-auto h-full w-full">
+        <div class="flex-1 p-2 pt-0 overflow-y-auto h-full w-full">
           <slot />
         </div>
       </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col space-y-6">
+  <div class="flex flex-col space-y-4">
     <!-- Loading state -->
     <!-- <div v-if="loading" class="flex justify-center items-center py-10">
       <UIcon

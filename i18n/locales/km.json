@@ -225,6 +225,7 @@
     "confirm": "បញ្ជាក់"
   },
   "settlement": {
+    "title": "ការទូទាត់",
     "search_placeholder": "ស្វែងរក",
     "settle_amount": "ចំនួនទឹកប្រាក់សម្រាប់ទូទាត់",
     "amount": "ចំនួនទឹកប្រាក់",
