@@ -52,13 +52,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
           label: t('wallet'),
           icon: 'i-material-symbols-light-wallet',
           size: 'lg',
-          // to: '/digital-wallet/wallet',
-          onSelect: () => {
-            showInfo({
-              title: t('wallet_coming_soon'),
-              description: t('wallet_coming_soon_message'),
-            })
-          },
+          to: '/digital-wallet/wallet',
+          // onSelect: () => {
+          //   showInfo({
+          //     title: t('wallet_coming_soon'),
+          //     description: t('wallet_coming_soon_message'),
+          //   })
+          // },
           active: activeStates.value.wallet,
         },
         {
