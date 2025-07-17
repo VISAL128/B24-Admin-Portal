@@ -248,13 +248,7 @@ const allocationColumns = ref<TableColumn<TransactionAllocation>[]>([
     <USlideover
       v-model:open="openSlideover"
       :title="t('settlement.title')"
-      :dismissible="true"
       side="right"
-      :close="{
-        color: 'neutral',
-        variant: 'ghost',
-        icon: 'i-lucide-x',
-      }"
       @close="closeSlideover"
     >
       <template #body>
