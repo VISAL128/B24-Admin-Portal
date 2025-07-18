@@ -224,16 +224,18 @@ const props = defineProps<{
       :items="items"
       class="w-full flex-1 transition-all duration-200"
       :ui="{
-        linkLeadingIcon: 'shrink-0 size-5',
+        linkLeadingIcon: 'shrink-0 size-4.5',
         linkLabel: 'text-sm font-medium truncate',
         link: 'p-2 cursor-pointer transition-colors duration-200',
-        linkTrailingIcon: 'shrink-0 size-4.5',
+        linkTrailingIcon: 'shrink-0 size-4',
       }"
     />
 
-    <div v-if="!props.collapsed" class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">
-      <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-        {{ appVersion }}
+    <div v-if="!props.collapsed" class="mt-auto p-2">
+      <p class="text-xs text-gray-400 dark:text-gray-400 font-semibold">
+        {{ t('version') }} <span>
+          {{ appVersion }}
+        </span>
       </p>
     </div>
   </div>

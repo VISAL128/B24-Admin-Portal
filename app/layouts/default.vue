@@ -22,12 +22,19 @@
         <UButton
           variant="ghost"
           size="sm"
-          class="absolute bottom-2 right-2 p-1"
+          :class="[
+            'absolute bottom-2 p-1 transition-all duration-300',
+            isNavExpanded ? 'right-2' : 'left-1/2 transform -translate-x-1/2',
+          ]"
           @click="toggleNavigation"
         >
           <Icon
-            :name="isNavExpanded ? 'tabler:layout-sidebar-left-collapse' : 'tabler:layout-sidebar-left-expand'"
-            class="size-5 text-gray-500 transition-transform duration-1000"
+            :name="
+              isNavExpanded
+                ? 'tabler:layout-sidebar-left-collapse'
+                : 'tabler:layout-sidebar-left-expand'
+            "
+            class="size-4.5 text-gray-500 transition-transform duration-1000"
           />
         </UButton>
       </div>
@@ -71,7 +78,12 @@
                   </UButton>
                   <!-- Language Switcher -->
                   <UPopover placement="bottom-end" :offset="[0, 10]">
-                    <UButton icon="material-symbols:language" variant="ghost" size="sm" class="px-2" />
+                    <UButton
+                      icon="material-symbols:language"
+                      variant="ghost"
+                      size="sm"
+                      class="px-2"
+                    />
                     <template #content>
                       <div class="flex flex-col gap-1 p-2 w-28">
                         <UButton
