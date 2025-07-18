@@ -13,7 +13,7 @@
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction</h3>
         <div class="flex items-center gap-2">
           <!-- Status Transaction  -->
-          <StatusBadge :status="transactionData.status" variant="table" size="sm" />
+          <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
           <UButton variant="outline" @click="download" size="sm" square>
             <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
           </UButton>
@@ -712,7 +712,7 @@ const webhookColumns = [
     cell: ({ row }: any) =>
       h(StatusBadge, {
         status: row.original.status,
-        variant: 'table',
+        variant: 'subtle',
         size: 'sm',
       }),
     size: 100,

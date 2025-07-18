@@ -53,17 +53,6 @@
     </div>
 
     <!-- Table -->
-    <!-- <UTable
-        ref="table"
-        :data="filteredData"
-        :columns="columns"
-        sticky
-        class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-      >
-        <template #empty>
-          <TableEmptyState />
-        </template>
-      </UTable> -->
     <BaseTable
       :data="filteredData"
       :columns="columns"
@@ -93,12 +82,6 @@
         {{ t('row_selected') }}
       </span>
       <div class="flex items-center gap-4">
-        <!-- <USelect
-            v-model="pageSize"
-            :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
-            class="w-24"
-            @change="onPageSizeChange"
-          /> -->
         <USelectMenu
           v-model="pageSize"
           :items="[
@@ -121,11 +104,6 @@
         />
       </div>
     </div>
-    <TransactionDetailDrawer
-      :model-value="showTransactionDrawer"
-      :transaction-id="selectedTransactionId ?? ''"
-      @update:modelValue="(val) => (showTransactionDrawer = val)"
-    />
   </div>
 </template>
 
@@ -135,8 +113,12 @@ const selectedRecord = ref<SettlementHistoryRecord | null>(null)
 
 definePageMeta({
   auth: false,
-  breadcrumbs: [{ label: 'transactions', active: true }],
+  breadcrumbs: [
+    { label: 'transactions', to: '/transactions' },
+    { label: 'overview', active: true },
+  ],
 })
+
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
@@ -145,7 +127,6 @@ import { useRouter } from 'vue-router'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
-import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
   exportToExcelStyled,
@@ -162,8 +143,6 @@ import type { TransactionHistoryRecord } from '~/models/transaction'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-const showTransactionDrawer = ref(false)
-const selectedTransactionId = ref<string | null>(null)
 const { t, locale } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
 const errorHandler = useErrorHandler()
@@ -201,6 +180,8 @@ const selectedDateFilter = ref({
   label: t('this_month'),
   value: 'this_month',
 })
+
+// ...existing code for watchers, functions, etc...
 // Watch and convert modelValue to string ISO
 watch(modelValue, (val) => {
   startDate.value =
@@ -309,7 +290,7 @@ onBeforeMount(() => {
   endDate.value = new CalendarDate(
     today.getFullYear(),
     today.getMonth() + 1,
-    lastDayOfMonth // Use last day of month
+    lastDayOfMonth
   ).toString()
   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
@@ -326,8 +307,7 @@ const onGenerateSettlement = () => {
 
 // Handle navigation to details page
 const navigateToDetails = (rowId: string) => {
-  selectedTransactionId.value = rowId
-  showTransactionDrawer.value = true
+  router.push(`/transactions/${rowId}`)
 }
 
 const exportHeaders = [
@@ -343,6 +323,7 @@ const exportHeaders = [
 const pdfExportHeaders = computed(() => getPDFHeaders(t))
 
 const exportToExcelHandler = async () => {
+  // ...existing export logic...
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
@@ -423,6 +404,7 @@ const exportToExcelHandler = async () => {
 }
 
 const exportToPDFHandler = async () => {
+  // ...existing export logic...
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
@@ -504,6 +486,7 @@ const exportToPDFHandler = async () => {
     })
   }
 }
+
 const exportItems = ref<DropdownMenuItem[]>([
   {
     label: t('pdf'),
@@ -580,7 +563,6 @@ const columns: BaseTableColumn<any>[] = [
     maxSize: 30,
     enableSorting: false,
   },
-  // { accessorKey: "id", header: t("Settlement ID") },
   {
     id: 'created_date',
     accessorKey: 'created_date',
@@ -609,7 +591,6 @@ const columns: BaseTableColumn<any>[] = [
     accessorKey: 'settlement_type',
     header: t('settlement_type'),
   },
-  // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     id: 'total_amount',
     accessorKey: 'total_amount',
@@ -651,11 +632,9 @@ const columns: BaseTableColumn<any>[] = [
     header: t('sub_biller'),
     enableSorting: true,
   },
-
-  // { id: 'created_by', accessorKey: 'created_by', header: t('settled_by') },
   {
     id: 'status',
-    accessorKey: 'status', // optional if you need sorting/filtering
+    accessorKey: 'status',
     header: t('status.header'),
     enableSorting: true,
     enableColumnFilter: true,
@@ -664,72 +643,6 @@ const columns: BaseTableColumn<any>[] = [
       { label: t('pending'), value: 'pending' },
       { label: t('failed'), value: 'failed' },
     ],
-    // cell: ({ row }) => {
-    //   // return h('span', {
-    //   //   class: `text-sm font-medium`
-    //   // }, `Total: ${row.original.total_Settled}`)
-
-    //   const success = row.original.success
-    //   const fail = row.original.fail
-    //   const total = row.original.total_settled
-
-    //   const UBadge = resolveComponent('UBadge')
-    //   const Icon = resolveComponent('UIcon')
-
-    //   return h('div', { class: 'flex gap-2 items-center' }, [
-    //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-    //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-    //     //   h('span', {}, total)
-    //     // ]),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'primary',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [
-    //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-    //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
-    //       ]
-    //     ),
-    //     // Success and Fail badges
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'success',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-    //     ),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'error',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
-    //     ),
-    //   ])
-    // },
   },
-  // Add an action column for viewing details
-  // {
-  //   id: 'actions',
-  //   header: t('actions'),
-  //   cell: ({ row }) =>
-  //     h('div', { class: 'flex items-center gap-2' }, [
-  //       h(resolveComponent('UButton'), {
-  //         color: 'primary',
-  //         variant: 'ghost',
-  //         icon: 'i-lucide-eye',
-  //         size: 'sm',
-  //         onClick: handleViewDetails(row.original),
-  //         // title: translations.view_details
-  //       }),
-  //     ]),
-  // },
 ]
 </script>

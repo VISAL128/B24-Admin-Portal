@@ -35,13 +35,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
       to: '/',
       active: activeStates.value.dashboard,
     },
-    // {
-    //   label: t('transactions'),
-    //   icon: 'i-material-symbols-receipt-long',
-    //   size: 'lg',
-    //   to: '/transactions',
-    //   active: activeStates.value.transactions,
-    // },
+    {
+      label: t('transactions'),
+      icon: 'i-material-symbols-receipt-long',
+      size: 'lg',
+      to: '/transactions',
+      active: activeStates.value.transactions,
+    },
     {
       label: t('digital_wallet'),
       icon: 'i-material-symbols-account-balance-wallet-outline',
@@ -155,7 +155,7 @@ function activateCurrentRoute() {
   // Set active based on current path
   if (currentPath === '/') {
     activeStates.value.dashboard = true
-  } else if (currentPath === '/transactions') {
+  } else if (currentPath === '/transactions' || currentPath.startsWith('/transactions/')) {
     activeStates.value.transactions = true
   } else if (currentPath === '/settings') {
     activeStates.value.settings = true
