@@ -35,13 +35,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
       to: '/',
       active: activeStates.value.dashboard,
     },
-    // {
-    //   label: t('transactions'),
-    //   icon: 'i-material-symbols-receipt-long',
-    //   size: 'lg',
-    //   to: '/transactions',
-    //   active: activeStates.value.transactions,
-    // },
+    {
+      label: t('transactions'),
+      icon: 'i-material-symbols-receipt-long',
+      size: 'lg',
+      to: '/transactions',
+      active: activeStates.value.transactions,
+    },
     {
       label: t('digital_wallet'),
       icon: 'i-material-symbols-light-account-balance-wallet',

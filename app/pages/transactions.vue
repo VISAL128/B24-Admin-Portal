@@ -79,48 +79,23 @@
           fetchTransactionHistory()
         }
       "
+      :page="page"
+      :page-size="pageSize.value"
+      :total="total"
+      :total-page="totalPage"
+      @update:page="(val) => (page = val)"
+      @update:pageSize="
+        (val) => {
+          pageSize.value = val
+          page = 1
+        }
+      "
     >
       <template #empty>
         <TableEmptyState />
       </template>
     </BaseTable>
 
-    <!-- Table Footer -->
-    <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
-      <span>
-        {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }}
-        {{ t('row_selected') }}
-      </span>
-      <div class="flex items-center gap-4">
-        <!-- <USelect
-            v-model="pageSize"
-            :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
-            class="w-24"
-            @change="onPageSizeChange"
-          /> -->
-        <USelectMenu
-          v-model="pageSize"
-          :items="[
-            { label: '10', value: 10 },
-            { label: '25', value: 25 },
-            { label: '50', value: 50 },
-            { label: '100', value: 100 },
-          ]"
-          class="w-24"
-          :search-input="false"
-          @change="onPageSizeChange"
-        />
-        <UPagination
-          v-model="page"
-          :page-size-options="[10, 25, 50, 100]"
-          :page-count="totalPage"
-          :items-per-page="pageSize.value"
-          :total="total"
-          v-on:update:page="page = $event"
-        />
-      </div>
-    </div>
     <TransactionDetailDrawer
       :model-value="showTransactionDrawer"
       :transaction-id="selectedTransactionId ?? ''"
@@ -159,6 +134,7 @@ import type { BaseTableColumn } from '~/components/tables/table'
 import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
+import StatusBadge from '~/components/StatusBadge.vue'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -213,7 +189,7 @@ watch(modelValue, (val) => {
 })
 
 // Watch pagination
-watch([page, pageSize], () => {
+watch([page, pageSize.value], () => {
   fetchTransactionHistory()
 })
 
@@ -664,6 +640,12 @@ const columns: BaseTableColumn<any>[] = [
       { label: t('pending'), value: 'pending' },
       { label: t('failed'), value: 'failed' },
     ],
+    cell: ({ row }: any) =>
+      h(StatusBadge, {
+        status: row.original.status,
+        variant: 'table',
+        size: 'sm',
+      }),
     // cell: ({ row }) => {
     //   // return h('span', {
     //   //   class: `text-sm font-medium`
