@@ -70,12 +70,20 @@
     </UTable>
 
     <!-- Table Footer -->
-    <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
-      <span>
-        {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }}
-        {{ t('row_selected') }}
-      </span>
+    <div
+      class="flex items-center px-1 py-1 text-sm text-muted"
+      :class="{
+        'justify-between': (table?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
+        'justify-end': (table?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length <= 0,
+      }"
+    >
+      <div v-if="(table?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0">
+        <span class="text-xxs">
+          {{ (table?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length || 0 }} of
+          {{ (table?.tableApi?.getFilteredRowModel()?.rows ?? []).length || 0 }}
+          {{ t('row_selected') }}
+        </span>
+      </div>
       <div class="flex items-center gap-4">
         <!-- <USelect
           v-model="pageSize"
