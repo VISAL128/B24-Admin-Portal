@@ -1,25 +1,48 @@
 /* Import Google Fonts for Khmer support */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
-@import "tailwindcss";
-@import "@nuxt/ui";
+@import 'tailwindcss';
+@import '@nuxt/ui';
 
 @theme {
-    --font-display: "Noto Sans Khmer", "Preahvihear","DM Sans", sans-serif;
+  --font-display: 'Noto Sans Khmer', 'Preahvihear', 'DM Sans', sans-serif;
+}
+
+@layer components {
+  /* Define both light and dark mode styles for text sizes */
+  .text-xxs {
+    font-size: 0.825rem !important;
+    line-height: calc(1 / 0.825) !important;
+    color: var(--color-gray-500); /* gray-500 for light mode */
+  }
+
+  .dark .text-xxs {
+    color: var(--color-gray-400);
+  }
+
+  .tb-h-text {
+    /* Table header text styles */
+    font-size: small !important;
+    font-weight: bold !important;
+    /* @apply text-sm font-semibold text-gray-700 dark:text-gray-300; */
+  }
+
+  .dark .tb-h-text {
+    color: var(--color-gray-300);
+  }
 }
 
 :root {
   /* Bill24 Primary Color Configuration */
-  --ui-primary: #3F83F8;
-    font-family: "Noto Sans Khmer", "Kantumruy Pro","DM Sans", sans-serif;
+  --ui-primary: #3f83f8;
+  font-family: 'Noto Sans Khmer', 'Kantumruy Pro', 'DM Sans', sans-serif;
 }
 
 .dark {
-    /* Bill24 Dark Mode Primary Color Configuration */
-    --ui-primary: #76A9FA;
+  /* Bill24 Dark Mode Primary Color Configuration */
+  --ui-primary: #76a9fa;
 }
 
-button
-{
-    @apply cursor-pointer;
+button {
+  @apply cursor-pointer;
 }

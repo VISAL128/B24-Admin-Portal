@@ -47,7 +47,7 @@
                     ? 'success'
                     : 'error'
                 "
-                size="lg"
+                size="md"
                 variant="soft"
               >
                 {{
@@ -61,11 +61,11 @@
 
           <div class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-4">
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-calendar" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:calendar-today-outline-rounded" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.settlement_date') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{
                   useFormat().formatDateTime(settlementDetails.records.settlement_date, {
                     dateStyle: userPreferences?.dateFormat || 'medium',
@@ -76,31 +76,31 @@
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-users" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:group-outline-rounded" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.total_sub_biller') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{ settlementDetails.records.total_supplier }}
               </p>
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-credit-card" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:credit-card-outline" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.total_transactions') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{ settlementDetails.records.totalSettled }}
               </p>
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-user-check" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:check-circle-outline" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.settled_by') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{ settlementDetails.records.settled_by }}
               </p>
             </div>
@@ -285,6 +285,8 @@ onMounted(() => {
 useHead({
   title: `${t('settlement.details_title')} - Bill24 Payment Portal`,
 })
+
+const iconSizeClass = 'w-5 h-5'
 </script>
 
 <style>

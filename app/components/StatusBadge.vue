@@ -10,7 +10,7 @@ import { computed } from 'vue'
 interface Props {
   status: string
   variant?: 'default' | 'table' | 'header'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
 const props = withDefaults(defineProps<Props>(), {

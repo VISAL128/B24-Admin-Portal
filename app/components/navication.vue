@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-const { showInfo } = useNotification()
+// const { showInfo } = useNotification()
 
 const { t } = useI18n()
 
@@ -31,16 +31,17 @@ const items = computed<NavigationMenuItem[][]>(() => [
       label: t('dashboard'),
       icon: 'i-material-symbols-light-space-dashboard-rounded',
       size: 'lg',
+      class: 'text-sm',
       to: '/',
       active: activeStates.value.dashboard,
     },
-    {
-      label: t('transactions'),
-      icon: 'i-material-symbols-receipt-long',
-      size: 'lg',
-      to: '/transactions',
-      active: activeStates.value.transactions,
-    },
+    // {
+    //   label: t('transactions'),
+    //   icon: 'i-material-symbols-receipt-long',
+    //   size: 'lg',
+    //   to: '/transactions',
+    //   active: activeStates.value.transactions,
+    // },
     {
       label: t('digital_wallet'),
       icon: 'i-material-symbols-light-account-balance-wallet',
@@ -50,7 +51,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('wallet'),
-          icon: 'i-material-symbols-light-wallet',
+          // icon: 'i-material-symbols-light-wallet',
           size: 'lg',
           to: '/digital-wallet/wallet',
           // onSelect: () => {
@@ -63,7 +64,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
         },
         {
           label: t('settlement_menu'),
-          icon: 'i-material-symbols-light-payments',
+          // icon: 'i-material-symbols-light-payments',
           size: 'lg',
           to: '/digital-wallet/settlement',
           active: activeStates.value.settlement,
@@ -78,21 +79,21 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('navigation.banks'),
-          icon: 'i-material-symbols-account-balance-rounded',
+          // icon: 'i-material-symbols-account-balance-rounded',
           size: 'lg',
           to: '/organization/banks',
           active: activeStates.value.banks,
         },
         {
           label: t('navigation.sub_billers'),
-          icon: 'i-material-symbols-light:article-person',
+          // icon: 'i-material-symbols-light:article-person',
           size: 'lg',
           to: '/organization/sub-billers',
           active: activeStates.value.subBillers,
         },
         {
           label: t('navigation.users'),
-          icon: 'i-material-symbols-light-group',
+          // icon: 'i-material-symbols-light-group',
           size: 'lg',
           to: '/organization/users',
           active: activeStates.value.users,
@@ -107,14 +108,14 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('navigation.transaction_summary'),
-          icon: 'i-material-symbols-light-summarize',
+          // icon: 'i-material-symbols-light-summarize',
           size: 'lg',
           to: '/reports/transaction-summary',
           active: activeStates.value.transactionSummary,
         },
         {
           label: t('navigation.transaction_allocate'),
-          icon: 'i-material-symbols-light-switch-access-shortcut',
+          // icon: 'i-material-symbols-light-switch-access-shortcut',
           size: 'lg',
           to: '/reports/transaction-allocation',
           active: activeStates.value.transactionAllocation,
@@ -222,9 +223,9 @@ const props = defineProps<{
       :items="items"
       class="w-full flex-1 transition-all duration-200"
       :ui="{
-        linkLeadingIcon: 'shrink-0 size-6',
-        linkLabel: 'text-sm truncate',
-        link: 'p-3 cursor-pointer transition-colors duration-200',
+        linkLeadingIcon: 'shrink-0 size-5',
+        linkLabel: 'text-sm font-medium truncate',
+        link: 'p-2 cursor-pointer transition-colors duration-200',
       }"
     />
 
