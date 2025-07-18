@@ -4,7 +4,7 @@ import { ref, watch } from 'vue'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
-import SumTranDataUnderTable from '~/components/tables/SumTranDataUnderTable.vue'
+import ClipboardBadge from '../buttons/ClipboardBadge.vue'
 import type {
   SettlementHistoryDetail,
   // SettlementHistoryQuery,
@@ -19,7 +19,6 @@ const format = useFormat()
 const userPreferences = useUserPreferences().getPreferences()
 const { createRowNumberCell, createSortableHeader } = useTable()
 const { statusCellBuilder } = useStatusBadge()
-const clipboard = ref(useClipboard())
 
 interface Props {
   settlementHistorys: SettlementHistoryDetail[]
@@ -97,7 +96,15 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     id: 'row_number',
     header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
+    cell: ({ row }) =>
+      h(
+        'div',
+        {
+          class: 'text-left',
+          onClick: (e: Event) => e.stopPropagation(),
+        },
+        row.index + 1
+      ),
     size: 30,
     maxSize: 30,
     enableSorting: false,
@@ -184,7 +191,18 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     accessorKey: 'bank_ref_id',
     header: () => t('bank_ref'),
     cell: ({ row }) => {
-      return h('p', { class: '' }, row.original.bank_ref_id || '-')
+      return h(
+        'div',
+        {
+          onClick: (e: Event) => e.stopPropagation(),
+        },
+        [
+          h(ClipboardBadge, {
+            text: row.original.bank_ref_id || '-',
+            copiedTooltipText: t('clipboard.copied'),
+          }),
+        ]
+      )
     },
     size: 150,
     maxSize: 150,
@@ -222,9 +240,9 @@ const sorting = ref([
   },
 ])
 
-function onCopy(value: string) {
-  clipboard.value.copy(value)
-}
+// function onCopy(value: string) {
+//   clipboard.value.copy(value)
+// }
 // Transaction allocations table columns
 const allocationColumns = ref<TableColumn<TransactionAllocation>[]>([
   // Row number
@@ -263,10 +281,10 @@ const labelClass = 'text-xs font-medium text-gray-500 dark:text-gray-400'
 const valueClass = 'text-sm font-bold'
 </script>
 <template>
-  <UCard>
+  <UCard class="h-full">
     <template #header>
       <div class="flex flex-row justify-between items-center gap-4">
-        <h2 class="text-lg font-semibold">{{ $t('settlement.history') }}</h2>
+        <p class="text-md font-bold">{{ $t('settlement.settlement_transaction') }}</p>
         <UInput
           v-model="settlementHistoryQuery.search"
           :placeholder="$t('settlement.search_placeholder')"
@@ -282,22 +300,25 @@ const valueClass = 'text-sm font-bold'
       :columns="columns"
       sticky
       class="w-full h-full"
-      :style="{ maxHeight: '400px', minHeight: '300px' }"
+      :style="{ maxHeight: 'h-full', minHeight: '300px' }"
       :ui="appConfig.ui.table.slots"
       @select="onRowSelect"
     />
     <USlideover
       v-model:open="openSlideover"
-      :title="t('settlement.title')"
+      :title="t('settlement.settlement_transaction')"
       side="right"
+      :overlay="false"
       @close="closeSlideover"
     >
       <template #body>
         <div v-if="openSliderWithData" class="flex flex-col h-full">
           <!-- Settlement Summary -->
           <UCard class="shadow-sm mb-4">
-            <div class="pb-4 flex-shrink-0">
-              <div class="grid grid-cols-2 gap-4">
+            <div class="flex-shrink-0">
+              <div
+                class="grid grid-cols-2 gap-4 border-b border-gray-300 dark:border-gray-600 pb-4"
+              >
                 <div>
                   <label :class="labelClass">{{ t('settlement.sub_biller.code') }}</label>
                   <p :class="valueClass">{{ openSliderWithData.cpo?.code || 'N/A' }}</p>
@@ -326,8 +347,13 @@ const valueClass = 'text-sm font-bold'
                   </p>
                 </div>
                 <div>
-                  <label :class="labelClass">{{ t('bank_ref') }}</label>
-                  <div class="flex flex-wrap items-start gap-1">
+                  <p :class="labelClass">{{ t('bank_ref') }}</p>
+                  <ClipboardBadge
+                    :text="openSliderWithData.bank_ref_id"
+                    :copied-tooltip-text="t('clipboard.copied')"
+                    class="mt-2"
+                  />
+                  <!-- <div class="flex flex-wrap items-start gap-1">
                     <p class="break-all min-w-0" :class="valueClass">
                       {{ openSliderWithData.bank_ref_id || '-' }}
                     </p>
@@ -342,11 +368,36 @@ const valueClass = 'text-sm font-bold'
                       name="i-lucide-check"
                       class="text-green-500 flex-shrink-0 mt-0.5"
                     />
-                  </div>
+                  </div> -->
                 </div>
               </div>
-            </div>
-          </UCard>
+              <div class="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <label :class="labelClass">
+                    {{ t('settlement.generate.form.total_transactions') }}
+                  </label>
+                  <p class="text-lg font-bold">
+                    {{ openSliderWithData.tran_allocates.length || 0 }}
+                  </p>
+                </div>
+                <div>
+                  <label :class="labelClass">
+                    {{ t('settlement.generate.form.total_amount') }}
+                  </label>
+                  <AmountWithCurrency
+                    :amount="
+                      openSliderWithData.tran_allocates.reduce(
+                        (sum, allocation) => sum + allocation.amount,
+                        0
+                      )
+                    "
+                    :currency="props.currency"
+                    variant="primary"
+                    size="lg"
+                  />
+                </div>
+              </div></div
+          ></UCard>
 
           <!-- Transaction Allocations Table -->
           <div class="flex-1 flex flex-col mt-4 gap-2 min-h-0">
@@ -359,7 +410,7 @@ const valueClass = 'text-sm font-bold'
               "
               class="flex flex-col gap-2 flex-1 min-h-0"
             >
-              <div class="flex-shrink-0">
+              <!-- <div class="flex-shrink-0">
                 <SumTranDataUnderTable
                   :total-transactions="openSliderWithData.tran_allocates.length"
                   :amount="
@@ -370,7 +421,7 @@ const valueClass = 'text-sm font-bold'
                   "
                   :currency="props.currency"
                 />
-              </div>
+              </div> -->
               <UCard class="flex-1 p-0 sm:p-0 overflow-hidden" :ui="{ body: 'sm:p-0' }">
                 <UTable
                   v-model:sorting="sorting"
