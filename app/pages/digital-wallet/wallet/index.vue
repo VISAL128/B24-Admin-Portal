@@ -559,7 +559,7 @@
                 :key="'today-trans-' + selectedWalletType"
                 class="font-medium text-blue-900 dark:text-blue-100 transition-all duration-500 flex items-center gap-1"
               >
-                <span class="text-xs opacity-75">{{ currentSummaryData.today.currency }}</span>
+                <!-- <span class="text-xs opacity-75">{{ currentSummaryData.today.currency }}</span> -->
                 {{ currentSummaryData.today.totalTransactions }}
               </span>
               <div v-else class="h-4 w-16 bg-blue-300 dark:bg-blue-600 rounded animate-pulse" />
@@ -645,7 +645,7 @@
                 :key="'week-trans-' + selectedWalletType"
                 class="font-medium text-green-900 dark:text-green-100 transition-all duration-500 flex items-center gap-1"
               >
-                <span class="text-xs opacity-75">{{ currentSummaryData.week.currency }}</span>
+                <!-- <span class="text-xs opacity-75">{{ currentSummaryData.week.currency }}</span> -->
                 {{ currentSummaryData.week.totalTransactions }}
               </span>
               <div v-else class="h-4 w-16 bg-green-300 dark:bg-green-600 rounded animate-pulse" />
@@ -731,7 +731,7 @@
                 :key="'month-trans-' + selectedWalletType"
                 class="font-medium text-purple-900 dark:text-purple-100 transition-all duration-500 flex items-center gap-1"
               >
-                <span class="text-xs opacity-75">{{ currentSummaryData.month.currency }}</span>
+                <!-- <span class="text-xs opacity-75">{{ currentSummaryData.month.currency }}</span> -->
                 {{ currentSummaryData.month.totalTransactions }}
               </span>
               <div v-else class="h-4 w-16 bg-purple-300 dark:bg-purple-600 rounded animate-pulse" />
