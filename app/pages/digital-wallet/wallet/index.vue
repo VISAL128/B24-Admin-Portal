@@ -47,7 +47,7 @@
                 <UIcon
                   v-else-if="isLoadingWalletTypes"
                   name="i-heroicons-arrow-path"
-                  class="w-4 h-4 text-gray-500 dark:text-gray-400 animate-spin"
+                  class="w-4 h-4 text-gray-500 dark:text-gray-400"
                 />
                 <span v-if="isLoadingWalletTypes">
                   {{ t('wallet_page.loading_wallet_types', 'Loading wallet types...') }}
@@ -89,7 +89,7 @@
         >
           <span class="hidden sm:inline">{{ t('wallet_page.refresh', 'Refresh') }}</span>
         </UButton>
-        <UButton
+        <!-- <UButton
           icon="i-material-symbols-light-history"
           color="neutral"
           variant="solid"
@@ -97,7 +97,7 @@
           @click="navigateToHistory"
         >
           <span class="hidden sm:inline">{{ t('wallet_page.view_history', 'View History') }}</span>
-        </UButton>
+        </UButton> -->
       </div>
     </div>
 
@@ -141,10 +141,7 @@
                   <div class="flex items-center gap-3">
                     <div
                       class="p-2 rounded-lg transition-transform duration-300 relative"
-                      :class="[
-                        isWalletLoading ? 'animate-spin' : '',
-                        getCurrencyIconClass(wallet.currency),
-                      ]"
+                      :class="[getCurrencyIconClass(wallet.currency)]"
                     >
                       <Icon
                         name="i-material-symbols-light-account-balance-wallet"
@@ -156,7 +153,7 @@
                         class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg"
                       >
                         <div
-                          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                         />
                       </div>
                     </div>
@@ -376,8 +373,15 @@
               </UCard>
             </div>
           </template>
+
+          <!-- Empty State - Only show when not loading and no data -->
           <div
-            v-if="walletBalanceItems.length === 0 && !isWalletLoading"
+            v-if="
+              walletBalanceItems.length === 0 &&
+              !isWalletLoading &&
+              !isLoadingWalletTypes &&
+              selectedWalletTypeAPI
+            "
             class="flex-shrink-0 w-80 md:w-96 snap-start"
           >
             <UCard class="h-full flex items-center justify-center">
@@ -484,6 +488,12 @@
             >
               {{ selectedWalletTypeData?.name || 'Wallet' }}
             </UBadge>
+            <!-- Loading indicator for summary -->
+            <UIcon
+              v-if="isLoadingSummary"
+              name="i-heroicons-arrow-path"
+              class="w-4 h-4 text-gray-500 dark:text-gray-400"
+            />
           </div>
           <div class="flex items-center gap-2">
             <UButton
@@ -495,6 +505,7 @@
               variant="ghost"
               size="xs"
               class="text-xs"
+              :disabled="isLoadingSummary"
               @click="toggleSummaryCurrency"
             >
               {{ currentSummaryData.today.currency }}
@@ -511,6 +522,7 @@
         <div
           :key="'today-' + selectedWalletType"
           class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 transition-all duration-500 ease-in-out transform hover:scale-105"
+          :class="{ 'animate-pulse': isLoadingSummary }"
         >
           <div class="flex items-center justify-between mb-3">
             <h3
@@ -520,6 +532,7 @@
             </h3>
             <div
               class="p-2 bg-blue-500 rounded-lg transition-transform duration-300 hover:rotate-12"
+               
             >
               <Icon name="i-material-symbols-light-today" class="w-5 h-5 text-white" />
             </div>
@@ -530,26 +543,33 @@
                 t('wallet_page.date', 'Date')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'today-date-' + selectedWalletType"
                 class="font-medium text-blue-900 dark:text-blue-100 transition-all duration-500"
                 >{{ currentSummaryData.today.date }}</span
               >
+              <div v-else class="h-4 w-20 bg-blue-300 dark:bg-blue-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-blue-700 dark:text-blue-300">{{
                 t('wallet_page.transactions', 'Transactions')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'today-trans-' + selectedWalletType"
-                class="font-medium text-blue-900 dark:text-blue-100 transition-all duration-500"
-                >{{ currentSummaryData.today.totalTransactions }}</span
+                class="font-medium text-blue-900 dark:text-blue-100 transition-all duration-500 flex items-center gap-1"
               >
+                <span class="text-xs opacity-75">{{ currentSummaryData.today.currency }}</span>
+                {{ currentSummaryData.today.totalTransactions }}
+              </span>
+              <div v-else class="h-4 w-16 bg-blue-300 dark:bg-blue-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-blue-700 dark:text-blue-300">{{
                 t('wallet_page.received', 'Received')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'today-received-' + selectedWalletType"
                 class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500 flex items-center gap-1"
               >
@@ -561,12 +581,14 @@
                   )
                 }}
               </span>
+              <div v-else class="h-4 w-24 bg-blue-300 dark:bg-blue-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-blue-700 dark:text-blue-300">{{
                 t('wallet_page.settlement', 'Settlement')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'today-settlement-' + selectedWalletType"
                 class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500 flex items-center gap-1"
               >
@@ -578,6 +600,7 @@
                   )
                 }}
               </span>
+              <div v-else class="h-4 w-24 bg-blue-300 dark:bg-blue-600 rounded animate-pulse" />
             </div>
           </div>
         </div>
@@ -586,6 +609,7 @@
         <div
           :key="'week-' + selectedWalletType"
           class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700 rounded-lg p-4 transition-all duration-500 ease-in-out transform hover:scale-105"
+          :class="{ 'animate-pulse': isLoadingSummary }"
         >
           <div class="flex items-center justify-between mb-3">
             <h3
@@ -605,26 +629,33 @@
                 t('wallet_page.period', 'Period')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'week-date-' + selectedWalletType"
                 class="font-medium text-green-900 dark:text-green-100 text-xs transition-all duration-500"
                 >{{ currentSummaryData.week.date }}</span
               >
+              <div v-else class="h-4 w-32 bg-green-300 dark:bg-green-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-green-700 dark:text-green-300">{{
                 t('wallet_page.transactions', 'Transactions')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'week-trans-' + selectedWalletType"
-                class="font-medium text-green-900 dark:text-green-100 transition-all duration-500"
-                >{{ currentSummaryData.week.totalTransactions }}</span
+                class="font-medium text-green-900 dark:text-green-100 transition-all duration-500 flex items-center gap-1"
               >
+                <span class="text-xs opacity-75">{{ currentSummaryData.week.currency }}</span>
+                {{ currentSummaryData.week.totalTransactions }}
+              </span>
+              <div v-else class="h-4 w-16 bg-green-300 dark:bg-green-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-green-700 dark:text-green-300">{{
                 t('wallet_page.received', 'Received')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'week-received-' + selectedWalletType"
                 class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500 flex items-center gap-1"
               >
@@ -636,12 +667,14 @@
                   )
                 }}
               </span>
+              <div v-else class="h-4 w-24 bg-green-300 dark:bg-green-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-green-700 dark:text-green-300">{{
                 t('wallet_page.settlement', 'Settlement')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'week-settlement-' + selectedWalletType"
                 class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500 flex items-center gap-1"
               >
@@ -653,6 +686,7 @@
                   )
                 }}
               </span>
+              <div v-else class="h-4 w-24 bg-green-300 dark:bg-green-600 rounded animate-pulse" />
             </div>
           </div>
         </div>
@@ -661,6 +695,7 @@
         <div
           :key="'month-' + selectedWalletType"
           class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 transition-all duration-500 ease-in-out transform hover:scale-105"
+          :class="{ 'animate-pulse': isLoadingSummary }"
         >
           <div class="flex items-center justify-between mb-3">
             <h3
@@ -680,26 +715,33 @@
                 t('wallet_page.period', 'Period')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'month-date-' + selectedWalletType"
                 class="font-medium text-purple-900 dark:text-purple-100 text-xs transition-all duration-500"
                 >{{ currentSummaryData.month.date }}</span
               >
+              <div v-else class="h-4 w-32 bg-purple-300 dark:bg-purple-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-purple-700 dark:text-purple-300">{{
                 t('wallet_page.transactions', 'Transactions')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'month-trans-' + selectedWalletType"
-                class="font-medium text-purple-900 dark:text-purple-100 transition-all duration-500"
-                >{{ currentSummaryData.month.totalTransactions }}</span
+                class="font-medium text-purple-900 dark:text-purple-100 transition-all duration-500 flex items-center gap-1"
               >
+                <span class="text-xs opacity-75">{{ currentSummaryData.month.currency }}</span>
+                {{ currentSummaryData.month.totalTransactions }}
+              </span>
+              <div v-else class="h-4 w-16 bg-purple-300 dark:bg-purple-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-purple-700 dark:text-purple-300">{{
                 t('wallet_page.received', 'Received')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'month-received-' + selectedWalletType"
                 class="font-semibold text-green-600 dark:text-green-400 transition-all duration-500 flex items-center gap-1"
               >
@@ -711,12 +753,14 @@
                   )
                 }}
               </span>
+              <div v-else class="h-4 w-24 bg-purple-300 dark:bg-purple-600 rounded animate-pulse" />
             </div>
             <div class="flex justify-between text-sm transition-all duration-300">
               <span class="text-purple-700 dark:text-purple-300">{{
                 t('wallet_page.settlement', 'Settlement')
               }}</span>
               <span
+                v-if="!isLoadingSummary"
                 :key="'month-settlement-' + selectedWalletType"
                 class="font-semibold text-orange-600 dark:text-orange-400 transition-all duration-500 flex items-center gap-1"
               >
@@ -728,6 +772,7 @@
                   )
                 }}
               </span>
+              <div v-else class="h-4 w-24 bg-purple-300 dark:bg-purple-600 rounded animate-pulse" />
             </div>
           </div>
         </div>
@@ -742,6 +787,7 @@ import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
+import type { WalletSummaryData } from '~~/server/model/pgw_module_api/transactionSummary'
 
 // Define page meta
 definePageMeta({
@@ -754,7 +800,7 @@ const { t } = useI18n()
 const { formatCurrency } = useCurrency()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
-const { getWalletTypes, getWalletBalance } = usePgwModuleApi()
+const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary } = usePgwModuleApi()
 
 // Reactive data
 const isRefreshing = ref(false)
@@ -762,12 +808,17 @@ const isWalletLoading = ref(false)
 const summaryDisplayCurrency = ref('KHR')
 const isLoadingWalletTypes = ref(false)
 const currentScrollIndex = ref(0)
+const isLoadingSummary = ref(false)
 
 // Wallet state
 const walletIds = ref<string[]>([])
 const walletBalanceItems = ref<WalletBalanceItem[]>([])
 const selectedWalletTypeAPI = ref<string>('')
 const walletContainer = ref<HTMLElement | null>(null)
+
+// Transaction summary state
+const topUpSummaryData = ref<WalletSummaryData | null>(null)
+const feeSummaryData = ref<WalletSummaryData | null>(null)
 
 // Wallet types - will be populated from API only
 const walletTypes = ref<
@@ -831,6 +882,42 @@ const loadWalletBalance = async () => {
     console.error('Failed to load wallet balance:', error)
   } finally {
     isWalletLoading.value = false
+  }
+}
+
+const loadTransactionSummary = async () => {
+  try {
+    isLoadingSummary.value = true
+
+    // Load both top-up and fee summaries in parallel
+    const [topUpResponse, feeResponse] = await Promise.all([
+      getTopUpSummary().catch((error) => {
+        console.error('Top-up summary API error:', error)
+        return { data: null }
+      }),
+      getFeeSummary().catch((error) => {
+        console.error('Fee summary API error:', error)
+        return { data: null }
+      }),
+    ])
+
+    // Handle top-up summary response
+    if (topUpResponse.data?.settlement_wallet) {
+      topUpSummaryData.value = topUpResponse.data.settlement_wallet
+    } else {
+      console.warn('No top-up wallet data received')
+    }
+
+    // Handle fee summary response
+    if (feeResponse.data?.settlement_wallet) {
+      feeSummaryData.value = feeResponse.data.settlement_wallet
+    } else {
+      console.warn('No settlement wallet data received')
+    }
+  } catch (error) {
+    console.error('Failed to load transaction summary:', error)
+  } finally {
+    isLoadingSummary.value = false
   }
 }
 
@@ -970,171 +1057,51 @@ const walletTypeColors = computed(() => {
   return colors[selectedWalletType.value as keyof typeof colors] || colors.personal_wallet
 })
 
-// Transaction summary data by wallet type (static demo data with distinct values)
-const summaryDataByType = ref({
-  personal: {
-    today: {
-      date: '2025-01-15',
-      totalTransactions: 3,
-      khr: {
-        totalReceived: 24500.0,
-        totalSettlement: 195000.0,
-      },
-      usd: {
-        totalReceived: 5.95,
-        totalSettlement: 47.5,
-      },
-    },
-    week: {
-      date: '2025-01-13 to 2025-01-19',
-      totalTransactions: 18,
-      khr: {
-        totalReceived: 185200.0,
-        totalSettlement: 425500.0,
-      },
-      usd: {
-        totalReceived: 45.2,
-        totalSettlement: 103.75,
-      },
-    },
-    month: {
-      date: '2025-01-01 to 2025-01-31',
-      totalTransactions: 67,
-      khr: {
-        totalReceived: 725000.0,
-        totalSettlement: 1250000.0,
-      },
-      usd: {
-        totalReceived: 176.8,
-        totalSettlement: 304.75,
-      },
-    },
-  },
-  business: {
-    today: {
-      date: '2025-01-15',
-      totalTransactions: 45,
-      khr: {
-        totalReceived: 2850000.0,
-        totalSettlement: 4125000.0,
-      },
-      usd: {
-        totalReceived: 695.0,
-        totalSettlement: 1006.25,
-      },
-    },
-    week: {
-      date: '2025-01-13 to 2025-01-19',
-      totalTransactions: 234,
-      khr: {
-        totalReceived: 15750000.0,
-        totalSettlement: 22500000.0,
-      },
-      usd: {
-        totalReceived: 3842.5,
-        totalSettlement: 5487.5,
-      },
-    },
-    month: {
-      date: '2025-01-01 to 2025-01-31',
-      totalTransactions: 892,
-      khr: {
-        totalReceived: 45750000.0,
-        totalSettlement: 68250000.0,
-      },
-      usd: {
-        totalReceived: 11156.25,
-        totalSettlement: 16656.25,
-      },
-    },
-  },
-  savings: {
-    today: {
-      date: '2025-01-15',
-      totalTransactions: 2,
-      khr: {
-        totalReceived: 95000.0,
-        totalSettlement: 125000.0,
-      },
-      usd: {
-        totalReceived: 23.15,
-        totalSettlement: 30.5,
-      },
-    },
-    week: {
-      date: '2025-01-13 to 2025-01-19',
-      totalTransactions: 8,
-      khr: {
-        totalReceived: 485000.0,
-        totalSettlement: 625000.0,
-      },
-      usd: {
-        totalReceived: 118.25,
-        totalSettlement: 152.5,
-      },
-    },
-    month: {
-      date: '2025-01-01 to 2025-01-31',
-      totalTransactions: 28,
-      khr: {
-        totalReceived: 1850000.0,
-        totalSettlement: 2450000.0,
-      },
-      usd: {
-        totalReceived: 451.25,
-        totalSettlement: 597.5,
-      },
-    },
-  },
-  investment: {
-    today: {
-      date: '2025-01-15',
-      totalTransactions: 8,
-      khr: {
-        totalReceived: 4250000.0,
-        totalSettlement: 6850000.0,
-      },
-      usd: {
-        totalReceived: 1037.5,
-        totalSettlement: 1670.0,
-      },
-    },
-    week: {
-      date: '2025-01-13 to 2025-01-19',
-      totalTransactions: 34,
-      khr: {
-        totalReceived: 18500000.0,
-        totalSettlement: 28750000.0,
-      },
-      usd: {
-        totalReceived: 4512.5,
-        totalSettlement: 7012.5,
-      },
-    },
-    month: {
-      date: '2025-01-01 to 2025-01-31',
-      totalTransactions: 156,
-      khr: {
-        totalReceived: 82500000.0,
-        totalSettlement: 125000000.0,
-      },
-      usd: {
-        totalReceived: 20112.5,
-        totalSettlement: 30500.0,
-      },
-    },
-  },
-})
-
 // Toggle summary currency display
 const toggleSummaryCurrency = () => {
   summaryDisplayCurrency.value = summaryDisplayCurrency.value === 'KHR' ? 'USD' : 'KHR'
 }
 
-// Computed summary data based on wallets (aggregate all currencies)
 const summaryData = computed(() => {
-  const currentType = selectedWalletType.value as keyof typeof summaryDataByType.value
-  return summaryDataByType.value[currentType] || summaryDataByType.value.personal
+  const walletTypeLower = selectedWalletType.value.toLowerCase()
+
+  // Use top-up data for personal, business, savings, investment wallets
+  // Use fee (settlement) data for settlement wallets
+  const isSettlementWallet = walletTypeLower.includes('settlement')
+  const sourceData = isSettlementWallet ? feeSummaryData.value : topUpSummaryData.value
+
+  if (!sourceData) {
+    // Return default/empty data if no API data is available yet
+    const now = new Date()
+    const isoString = now.toISOString()
+    const currentDate = isoString.split('T')[0] || '2024-01-01'
+    const monthStart = currentDate.substring(0, 7) + '-01'
+    return {
+      today: {
+        date: currentDate,
+        total_transactions: 0,
+        khr: { total_received: 0, total_settlement: 0, total_transactions: 0 },
+        usd: { total_received: 0, total_settlement: 0, total_transactions: 0 },
+      },
+      week: {
+        date: `${currentDate} to ${currentDate}`,
+        total_transactions: 0,
+        khr: { total_received: 0, total_settlement: 0, total_transactions: 0 },
+        usd: { total_received: 0, total_settlement: 0, total_transactions: 0 },
+      },
+      month: {
+        date: `${monthStart} to ${currentDate}`,
+        total_transactions: 0,
+        khr: { total_received: 0, total_settlement: 0, total_transactions: 0 },
+        usd: { total_received: 0, total_settlement: 0, total_transactions: 0 },
+      },
+    }
+  }
+
+  // Log the data for debugging
+  console.log(`Loading ${isSettlementWallet ? 'Settlement' : 'Top-up'} data:`, sourceData)
+
+  return sourceData
 })
 
 // Computed property for current summary data based on selected currency
@@ -1145,20 +1112,23 @@ const currentSummaryData = computed(() => {
   return {
     today: {
       ...data.today,
-      totalReceived: data.today[currentCurrency].totalReceived,
-      totalSettlement: data.today[currentCurrency].totalSettlement,
+      totalTransactions: data.today[currentCurrency]?.total_transactions || 0,
+      totalReceived: data.today[currentCurrency]?.total_received || 0,
+      totalSettlement: data.today[currentCurrency]?.total_settlement || 0,
       currency: summaryDisplayCurrency.value,
     },
     week: {
       ...data.week,
-      totalReceived: data.week[currentCurrency].totalReceived,
-      totalSettlement: data.week[currentCurrency].totalSettlement,
+      totalTransactions: data.week[currentCurrency]?.total_transactions || 0,
+      totalReceived: data.week[currentCurrency]?.total_received || 0,
+      totalSettlement: data.week[currentCurrency]?.total_settlement || 0,
       currency: summaryDisplayCurrency.value,
     },
     month: {
       ...data.month,
-      totalReceived: data.month[currentCurrency].totalReceived,
-      totalSettlement: data.month[currentCurrency].totalSettlement,
+      totalTransactions: data.month[currentCurrency]?.total_transactions || 0,
+      totalReceived: data.month[currentCurrency]?.total_received || 0,
+      totalSettlement: data.month[currentCurrency]?.total_settlement || 0,
       currency: summaryDisplayCurrency.value,
     },
   }
@@ -1172,7 +1142,7 @@ watch(selectedWalletType, async (newType, oldType) => {
     const walletType = walletTypes.value.find((type) => type.id === newType)
     if (walletType) {
       selectedWalletTypeAPI.value = walletType.name
-      await loadWalletBalance()
+      await Promise.all([loadWalletBalance(), loadTransactionSummary()])
     }
     // Simulate API call delay for realistic feel
     await new Promise((resolve) => setTimeout(resolve, 800))
@@ -1184,6 +1154,10 @@ watch(selectedWalletType, async (newType, oldType) => {
 onMounted(async () => {
   await loadWalletTypes()
   await loadWalletBalance()
+  // Load transaction summary for the first time
+  if (selectedWalletType.value) {
+    await loadTransactionSummary()
+  }
 })
 
 // Methods
@@ -1192,9 +1166,9 @@ const refreshBalances = async () => {
   isWalletLoading.value = true
 
   try {
-    // Reload wallet types and balances
+    // Reload wallet types, balances, and transaction summary
     await loadWalletTypes()
-    await loadWalletBalance()
+    await Promise.all([loadWalletBalance(), loadTransactionSummary()])
   } catch (error) {
     console.error('Failed to refresh balances:', error)
   } finally {
@@ -1205,10 +1179,10 @@ const refreshBalances = async () => {
   }
 }
 
-const navigateToHistory = () => {
-  // Navigate to transaction history page
-  console.log('Navigate to transaction history')
-}
+// const navigateToHistory = () => {
+//   // Navigate to transaction history page
+//   console.log('Navigate to transaction history')
+// }
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -1373,20 +1347,6 @@ const handleScroll = () => {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200px 100%;
   animation: shimmer 1.5s infinite;
-}
-
-/* Spin animation for loading icons */
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Snap scroll effects */

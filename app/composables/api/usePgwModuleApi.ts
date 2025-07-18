@@ -5,6 +5,10 @@ import type {
   WalletBalanceResponse,
   WalletBalanceRequest,
 } from '~~/server/model/pgw_module_api/wallet'
+import type {
+  TopUpSummaryResponse,
+  FeeSummaryResponse,
+} from '~~/server/model/pgw_module_api/transactionSummary'
 
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
@@ -46,9 +50,35 @@ export const usePgwModuleApi = () => {
     )
   }
 
+  /**
+   * Get top-up summary transactions from PGW Module API
+   */
+  const getTopUpSummary = async () => {
+    return await executeV2(() =>
+      $fetch<TopUpSummaryResponse>(`/api/pgw-module/walletmgnt/get-top-up-summary-transactions`, {
+        method: 'GET',
+        onResponseError() {},
+      })
+    )
+  }
+
+  /**
+   * Get fee (settlement) summary transactions from PGW Module API
+   */
+  const getFeeSummary = async () => {
+    return await executeV2(() =>
+      $fetch<FeeSummaryResponse>(`/api/pgw-module/walletmgnt/get-fee-summary-transactions`, {
+        method: 'GET',
+        onResponseError() {},
+      })
+    )
+  }
+
   return {
     getProfile,
     getWalletTypes,
     getWalletBalance,
+    getTopUpSummary,
+    getFeeSummary,
   }
 }
