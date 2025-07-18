@@ -124,7 +124,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: t('settings.title'),
-      // icon: 'i-material-symbols-light-settings',
+      icon: 'i-material-symbols-light-settings',
       size: 'lg',
       to: '/settings',
       active: activeStates.value.settings,
