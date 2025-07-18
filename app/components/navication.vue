@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-const { showInfo } = useNotification()
+// const { showInfo } = useNotification()
 
 const { t } = useI18n()
 
@@ -51,80 +51,80 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('wallet'),
-          icon: 'i-material-symbols-light-wallet',
+          // icon: 'i-material-symbols-light-wallet',
           size: 'lg',
-          // to: '/digital-wallet/wallet',
-          onSelect: () => {
-            showInfo({
-              title: t('wallet_coming_soon'),
-              description: t('wallet_coming_soon_message'),
-            })
-          },
+          to: '/digital-wallet/wallet',
+          // onSelect: () => {
+          //   showInfo({
+          //     title: t('wallet_coming_soon'),
+          //     description: t('wallet_coming_soon_message'),
+          //   })
+          // },
           active: activeStates.value.wallet,
         },
         {
           label: t('settlement_menu'),
-          icon: 'i-material-symbols-light-payments',
+          // icon: 'i-material-symbols-light-payments',
           size: 'lg',
           to: '/digital-wallet/settlement',
           active: activeStates.value.settlement,
         },
       ],
     },
-    // {
-    //   label: t('navigation.organization'),
-    //   icon: 'i-material-symbols-light-home-work',
-    //   size: 'lg',
-    //   active: activeStates.value.organization,
-    //   children: [
-    //     {
-    //       label: t('navigation.banks'),
-    //       icon: 'i-material-symbols-account-balance-rounded',
-    //       size: 'lg',
-    //       to: '/organization/banks',
-    //       active: activeStates.value.banks,
-    //     },
-    //     {
-    //       label: t('navigation.sub_billers'),
-    //       icon: 'i-material-symbols-light:article-person',
-    //       size: 'lg',
-    //       to: '/organization/sub-billers',
-    //       active: activeStates.value.subBillers,
-    //     },
-    //     {
-    //       label: t('navigation.users'),
-    //       icon: 'i-material-symbols-light-group',
-    //       size: 'lg',
-    //       to: '/organization/users',
-    //       active: activeStates.value.users,
-    //     },
-    //   ],
-    // },
-    // {
-    //   label: t('navigation.reports'),
-    //   icon: 'i-material-symbols-light-bar-chart',
-    //   size: 'lg',
-    //   active: activeStates.value.reports,
-    //   children: [
-    //     {
-    //       label: t('navigation.transaction_summary'),
-    //       icon: 'i-material-symbols-light-summarize',
-    //       size: 'lg',
-    //       to: '/reports/transaction-summary',
-    //       active: activeStates.value.transactionSummary,
-    //     },
-    //     {
-    //       label: t('navigation.transaction_allocate'),
-    //       icon: 'i-material-symbols-light-switch-access-shortcut',
-    //       size: 'lg',
-    //       to: '/reports/transaction-allocation',
-    //       active: activeStates.value.transactionAllocation,
-    //     },
-    //   ],
-    // },
+    {
+      label: t('navigation.organization'),
+      icon: 'i-material-symbols-light-home-work',
+      size: 'lg',
+      active: activeStates.value.organization,
+      children: [
+        {
+          label: t('navigation.banks'),
+          // icon: 'i-material-symbols-account-balance-rounded',
+          size: 'lg',
+          to: '/organization/banks',
+          active: activeStates.value.banks,
+        },
+        {
+          label: t('navigation.sub_billers'),
+          // icon: 'i-material-symbols-light:article-person',
+          size: 'lg',
+          to: '/organization/sub-billers',
+          active: activeStates.value.subBillers,
+        },
+        {
+          label: t('navigation.users'),
+          // icon: 'i-material-symbols-light-group',
+          size: 'lg',
+          to: '/organization/users',
+          active: activeStates.value.users,
+        },
+      ],
+    },
+    {
+      label: t('navigation.reports'),
+      icon: 'i-material-symbols-light-bar-chart',
+      size: 'lg',
+      active: activeStates.value.reports,
+      children: [
+        {
+          label: t('navigation.transaction_summary'),
+          // icon: 'i-material-symbols-light-summarize',
+          size: 'lg',
+          to: '/reports/transaction-summary',
+          active: activeStates.value.transactionSummary,
+        },
+        {
+          label: t('navigation.transaction_allocate'),
+          // icon: 'i-material-symbols-light-switch-access-shortcut',
+          size: 'lg',
+          to: '/reports/transaction-allocation',
+          active: activeStates.value.transactionAllocation,
+        },
+      ],
+    },
     {
       label: t('settings.title'),
-      icon: 'i-material-symbols-light-settings',
+      // icon: 'i-material-symbols-light-settings',
       size: 'lg',
       to: '/settings',
       active: activeStates.value.settings,
