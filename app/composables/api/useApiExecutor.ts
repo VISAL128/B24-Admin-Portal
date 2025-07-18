@@ -30,6 +30,7 @@ export const useApiExecutor = () => {
   const executeV2 = async <T>(requestFn: () => Promise<T>): Promise<T> => {
     try {
       const response = await requestFn()
+      console.log('API Response:', response)
       return response
     } catch (error: unknown) {
       // console.error('Request failed:', error)

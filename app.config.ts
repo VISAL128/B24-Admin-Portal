@@ -8,7 +8,7 @@ export default defineAppConfig({
     // Table component customization
     table: {
       slots: {
-        td: 'text-xxs',
+        td: 'text-xxs py-3 cursor-pointer',
         th: 'tb-h-text py-2',
       },
     },
@@ -46,5 +46,15 @@ export default defineAppConfig({
         item: 'w-7 justify-center',
       },
     },
+    dropdownMenu: {
+      slots: {
+        itemLeadingIcon: 'shrink-0 size-4',
+      }
+    },
+    button: {
+      slots: {
+        leadingIcon: 'shrink-0 size-4 text-muted',
+      }
+    }
   },
 })
