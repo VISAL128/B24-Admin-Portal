@@ -233,7 +233,8 @@ const props = defineProps<{
 
     <div v-if="!props.collapsed" class="mt-auto p-2">
       <p class="text-xs text-gray-400 dark:text-gray-400 font-semibold">
-        {{ t('version') }} <span>
+        {{ t('splash.version') }}
+        <span>
           {{ appVersion }}
         </span>
       </p>

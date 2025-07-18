@@ -55,6 +55,11 @@
   "dashboard": "Dashboard",
   "transactions": "Transactions",
   "digital_wallet": "Digital Wallet",
+  "copy_to_clipboard": "Copy to Clipboard",
+  "copy_success": "Copied",
+  "copy_success_message": "Copied to clipboard",
+  "copy_failed": "Copy Failed",
+  "copy_failed_message": "Failed to copy to clipboard",
   "wallet_page": {
     "title": "Digital Wallet",
     "subtitle": "Manage your wallet balances and transactions",
@@ -70,6 +75,9 @@
     "last_transaction": "Last Transaction",
     "copy_success": "Copied!",
     "copy_success_message": "Account number copied to clipboard",
+    "copy_to_clipboard": "Copy to clipboard",
+    "copy_failed": "Copy Failed",
+    "copy_failed_message": "Failed to copy to clipboard",
     "wallet_type": "Wallet Type",
     "personal_wallet": "Personal Wallet",
     "business_wallet": "Business Wallet",
@@ -217,7 +225,7 @@
   "logging_out_message": "Please wait while we securely log you out...",
   "logout_error": "Logout Error",
   "go_to_login": "Go to Login",
-
+  "details": "Details",
   "index": {
     "navigation_instructions": "Use the navigation menu to explore different sections.",
     "current_version": "Current version",
@@ -247,7 +255,8 @@
     "status": "Status",
     "history": "History",
     "supplier": "Biller",
-    "transaction_allocations": "Transaction allocations",
+    "settlement_transaction": "Settlement Transaction",
+    "transaction_allocations": "Transaction Allocations",
     "biller": {
       "code": "Sub Biller Code",
       "name": "Sub Biller Name"

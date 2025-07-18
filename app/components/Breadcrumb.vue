@@ -5,7 +5,7 @@ import type {BreadcrumbItem} from "#ui/components/Breadcrumb.vue";
 const route = useRoute()
 const { t } = useI18n()
 
-let pageBreadcrumbs = computed(() => {
+const pageBreadcrumbs = computed(() => {
   return route.meta.breadcrumbs || [];
 });
 const items: BreadcrumbItem[] = computed(() => {
@@ -23,7 +23,7 @@ const items: BreadcrumbItem[] = computed(() => {
     'opacity-0': !pageBreadcrumbs.length,
   }">
     <template #separator>
-      <span class="mx-2 text-muted">/</span>
+      <span class="text-muted">/</span>
     </template>
   </UBreadcrumb>
 </template>
