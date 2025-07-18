@@ -3,7 +3,6 @@ import type { TableColumn, TableRow } from '@nuxt/ui'
 import { ref, watch } from 'vue'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
-import { useStatusColor } from '~/composables/utils/useStatusColor'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import SumTranDataUnderTable from '~/components/tables/SumTranDataUnderTable.vue'
 import type {
@@ -13,12 +12,13 @@ import type {
   TransactionAllocation,
 } from '~/models/settlement'
 import { useTable } from '~/composables/utils/useTable'
+import appConfig from '~~/app.config'
 
 const { t } = useI18n()
 const format = useFormat()
-const { getStatusBackgroundColor } = useStatusColor()
 const userPreferences = useUserPreferences().getPreferences()
 const { createRowNumberCell, createSortableHeader } = useTable()
+const { statusCellBuilder } = useStatusBadge()
 const clipboard = ref(useClipboard())
 
 interface Props {
@@ -112,14 +112,14 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     accessorKey: 'cpo.code',
     header: () => t('settlement.sub_biller.code'),
     cell: ({ row }) => row.original.cpo?.code || 'N/A',
-    size: 150,
+    size: 50,
     maxSize: 150,
   },
   {
     accessorKey: 'cpo.name',
     header: () => t('settlement.sub_biller.name'),
     cell: ({ row }) => row.original.cpo?.name || 'N/A',
-    size: 200,
+    size: 100,
     maxSize: 200,
   },
   {
@@ -129,6 +129,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
     size: 150,
     maxSize: 150,
+  },
+  {
+    accessorKey: 'currency',
+    header: () => h('p', { class: 'w-full' }, t('settlement.currency')),
+    cell: () => h('span', { class: '' }, props.currency || 'N/A'),
+    size: 10,
+    maxSize: 30,
   },
   {
     accessorKey: 'tran_date',
@@ -145,10 +152,39 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     maxSize: 150,
   },
   {
+    accessorKey: 'total_transactions',
+    header: () => t('settlement.transaction_allocations'),
+    cell: ({ row }) => {
+      return row.original.tran_allocates.length || 0
+    },
+    size: 150,
+    maxSize: 150,
+  },
+  {
     accessorKey: 'settlement_bank_name',
     header: () => t('settlement.generate.form.bank'),
     cell: ({ row }) => {
-      return h('div', { class: 'text-sm' }, row.original.settlement_bank_name || '-')
+      const UAvatar = resolveComponent('UAvatar')
+      if (row.original.settlement_bank_logo) {
+        // If settlement bank logo is available, display it
+        return h('div', { class: 'flex items-center gap-3' }, [
+          h(UAvatar, {
+            src: row.original.settlement_bank_logo,
+            size: 'xs',
+          }),
+          h('div', { class: '' }, row.original.settlement_bank_name || '-'),
+        ])
+      }
+      return h('div', { class: '' }, row.original.settlement_bank_name || '-')
+    },
+    size: 150,
+    maxSize: 150,
+  },
+  {
+    accessorKey: 'bank_ref_id',
+    header: () => t('bank_ref'),
+    cell: ({ row }) => {
+      return h('p', { class: '' }, row.original.bank_ref_id || '-')
     },
     size: 150,
     maxSize: 150,
@@ -156,15 +192,14 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     accessorKey: 'status',
     header: () => t('settlement.status'),
-    cell: ({ row }) => {
-      const status = row.original.status
-      const colorClass = getStatusBackgroundColor(status)
-      return h(
-        'span',
-        { class: `px-2 py-1 rounded-full text-xs font-medium ${colorClass}` },
-        status
-      )
-    },
+    cell: ({ row }) => statusCellBuilder(row.original.status, true),
+    // cell: ({ row }) => {
+    //   return h(StatusBadgeV2, {
+    //     status: row.original.status,
+    //     variant: 'subtle',
+    //     size: 'md',
+    //   })
+    // },
     size: 120,
     maxSize: 120,
   },
@@ -203,10 +238,12 @@ const allocationColumns = ref<TableColumn<TransactionAllocation>[]>([
     accessorKey: 'transaction_date',
     header: ({ column }) => createSortableHeader(column, t('transaction_date')),
     cell: ({ row }) => {
-      return format.formatDateTime(row.original.transaction_date, {
-        dateStyle: userPreferences?.dateFormat || 'medium',
-        timeStyle: userPreferences?.timeFormat || 'short',
-      })
+      return h('span', { class: 'text-sm' }, [
+        format.formatDateTime(row.original.transaction_date, {
+          dateStyle: userPreferences?.dateFormat || 'medium',
+          timeStyle: userPreferences?.timeFormat || 'short',
+        }),
+      ])
     },
     enableSorting: true,
   },
@@ -221,11 +258,14 @@ const allocationColumns = ref<TableColumn<TransactionAllocation>[]>([
       ),
   },
 ])
+
+const labelClass = 'text-xs font-medium text-gray-500 dark:text-gray-400'
+const valueClass = 'text-sm font-bold'
 </script>
 <template>
   <UCard>
     <template #header>
-      <div class="flex flex-row justify-baseline items-center gap-4">
+      <div class="flex flex-row justify-between items-center gap-4">
         <h2 class="text-lg font-semibold">{{ $t('settlement.history') }}</h2>
         <UInput
           v-model="settlementHistoryQuery.search"
@@ -243,68 +283,76 @@ const allocationColumns = ref<TableColumn<TransactionAllocation>[]>([
       sticky
       class="w-full h-full"
       :style="{ maxHeight: '400px', minHeight: '300px' }"
+      :ui="appConfig.ui.table.slots"
       @select="onRowSelect"
     />
     <USlideover
       v-model:open="openSlideover"
       :title="t('settlement.title')"
-      :dismissible="true"
       side="right"
-      :close="{
-        color: 'neutral',
-        variant: 'ghost',
-        icon: 'i-lucide-x',
-      }"
       @close="closeSlideover"
     >
       <template #body>
         <div v-if="openSliderWithData" class="flex flex-col h-full">
           <!-- Settlement Summary -->
-          <div class="border-b pb-4 flex-shrink-0">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="text-sm font-medium text-gray-500">{{
-                  t('settlement.sub_biller.code')
-                }}</label>
-                <p class="text-sm font-bold">{{ openSliderWithData.cpo?.code || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">{{
-                  t('settlement.sub_biller.name')
-                }}</label>
-                <p class="text-sm font-bold">{{ openSliderWithData.cpo?.name || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">{{ t('bank_ref') }}</label>
-                <div class="flex items-start gap-2">
-                  <p class="text-sm font-bold break-all flex-1 min-w-0">
-                    {{ openSliderWithData.bank_ref_id || '-' }}
+          <UCard class="shadow-sm mb-4">
+            <div class="pb-4 flex-shrink-0">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label :class="labelClass">{{ t('settlement.sub_biller.code') }}</label>
+                  <p :class="valueClass">{{ openSliderWithData.cpo?.code || 'N/A' }}</p>
+                </div>
+                <div>
+                  <label :class="labelClass">{{ t('settlement.sub_biller.name') }}</label>
+                  <p :class="valueClass">{{ openSliderWithData.cpo?.name || 'N/A' }}</p>
+                </div>
+                <div>
+                  <label :class="labelClass">{{ t('settlement.status') }}</label>
+                  <div :class="valueClass">
+                    <StatusBadgeV2 :status="openSliderWithData.status" variant="soft" size="md" />
+                    <!-- <StatusBadge :status="openSliderWithData.status" size="sm" /> -->
+                  </div>
+                </div>
+                <div>
+                  <label :class="labelClass">{{ t('settlement.currency') }}</label>
+                  <p :class="valueClass">{{ props.currency || 'N/A' }}</p>
+                </div>
+                <div>
+                  <label :class="labelClass">
+                    {{ t('bank') }}
+                  </label>
+                  <p :class="valueClass">
+                    {{ openSliderWithData.settlement_bank_name || '-' }}
                   </p>
-                  <UIcon
-                    v-if="!clipboard.isCopied"
-                    name="i-lucide-copy"
-                    class="cursor-pointer text-gray-400 hover:text-gray-600 flex-shrink-0 mt-0.5"
-                    @click="onCopy(openSliderWithData.bank_ref_id)"
-                  />
-                  <UIcon v-else name="i-lucide-check" class="text-green-500 flex-shrink-0 mt-0.5" />
+                </div>
+                <div>
+                  <label :class="labelClass">{{ t('bank_ref') }}</label>
+                  <div class="flex flex-wrap items-start gap-1">
+                    <p class="break-all min-w-0" :class="valueClass">
+                      {{ openSliderWithData.bank_ref_id || '-' }}
+                    </p>
+                    <UIcon
+                      v-if="!clipboard.isCopied"
+                      name="i-lucide-copy"
+                      class="cursor-pointer text-gray-400 hover:text-gray-600 flex-shrink-0 mt-0.5"
+                      @click="onCopy(openSliderWithData.bank_ref_id)"
+                    />
+                    <UIcon
+                      v-else
+                      name="i-lucide-check"
+                      class="text-green-500 flex-shrink-0 mt-0.5"
+                    />
+                  </div>
                 </div>
               </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">
-                  {{ t('bank') }}
-                </label>
-                <p class="text-sm font-bold">
-                  {{ openSliderWithData.settlement_bank_name || '-' }}
-                </p>
-              </div>
             </div>
-          </div>
+          </UCard>
 
           <!-- Transaction Allocations Table -->
-          <div class="flex-1 flex flex-col mt-2 gap-2 min-h-0">
-            <h3 class="text-lg font-semibold flex-shrink-0">
+          <div class="flex-1 flex flex-col mt-4 gap-2 min-h-0">
+            <h4 class="text-md font-semibold flex-shrink-0">
               {{ t('settlement.transaction_allocations') }}
-            </h3>
+            </h4>
             <div
               v-if="
                 openSliderWithData.tran_allocates && openSliderWithData.tran_allocates.length > 0
@@ -323,17 +371,18 @@ const allocationColumns = ref<TableColumn<TransactionAllocation>[]>([
                   :currency="props.currency"
                 />
               </div>
-              <div class="flex-1 border border-gray-200 rounded-lg overflow-hidden">
+              <UCard class="flex-1 p-0 sm:p-0 overflow-hidden" :ui="{ body: 'sm:p-0' }">
                 <UTable
                   v-model:sorting="sorting"
                   :data="openSliderWithData.tran_allocates"
                   :columns="allocationColumns"
+                  :ui="appConfig.ui.table.slots"
                   sticky
                   class="h-full"
                 />
-              </div>
+              </UCard>
             </div>
-            <div v-else class="flex-1 flex items-center justify-center text-gray-500">
+            <div v-else class="flex-1 flex text-sm items-center justify-center text-gray-500">
               <p>{{ t('settlement.no_transaction_allocations') }}</p>
             </div>
           </div>

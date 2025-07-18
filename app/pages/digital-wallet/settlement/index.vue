@@ -1,13 +1,18 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-4 overflow-hidden">
+  <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
     <div
-      class="flex flex-wrap items-center justify-between gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
+      class="flex flex-wrap items-center justify-between gap-2 px-3 py-3 bg-white dark:bg-gray-900 rounded shadow"
     >
       <div class="flex flex-wrap items-center gap-2">
-        <UInput v-model="search" :placeholder="t('search_by_settler')" class="w-64" />
+        <UInput
+          v-model="search"
+          :placeholder="t('settlement.search_placeholder')"
+          class="w-64"
+          size="sm"
+        />
         <UPopover>
-          <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
+          <UButton color="neutral" variant="subtle" size="sm" icon="i-lucide-calendar">
             <template v-if="modelValue.start">
               <template v-if="modelValue.end">
                 {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
@@ -28,12 +33,17 @@
         </UPopover>
       </div>
       <div class="flex items-center gap-2">
-        <UButton color="primary" icon="i-lucide-play" @click="onGenerateSettlement">
+        <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
           {{ t('generate_settlement') }}
         </UButton>
 
-        <UDropdownMenu :items="exportItems" :content="{ align: 'end' }" @select="handleExport">
-          <UButton icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">{{
+        <UDropdownMenu
+          size="sm"
+          :items="exportItems"
+          :content="{ align: 'end' }"
+          @select="handleExport"
+        >
+          <UButton icon="i-lucide-download" size="sm" trailing-icon="i-lucide-chevron-down">{{
             t('export')
           }}</UButton>
         </UDropdownMenu>
@@ -48,8 +58,10 @@
       :loading="loading"
       :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
       :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
+      :ui="appConfig.ui.table.slots"
       sticky
       class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+      @select="handleViewDetails"
     >
       <template #empty>
         <TableEmptyState />
@@ -79,6 +91,7 @@
             { label: '100', value: 100 },
           ]"
           class="w-24"
+          size="sm"
           :search-input="false"
           @change="onPageSizeChange"
         />
@@ -88,6 +101,9 @@
           :page-count="totalPage"
           :items-per-page="pageSize.value"
           :total="total"
+          size="sm"
+          :ui="appConfig.ui.pagination.slots"
+          show-edges
           @update:page="page = $event"
         />
       </div>
@@ -99,7 +115,7 @@
 import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
 import {
@@ -116,6 +132,7 @@ import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { UButton } from '#components'
+import appConfig from '~~/app.config'
 
 definePageMeta({
   auth: false,
@@ -126,6 +143,7 @@ const { t, locale } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
 const { createSortableHeader, createRowNumberCell } = useTable()
 const errorHandler = useErrorHandler()
+const { statusCellBuilder } = useStatusBadge()
 
 const table = useTemplateRef('table')
 const router = useRouter()
@@ -426,15 +444,15 @@ const handleExport = (item: { click: () => void }) => {
   }
 }
 
-const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
-  if (record.success === 0 && record.fail === 0) {
-    await notification.showWarning({
+const handleViewDetails = (row: TableRow<SettlementHistoryRecord>) => {
+  if (row.original.success === 0 && row.original.fail === 0) {
+    notification.showWarning({
       title: t('no_transactions_found'),
       description: t('no_transactions_found_desc'),
     })
     return
   }
-  navigateToDetails(record.id)
+  navigateToDetails(row.original.id)
 }
 
 const columns: TableColumn<SettlementHistoryRecord>[] = [
@@ -474,6 +492,8 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
+    size: 50,
+    maxSize: 150,
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
@@ -491,8 +511,18 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   { accessorKey: 'currency_id', header: () => t('settlement.currency') },
   { accessorKey: 'created_by', header: () => t('settled_by') },
   {
-    accessorKey: 'status', // optional if you need sorting/filtering
+    id: 'status',
     header: () => t('status.header'),
+    cell: ({ row }) => statusCellBuilder(row.original.status, true),
+    // cell: ({ row }) => {
+    //   const status = row.original.status
+    //   const statusClass = status === 'completed' ? 'text-green-500' : 'text-red-500'
+    //   return h('span', { class: `text-xs font-medium ${statusClass}` }, t(`status.${status}`))
+    // },
+  },
+  {
+    accessorKey: 'transaction',
+    header: () => t('settlement.transaction'),
     cell: ({ row }) => {
       // return h('span', {
       //   class: `text-sm font-medium`
@@ -545,20 +575,20 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     },
   },
   // Add an action column for viewing details
-  {
-    id: 'actions',
-    header: () => t('actions'),
-    cell: ({ row }) =>
-      h('div', { class: 'flex items-center gap-2' }, [
-        h(resolveComponent('UButton'), {
-          color: 'primary',
-          variant: 'ghost',
-          icon: 'i-lucide-eye',
-          size: 'sm',
-          onClick: handleViewDetails(row.original),
-          // title: translations.view_details
-        }),
-      ]),
-  },
+  // {
+  //   id: 'actions',
+  //   header: () => t('actions'),
+  //   cell: ({ row }) =>
+  //     h('div', { class: 'flex items-center gap-2' }, [
+  //       h(resolveComponent('UButton'), {
+  //         color: 'primary',
+  //         variant: 'ghost',
+  //         icon: 'i-lucide-eye',
+  //         size: 'sm',
+  //         onClick: handleViewDetails,
+  //         // title: translations.view_details
+  //       }),
+  //     ]),
+  // },
 ]
 </script>

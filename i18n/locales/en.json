@@ -237,6 +237,7 @@
     "confirm": "Confirm"
   },
   "settlement": {
+    "transaction": "Transaction",
     "title": "Settlement",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
@@ -443,6 +444,8 @@
     "subtitle": "Management & Settlement Platform",
     "loading": "Initializing...",
     "version": "Version",
+    "powered_by": "Powered by",
+    "bill24": "Bill24",
     "progress": {
       "initializing": "Initializing application...",
       "checking_auth": "Checking authentication...",

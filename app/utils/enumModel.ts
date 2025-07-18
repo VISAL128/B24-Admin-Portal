@@ -33,4 +33,16 @@ enum PartyType {
   Bank = 1
 }
 
-export { SortDirection, FilterOperator, FilterType, PartyType };
+enum Status {
+  Pending = 'pending',
+  Completed = 'completed',
+  Failed = 'failed'
+}
+
+enum SettlementStatus {
+  Pending = 'pending',
+  Completed = 'completed',
+  Failed = 'failed'
+}
+
+export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus };

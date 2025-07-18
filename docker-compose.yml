@@ -7,7 +7,7 @@ services:
     #   dockerfile: Dockerfile
     #   no_cache: true
     restart: always
-    image: registry.bill24.io/b24/admin-portal:beta-1.4
+    image: registry.bill24.io/b24/admin-portal:beta-1.5
     ports:
       - '21018:3000'
     env_file:
