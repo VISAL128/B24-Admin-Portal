@@ -1,38 +1,44 @@
 <template>
   <USlideover
-    :open="isOpen"
-    @close="close"
-    
-    class="w-full sm:w-[90vw] md:w-[50vw] lg:w-[50vw] max-w-none right-0"
+    v-model:open="openSlideover"
+    :title="'Transaction'"
+    :dismissible="true"
+    side="right"
+    :close="false"
+    @close="closeSlideover"
+    class="w-full sm:w-[90vw] md:w-[50vw] lg:w-[70vw] max-w-none right-0"
   >
     <template #header>
-      <div class="flex items-center justify-between w-full px-4 py-1">
-        <div class="flex items-center gap-2">
-          <button
-            @click="close"
-            class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded flex items-center justify-center"
-          >
-            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </button>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction</h2>
-        </div>
+      <div class="flex items-center justify-between w-full">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction</h3>
         <div class="flex items-center gap-2">
           <!-- Status Transaction  -->
           <StatusBadge :status="transactionData.status" variant="table" size="sm" />
-          <UButton variant="outline" @click="exportTransaction" size="sm" square>
+          <UButton variant="outline" @click="download" size="sm" square>
             <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
           </UButton>
-          <UButton variant="outline" @click="close" size="sm" square>
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+
+          <UButton variant="outline" @click="closeSlideover" size="sm" square>
+            <UIcon name="i-lucide-x" class="w-4 h-4" />
           </UButton>
         </div>
       </div>
     </template>
+
     <template #body>
-      <div class="flex h-full flex-col">
-        <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 md:space-y-6">
-          <!-- Transaction Overview Section -->
+      <div class="flex flex-col h-full">
+        <div class="flex-shrink-0">
+          <!-- Transaction Detail Section -->
+          <div class="px-4 sm:px-0">
+            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+              <div
+                class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
+              >
+                <UIcon name="i-material-symbols-receipt-long" class="w-5 h-5 text-primary" />
+              </div>
+              Transaction Detail
+            </h4>
+          </div>
           <div class="px-4 sm:px-0">
             <!-- Two Column Layout -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -151,169 +157,248 @@
               </div>
             </div>
           </div>
-
-          <!-- Customer Details Table -->
-          <div class="px-4 sm:px-0">
-            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-              <UIcon name="i-heroicons-users" class="w-5 h-5 mr-2 text-primary" />
-              Customer Information
-            </h4>
-
-            <!-- <UTable
-              :data="customerDetails"
-              :columns="customerColumns"
-              class="w-full"
-              :ui="{
-                td: 'px-2 py-3 whitespace-nowrap',
-                th: 'px-2 py-3 whitespace-nowrap',
-                thead: 'whitespace-nowrap',
-                tbody: 'whitespace-nowrap',
-              }"
-            /> -->
-            <UTable
-              :data="customerDetails"
-              :columns="customerColumns"
-              class="w-full"
-              :ui="{
-                // td: 'px-2 py-3 whitespace-nowrap ',
-                // th: 'px-2 py-3 whitespace-nowrap',
-                td: 'px-2 py-3 whitespace-nowrap align-top',
-                th: 'px-2 py-3 whitespace-nowrap text-left',
-                thead: 'whitespace-nowrap',
-                tbody: 'whitespace-nowrap',
-              }"
+        </div>
+        <!-- Separator Line -->
+        <div
+          class="border-b border-dashed border-gray-200 dark:border-gray-700 pb-4 flex-shrink-0 mt-4"
+        ></div>
+        <!-- Customer Details Table -->
+        <div class="px-4 sm:px-0 mt-6">
+          <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+            <div
+              class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
             >
-              <template #cell="{ column, row }">
-                <div
-                  :class="{
-                    'text-left': ['customerName', 'customerCode', 'billNumber'].includes(column.id),
-                    'text-right': ['amount'].includes(column.id),
-                    'text-center': ['currency'].includes(column.id),
-                  }"
-                  class="w-full"
-                >
-                  {{ row.original[column.id] }}
-                </div>
-              </template>
-            </UTable>
-          </div>
-
-          <!-- Transaction Allocation Table -->
-          <div class="px-4 sm:px-0">
-            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-              <UIcon name="i-heroicons-currency-dollar" class="w-5 h-5 mr-2 text-primary" />
-              Transaction Allocation
-            </h4>
-
-            <UTable
-              :data="transactionAllocateData"
-              :columns="transactionAllocateColumns"
-              class="w-full"
-              :ui="{
-                // thead: 'whitespace-nowrap',
-                // th: 'text-left whitespace-nowrap',
-                // td: 'whitespace-nowrap align-top',
-                td: 'px-2 py-3 whitespace-nowrap align-top',
-                th: 'px-2 py-3 whitespace-nowrap text-left',
-                thead: 'whitespace-nowrap',
-                tbody: 'whitespace-nowrap',
-              }"
-            >
-              <template #cell="{ column, row }">
-                <div
-                  :class="{
-                    'text-left': ['date', 'customer', 'billerName', 'currency'].includes(column.id),
-                    'text-right': ['transactionAmount', 'amount', 'outstandingAmount'].includes(
-                      column.id
-                    ),
-                    'text-center': false,
-                  }"
-                  class="w-full"
-                >
-                  <span
-                    v-if="column.id === 'transactionAmount'"
-                    class="text-gray-900 dark:text-white font-medium"
-                  >
-                    {{ row.original[column.id].toFixed(2) }}
-                  </span>
-                  <span v-else-if="column.id === 'amount'" class="text-blue-600 font-medium">
-                    {{ row.original[column.id].toFixed(2) }}
-                  </span>
-                  <span
-                    v-else-if="column.id === 'outstandingAmount'"
-                    class="text-orange-600 font-medium"
-                  >
-                    {{ row.original[column.id].toFixed(2) }}
-                  </span>
-                  <span v-else class="text-gray-900 dark:text-white">
-                    {{ row.original[column.id] }}
-                  </span>
-                </div>
-              </template>
-            </UTable>
-          </div>
-
-          <!-- Repush Transaction Table -->
-          <div class="px-4 sm:px-0">
-            <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-              <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 mr-2 text-primary" />
-              Repush Transaction History
-            </h4>
-            <UTable
-              :data="webhookHistoryData"
-              :columns="webhookColumns"
-              class="w-full"
-              :ui="{
-                thead: 'whitespace-nowrap',
-                th: 'text-left whitespace-nowrap px-3 py-3',
-                td: 'whitespace-nowrap align-top px-3 py-3',
-                tbody: 'divide-y divide-gray-200 dark:divide-gray-700',
-              }"
-            />
-          </div>
-
-          <!-- Timeline -->
-          <!-- <UCard>
-            <template #header>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                Transaction Timeline
-              </h3>
-            </template>
-            <div class="space-y-4">
-              <div v-for="(item, index) in timeline" :key="index" class="relative flex items-start">
-                <div
-                  class="relative z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-2 rounded-full"
-                  :class="item.border"
-                >
-                  <UIcon :name="item.icon" :class="item.color + ' w-4 h-4'" />
-                </div>
-                <div class="ml-4 flex-1">
-                  <div class="flex items-center justify-between">
-                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">
-                      {{ item.title }}
-                    </h4>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ item.time }}</span>
-                  </div>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {{ item.description }}
-                  </p>
-                </div>
-              </div>
+              <UIcon name="i-heroicons-users" class="w-5 h-5 text-primary" />
             </div>
-          </UCard> -->
+            Customer Information
+          </h4>
+          <UTable
+            :data="customerDetails"
+            :columns="customerColumns"
+            class="w-full"
+            :ui="{
+              td: 'px-2 py-3 whitespace-nowrap align-top',
+              th: 'px-2 py-3 whitespace-nowrap text-left',
+              thead: 'whitespace-nowrap',
+              tbody: 'whitespace-nowrap',
+            }"
+          >
+            <template #cell="{ column, row }">
+              <div
+                :class="{
+                  'text-left': ['customerName', 'customerCode', 'billNumber'].includes(column.id),
+                  'text-right': ['amount'].includes(column.id),
+                  'text-center': ['currency'].includes(column.id),
+                }"
+                class="w-full"
+              >
+                {{ row.original[column.id] }}
+              </div>
+            </template>
+          </UTable>
+        </div>
+
+        <!-- Separator Line -->
+        <div
+          class="border-b border-dashed border-gray-200 dark:border-gray-700 pb-4 flex-shrink-0 mt-4"
+        ></div>
+        <!-- Transaction Allocation Table -->
+        <div class="px-4 sm:px-0 mt-6">
+          <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+            <div
+              class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
+            >
+              <UIcon name="i-material-symbols-receipt-long" class="w-5 h-5 text-primary" />
+            </div>
+            Transaction Allocation
+          </h4>
+
+          <UTable
+            :data="transactionAllocateData"
+            :columns="transactionAllocateColumns"
+            class="w-full"
+            :ui="{
+              // thead: 'whitespace-nowrap',
+              // th: 'text-left whitespace-nowrap',
+              // td: 'whitespace-nowrap align-top',
+              td: 'px-2 py-3 whitespace-nowrap align-top',
+              th: 'px-2 py-3 whitespace-nowrap text-left',
+              thead: 'whitespace-nowrap',
+              tbody: 'whitespace-nowrap',
+            }"
+          >
+            <template #cell="{ column, row }">
+              <div
+                :class="{
+                  'text-left': ['date', 'customer', 'billerName', 'currency'].includes(column.id),
+                  'text-right': ['transactionAmount', 'amount', 'outstandingAmount'].includes(
+                    column.id
+                  ),
+                  'text-center': false,
+                }"
+                class="w-full"
+              >
+                <span
+                  v-if="column.id === 'transactionAmount'"
+                  class="text-gray-900 dark:text-white font-medium"
+                >
+                  {{ row.original[column.id].toFixed(2) }}
+                </span>
+                <span v-else-if="column.id === 'amount'" class="text-blue-600 font-medium">
+                  {{ row.original[column.id].toFixed(2) }}
+                </span>
+                <span
+                  v-else-if="column.id === 'outstandingAmount'"
+                  class="text-orange-600 font-medium"
+                >
+                  {{ row.original[column.id].toFixed(2) }}
+                </span>
+                <span v-else class="text-gray-900 dark:text-white">
+                  {{ row.original[column.id] }}
+                </span>
+              </div>
+            </template>
+          </UTable>
+        </div>
+
+        <!-- Separator Line -->
+        <div
+          class="border-b border-dashed border-gray-200 dark:border-gray-700 pb-4 flex-shrink-0 mt-4"
+        ></div>
+
+        <!-- Repush Transaction Table -->
+        <div class="px-4 sm:px-0 mt-6">
+          <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+            <div
+              class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
+            >
+              <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 text-primary" />
+            </div>
+            Repush Transaction History
+          </h4>
+          <UTable
+            :data="webhookHistoryData"
+            :columns="webhookColumns"
+            class="w-full"
+            :ui="{
+              thead: 'whitespace-nowrap',
+              th: 'text-left whitespace-nowrap px-3 py-3',
+              td: 'whitespace-nowrap align-top px-3 py-3',
+              tbody: 'divide-y divide-gray-200 dark:divide-gray-700',
+            }"
+          />
         </div>
       </div>
     </template>
   </USlideover>
+
+  <!-- Download Modal - Using teleport to body -->
+  <Teleport to="body">
+    <UModal v-model="showDownloadModal" prevent-close>
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Download Options</h3>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              class="-my-1"
+              @click="showDownloadModal = false"
+            />
+          </div>
+        </template>
+
+        <div class="space-y-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Choose what you would like to download:
+          </p>
+
+          <div class="space-y-3">
+            <!-- Transaction Details Option -->
+            <div
+              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                    Transaction Details
+                  </h4>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Complete transaction information including customer details and allocation data
+                  </p>
+                </div>
+                <UButton size="sm" @click="exportTransaction" class="ml-3">
+                  <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-1" />
+                  Download
+                </UButton>
+              </div>
+            </div>
+
+            <!-- Receipt Option -->
+            <div
+              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">Receipt</h4>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Simple receipt format with basic transaction information
+                  </p>
+                </div>
+                <UButton variant="outline" size="sm" @click="downloadReceiptAsImage" class="ml-3">
+                  <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-1" />
+                  Download
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end">
+            <UButton color="neutral" variant="ghost" @click="showDownloadModal = false">
+              Cancel
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
+import html2canvas from 'html2canvas'
 import { computed, h, ref } from 'vue'
 import CopyableText from '~/components/CopyableText.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
+
+interface Props {
+  modelValue: boolean
+  transactionId?: string
+}
+
+interface Emits {
+  (event: 'update:modelValue', value: boolean): void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  transactionId: '',
+})
+
+const emit = defineEmits<Emits>()
+
+const openSlideover = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
+})
+
+const closeSlideover = () => {
+  emit('update:modelValue', false)
+}
 
 interface CustomerDetail {
   id: string
@@ -576,23 +661,21 @@ const webhookColumns = [
             'button',
             {
               class: `
-                inline-flex items-center px-2 py-1.5 text-xs font-medium rounded-md
-                transition-colors duration-200
+                inline-flex items-center justify-center w-8 h-8 rounded transition-colors
                 ${
                   row.original.retrying
-                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400'
-                    : row.original.status === 'Failed'
-                      ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30'
+                    ? 'text-gray-400 cursor-not-allowed bg-gray-100 dark:text-gray-500 dark:bg-gray-800'
+                    : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
                 }
               `,
               disabled: row.original.retrying,
               onClick: () => retryWebhook(row.original.id),
+              title: row.original.retrying ? 'Retrying...' : 'Repush Transaction',
             },
             [
               row.original.retrying
                 ? h('svg', {
-                    class: 'animate-spin h-3 w-3',
+                    class: 'animate-spin h-4 w-4',
                     xmlns: 'http://www.w3.org/2000/svg',
                     fill: 'none',
                     viewBox: '0 0 24 24',
@@ -602,7 +685,7 @@ const webhookColumns = [
                     `,
                   })
                 : h('svg', {
-                    class: 'w-3 h-3 transform',
+                    class: 'w-4 h-4',
                     xmlns: 'http://www.w3.org/2000/svg',
                     fill: 'none',
                     viewBox: '0 0 24 24',
@@ -611,15 +694,6 @@ const webhookColumns = [
                     innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />`,
                   }),
             ]
-          ),
-          // Tooltip
-          h(
-            'div',
-            {
-              class:
-                'absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50',
-            },
-            'Repush Transaction'
           ),
         ]
       ),
@@ -648,13 +722,22 @@ const webhookColumns = [
     header: () => 'Webhook URL',
     accessorKey: 'url',
     cell: ({ row }: any) =>
-      h(CopyableText, {
-        text: row.original.url,
-        displayText: row.original.url,
-        textClass: 'text-primary hover:underline text-sm truncate block max-w-[200px]',
-        fontClass: '',
-        notificationTitle: 'URL Copied!',
-      }),
+      h(
+        'div',
+        {
+          class:
+            'inline-block border border-gray-200 dark:border-gray-700 rounded-md p-1 bg-gray-50 dark:bg-gray-800',
+        },
+        [
+          h(CopyableText, {
+            text: row.original.url,
+            displayText: row.original.url,
+            textClass: 'hover:underline text-sm truncate block',
+            fontClass: '',
+            notificationTitle: 'URL Copied!',
+          }),
+        ]
+      ),
     size: 200,
   },
   {
@@ -667,54 +750,24 @@ const webhookColumns = [
         h(
           'div',
           {
-            class: 'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
+            class:
+              'inline-block border border-gray-200 dark:border-gray-700 rounded-md p-1 bg-gray-50 dark:bg-gray-800',
           },
           [
-            h('span', { class: 'font-medium' }, 'Transaction ID: '),
-            h('span', { class: 'font-mono' }, parsedPayload.transaction_id),
-          ]
-        ),
-        h(
-          'div',
-          {
-            class: 'text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors',
-          },
-          [
-            h('span', { class: 'font-medium' }, 'Status: '),
-            h(StatusBadge, {
-              status: parsedPayload.status,
-              variant: 'table',
-              size: 'sm',
+            h(CopyableText, {
+              text: row.original.payload,
+              displayText: row.original.payload,
+              textClass: 'hover:underline text-sm truncate block',
+              fontClass: '',
+              notificationTitle: 'Payload Copied!',
             }),
           ]
         ),
-        h(CopyableText, {
-          text: row.original.payload,
-          displayText: 'Click to copy full payload',
-          textClass: 'text-xs text-gray-400 italic',
-          fontClass: '',
-          notificationTitle: 'Payload Copied!',
-        }),
       ])
     },
     size: 250,
   },
 ]
-
-interface Props {
-  modelValue: boolean
-  transactionId?: string
-}
-
-interface Emits {
-  (event: 'update:modelValue', value: boolean): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  transactionId: 'X001',
-})
-
-const emit = defineEmits<Emits>()
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -729,6 +782,7 @@ const { copy } = useClipboard()
 const notification = useNotification()
 
 const refIdCopied = ref(false)
+const showDownloadModal = ref(false)
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -753,11 +807,222 @@ const copyToClipboard = async (text: string) => {
   }
 }
 
-const exportTransaction = () => {
-  notification.showSuccess({
-    title: 'Export Started',
-    description: `Exporting transaction ${props.transactionId}...`,
-  })
+const download = async () => {
+  showDownloadModal.value = true
+}
+
+const exportTransaction = async () => {
+  try {
+    showDownloadModal.value = false
+    notification.showInfo({
+      title: 'Generating Export',
+      description: 'Please wait while we capture the transaction details...',
+    })
+
+    // Create a temporary div with simple styling
+    const tempDiv = document.createElement('div')
+    tempDiv.style.position = 'absolute'
+    tempDiv.style.top = '-9999px'
+    tempDiv.style.left = '-9999px'
+    tempDiv.style.width = '800px'
+    tempDiv.style.height = 'auto'
+    tempDiv.style.backgroundColor = 'white'
+    tempDiv.style.fontFamily = 'Arial, sans-serif'
+    tempDiv.style.color = 'black'
+
+    // Simple HTML with basic inline styles only
+    tempDiv.innerHTML = `
+      <div style="background: white; padding: 30px; color: black; font-family: Arial, sans-serif;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #ccc; padding-bottom: 20px;">
+          <h1 style="margin: 0; color: #333; font-size: 24px;">Transaction Details</h1>
+          <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Bill24 Payment System</p>
+        </div>
+
+        <!-- Transaction Info Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px;">
+          <!-- Left Column -->
+          <div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Transaction No:</span><br>
+              <span style="color: #0066cc; font-family: monospace; font-weight: bold;">${transactionData.transactionNo}</span>
+            </div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Amount:</span><br>
+              <span style="color: #333; font-weight: bold;">${transactionData.transactionAmount.toFixed(2)} ${transactionData.currency}</span>
+            </div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Type:</span><br>
+              <span style="background: #e6f3ff; color: #0066cc; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${transactionData.transactionType}</span>
+            </div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Date:</span><br>
+              <span style="color: #333;">${transactionData.date}</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+              <span style="color: #666; font-size: 14px;">Settlement Amount:</span><br>
+              <span style="color: #333; font-weight: bold;">${transactionData.settlementAmount.toFixed(2)} ${transactionData.currency}</span>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Customer Fee:</span><br>
+              <span style="color: #333; font-weight: bold;">${transactionData.customerFee.toFixed(2)} ${transactionData.currency}</span>
+            </div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Supplier Fee:</span><br>
+              <span style="color: #333; font-weight: bold;">${transactionData.supplierFee.toFixed(2)} ${transactionData.currency}</span>
+            </div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Bank Reference:</span><br>
+              <span style="color: #0066cc; font-family: monospace; font-weight: bold;">${transactionData.bankReference}</span>
+            </div>
+            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+              <span style="color: #666; font-size: 14px;">Settlement Bank:</span><br>
+              <span style="color: #333;">${transactionData.settlementBank}</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+              <span style="color: #666; font-size: 14px;">Account Number:</span><br>
+              <span style="color: #0066cc; font-family: monospace; font-weight: bold;">${maskAccountNumber(transactionData.accountNumber)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div style="text-align: center; margin: 30px 0;">
+          <span style="
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            ${
+              transactionData.status === 'Success'
+                ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;'
+                : transactionData.status === 'Failed'
+                  ? 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'
+                  : 'background: #f8f9fa; color: #495057; border: 1px solid #dee2e6;'
+            }
+          ">
+            Status: ${transactionData.status}
+          </span>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; border-top: 1px solid #ccc; padding-top: 20px; color: #666; font-size: 12px;">
+          <p style="margin: 0;">Generated on ${new Date().toLocaleDateString()}</p>
+        </div>
+      </div>
+    `
+
+    // Add to DOM
+    document.body.appendChild(tempDiv)
+
+    // Wait for render
+    await new Promise((resolve) => setTimeout(resolve, 200))
+
+    // Capture with minimal options
+    const canvas = await html2canvas(tempDiv.firstElementChild as HTMLElement, {
+      backgroundColor: 'white',
+      scale: 2,
+    })
+
+    // Clean up
+    document.body.removeChild(tempDiv)
+
+    // Download
+    const link = document.createElement('a')
+    link.download = `${transactionData.transactionNo}-transaction-details.png`
+    link.href = canvas.toDataURL('image/png')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    notification.showSuccess({
+      title: 'Export Complete',
+      description: 'Transaction details exported successfully',
+    })
+  } catch (error) {
+    console.error('Error exporting transaction:', error)
+    notification.showError({
+      title: 'Export Failed',
+      description: 'Failed to export transaction details. Please try again.',
+    })
+  }
+}
+
+const downloadReceiptAsImage = async () => {
+  try {
+    showDownloadModal.value = false
+    notification.showInfo({
+      title: 'Generating Receipt',
+      description: 'Please wait while we capture the receipt...',
+    })
+
+    // Create a simple receipt with basic styling
+    const tempDiv = document.createElement('div')
+    tempDiv.style.position = 'absolute'
+    tempDiv.style.top = '-9999px'
+    tempDiv.style.left = '-9999px'
+    tempDiv.style.width = '400px'
+    tempDiv.style.backgroundColor = 'white'
+    tempDiv.style.fontFamily = 'Arial, sans-serif'
+    tempDiv.style.color = 'black'
+
+    tempDiv.innerHTML = `
+      <div style="background: white; padding: 25px; text-align: center; color: black; font-family: Arial, sans-serif;">
+        <h2 style="margin: 0 0 25px 0; color: black; font-size: 20px;">Bill24 Receipt</h2>
+        
+        <div style="border-bottom: 1px dashed #999; padding-bottom: 15px; margin-bottom: 15px; text-align: left;">
+          <div style="margin: 8px 0; color: black;">
+            <strong>Transaction:</strong> ${transactionData.transactionNo}
+          </div>
+          <div style="margin: 8px 0; color: black;">
+            <strong>Amount:</strong> ${transactionData.transactionAmount.toFixed(2)} ${transactionData.currency}
+          </div>
+          <div style="margin: 8px 0; color: black;">
+            <strong>Date:</strong> ${transactionData.date}
+          </div>
+          <div style="margin: 8px 0; color: black;">
+            <strong>Status:</strong> ${transactionData.status}
+          </div>
+        </div>
+        
+        <div style="font-size: 12px; color: #666; margin-top: 20px;">
+          Thank you for using Bill24
+        </div>
+      </div>
+    `
+
+    document.body.appendChild(tempDiv)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+
+    const canvas = await html2canvas(tempDiv.firstElementChild as HTMLElement, {
+      backgroundColor: 'white',
+      scale: 2,
+    })
+
+    document.body.removeChild(tempDiv)
+
+    const link = document.createElement('a')
+    link.download = `${transactionData.transactionNo}-receipt.png`
+    link.href = canvas.toDataURL('image/png')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    notification.showSuccess({
+      title: 'Receipt Downloaded',
+      description: 'Receipt has been downloaded successfully',
+    })
+  } catch (error) {
+    console.error('Error downloading receipt:', error)
+    notification.showError({
+      title: 'Download Failed',
+      description: 'Failed to download receipt. Please try again.',
+    })
+  }
 }
 
 // Transaction data
