@@ -26,8 +26,8 @@
           @click="toggleNavigation"
         >
           <Icon
-            :name="isNavExpanded ? 'heroicons:chevron-left' : 'heroicons:chevron-right'"
-            class="w-4 h-4"
+            :name="isNavExpanded ? 'tabler:layout-sidebar-left-collapse' : 'tabler:layout-sidebar-left-expand'"
+            class="size-5 text-gray-500 transition-transform duration-1000"
           />
         </UButton>
       </div>

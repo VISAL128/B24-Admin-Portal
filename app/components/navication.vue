@@ -29,7 +29,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: t('dashboard'),
-      icon: 'i-material-symbols-light-space-dashboard-rounded',
+      icon: 'i-material-symbols-space-dashboard-outline',
       size: 'lg',
       class: 'text-sm',
       to: '/',
@@ -44,14 +44,14 @@ const items = computed<NavigationMenuItem[][]>(() => [
     // },
     {
       label: t('digital_wallet'),
-      icon: 'i-material-symbols-light-account-balance-wallet',
+      icon: 'i-material-symbols-account-balance-wallet-outline',
       size: 'lg',
       active: activeStates.value.digitalWallet,
       defaultOpen: true,
       children: [
         {
           label: t('wallet'),
-          icon: 'i-material-symbols-light-wallet',
+          // icon: 'i-material-symbols-light-wallet',
           size: 'lg',
           // to: '/digital-wallet/wallet',
           onSelect: () => {
@@ -64,7 +64,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
         },
         {
           label: t('settlement_menu'),
-          icon: 'i-material-symbols-light-payments',
+          // icon: 'i-material-symbols-light-payments',
           size: 'lg',
           to: '/digital-wallet/settlement',
           active: activeStates.value.settlement,
@@ -124,7 +124,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     // },
     {
       label: t('settings.title'),
-      icon: 'i-material-symbols-light-settings',
+      icon: 'i-material-symbols-settings-outline',
       size: 'lg',
       to: '/settings',
       active: activeStates.value.settings,
@@ -218,6 +218,7 @@ const props = defineProps<{
       highlight
       tooltip
       popover
+      arrow
       :collapsed="props.collapsed"
       orientation="vertical"
       :items="items"
@@ -226,6 +227,7 @@ const props = defineProps<{
         linkLeadingIcon: 'shrink-0 size-5',
         linkLabel: 'text-sm font-medium truncate',
         link: 'p-2 cursor-pointer transition-colors duration-200',
+        linkTrailingIcon: 'shrink-0 size-4.5',
       }"
     />
 
