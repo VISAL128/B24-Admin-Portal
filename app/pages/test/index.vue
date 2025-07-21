@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <!-- <div>
         <LoadingSpinner
             message="Loading..."
             description="Please wait while we fetch the data."
@@ -16,24 +16,11 @@
 
             <h2>
 profile data: {{ profileSupplier || 'No code available' }}
-            </h2>
+            </h2> -->
 
-            <SimpleSplashScreen />
+            <SplashScreen />
 </template>
 
 <script lang="ts" setup>
-import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi';
-const { t } = useI18n()
-const api = usePgwModuleApi()
-const profileSupplier = useCookie('profile')
-
-
-const getProfile = async () => {
-    try {
-        const profile = await api.getProfile()
-        profileSupplier.value = JSON.stringify(profile.data) || 'No code available'
-    } catch (error) {
-        console.error('Error fetching profile:', error)
-    }
-}
+import SplashScreen from '~/components/SplashScreen.vue';
 </script>

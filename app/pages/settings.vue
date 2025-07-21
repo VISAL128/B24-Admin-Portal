@@ -393,7 +393,7 @@ onMounted(() => {
     </div> -->
 
     <!-- Main Content -->
-    <div class="max-w-4xl mx-auto px-6 py-8">
+    <div class="max-w-4xl mx-auto px-6">
       <!-- Success Message -->
       <div
         v-if="showSuccessMessage"

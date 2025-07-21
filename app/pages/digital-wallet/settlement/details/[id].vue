@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col space-y-4">
+  <div class="flex flex-col h-full space-y-4">
     <!-- Loading state -->
     <!-- <div v-if="loading" class="flex justify-center items-center py-10">
       <UIcon
@@ -21,7 +21,7 @@
     </UAlert>
 
     <!-- Content when data is loaded -->
-    <div v-else-if="settlementDetails" class="gap-4 flex flex-row">
+    <div v-else-if="settlementDetails" class="gap-4 flex flex-shrink-0 flex-row">
       <div class="flex flex-1 flex-col gap-4">
         <UCard>
           <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -34,12 +34,12 @@
             size="xl"
           />
         </UCard>
-        <!-- Settlement overview card -->
+        <!-- Settlement card -->
         <UCard class="flex-1">
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ $t('settlement.overview') }}
+              <h2 class="text-md font-semibold text-gray-900 dark:text-white">
+                {{ $t('settlement.title') }}
               </h2>
               <UBadge
                 :color="
@@ -110,7 +110,7 @@
       <!-- Settlement stats card -->
       <UCard class="flex-1">
         <template #header>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 class="text-md font-semibold text-gray-900 dark:text-white">
             {{ $t('settlement.statistics') }}
           </h2>
         </template>
