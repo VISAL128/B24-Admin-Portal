@@ -89,15 +89,14 @@
         >
           <span class="hidden sm:inline">{{ t('wallet_page.refresh', 'Refresh') }}</span>
         </UButton>
-        <!-- <UButton
+        <UButton
           icon="i-material-symbols-light-history"
-          color="neutral"
-          variant="solid"
+          variant="ghost"
           size="sm"
           @click="navigateToHistory"
         >
           <span class="hidden sm:inline">{{ t('wallet_page.view_history', 'View History') }}</span>
-        </UButton> -->
+        </UButton>
       </div>
     </div>
 
