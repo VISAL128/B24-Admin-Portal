@@ -84,12 +84,6 @@
         <TableEmptyState />
       </template>
     </BaseTable>
-
-    <TransactionDetailDrawer
-      :model-value="showTransactionDrawer"
-      :transaction-id="selectedTransactionId ?? ''"
-      @update:modelValue="(val) => (showTransactionDrawer = val)"
-    />
   </div>
 </template>
 
@@ -126,7 +120,6 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
@@ -634,7 +627,7 @@ const columns: BaseTableColumn<any>[] = [
     cell: ({ row }: any) =>
       h(StatusBadge, {
         status: row.original.status,
-        variant: 'table',
+        variant: 'subtle',
         size: 'sm',
       }),
     // cell: ({ row }) => {
