@@ -20,6 +20,8 @@ const activeStates = ref({
   transactionSummary: false,
   transactionAllocation: false,
   settings: false,
+  generateDetails: false,
+  feeConfig: false,
 })
 
 const items = computed<NavigationMenuItem[][]>(() => [
@@ -116,8 +118,23 @@ const items = computed<NavigationMenuItem[][]>(() => [
       label: t('settings.title'),
       icon: 'i-material-symbols-light-settings',
       size: 'lg',
-      to: '/settings',
       active: activeStates.value.settings,
+      children: [
+        {
+          label: t('settings.generate_details'),
+          icon: 'i-lucide-settings',
+          size: 'lg',
+          to: '/settings/generate-details',
+          active: activeStates.value.generateDetails,
+        },
+        {
+          label: t('settings.fee_config'),
+          icon: 'i-material-symbols-light-switch-access-shortcut',
+          size: 'lg',
+          to: '/settings/fee-config',
+          active: activeStates.value.feeConfig,
+        },
+      ],
     },
   ],
 ])
@@ -191,6 +208,9 @@ function activateCurrentRoute() {
   else if (currentPath.startsWith('/settlement')) {
     activeStates.value.digitalWallet = true
     activeStates.value.settlement = true
+  } else if (currentPath === '/settings/fee-config') {
+    activeStates.value.settings = true
+    activeStates.value.feeConfig = true
   }
 }
 
