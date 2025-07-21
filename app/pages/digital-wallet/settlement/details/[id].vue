@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col space-y-6">
+  <div class="flex flex-col h-full space-y-4">
     <!-- Loading state -->
     <!-- <div v-if="loading" class="flex justify-center items-center py-10">
       <UIcon
@@ -21,7 +21,7 @@
     </UAlert>
 
     <!-- Content when data is loaded -->
-    <div v-else-if="settlementDetails" class="gap-4 flex flex-row">
+    <div v-else-if="settlementDetails" class="gap-4 flex flex-shrink-0 flex-row">
       <div class="flex flex-1 flex-col gap-4">
         <UCard>
           <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -34,12 +34,12 @@
             size="xl"
           />
         </UCard>
-        <!-- Settlement overview card -->
+        <!-- Settlement card -->
         <UCard class="flex-1">
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ $t('settlement.overview') }}
+              <h2 class="text-md font-semibold text-gray-900 dark:text-white">
+                {{ $t('settlement.title') }}
               </h2>
               <UBadge
                 :color="
@@ -47,7 +47,7 @@
                     ? 'success'
                     : 'error'
                 "
-                size="lg"
+                size="md"
                 variant="soft"
               >
                 {{
@@ -61,11 +61,11 @@
 
           <div class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-4">
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-calendar" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:calendar-today-outline-rounded" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.settlement_date') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{
                   useFormat().formatDateTime(settlementDetails.records.settlement_date, {
                     dateStyle: userPreferences?.dateFormat || 'medium',
@@ -76,31 +76,31 @@
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-users" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:group-outline-rounded" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.total_sub_biller') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{ settlementDetails.records.total_supplier }}
               </p>
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-credit-card" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:credit-card-outline" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.total_transactions') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{ settlementDetails.records.totalSettled }}
               </p>
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="i-lucide-user-check" class="w-8 h-8 mb-2" />
+              <UIcon name="material-symbols:check-circle-outline" :class="iconSizeClass" class="mb-2" />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.settled_by') }}
               </h3>
-              <p class="text-gray-700 dark:text-gray-300">
+              <p class="text-gray-700 font-semibold dark:text-gray-300">
                 {{ settlementDetails.records.settled_by }}
               </p>
             </div>
@@ -110,7 +110,7 @@
       <!-- Settlement stats card -->
       <UCard class="flex-1">
         <template #header>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 class="text-md font-semibold text-gray-900 dark:text-white">
             {{ $t('settlement.statistics') }}
           </h2>
         </template>
@@ -283,8 +283,10 @@ onMounted(() => {
 })
 
 useHead({
-  title: `${t('settlement.details_title')} - Bill24 Admin Portal`,
+  title: `${t('settlement.details_title')} - Bill24 Payment Portal`,
 })
+
+const iconSizeClass = 'w-5 h-5'
 </script>
 
 <style>

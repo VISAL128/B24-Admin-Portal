@@ -1,12 +1,7 @@
 <template>
   <UApp>
     <!-- Splash Screen -->
-    <SplashScreen
-      v-if="showSplash"
-      :min-duration="2000"
-      :max-duration="5000"
-      @complete="onSplashComplete"
-    />
+    <SplashScreen v-if="showSplash" @complete="onSplashComplete" />
 
     <!-- Main App Content -->
     <div v-show="!showSplash">
@@ -20,7 +15,7 @@
 const colorMode = useColorMode()
 
 // Splash screen management
-const { showSplash, onSplashComplete, checkAppReadiness } = useSplashScreen()
+const { showSplash, onSplashComplete } = useSplashScreen()
 
 // Initialize theme on app startup
 onMounted(async () => {
@@ -30,8 +25,6 @@ onMounted(async () => {
   if (storedPreferences?.theme) {
     colorMode.preference = storedPreferences.theme
   }
-
-  // Check app readiness for splash screen
-  await checkAppReadiness()
+  // App readiness check is now handled by SplashScreen component
 })
 </script>

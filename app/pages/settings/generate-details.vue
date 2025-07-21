@@ -11,7 +11,7 @@ const { t, locale, setLocale } = useI18n()
 const colorMode = useColorMode()
 
 useHead({
-  title: `${t('settings.title')} - Bill24 Admin Portal`,
+  title: `${t('settings.title')} - Bill24 Payment Portal`,
 })
 
 const isSaving = ref(false)
@@ -91,6 +91,17 @@ watch(
   (newTheme) => {
     if (newTheme !== colorMode.preference) {
       colorMode.preference = newTheme
+    }
+  }
+)
+
+watch(
+  () => colorMode.preference,
+  (newTheme) => {
+    // Update preferences when color mode changes
+    if (preferences.value.theme !== newTheme) {
+      preferences.value.theme = newTheme as 'light' | 'dark' | 'system'
+      savePreferences()
     }
   }
 )
@@ -382,7 +393,7 @@ onMounted(() => {
     </div> -->
 
     <!-- Main Content -->
-    <div class="max-w-4xl mx-auto px-6 py-8">
+    <div class="max-w-4xl mx-auto px-6">
       <!-- Success Message -->
       <div
         v-if="showSuccessMessage"

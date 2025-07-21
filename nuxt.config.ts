@@ -40,8 +40,8 @@ export default defineNuxtConfig({
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },
     head: {
-      title: 'Bill24 Admin Portal',
-      meta: [{ name: 'description', content: 'Bill24 Admin Portal' }],
+      title: 'Bill24 Payment Portal',
+      meta: [{ name: 'description', content: 'Bill24 Payment Portal' }],
     },
   },
   oidc: {
@@ -58,6 +58,11 @@ export default defineNuxtConfig({
             : process.env.KEYCLOAK_REDIRECT_URI ||
               'https://admin-staging.bill24.io/auth/keycloak/callback',
         exposeAccessToken: true,
+        logoutRedirectUri: process.env.BASE_URL || 'http://localhost:3000',
+        // pkce: true,
+        sessionConfiguration: {
+          singleSignOut: true,
+        },
       },
     },
   },

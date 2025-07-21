@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-I've successfully created a comprehensive server-side authentication middleware for the Bill24 Admin Portal that integrates with the existing OIDC authentication system.
+I've successfully created a comprehensive server-side authentication middleware for the Bill24 Payment Portal that integrates with the existing OIDC authentication system.
 
 ## 📁 Files Created/Modified
 

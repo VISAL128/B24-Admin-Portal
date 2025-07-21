@@ -15,14 +15,14 @@ export const useApiExecutor = () => {
       }
 
       return response
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Request failed:', error)
       // Handle and show error notification
       errorHandler.handleApiError(error)
       return {
         code: 'ERROR',
-        message: error?.message || 'Failed to fetch',
-        data: null as any,
+        message: (error as Error)?.message || 'Failed to fetch',
+        data: null as T,
       }
     }
   }
@@ -30,8 +30,9 @@ export const useApiExecutor = () => {
   const executeV2 = async <T>(requestFn: () => Promise<T>): Promise<T> => {
     try {
       const response = await requestFn()
+      console.log('API Response:', response)
       return response
-    } catch (error: any) {
+    } catch (error: unknown) {
       // console.error('Request failed:', error)
       // Handle and show error notification
       errorHandler.handleApiError(error)

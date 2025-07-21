@@ -1,10 +1,12 @@
+import type { H3Event } from 'h3'
+
 export async function requestToPgwModuleApi(
-  event: any,
+  event: H3Event,
   endpoint: string,
   method: string = 'POST',
-  body: any = null
-): Promise<any> {
-  let url = `${useRuntimeConfig().pgw_module_api_url}${endpoint}`
+  body: unknown | null = null
+): Promise<unknown> {
+  const url = `${useRuntimeConfig().pgw_module_api_url}${endpoint}`
   const options: RequestInit = {
     method,
     headers: {
@@ -13,6 +15,7 @@ export async function requestToPgwModuleApi(
     },
   }
 
+  console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: options.headers })
   // Only add body for non-GET/HEAD
   if (body && method !== 'GET' && method !== 'HEAD') {
     options.body = JSON.stringify(body)
@@ -22,9 +25,14 @@ export async function requestToPgwModuleApi(
   return handlePgwModuleApiResponse(response)
 }
 
-function handlePgwModuleApiResponse(response: Response): any {
+function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
+  console.log('PGW Module Api Response:', response)
   if (!response.ok) {
-    throw new Error(response.statusText)
+    throw createError({
+      statusCode: response.status,
+      statusMessage: response.statusText,
+    })
   }
   return response.json()
 }
+

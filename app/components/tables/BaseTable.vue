@@ -8,7 +8,7 @@
       <!-- 🔍 Filter Buttons -->
       <div class="flex gap-2 flex-wrap items-center">
         <div class="flex flex-wrap items-center gap-2">
-          <UInput v-model="search" :placeholder="t('search_by_settler')" class="w-64" />
+          <UInput v-model="search" :placeholder="t('table.search_placeholder')" class="w-64" />
           <UPopover>
             <UButton
               color="neutral"
@@ -112,7 +112,13 @@
       </div>
 
       <!-- ⚙️ Column Configuration -->
-      <div class="flex justify-end">
+      <div class="flex justify-end items-center gap-2">
+        <ExportButton
+          :data="filteredData"
+          :headers="exportHeaders"
+          :export-options="resolvedExportOptions"
+        />
+
         <UPopover>
           <UButton variant="ghost" class="p-2">
             <UIcon name="i-lucide:settings" class="w-4 h-4 text-gray-900 dark:text-white" />
@@ -160,6 +166,12 @@
         class="min-w-[800px] single-line-headers"
         :class="borderClass"
         @select="onSelect"
+        :ui="{
+          td: 'px-2 py-3 whitespace-nowrap align-top',
+          th: 'px-2 py-3 whitespace-nowrap text-left',
+          thead: 'whitespace-nowrap',
+          tbody: 'whitespace-nowrap',
+        }"
       >
         <template #cell="{ row, column }">
           <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
@@ -179,16 +191,54 @@
 
         <slot />
       </UTable>
+      <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
+        <span>
+          {{ tableRef?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+          {{ tableRef?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t('row_selected') }}
+        </span>
+        <div class="flex items-center gap-4">
+          <USelectMenu
+            :model-value="{ label: String(props.pageSize ?? 10), value: props.pageSize ?? 10 }"
+            :items="[
+              { label: '10', value: 10 },
+              { label: '25', value: 25 },
+              { label: '50', value: 50 },
+              { label: '100', value: 100 },
+            ]"
+            class="w-24"
+            :search-input="false"
+            @update:modelValue="(val) => emit('update:pageSize', val.value)"
+          />
+          <UPagination
+            :model-value="props.page"
+            :page-count="props.totalPage"
+            :items-per-page="props.pageSize"
+            :total="props.total"
+            @update:page="(val) => emit('update:page', val)"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+export interface ExportOptions {
+  fileName?: string
+  title?: string
+  subtitle?: string
+  currency?: string
+  startDate?: string
+  endDate?: string
+  totalAmount?: number
+}
+
 import { ref, computed, onMounted, watch } from 'vue'
 import type { BaseTableColumn } from '~/components/tables/table'
 import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import ExportButton from '../buttons/ExportButton.vue'
 
 const selectedSortFieldLabel = computed(() => {
   return (
@@ -230,6 +280,8 @@ const emit = defineEmits<{
   (e: 'row-click', rowData: any): void
   (e: 'search-change', value: string): void
   (e: 'date-range-change', value: { start: string; end: string }): void
+  (e: 'update:page', page: number): void
+  (e: 'update:pageSize', size: number): void
 }>()
 
 const sortState = ref<{ column: string; direction: 'asc' | 'desc' | null } | null>(null)
@@ -255,7 +307,24 @@ const props = defineProps<{
   columns: BaseTableColumn<any>[]
   borderClass?: string
   tableId: string
+  exportOptions?: ExportOptions
+  page?: number
+  pageSize?: number
+  total?: number
+  totalPage?: number
 }>()
+
+const resolvedExportOptions = computed(() => ({
+  fileName: props.exportOptions?.fileName ?? `${props.tableId}-export`,
+  title: props.exportOptions?.title ?? props.tableId,
+  subtitle: props.exportOptions?.subtitle ?? '',
+  currency: props.exportOptions?.currency,
+  startDate: props.exportOptions?.startDate ?? startDate.value,
+  endDate: props.exportOptions?.endDate ?? endDate.value,
+  totalAmount:
+    props.exportOptions?.totalAmount ??
+    filteredData.value.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0),
+}))
 
 const tableRef = ref<any>(null)
 const storageKey = computed(() => `base-table-columns:${props.tableId}`)
@@ -318,6 +387,18 @@ const activeFilterCount = computed(() => {
   const sortFilterCount = selectedSortField.value ? 1 : 0
   return columnFilterCount + sortFilterCount
 })
+
+const exportHeaders = computed(() =>
+  filteredColumns.value.map((col) => ({
+    key: String(col.accessorKey || col.id || ''),
+    label:
+      typeof col.header === 'string'
+        ? col.header
+        : (col.id ? String(col.id) : '')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase()),
+  }))
+)
 
 // Handler for sort menu changes
 function handleSortMenuChange(val: { value: string }) {

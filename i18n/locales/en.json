@@ -47,7 +47,9 @@
     "settings": "Settings",
     "subtitle": "Manage your information and settings",
     "edit_profile": "Edit Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "current_profile": "Current Profile",
+    "business_profile": "Business Profile"
   },
   "lang": {
     "english": "English",
@@ -87,6 +89,11 @@
   "dashboard": "Dashboard",
   "transactions": "Transactions",
   "digital_wallet": "Digital Wallet",
+  "copy_to_clipboard": "Copy to Clipboard",
+  "copy_success": "Copied",
+  "copy_success_message": "Copied to clipboard",
+  "copy_failed": "Copy Failed",
+  "copy_failed_message": "Failed to copy to clipboard",
   "wallet_page": {
     "title": "Digital Wallet",
     "subtitle": "Manage your wallet balances and transactions",
@@ -102,11 +109,25 @@
     "last_transaction": "Last Transaction",
     "copy_success": "Copied!",
     "copy_success_message": "Account number copied to clipboard",
+    "copy_to_clipboard": "Copy to clipboard",
+    "copy_failed": "Copy Failed",
+    "copy_failed_message": "Failed to copy to clipboard",
     "wallet_type": "Wallet Type",
     "personal_wallet": "Personal Wallet",
     "business_wallet": "Business Wallet",
     "savings_wallet": "Savings Wallet",
     "investment_wallet": "Investment Wallet",
+    "settlement_wallet": "Settlement Wallet",
+    "wallet": "Wallet",
+    "loading_wallet_types": "Loading wallet types...",
+    "no_wallet_types": "No wallet types available",
+    "no_wallets_title": "No Wallets Available",
+    "no_wallets_message": "No wallet types are currently available. Please contact your administrator or try again later.",
+    "no_wallets_for_type": "No wallets available for this wallet type.",
+    "account": "Account",
+    "settlement_bank": "Settlement Bank",
+    "scroll_hint": "Swipe or scroll to view more wallets",
+    "retry": "Retry",
     "top_up": "Top Up",
     "transfer": "Transfer",
     "transaction_summary": "Transaction Summary",
@@ -189,7 +210,7 @@
     "title": "Settings",
     "subtitle": "Manage your account preferences and settings",
     "user_preferences": "User Preferences",
-    "user_preferences_desc": "Customize your experience with Bill24 Admin Portal",
+    "user_preferences_desc": "Customize your experience with Bill24 Payment Portal",
     "theme": "Theme",
     "theme_light": "Light",
     "theme_dark": "Dark",
@@ -237,7 +258,7 @@
   },
   "logout": "Logout",
   "logout_successful": "Successfully Logged Out",
-  "logout_successful_message": "You have been safely logged out from the Bill24 Admin Portal. Thank you for using our service.",
+  "logout_successful_message": "You have been safely logged out from the Bill24 Payment Portal. Thank you for using our service.",
   "login_again": "Login Again",
   "need_help": "Need help?",
   "contact_support": "Contact Support",
@@ -251,7 +272,7 @@
   "logging_out_message": "Please wait while we securely log you out...",
   "logout_error": "Logout Error",
   "go_to_login": "Go to Login",
-
+  "details": "Details",
   "index": {
     "navigation_instructions": "Use the navigation menu to explore different sections.",
     "current_version": "Current version",
@@ -271,6 +292,8 @@
     "confirm": "Confirm"
   },
   "settlement": {
+    "transaction": "Transaction",
+    "title": "Settlement",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
     "settle_amount": "Settle Amount",
@@ -279,7 +302,8 @@
     "status": "Status",
     "history": "History",
     "supplier": "Biller",
-    "transaction_allocations": "Transaction allocations",
+    "settlement_transaction": "Settlement Transaction",
+    "transaction_allocations": "Transaction Allocations",
     "biller": {
       "code": "Sub Biller Code",
       "name": "Sub Biller Name"
@@ -472,16 +496,29 @@
   "settlement_history_title": "Settlement History",
   "settlement_history_subtitle": "Generated on {date}",
   "splash": {
-    "title": "Bill24 Payment Management Portal",
+    "title": "Bill24 Payment Portal",
     "subtitle": "Management & Settlement Platform",
     "loading": "Initializing...",
-    "version": "Version"
+    "version": "Version",
+    "powered_by": "Powered by",
+    "bill24": "Bill24",
+    "progress": {
+      "initializing": "Initializing application...",
+      "checking_auth": "Checking authentication...",
+      "loading_profile": "Loading user profile...",
+      "validating_profile": "Validating profile data...",
+      "loading_preferences": "Loading user preferences...",
+      "finalizing": "Finalizing setup...",
+      "complete": "Ready!"
+    }
   },
+  "wallet_coming_soon": "Wallet Coming Soon",
+  "wallet_coming_soon_message": "This feature is currently under development and will be available soon. Stay tuned for updates!",
   "profile_error": {
-    "title": "Profile Access Error",
+    "title": "Profile Access Denied",
     "message": "We're unable to retrieve your profile information. This prevents you from accessing the system safely.",
     "possible_reasons": "Possible reasons:",
-    "reason_1": "Your profile may not exist in the system",
+    "reason_1": "Your active/current profile may not exist in the system",
     "reason_2": "Network connectivity issues",
     "reason_3": "Temporary server problems",
     "try_again": "Try Again",

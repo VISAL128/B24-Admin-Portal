@@ -1,4 +1,6 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
+const colorMode = useColorMode()
 defineOptions({
   inheritAttrs: false,
 })
@@ -25,7 +27,13 @@ watch(
 <template>
   <div :class="isNavExpanded ? 'px-6 pt-4' : 'flex justify-center mt-4 max-h-10'" v-bind="attrs">
     <img
-      :src="isNavExpanded ? '/images/payment-logo.png' : '/images/Bill24 logo.png'"
+      :src="
+        isNavExpanded
+          ? colorMode.value === 'dark'
+            ? '/images/payment-logo-dark.png'
+            : '/images/payment-logo.png'
+          : '/images/Bill24 logo.png'
+      "
       alt="Bill24 Logo"
       :class="isNavExpanded ? 'w-full h-auto scale-80' : 'w-10 h-10 scale-80'"
     />

@@ -1,5 +1,8 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+
+// const { showInfo } = useNotification()
 
 const { t } = useI18n()
 
@@ -28,8 +31,9 @@ const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: t('dashboard'),
-      icon: 'i-material-symbols-light-space-dashboard-rounded',
+      icon: 'i-material-symbols-space-dashboard-outline',
       size: 'lg',
+      class: 'text-sm',
       to: '/',
       active: activeStates.value.dashboard,
     },
@@ -42,21 +46,27 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: t('digital_wallet'),
-      icon: 'i-material-symbols-light-account-balance-wallet',
+      icon: 'i-material-symbols-account-balance-wallet-outline',
       size: 'lg',
       active: activeStates.value.digitalWallet,
       defaultOpen: true,
       children: [
         {
           label: t('wallet'),
-          icon: 'i-material-symbols-light-wallet',
+          // icon: 'i-material-symbols-light-wallet',
           size: 'lg',
           to: '/digital-wallet/wallet',
+          // onSelect: () => {
+          //   showInfo({
+          //     title: t('wallet_coming_soon'),
+          //     description: t('wallet_coming_soon_message'),
+          //   })
+          // },
           active: activeStates.value.wallet,
         },
         {
           label: t('settlement_menu'),
-          icon: 'i-material-symbols-light-payments',
+          // icon: 'i-material-symbols-light-payments',
           size: 'lg',
           to: '/digital-wallet/settlement',
           active: activeStates.value.settlement,
@@ -71,21 +81,21 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('navigation.banks'),
-          icon: 'i-material-symbols-account-balance-rounded',
+          // icon: 'i-material-symbols-account-balance-rounded',
           size: 'lg',
           to: '/organization/banks',
           active: activeStates.value.banks,
         },
         {
           label: t('navigation.sub_billers'),
-          icon: 'i-material-symbols-light:article-person',
+          // icon: 'i-material-symbols-light:article-person',
           size: 'lg',
           to: '/organization/sub-billers',
           active: activeStates.value.subBillers,
         },
         {
           label: t('navigation.users'),
-          icon: 'i-material-symbols-light-group',
+          // icon: 'i-material-symbols-light-group',
           size: 'lg',
           to: '/organization/users',
           active: activeStates.value.users,
@@ -100,14 +110,14 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('navigation.transaction_summary'),
-          icon: 'i-material-symbols-light-summarize',
+          // icon: 'i-material-symbols-light-summarize',
           size: 'lg',
           to: '/reports/transaction-summary',
           active: activeStates.value.transactionSummary,
         },
         {
           label: t('navigation.transaction_allocate'),
-          icon: 'i-material-symbols-light-switch-access-shortcut',
+          // icon: 'i-material-symbols-light-switch-access-shortcut',
           size: 'lg',
           to: '/reports/transaction-allocation',
           active: activeStates.value.transactionAllocation,
@@ -116,7 +126,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: t('settings.title'),
-      icon: 'i-material-symbols-light-settings',
+      icon: 'i-material-symbols-settings-outline',
       size: 'lg',
       active: activeStates.value.settings,
       children: [
@@ -217,26 +227,36 @@ function activateCurrentRoute() {
 // Get version from runtime config
 const { $config } = useNuxtApp()
 const appVersion = ref($config.public.appVersion || 'v1.0.0')
+const props = defineProps<{
+  collapsed?: boolean
+}>()
 </script>
 
 <template>
   <div class="flex flex-col h-full">
     <UNavigationMenu
       highlight
+      tooltip
       popover
+      arrow
+      :collapsed="props.collapsed"
       orientation="vertical"
       :items="items"
       class="w-full flex-1 transition-all duration-200"
       :ui="{
-        linkLeadingIcon: 'shrink-0 size-6',
-        linkLabel: 'text-sm truncate',
-        link: 'p-3 cursor-pointer transition-colors duration-200',
+        linkLeadingIcon: 'shrink-0 size-4.5',
+        linkLabel: 'text-sm font-medium truncate',
+        link: 'p-2 cursor-pointer transition-colors duration-200',
+        linkTrailingIcon: 'shrink-0 size-4',
       }"
     />
 
-    <div class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">
-      <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-        {{ appVersion }}
+    <div v-if="!props.collapsed" class="mt-auto p-2">
+      <p class="text-xs text-gray-400 dark:text-gray-400 font-semibold">
+        {{ t('splash.version') }}
+        <span>
+          {{ appVersion }}
+        </span>
       </p>
     </div>
   </div>

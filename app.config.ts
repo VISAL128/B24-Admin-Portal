@@ -1,25 +1,60 @@
 export default defineAppConfig({
   ui: {
-    colors: {
-      primary: 'blue', // Will be overridden by CSS variables to use Bill24 sky blue
-      neutral: '#f9fafb' // Will be overridden by CSS variables to use Bill24 neutral
+    theme: {
+      colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'],
+      transitions: true,
     },
+
+    // Table component customization
     table: {
       slots: {
-        root: 'bg-white dark:bg-gray-800',
-        base: 'border border-red-500 dark:border-red-800', // Base class for table borders
-        empty: 'TableEmptyState',
-        header: 'TableHeader',
-        footer: 'TableFooter'
+        td: 'text-xxs py-3 cursor-pointer',
+        th: 'tb-h-text py-2',
       },
-      background: {
-        color: 'red-500',
-        dark: 'gray-800'
+    },
+
+    // Card component customization
+    card: {
+      slots: {
+        root: 'rounded-lg overflow-hidden bg-white dark:bg-gray-800',
+        header: 'p-4 sm:px-6',
+        body: 'p-4 sm:p-6',
+        footer: 'p-4 sm:px-6',
       },
-      border: {
-        color: '#ff0000', // Bill24 black 40% tint for light mode
-        dark: '#ff0000' // Bill24 black 80% tint for dark mode
+      variants: {
+        variant: {
+          solid: {
+            root: 'bg-inverted text-inverted',
+          },
+          outline: {
+            root: 'bg-default ring ring-default divide-y divide-default',
+          },
+          soft: {
+            root: 'bg-elevated/50 divide-y divide-default',
+          },
+          subtle: {
+            root: 'bg-elevated/50 ring ring-default divide-y divide-default',
+          },
+        },
+      },
+      defaultVariants: {
+        variant: 'outline',
+      },
+    },
+    pagination: {
+      slots: {
+        item: 'w-7 justify-center',
+      },
+    },
+    dropdownMenu: {
+      slots: {
+        itemLeadingIcon: 'shrink-0 size-4',
+      }
+    },
+    button: {
+      slots: {
+        leadingIcon: 'shrink-0 size-4 text-muted',
       }
     }
-  }
+  },
 })

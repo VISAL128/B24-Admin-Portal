@@ -20,6 +20,7 @@ import EmptyState from '~/components/TableEmptyState.vue'
 import SumTranDataUnderTable from '~/components/tables/SumTranDataUnderTable.vue'
 import type { SupplierProfile } from '~/models/supplier'
 import { useTable } from '~/composables/utils/useTable'
+import appConfig from '~~/app.config'
 
 const UButton = resolveComponent('UButton')
 
@@ -27,10 +28,11 @@ const supplierApi = useSupplierApi()
 const auth = useAuth()
 const { t, locale: i18nLocale } = useI18n()
 
-
 // Load user preferences for time format
 const userPreferences = useUserPreferences().getPreferences()
 const { createSortableHeader, createRowNumberCell } = useTable<Settlement>()
+
+const isLoadingCpoList = ref(false)
 
 // Create a CalendarDate for today in the local time zone
 const today = new Date()
@@ -627,6 +629,7 @@ watch(
 
 // Update handleSupplierMenuChanged to work with default supplier
 const handleSupplierMenuChanged = async () => {
+  isLoadingCpoList.value = true
   // Reset CPO list and selection when suppliers change
   cpoList.value = []
   selectedCpo.value = []
@@ -650,6 +653,8 @@ const handleSupplierMenuChanged = async () => {
     toggleAllSelection(true)
     selectedCpo.value = [...cpoList.value]
   }
+
+  isLoadingCpoList.value = false
 }
 
 // Fetch inquiry settlement CPOs
@@ -782,259 +787,151 @@ definePageMeta({
   >
     <UStepper ref="stepper" disabled :items="items" class="flex-1">
       <template #content="{ item }">
-        <div class="flex flex-col h-full">
+        <div class="flex flex-col h-full gap-2">
           <div class="flex-1 h-full overflow-y-auto">
             <!-- Step 1: Sub Biller Selection -->
-            <div v-if="item.value === 'Supplier'" class="h-[calc(100vh-320px)]">
-              <div class="flex flex-col gap-4">
-                <!-- <template #header>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-shrink-0">
-                    <div>
-                      <h1 class="text-sm mb-2 font-semibold">
-                        {{ t('settlement.generate.form.select_cutoff_date') }}
-                      </h1>
-                      <UPopover class="w-full">
-                        <UButton
-                          color="neutral"
-                          variant="subtle"
-                          icon="i-lucide-calendar"
-                          class="w-full justify-start"
-                        >
-                          {{
-                            cutOffDatetime
-                              ? formatTimeDisplay
-                              : t('settlement.generate.form.select_date')
-                          }}
-                        </UButton>
-                        <template #content>
-                          <div class="p-4 space-y-4">
-                            <UCalendar v-model="cutOffDatetime" />
-                            <div class="border-t pt-4">
-                              <label class="block text-sm font-semibold mb-2">
-                                {{ t('settlement.generate.form.select_time') }}
-                              </label>
-                              <div class="flex gap-2">
-                                <USelectMenu
-                                  v-model="cutOffDateHour"
-                                  :items="getHourOptions"
-                                  :placeholder="t('settlement.generate.form.hour')"
-                                  class="flex-1"
-                                  :search-input="false"
-                                />
-                                <USelectMenu
-                                  v-model="cutOffDateMinute"
-                                  :items="getMinuteOptions"
-                                  :placeholder="t('settlement.generate.form.minute')"
-                                  class="flex-1"
-                                  :search-input="false"
-                                />
-                                <USelectMenu
-                                  v-model="cutOffDateSecond"
-                                  :items="getSecondOptions"
-                                  :placeholder="t('settlement.generate.form.second')"
-                                  class="flex-1"
-                                  :search-input="false"
-                                />
-                                <USelectMenu
-                                  v-if="userPreferences?.hour12 || false"
-                                  v-model="cutOffDatePeriod"
-                                  :items="getPeriodOptions"
-                                  :placeholder="t('settlement.generate.form.am/pm')"
-                                  class="flex-1"
-                                  :search-input="false"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </template>
-                      </UPopover>
-                    </div>
-                    <div>
-                      <h1 class="text-sm mb-2 font-semibold">
-                        {{ t('settlement.generate.form.select_currency') }}
-                      </h1>
-                      <USelectMenu
-                        v-model="selectedCurrency"
-                        :items="currencyOptions"
-                        option-attribute="value"
-                        :placeholder="t('settlement.generate.form.choose_currency')"
-                        class="w-full"
-                        :search-input="false"
-                      >
-                        <template #leading>
-                          <span class="mr-2 text-gray-500 font-medium">
-                            {{ selectedCurrency?.value.symbol || '' }}
-                          </span>
-                        </template>
-                      </USelectMenu>
-                    </div>
-                  </div>
-                </template> -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-shrink-0">
-                  <!-- Cutoff Date -->
-                  <div>
-                    <h1 class="text-sm mb-2 font-semibold">
-                      {{ t('settlement.generate.form.select_cutoff_date') }}
-                    </h1>
-                    <UPopover class="w-full">
-                      <UButton
-                        color="neutral"
-                        variant="subtle"
-                        icon="i-lucide-calendar"
-                        class="w-full justify-start"
-                      >
-                        {{
-                          cutOffDatetime
-                            ? formatTimeDisplay
-                            : t('settlement.generate.form.select_date')
-                        }}
-                      </UButton>
-                      <template #content>
-                        <div class="p-4 space-y-4">
-                          <UCalendar v-model="cutOffDatetime" />
-                          <div class="border-t pt-4">
-                            <label class="block text-sm font-semibold mb-2">
-                              {{ t('settlement.generate.form.select_time') }}
-                            </label>
-                            <div class="flex gap-2">
-                              <USelectMenu
-                                v-model="cutOffDateHour"
-                                :items="getHourOptions"
-                                :placeholder="t('settlement.generate.form.hour')"
-                                class="flex-1"
-                                :search-input="false"
-                              />
-                              <USelectMenu
-                                v-model="cutOffDateMinute"
-                                :items="getMinuteOptions"
-                                :placeholder="t('settlement.generate.form.minute')"
-                                class="flex-1"
-                                :search-input="false"
-                              />
-                              <USelectMenu
-                                v-model="cutOffDateSecond"
-                                :items="getSecondOptions"
-                                :placeholder="t('settlement.generate.form.second')"
-                                class="flex-1"
-                                :search-input="false"
-                              />
-                              <USelectMenu
-                                v-if="userPreferences?.hour12 || false"
-                                v-model="cutOffDatePeriod"
-                                :items="getPeriodOptions"
-                                :placeholder="t('settlement.generate.form.am/pm')"
-                                class="flex-1"
-                                :search-input="false"
-                              />
-                            </div>
+            <div v-if="item.value === 'Supplier'" class="flex h-full flex-col gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-shrink-0">
+                <!-- Cutoff Date -->
+                <div>
+                  <h1 class="text-sm mb-2 font-semibold">
+                    {{ t('settlement.generate.form.select_cutoff_date') }}
+                  </h1>
+                  <UPopover class="w-full">
+                    <UButton
+                      color="neutral"
+                      variant="subtle"
+                      icon="i-lucide-calendar"
+                      class="w-full justify-start"
+                    >
+                      {{
+                        cutOffDatetime
+                          ? formatTimeDisplay
+                          : t('settlement.generate.form.select_date')
+                      }}
+                    </UButton>
+                    <template #content>
+                      <div class="p-4 space-y-4">
+                        <UCalendar v-model="cutOffDatetime" />
+                        <div class="border-t pt-4">
+                          <label class="block text-sm font-semibold mb-2">
+                            {{ t('settlement.generate.form.select_time') }}
+                          </label>
+                          <div class="flex gap-2">
+                            <USelectMenu
+                              v-model="cutOffDateHour"
+                              :items="getHourOptions"
+                              :placeholder="t('settlement.generate.form.hour')"
+                              class="flex-1"
+                              :search-input="false"
+                            />
+                            <USelectMenu
+                              v-model="cutOffDateMinute"
+                              :items="getMinuteOptions"
+                              :placeholder="t('settlement.generate.form.minute')"
+                              class="flex-1"
+                              :search-input="false"
+                            />
+                            <USelectMenu
+                              v-model="cutOffDateSecond"
+                              :items="getSecondOptions"
+                              :placeholder="t('settlement.generate.form.second')"
+                              class="flex-1"
+                              :search-input="false"
+                            />
+                            <USelectMenu
+                              v-if="userPreferences?.hour12 || false"
+                              v-model="cutOffDatePeriod"
+                              :items="getPeriodOptions"
+                              :placeholder="t('settlement.generate.form.am/pm')"
+                              class="flex-1"
+                              :search-input="false"
+                            />
                           </div>
                         </div>
-                      </template>
-                    </UPopover>
-                  </div>
-
-                  <!-- Currency Selector -->
-                  <div>
-                    <h1 class="text-sm mb-2 font-semibold">
-                      {{ t('settlement.generate.form.select_currency') }}
-                    </h1>
-                    <USelectMenu
-                      v-model="selectedCurrency"
-                      :items="currencyOptions"
-                      option-attribute="value"
-                      :placeholder="t('settlement.generate.form.choose_currency')"
-                      class="w-full"
-                      :search-input="false"
-                    >
-                      <template #leading>
-                        <span class="mr-2 text-gray-500 font-medium">
-                          {{ selectedCurrency?.value.symbol || '' }}
-                        </span>
-                      </template>
-                    </USelectMenu>
-                  </div>
+                      </div>
+                    </template>
+                  </UPopover>
                 </div>
-                <!-- Cpo List Table -->
-                <div class="flex flex-col flex-1 min-h-0">
-                  <div
-                    class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4 flex-shrink-0"
+
+                <!-- Currency Selector -->
+                <div>
+                  <h1 class="text-sm mb-2 font-semibold">
+                    {{ t('settlement.generate.form.select_currency') }}
+                  </h1>
+                  <USelectMenu
+                    v-model="selectedCurrency"
+                    :items="currencyOptions"
+                    option-attribute="value"
+                    :placeholder="t('settlement.generate.form.choose_currency')"
+                    class="w-full"
+                    :search-input="false"
                   >
-                    <h1 class="text-sm font-semibold flex-shrink-0">
-                      {{ t('settlement.generate.form.biller_list') }} ({{
-                        filteredCpoList.length || 0
-                      }})
-                      <span
-                        v-if="
-                          searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)
-                        "
-                        class="text-gray-500"
-                      >
-                        of {{ cpoList.length || 0 }}
+                    <template #leading>
+                      <span class="mr-2 text-gray-500 font-medium">
+                        {{ selectedCurrency?.value.symbol || '' }}
                       </span>
-                    </h1>
-
-                    <!-- Search Input -->
-                    <div class="w-full sm:w-64 flex-shrink-0">
-                      <UInput
-                        v-model="searchQuery"
-                        icon="i-lucide-search"
-                        :placeholder="t('settlement.generate.form.search_biller')"
-                        class="w-full"
-                        :trailing="searchQuery ? true : false"
-                      >
-                        <template v-if="searchQuery" #trailing>
-                          <UButton
-                            icon="i-lucide-x"
-                            size="xs"
-                            color="gray"
-                            variant="ghost"
-                            @click="searchQuery = ''"
-                          />
-                        </template>
-                      </UInput>
-                    </div>
-                  </div>
-
-                  <!-- Table Container with proper responsive overflow handling -->
-                  <div
-                    class="flex-1 min-h-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg"
-                  >
-                    <div class="h-full overflow-auto">
-                      <UTable
-                        ref="table"
-                        v-model:sorting="sorting"
-                        v-model:row-pinning="rowPinning"
-                        :data="filteredCpoList"
-                        :columns="columns"
-                        sticky
-                        class="min-w-[800px] w-full"
-                        @row:click="(row: Cpo) => toggleRowSelection(row)"
-                      >
-                        <template #empty>
-                          <EmptyState />
-                        </template>
-                      </UTable>
-                    </div>
-                  </div>
+                    </template>
+                  </USelectMenu>
                 </div>
               </div>
-            </div>
-
-            <!-- Step 2: Reconciliation -->
-            <div v-if="item.value === 'Reconciliation'">
-              <div class="flex flex-col lg:flex-row gap-6 mb-4 mt-4 h-[calc(100vh-320px)]">
-                <!-- Master Table -->
+              <!-- Cpo List Table -->
+              <div class="flex flex-col flex-1 min-h-0">
                 <div
-                  class="flex-2 overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
+                  class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4 flex-shrink-0"
                 >
-                  <div class="overflow-x-auto h-full">
+                  <h1 class="text-sm font-semibold flex-shrink-0">
+                    {{ t('settlement.generate.form.biller_list') }} ({{
+                      filteredCpoList.length || 0
+                    }})
+                    <span
+                      v-if="searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)"
+                      class="text-gray-500"
+                    >
+                      of {{ cpoList.length || 0 }}
+                    </span>
+                  </h1>
+
+                  <!-- Search Input -->
+                  <div class="w-full sm:w-64 flex-shrink-0">
+                    <UInput
+                      v-model="searchQuery"
+                      icon="i-lucide-search"
+                      :placeholder="t('settlement.generate.form.search_biller')"
+                      class="w-full"
+                      :trailing="searchQuery ? true : false"
+                    >
+                      <template v-if="searchQuery" #trailing>
+                        <UButton
+                          icon="i-lucide-x"
+                          size="xs"
+                          color="gray"
+                          variant="ghost"
+                          @click="searchQuery = ''"
+                        />
+                      </template>
+                    </UInput>
+                  </div>
+                </div>
+
+                <!-- Table Container with proper responsive overflow handling -->
+                <div
+                  class="flex-1 min-h-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg"
+                >
+                  <div class="h-full overflow-y-hidden">
                     <UTable
                       ref="table"
-                      :data="listInquirySettlement?.settlements || []"
-                      :columns="cpoSettlementColumns"
+                      v-model:sorting="sorting"
+                      v-model:row-pinning="rowPinning"
+                      :data="filteredCpoList"
+                      :columns="columns"
+                      :loading="isLoadingCpoList"
+                      :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+                      :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
+                      :ui="appConfig.ui.table.slots"
                       sticky
-                      class="min-w-[800px] w-full h-full"
-                      @row:click="handleRowClick"
+                      class="min-w-[800px] w-full"
+                      @row:click="(row: Cpo) => toggleRowSelection(row)"
                     >
                       <template #empty>
                         <EmptyState />
@@ -1042,86 +939,110 @@ definePageMeta({
                     </UTable>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <!-- Detail Table -->
-                <Transition
-                  name="slide-left"
-                  enter-active-class="transition-all duration-300 ease-out"
-                  leave-active-class="transition-all duration-300 ease-in"
-                  enter-from-class="transform translate-x-full opacity-0"
-                  enter-to-class="transform translate-x-0 opacity-100"
-                  leave-from-class="transform translate-x-0 opacity-100"
-                  leave-to-class="transform translate-x-full opacity-0"
-                >
-                  <div
-                    v-if="
-                      selectedCpoSettlement?.transaction_allocations &&
-                      (selectedCpoSettlement.transaction_allocations.length || 0) > 0
-                    "
-                    class="lg:w-1/3 lg:flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg flex flex-col min-h-0 max-h-full"
+            <!-- Step 2: Reconciliation -->
+            <div
+              v-if="item.value === 'Reconciliation'"
+              class="flex sm:flex-col lg:flex-row gap-6 h-[calc(100vh-260px)]"
+            >
+              <!-- Master Table -->
+              <div
+                class="flex-2 overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
+              >
+                <div class="overflow-x-auto h-full">
+                  <UTable
+                    ref="table"
+                    :data="listInquirySettlement?.settlements || []"
+                    :columns="cpoSettlementColumns"
+                    :ui="appConfig.ui.table.slots"
+                    sticky
+                    class="min-w-[800px] w-full h-full"
+                    @row:click="handleRowClick"
                   >
-                    <!-- Fixed Header -->
-                    <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
-                      <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold">
-                          {{ t('settlement.generate.form.transaction_history') }}
-                        </h3>
-                        <UButton
-                          icon="i-lucide-x"
-                          size="xs"
-                          color="gray"
-                          variant="ghost"
-                          class="hover:bg-gray-100 transition-colors duration-200"
-                          @click="selectedCpoSettlement = null"
-                        />
-                      </div>
-                    </div>
+                    <template #empty>
+                      <EmptyState />
+                    </template>
+                  </UTable>
+                </div>
+              </div>
 
-                    <!-- Scrollable Table Container -->
-                    <div class="flex-1 min-h-0 overflow-hidden">
-                      <div class="h-full overflow-auto">
-                        <UTable
-                          ref="table"
-                          v-model:sorting="tranDetailsSorting"
-                          :data="selectedCpoSettlement.transaction_allocations"
-                          :columns="cpoSettlementTransactionColumns"
-                          sticky
-                          class="w-full animate-fade-in"
-                        />
-                      </div>
-                    </div>
-
-                    <!-- Fixed Footer -->
-                    <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
-                      <SumTranDataUnderTable
-                        :total-transactions="
-                          selectedCpoSettlement.transaction_allocations?.length || 0
-                        "
-                        :amount="selectedCpoSettlement.amount"
-                        :currency="selectedCpoSettlement.currency"
+              <!-- Detail Table -->
+              <Transition
+                name="slide-left"
+                enter-active-class="transition-all duration-300 ease-out"
+                leave-active-class="transition-all duration-300 ease-in"
+                enter-from-class="transform translate-x-full opacity-0"
+                enter-to-class="transform translate-x-0 opacity-100"
+                leave-from-class="transform translate-x-0 opacity-100"
+                leave-to-class="transform translate-x-full opacity-0"
+                class="flex flex-col flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+              >
+                <div
+                  v-if="
+                    selectedCpoSettlement?.transaction_allocations &&
+                    (selectedCpoSettlement.transaction_allocations.length || 0) > 0
+                  "
+                >
+                  <!-- Fixed Header -->
+                  <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-center">
+                      <h3 class="text-lg font-semibold">
+                        {{ t('settlement.generate.form.transaction_history') }}
+                      </h3>
+                      <UButton
+                        icon="i-lucide-x"
+                        size="xs"
+                        color="gray"
+                        variant="ghost"
+                        class="hover:bg-gray-100 transition-colors duration-200"
+                        @click="selectedCpoSettlement = null"
                       />
                     </div>
                   </div>
-                </Transition>
-              </div>
+
+                  <!-- Scrollable Table Container -->
+                  <UTable
+                    ref="table"
+                    v-model:sorting="tranDetailsSorting"
+                    :data="selectedCpoSettlement.transaction_allocations"
+                    :columns="cpoSettlementTransactionColumns"
+                    :ui="appConfig.ui.table.slots"
+                    sticky
+                    class="w-full animate-fade-in flex-1 min-h-0 overflow-auto"
+                  />
+
+                  <!-- Fixed Footer -->
+                  <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
+                    <SumTranDataUnderTable
+                      :total-transactions="
+                        selectedCpoSettlement.transaction_allocations?.length || 0
+                      "
+                      :amount="selectedCpoSettlement.amount"
+                      :currency="selectedCpoSettlement.currency"
+                    />
+                  </div>
+                </div>
+              </Transition>
             </div>
 
             <!-- Step 3: Settlement Request Success -->
             <div
               v-if="item.value === 'Confirmation'"
-              class="flex flex-1 items-center justify-center mt-6"
+              class="flex flex-1 items-center justify-center h-full"
             >
               <div
                 class="w-10/12 h-10/12 bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm items-center justify-center content-center"
               >
-                <UIcon name="i-lucide-check-circle" class="text-green-500 text-6xl mb-4" />
-                <h2 class="text-2xl font-bold text-green-700 mb-2">
+                <UIcon name="i-lucide-check-circle" class="text-success text-6xl mb-4" />
+                <h2 class="text-2xl font-bold text-success mb-2">
                   {{ t('settlement.generate.form.settlement_request_successful') }}
                 </h2>
-                <p class="text-green-700 mb-6">
+                <p class="text-success mb-6">
                   {{ t('settlement.generate.form.settlement_request_message') }}
                 </p>
-                <UButton color="primary" size="lg" @click="onConfirm()">
+                <UButton color="primary" class="w-24 justify-center" size="md" @click="onConfirm()">
                   {{
                     t('settlement.generate.form.done') || t('settlement.generate.form.back_to_list')
                   }}

@@ -6,8 +6,21 @@ import { usePgwModuleApi } from './api/usePgwModuleApi'
 export const useSplashScreen = () => {
   const isAppReady = ref(false)
   const showSplash = ref(true)
+  const currentStep = ref('initializing')
+  const progress = ref(0)
   const pgwApi = usePgwModuleApi()
   const { validateProfile, handleProfileError } = useProfileValidation()
+
+  // Memoization to prevent multiple simultaneous calls
+  let checkAppReadinessPromise: Promise<boolean> | null = null
+
+  /**
+   * Update progress step and percentage
+   */
+  const updateProgress = (step: string, progressValue: number) => {
+    currentStep.value = step
+    progress.value = progressValue
+  }
 
   /**
    * Mark the app as ready and hide splash screen
@@ -33,54 +46,105 @@ export const useSplashScreen = () => {
   /**
    * Check if app initialization is complete
    */
-  const checkAppReadiness = async () => {
-    try {
-      const cookie = useCookie('profile', { path: '/', maxAge: 60 * 60 * 24 * 30 })
-      // Check authentication state
-      const { isAuthenticated } = useAuth()
-
-      // Check if user preferences are loaded
-      const storage = useStorage()
-      const _preferences = storage.getItem('user-preferences')
-
-      // Add any other initialization checks here
-      await nextTick()
-
-      // You can add additional readiness checks here
-      console.log('App initialization complete, authenticated:', isAuthenticated.value)
-
-      if (cookie.value) {
-        console.log('Profile cookie already exists, skipping profile fetch')
-        // If profile cookie exists, skip fetching profile
-        setAppReady()
-        return true
-      }
-      // Try to get user profile
-      const profile = await pgwApi.getProfile()
-
-      if (!validateProfile(profile)) {
-        await handleProfileError(new Error('Profile validation failed'))
-        return false
-      }
-
-      // Store profile data
-      cookie.value = JSON.stringify(profile.data)
-
-      // Mark app as ready after checks
-      setAppReady()
-
-      return true
-    } catch (error) {
-      console.error('Error during app initialization:', error)
-      // Redirect to profile error page on any profile-related error
-      await handleProfileError(error)
-      return false
+  const checkAppReadiness: () => Promise<boolean> = async () => {
+    // Return existing promise if already checking
+    if (checkAppReadinessPromise) {
+      return checkAppReadinessPromise
     }
-  }
 
+    // Create new promise for this check
+    checkAppReadinessPromise = (async () => {
+      try {
+        // Step 1: Initialize
+        updateProgress('initializing', 10)
+        await new Promise((resolve) => setTimeout(resolve, 200))
+
+        // Step 2: Check authentication
+        updateProgress('checking_auth', 25)
+        const { isAuthenticated } = useAuth()
+        if (!isAuthenticated.value) {
+          return false
+        }
+
+        // Step 3: Check for existing profile
+        updateProgress('loading_profile', 40)
+        const cookie = useCookie('profile')
+        if (cookie.value) {
+          // Step 6: Finalize if profile exists
+          updateProgress('finalizing', 90)
+          await new Promise((resolve) => setTimeout(resolve, 100))
+
+          updateProgress('complete', 100)
+          setAppReady()
+          return true
+        }
+
+        // Step 4: Get user profile from API
+        let profile
+        try {
+          profile = await pgwApi.getProfile()
+
+          // Check if profile was returned
+          if (!profile) {
+            console.error('No profile returned from API')
+            hideSplashScreen()
+            await handleProfileError(new Error('No profile available'))
+            return false
+          }
+
+          // Only proceed to step 5 after API response is received
+          updateProgress('validating_profile', 70)
+          await new Promise((resolve) => setTimeout(resolve, 100))
+
+          if (!validateProfile(profile)) {
+            hideSplashScreen()
+            await handleProfileError(new Error('Profile validation failed'))
+            return false
+          }
+
+          // Store profile data
+          cookie.value = JSON.stringify(profile)
+        } catch (profileError) {
+          // Handle profile API errors specifically
+          console.error('Profile API error:', profileError)
+          hideSplashScreen()
+          await handleProfileError(profileError)
+          return false
+        }
+
+        // Step 6: Load preferences (simulated)
+        updateProgress('loading_preferences', 85)
+        await new Promise((resolve) => setTimeout(resolve, 100))
+
+        // Step 7: Finalize
+        updateProgress('finalizing', 95)
+        await new Promise((resolve) => setTimeout(resolve, 100))
+
+        // Step 8: Complete
+        updateProgress('complete', 100)
+        setAppReady()
+
+        return true
+      } catch (error) {
+        // Redirect to profile error page on any profile-related error
+        console.error('General error during app initialization:', error)
+        hideSplashScreen()
+        await handleProfileError(error)
+        return false
+      } finally {
+        // Clear the promise only after this execution completes
+        checkAppReadinessPromise = null
+      }
+    })()
+
+    // Return the promise directly
+    return checkAppReadinessPromise
+  }
   return {
     isAppReady: readonly(isAppReady),
     showSplash: readonly(showSplash),
+    currentStep: readonly(currentStep),
+    progress: readonly(progress),
     setAppReady,
     onSplashComplete,
     hideSplashScreen,

@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
   variant: 'default',
   showSymbol: false,
   showCurrency: true,
-  currency: 'USD',
+  currency: '',
   textColor: undefined,
 })
 

@@ -1,57 +1,68 @@
 <template>
   <div
     v-if="isVisible"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#43B3DE] to-white transition-all duration-500"
+    class="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-[#bfe9f9] to-white transition-all duration-500"
     :class="{ 'opacity-0': isFadingOut }"
   >
-    <div class="text-center">
-      <!-- Logo Section -->
-      <div class="mb-8 animate-pulse">
-        <img
-          src="/images/Bill24 logo.png"
-          alt="Bill24 Logo"
-          class="mx-auto h-20 w-auto transition-transform duration-1000 ease-out"
-          :class="{ 'scale-110': isAnimating }"
-        />
-      </div>
-
-      <!-- App Title -->
-      <h1 class="mb-4 text-3xl font-bold text-[#211e1f] animate-fade-in-up">
-        {{ t('splash.title') }}
-      </h1>
-
-      <!-- Subtitle -->
-      <p class="mb-8 text-lg text-[#211e1f]/80 animate-fade-in-up delay-200">
-        {{ t('splash.subtitle') }}
-      </p>
-
-      <!-- Loading Animation -->
-      <div class="flex items-center justify-center space-x-2">
-        <div class="flex space-x-1">
-          <div
-            v-for="i in 3"
-            :key="i"
-            class="h-3 w-3 rounded-full bg-[#43B3DE] animate-bounce"
-            :style="{ animationDelay: `${i * 0.2}s` }"
-          ></div>
+    <!-- Main Content - Centered -->
+    <div class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <!-- Logo Section -->
+        <div class="mb-8 animate-pulse">
+          <img
+            src="/images/Bill24 logo.png"
+            alt="Bill24 Logo"
+            class="mx-auto h-20 w-auto transition-transform duration-1000 ease-out"
+            :class="{ 'scale-110': isAnimating }"
+          />
         </div>
-        <!-- <span class="ml-3 text-[#211e1f]/60 text-sm animate-fade-in">
-          {{ t('splash.loading') }}
-        </span> -->
-      </div>
 
-      <!-- Progress Bar -->
-      <div class="mt-6 w-64 mx-auto">
-        <div class="h-1 bg-[#211e1f]/10 rounded-full overflow-hidden">
-          <div
-            class="h-full bg-[#43B3DE] rounded-full transition-all duration-1000 ease-out"
-            :style="{ width: `${progress}%` }"
-          ></div>
+        <!-- App Title -->
+        <h1 class="mb-4 text-3xl font-bold text-[#211e1f] animate-fade-in-up">
+          {{ t('splash.title') }}
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="mb-8 text-lg text-[#211e1f]/80 animate-fade-in-up delay-200">
+          {{ t('splash.subtitle') }}
+        </p>
+
+        <!-- Loading Animation -->
+        <div class="flex items-center justify-center space-x-2">
+          <div class="flex space-x-1">
+            <div
+              v-for="i in 3"
+              :key="i"
+              class="h-3 w-3 rounded-full bg-primary animate-bounce"
+              :style="{ animationDelay: `${i * 0.2}s` }"
+            />
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mt-6 w-64 mx-auto">
+          <div class="h-1 bg-[#211e1f]/10 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-primary rounded-full transition-all duration-1000 ease-out"
+              :style="{ width: `${progress}%` }"
+            />
+          </div>
+        </div>
+
+        <!-- Progress Description -->
+        <div class="mt-3 text-sm text-[#211e1f]/70 animate-fade-in">
+          {{ t(`splash.progress.${currentStep}`) }}
         </div>
       </div>
+    </div>
 
-      <!-- Version Info -->
-      <div class="mt-8 text-xs text-[#211e1f]/50 animate-fade-in delay-500">
+    <!-- Version Info - Fixed at Bottom -->
+    <div class="flex flex-col flex-shrink-0 items-center justify-center pb-6">
+      <span class="text-sm text-[#211e1f]/50 animate-fade-in delay-500">
+        {{ t('splash.powered_by') }}
+        <ULink href="https://www.bill24.io">{{ t('splash.bill24') }}</ULink>
+      </span>
+      <div class="text-xs text-[#211e1f]/50 animate-fade-in delay-500">
         {{ t('splash.version') }} {{ config.public.appVersion }}
       </div>
     </div>
@@ -59,31 +70,49 @@
 </template>
 
 <script setup lang="ts">
-
 const config = useRuntimeConfig()
 const { t } = useI18n()
-
-// Props
-interface Props {
-  minDuration?: number
-  maxDuration?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  minDuration: 2000,
-  maxDuration: 5000
-})
+const { checkAppReadiness, currentStep, progress: splashProgress, showSplash } = useSplashScreen()
 
 // Reactive state
 const isVisible = ref(true)
 const isFadingOut = ref(false)
 const isAnimating = ref(false)
-const progress = ref(0)
+const isAppReady = ref(false)
+
+// Use progress from composable
+const progress = computed(() => splashProgress.value)
+
+// Watch for showSplash changes from composable
+watch(showSplash, (newValue) => {
+  if (!newValue) {
+    hideSplashScreen()
+  }
+})
 
 // Emits
 const emit = defineEmits<{
   complete: []
 }>()
+
+// Check app readiness and handle completion
+const checkAppReadinessWithProgress = async () => {
+  try {
+    // Check app readiness (progress is managed in the composable)
+    const ready = await checkAppReadiness()
+
+    if (ready) {
+      isAppReady.value = true
+      // Hide splash screen immediately when ready
+      hideSplashScreen()
+    }
+    // If not ready, it means we were redirected to profile error page
+    // No need to hide splash screen as we're navigating away
+  } catch (error) {
+    console.error('App readiness check failed:', error)
+    // Error handling is done in the composable (redirect to profile-error)
+  }
+}
 
 // Animation and timing logic
 onMounted(() => {
@@ -92,33 +121,13 @@ onMounted(() => {
     isAnimating.value = true
   }, 500)
 
-  // Progress bar animation
-  const progressInterval = setInterval(() => {
-    if (progress.value < 100) {
-      progress.value += Math.random() * 20
-      if (progress.value > 100) progress.value = 100
-    } else {
-      clearInterval(progressInterval)
-    }
-  }, 200)
-
-  // Hide splash screen after minimum duration
-  setTimeout(() => {
-    hideSplashScreen()
-  }, props.minDuration)
-
-  // Force hide after maximum duration
-  setTimeout(() => {
-    if (isVisible.value) {
-      hideSplashScreen()
-    }
-  }, props.maxDuration)
+  // Start app readiness check
+  checkAppReadinessWithProgress()
 })
 
 const hideSplashScreen = () => {
-  progress.value = 100
   isFadingOut.value = true
-  
+
   setTimeout(() => {
     isVisible.value = false
     emit('complete')
@@ -127,7 +136,7 @@ const hideSplashScreen = () => {
 
 // Expose method to manually hide splash screen
 defineExpose({
-  hideSplashScreen
+  hideSplashScreen,
 })
 </script>
 

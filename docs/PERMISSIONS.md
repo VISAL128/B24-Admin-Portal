@@ -1,10 +1,11 @@
 # Permission System Documentation
 
-This document explains how to use the Bill24 Admin Portal permission system to protect routes and features based on user roles and permissions.
+This document explains how to use the Bill24 Payment Portal permission system to protect routes and features based on user roles and permissions.
 
 ## Overview
 
 The permission system consists of:
+
 - A `no-permission.vue` page that displays when users lack access
 - A `permission.ts` middleware for route protection
 - A `usePermissions` composable for permission checking
@@ -23,38 +24,47 @@ Use the permission middleware in your page components to protect entire routes:
 definePageMeta({
   middleware: [
     'auth',
-    ['permission', { 
-      roles: ['admin'], 
-      resource: 'User Management',
-      action: 'view'
-    }]
-  ]
+    [
+      'permission',
+      {
+        roles: ['admin'],
+        resource: 'User Management',
+        action: 'view',
+      },
+    ],
+  ],
 })
 
 // Protect route requiring specific permissions
 definePageMeta({
   middleware: [
     'auth',
-    ['permission', { 
-      permissions: ['settlement:read', 'settlement:write'],
-      resource: 'Settlement Management',
-      action: 'manage',
-      requireAll: true // User must have ALL permissions
-    }]
-  ]
+    [
+      'permission',
+      {
+        permissions: ['settlement:read', 'settlement:write'],
+        resource: 'Settlement Management',
+        action: 'manage',
+        requireAll: true, // User must have ALL permissions
+      },
+    ],
+  ],
 })
 
 // Protect route requiring either admin role OR specific permission
 definePageMeta({
   middleware: [
     'auth',
-    ['permission', { 
-      roles: ['admin'],
-      permissions: ['user:manage'],
-      resource: 'User Settings',
-      requireAll: false // User needs admin role OR user:manage permission
-    }]
-  ]
+    [
+      'permission',
+      {
+        roles: ['admin'],
+        permissions: ['user:manage'],
+        resource: 'User Settings',
+        requireAll: false, // User needs admin role OR user:manage permission
+      },
+    ],
+  ],
 })
 </script>
 ```
@@ -89,14 +99,8 @@ Use the `usePermissions` composable for reactive permission checking in componen
 </template>
 
 <script setup>
-const { 
-  isAdmin, 
-  isManager, 
-  hasRole, 
-  hasPermission, 
-  hasAccess,
-  redirectToNoPermission 
-} = usePermissions()
+const { isAdmin, isManager, hasRole, hasPermission, hasAccess, redirectToNoPermission } =
+  usePermissions()
 
 // Check for specific permission
 const canViewReports = computed(() => hasPermission('reports:read'))
@@ -105,11 +109,13 @@ const canViewReports = computed(() => hasPermission('reports:read'))
 const hasAnyManagerRole = computed(() => hasRole(['manager', 'senior_manager'], false))
 
 // Check complex access requirements
-const canManageUsers = computed(() => hasAccess({
-  roles: ['admin'],
-  permissions: ['user:create', 'user:update'],
-  requireAll: false // Admin role OR both permissions
-}))
+const canManageUsers = computed(() =>
+  hasAccess({
+    roles: ['admin'],
+    permissions: ['user:create', 'user:update'],
+    requireAll: false, // Admin role OR both permissions
+  })
+)
 
 // Handle permission-based redirects
 const handleRestrictedAction = () => {
@@ -118,11 +124,11 @@ const handleRestrictedAction = () => {
       type: 'permission',
       resource: 'Settlement Approval',
       action: 'approve',
-      requiredPermissions: ['settlement:approve']
+      requiredPermissions: ['settlement:approve'],
     })
     return
   }
-  
+
   // Proceed with action
   approveSettlement()
 }
@@ -137,9 +143,7 @@ Access permissions globally through the provided plugin:
 <template>
   <div>
     <!-- Using $permissions in template -->
-    <button v-if="$permissions.isAdmin()" @click="adminAction">
-      Admin Action
-    </button>
+    <button v-if="$permissions.isAdmin()" @click="adminAction">Admin Action</button>
   </div>
 </template>
 
@@ -166,7 +170,7 @@ redirectToNoPermission({
   type: 'role',
   resource: 'User Management',
   action: 'delete',
-  requiredRoles: ['admin']
+  requiredRoles: ['admin'],
 })
 
 // Method 2: Direct navigation with query parameters
@@ -176,8 +180,8 @@ navigateTo({
     type: 'permission',
     resource: 'Settlement Reports',
     action: 'generate',
-    permissions: 'reports:generate,settlement:read'
-  }
+    permissions: 'reports:generate,settlement:read',
+  },
 })
 
 // Method 3: Simple redirect (uses default messages)
@@ -211,11 +215,11 @@ The no-permission page supports different permission types and contextual inform
 
 ```typescript
 interface PermissionOptions {
-  roles?: string[]           // Required roles
-  permissions?: string[]     // Required permissions
-  resource?: string          // Resource name for context
-  action?: string           // Action being performed
-  requireAll?: boolean      // If true, user must have ALL roles/permissions
+  roles?: string[] // Required roles
+  permissions?: string[] // Required permissions
+  resource?: string // Resource name for context
+  action?: string // Action being performed
+  requireAll?: boolean // If true, user must have ALL roles/permissions
 }
 ```
 
@@ -233,6 +237,7 @@ interface UserInfo {
 ## Internationalization
 
 The permission system supports multiple languages. Messages are stored in:
+
 - `i18n/locales/en.json` - English translations
 - `i18n/locales/km.json` - Khmer translations
 
