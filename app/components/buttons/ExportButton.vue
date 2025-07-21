@@ -9,10 +9,10 @@
       color="neutral"
       size="sm"
       variant="subtle"
-      icon="tabler:file-type-pdf"
-      label="PDF"
+      icon="tabler:file-excel"
+      label="Excel"
       :ui="appConfig.ui.button.slots"
-      @click="exportToPDFHandler"
+      @click="exportToExcelHandler"
     />
 
     <UDropdownMenu :items="exportItems" size="sm" :ui="appConfig.ui.dropdownMenu.slots">

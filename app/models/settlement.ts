@@ -40,7 +40,6 @@ export interface CpoBalance {
   currency: string
 }
 
-
 export interface authorizeTokenResponse {
   issuer: string
   token: string
@@ -50,7 +49,6 @@ export interface authorizeTokenResponse {
   fullname: string
   tokenExpireTime: string
 }
-
 
 export interface InitQuerySettlement {
   main_supplier_id?: string
@@ -62,7 +60,7 @@ export interface InitQuerySettlement {
 type parties = {
   id?: string
   type?: string
-} 
+}
 
 // 4. Get Transaction History by CPO
 export interface TransactionAllocation {
@@ -77,7 +75,6 @@ export interface SettlementInquiryResponse {
   token: string
   settlements: Settlement[]
 }
-
 
 export interface Settlement {
   id: string
@@ -105,8 +102,8 @@ export interface ConfirmSettlementResponse {
   settlement_bank_id: string
   currency: string
   status: string
-  message : string
-  bank_ref : string
+  message: string
+  bank_ref: string
 }
 // 6. Get Settlement History
 export interface SettlementHistoryQuery {
@@ -144,14 +141,14 @@ export interface SettlementHistoryDetail {
   settlement_bank_logo: string | null
   bank_ref_id: string
   tran_date: string
-  status: string,
+  status: string
   tran_allocates: TransactionAllocation[]
 }
 
 export interface SettlementHistoryRecord {
   id: string
-  settlement_date: string,
-  created_date: string,
+  settlement_date: string
+  created_date: string
   total_supplier: number
   total_amount: string
   currency_id: string
@@ -167,8 +164,8 @@ export interface SettlementHistoryRecord {
 
 export interface SettlementHistoryMainDetails {
   settlement_history_id: string
-  settlement_date: string,
-  created_date: string,
+  settlement_date: string
+  created_date: string
   total_supplier: number
   total_amount: string
   currency_id: string
@@ -202,4 +199,48 @@ export interface SettlementHistoryDetailQuery {
   status?: string
   page?: number
   page_size?: number
+}
+
+export interface FeeModel {
+  id: string
+  code: string
+  name: string
+  currency: string
+  fee_type: string
+  supplier_id: string
+  // fee_type_data: string[]
+  // currency_data: string[]
+  fee_details: FeeDetail[]
+  allocate_details: AlloCateDetail[]
+  allocation_rule_id: string
+}
+
+export interface FeeDetail {
+  start_amount: number
+  end_amount: number
+  fee_amount: number
+  fee_rate: number
+}
+
+export interface AlloCateDetail {
+  editable: boolean
+  party_id: string
+  party_name: string
+  logo?: string
+  party_type: number
+  value: number
+}
+
+export interface FeeModelRequest {
+  id: string
+  code: string
+  name: string
+  fee_type: 'fixed' | 'percentage'
+  currency: 'KHR' | 'USD'
+  sharing_rules?: Array<{
+    name: string
+    value: string
+  }>
+  created_at?: string
+  updated_at?: string
 }
