@@ -6,7 +6,7 @@
       class="flex flex-col rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4"
     >
       <div class="flex justify-between items-center">
-        <h2 class="text-lg font-semibold text-2xl dark:text-white">
+        <h2 class="text-lg font-semibold dark:text-white">
           {{ t('transaction_summary') }}
         </h2>
         <USelectMenu
@@ -68,42 +68,28 @@
           fetchTransactionHistory()
         }
       "
+      :page="page"
+      :page-size="pageSize.value"
+      :total="total"
+      :total-page="totalPage"
+      @update:page="(val) => (page = val)"
+      @update:pageSize="
+        (val) => {
+          pageSize.value = val
+          page = 1
+        }
+      "
     >
       <template #empty>
         <TableEmptyState />
       </template>
     </BaseTable>
 
-    <!-- Table Footer -->
-    <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
-      <span>
-        {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }}
-        {{ t('row_selected') }}
-      </span>
-      <div class="flex items-center gap-4">
-        <USelectMenu
-          v-model="pageSize"
-          :items="[
-            { label: '10', value: 10 },
-            { label: '25', value: 25 },
-            { label: '50', value: 50 },
-            { label: '100', value: 100 },
-          ]"
-          class="w-24"
-          :search-input="false"
-          @change="onPageSizeChange"
-        />
-        <UPagination
-          v-model="page"
-          :page-size-options="[10, 25, 50, 100]"
-          :page-count="totalPage"
-          :items-per-page="pageSize.value"
-          :total="total"
-          v-on:update:page="page = $event"
-        />
-      </div>
-    </div>
+    <TransactionDetailDrawer
+      :model-value="showTransactionDrawer"
+      :transaction-id="selectedTransactionId ?? ''"
+      @update:modelValue="(val) => (showTransactionDrawer = val)"
+    />
   </div>
 </template>
 
@@ -140,6 +126,8 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
+import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
+import StatusBadge from '~/components/StatusBadge.vue'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -194,7 +182,7 @@ watch(modelValue, (val) => {
 })
 
 // Watch pagination
-watch([page, pageSize], () => {
+watch([page, pageSize.value], () => {
   fetchTransactionHistory()
 })
 
@@ -643,6 +631,78 @@ const columns: BaseTableColumn<any>[] = [
       { label: t('pending'), value: 'pending' },
       { label: t('failed'), value: 'failed' },
     ],
+    cell: ({ row }: any) =>
+      h(StatusBadge, {
+        status: row.original.status,
+        variant: 'table',
+        size: 'sm',
+      }),
+    // cell: ({ row }) => {
+    //   // return h('span', {
+    //   //   class: `text-sm font-medium`
+    //   // }, `Total: ${row.original.total_Settled}`)
+
+    //   const success = row.original.success
+    //   const fail = row.original.fail
+    //   const total = row.original.total_settled
+
+    //   const UBadge = resolveComponent('UBadge')
+    //   const Icon = resolveComponent('UIcon')
+
+    //   return h('div', { class: 'flex gap-2 items-center' }, [
+    //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+    //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+    //     //   h('span', {}, total)
+    //     // ]),
+    //     h(
+    //       UBadge,
+    //       {
+    //         color: 'primary',
+    //         variant: 'subtle',
+    //         class: 'flex items-center gap-1',
+    //       },
+    //       () => [
+    //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+    //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
+    //       ]
+    //     ),
+    //     // Success and Fail badges
+    //     h(
+    //       UBadge,
+    //       {
+    //         color: 'success',
+    //         variant: 'subtle',
+    //         class: 'flex items-center gap-1',
+    //       },
+    //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
+    //     ),
+    //     h(
+    //       UBadge,
+    //       {
+    //         color: 'error',
+    //         variant: 'subtle',
+    //         class: 'flex items-center gap-1',
+    //       },
+    //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
+    //     ),
+    //   ])
+    // },
   },
+  // Add an action column for viewing details
+  // {
+  //   id: 'actions',
+  //   header: t('actions'),
+  //   cell: ({ row }) =>
+  //     h('div', { class: 'flex items-center gap-2' }, [
+  //       h(resolveComponent('UButton'), {
+  //         color: 'primary',
+  //         variant: 'ghost',
+  //         icon: 'i-lucide-eye',
+  //         size: 'sm',
+  //         onClick: handleViewDetails(row.original),
+  //         // title: translations.view_details
+  //       }),
+  //     ]),
+  // },
 ]
 </script>
