@@ -6,7 +6,7 @@
       class="flex flex-col rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4"
     >
       <div class="flex justify-between items-center">
-        <h2 class="text-lg font-semibold text-2xl dark:text-white">
+        <h2 class="text-lg font-semibold dark:text-white">
           {{ t('transaction_summary') }}
         </h2>
         <USelectMenu
