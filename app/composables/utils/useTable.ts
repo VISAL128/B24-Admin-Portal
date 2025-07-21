@@ -60,7 +60,7 @@ export const useTable = <_T>() => {
             ? 'i-solar:sort-from-top-to-bottom-bold'
             : 'i-solar:sort-from-bottom-to-top-outline'
           : 'i-lucide-arrow-up-down',
-        class: `w-auto tb-h-text`,
+        class: `w-auto tb-h-text gap-1.5 font-bold`,
         size: 'xs',
         onClick: handleSort,
       }),

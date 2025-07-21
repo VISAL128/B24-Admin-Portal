@@ -1,9 +1,24 @@
 <template>
-  <UDropdownMenu :items="exportItems" :content="{ align: 'end' }" @select="handleExport">
+  <!-- <UDropdownMenu :items="exportItems" :content="{ align: 'end' }" @select="handleExport">
     <UButton icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">
       {{ t('export') }}
     </UButton>
-  </UDropdownMenu>
+  </UDropdownMenu> -->
+  <UButtonGroup>
+    <UButton
+      color="neutral"
+      size="sm"
+      variant="subtle"
+      icon="tabler:file-excel"
+      label="Excel"
+      :ui="appConfig.ui.button.slots"
+      @click="exportToExcelHandler"
+    />
+
+    <UDropdownMenu :items="exportItems" size="sm" :ui="appConfig.ui.dropdownMenu.slots">
+      <UButton size="sm" color="neutral" variant="outline" icon="i-lucide-chevron-down" />
+    </UDropdownMenu>
+  </UButtonGroup>
 </template>
 
 <script setup lang="ts">
@@ -11,7 +26,6 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { useToast } from '#imports'
 import { computed } from 'vue'
-import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import {
   exportToExcelWithUnicodeSupport,
   exportToExcelStyled,
@@ -20,6 +34,7 @@ import {
 } from '~/composables/utils/exportUtils'
 
 import type { ExportOptions } from '~/components/tables/BaseTable.vue'
+import appConfig from '~~/app.config'
 const { t, locale } = useI18n()
 const toast = useToast()
 
@@ -31,21 +46,21 @@ const props = defineProps<{
 
 const pdfExportHeaders = computed(() => props.headers)
 
-const handleExport = (item: { click: () => void }) => {
-  if (item.click) item.click()
-}
+// const handleExport = (item: { click: () => void }) => {
+//   if (item.click) item.click()
+// }
 
 const exportItems: DropdownMenuItem[] = [
   {
     label: t('pdf'),
-    icon: 'i-lucide-file-text',
+    icon: 'tabler:file-type-pdf',
     onSelect() {
       exportToPDFHandler()
     },
   },
   {
     label: t('excel'),
-    icon: 'i-lucide-file-spreadsheet',
+    icon: 'tabler:file-excel',
     onSelect() {
       exportToExcelHandler()
     },
@@ -65,14 +80,14 @@ const exportToExcelHandler = async () => {
     console.log('Starting Excel export...')
     const totalAmount = props.data.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0)
     const currentLocale = locale.value as 'km' | 'en'
-const periodText = `${props.exportOptions?.startDate} ${t('to')} ${props.exportOptions?.endDate}`
+    const periodText = `${props.exportOptions?.startDate} ${t('to')} ${props.exportOptions?.endDate}`
     try {
       await exportToExcelWithUnicodeSupport(
         props.data,
         props.headers,
         `${props.exportOptions?.fileName || 'export'}.xlsx`,
         props.exportOptions?.title || '',
-    
+
         props.exportOptions?.subtitle || '',
         {
           locale: currentLocale,
@@ -156,7 +171,7 @@ const exportToPDFHandler = async () => {
           locale: locale.value as 'km' | 'en',
           t,
         }
-      );
+      )
     }
 
     toast.add({

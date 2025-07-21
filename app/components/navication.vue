@@ -23,28 +23,30 @@ const activeStates = ref({
   transactionSummary: false,
   transactionAllocation: false,
   settings: false,
+  generateDetails: false,
+  feeConfig: false,
 })
 
 const items = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: t('dashboard'),
-      icon: 'i-material-symbols-light-space-dashboard-rounded',
+      icon: 'i-material-symbols-space-dashboard-outline',
       size: 'lg',
       class: 'text-sm',
       to: '/',
       active: activeStates.value.dashboard,
     },
-    // {
-    //   label: t('transactions'),
-    //   icon: 'i-material-symbols-receipt-long',
-    //   size: 'lg',
-    //   to: '/transactions',
-    //   active: activeStates.value.transactions,
-    // },
+    {
+      label: t('transactions'),
+      icon: 'i-material-symbols-receipt-long',
+      size: 'lg',
+      to: '/transactions',
+      active: activeStates.value.transactions,
+    },
     {
       label: t('digital_wallet'),
-      icon: 'i-material-symbols-light-account-balance-wallet',
+      icon: 'i-material-symbols-account-balance-wallet-outline',
       size: 'lg',
       active: activeStates.value.digitalWallet,
       defaultOpen: true,
@@ -71,63 +73,78 @@ const items = computed<NavigationMenuItem[][]>(() => [
         },
       ],
     },
-    {
-      label: t('navigation.organization'),
-      icon: 'i-material-symbols-light-home-work',
-      size: 'lg',
-      active: activeStates.value.organization,
-      children: [
-        {
-          label: t('navigation.banks'),
-          // icon: 'i-material-symbols-account-balance-rounded',
-          size: 'lg',
-          to: '/organization/banks',
-          active: activeStates.value.banks,
-        },
-        {
-          label: t('navigation.sub_billers'),
-          // icon: 'i-material-symbols-light:article-person',
-          size: 'lg',
-          to: '/organization/sub-billers',
-          active: activeStates.value.subBillers,
-        },
-        {
-          label: t('navigation.users'),
-          // icon: 'i-material-symbols-light-group',
-          size: 'lg',
-          to: '/organization/users',
-          active: activeStates.value.users,
-        },
-      ],
-    },
-    {
-      label: t('navigation.reports'),
-      icon: 'i-material-symbols-light-bar-chart',
-      size: 'lg',
-      active: activeStates.value.reports,
-      children: [
-        {
-          label: t('navigation.transaction_summary'),
-          // icon: 'i-material-symbols-light-summarize',
-          size: 'lg',
-          to: '/reports/transaction-summary',
-          active: activeStates.value.transactionSummary,
-        },
-        {
-          label: t('navigation.transaction_allocate'),
-          // icon: 'i-material-symbols-light-switch-access-shortcut',
-          size: 'lg',
-          to: '/reports/transaction-allocation',
-          active: activeStates.value.transactionAllocation,
-        },
-      ],
-    },
+    // {
+    //   label: t('navigation.organization'),
+    //   icon: 'i-material-symbols-light-home-work',
+    //   size: 'lg',
+    //   active: activeStates.value.organization,
+    //   children: [
+    //     {
+    //       label: t('navigation.banks'),
+    //       // icon: 'i-material-symbols-account-balance-rounded',
+    //       size: 'lg',
+    //       to: '/organization/banks',
+    //       active: activeStates.value.banks,
+    //     },
+    //     {
+    //       label: t('navigation.sub_billers'),
+    //       // icon: 'i-material-symbols-light:article-person',
+    //       size: 'lg',
+    //       to: '/organization/sub-billers',
+    //       active: activeStates.value.subBillers,
+    //     },
+    //     {
+    //       label: t('navigation.users'),
+    //       // icon: 'i-material-symbols-light-group',
+    //       size: 'lg',
+    //       to: '/organization/users',
+    //       active: activeStates.value.users,
+    //     },
+    //   ],
+    // },
+    // {
+    //   label: t('navigation.reports'),
+    //   icon: 'i-material-symbols-light-bar-chart',
+    //   size: 'lg',
+    //   active: activeStates.value.reports,
+    //   children: [
+    //     {
+    //       label: t('navigation.transaction_summary'),
+    //       // icon: 'i-material-symbols-light-summarize',
+    //       size: 'lg',
+    //       to: '/reports/transaction-summary',
+    //       active: activeStates.value.transactionSummary,
+    //     },
+    //     {
+    //       label: t('navigation.transaction_allocate'),
+    //       // icon: 'i-material-symbols-light-switch-access-shortcut',
+    //       size: 'lg',
+    //       to: '/reports/transaction-allocation',
+    //       active: activeStates.value.transactionAllocation,
+    //     },
+    //   ],
+    // },
     {
       label: t('settings.title'),
-      icon: 'i-material-symbols-light-settings',
+      icon: 'i-material-symbols-settings-outline',
       size: 'lg',
-      to: '/settings',
       active: activeStates.value.settings,
+      children: [
+        {
+          label: t('settings.generate_details'),
+          icon: 'i-lucide-settings',
+          size: 'lg',
+          to: '/settings/generate-details',
+          active: activeStates.value.generateDetails,
+        },
+        {
+          label: t('settings.fee_config'),
+          icon: 'i-material-symbols-light-switch-access-shortcut',
+          size: 'lg',
+          to: '/settings/fee-config',
+          active: activeStates.value.feeConfig,
+        },
+      ],
     },
   ],
 ])
@@ -201,6 +218,9 @@ function activateCurrentRoute() {
   else if (currentPath.startsWith('/settlement')) {
     activeStates.value.digitalWallet = true
     activeStates.value.settlement = true
+  } else if (currentPath === '/settings/fee-config') {
+    activeStates.value.settings = true
+    activeStates.value.feeConfig = true
   }
 }
 
@@ -218,20 +238,25 @@ const props = defineProps<{
       highlight
       tooltip
       popover
+      arrow
       :collapsed="props.collapsed"
       orientation="vertical"
       :items="items"
       class="w-full flex-1 transition-all duration-200"
       :ui="{
-        linkLeadingIcon: 'shrink-0 size-5',
+        linkLeadingIcon: 'shrink-0 size-4.5',
         linkLabel: 'text-sm font-medium truncate',
         link: 'p-2 cursor-pointer transition-colors duration-200',
+        linkTrailingIcon: 'shrink-0 size-4',
       }"
     />
 
-    <div v-if="!props.collapsed" class="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">
-      <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-        {{ appVersion }}
+    <div v-if="!props.collapsed" class="mt-auto p-2">
+      <p class="text-xs text-gray-400 dark:text-gray-400 font-semibold">
+        {{ t('splash.version') }}
+        <span>
+          {{ appVersion }}
+        </span>
       </p>
     </div>
   </div>

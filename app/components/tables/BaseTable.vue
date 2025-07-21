@@ -166,6 +166,12 @@
         class="min-w-[800px] single-line-headers"
         :class="borderClass"
         @select="onSelect"
+        :ui="{
+          td: 'px-2 py-3 whitespace-nowrap align-top',
+          th: 'px-2 py-3 whitespace-nowrap text-left',
+          thead: 'whitespace-nowrap',
+          tbody: 'whitespace-nowrap',
+        }"
       >
         <template #cell="{ row, column }">
           <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
@@ -185,6 +191,33 @@
 
         <slot />
       </UTable>
+      <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
+        <span>
+          {{ tableRef?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+          {{ tableRef?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t('row_selected') }}
+        </span>
+        <div class="flex items-center gap-4">
+          <USelectMenu
+            :model-value="{ label: String(props.pageSize ?? 10), value: props.pageSize ?? 10 }"
+            :items="[
+              { label: '10', value: 10 },
+              { label: '25', value: 25 },
+              { label: '50', value: 50 },
+              { label: '100', value: 100 },
+            ]"
+            class="w-24"
+            :search-input="false"
+            @update:modelValue="(val) => emit('update:pageSize', val.value)"
+          />
+          <UPagination
+            :model-value="props.page"
+            :page-count="props.totalPage"
+            :items-per-page="props.pageSize"
+            :total="props.total"
+            @update:page="(val) => emit('update:page', val)"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -247,6 +280,8 @@ const emit = defineEmits<{
   (e: 'row-click', rowData: any): void
   (e: 'search-change', value: string): void
   (e: 'date-range-change', value: { start: string; end: string }): void
+  (e: 'update:page', page: number): void
+  (e: 'update:pageSize', size: number): void
 }>()
 
 const sortState = ref<{ column: string; direction: 'asc' | 'desc' | null } | null>(null)
@@ -273,8 +308,11 @@ const props = defineProps<{
   borderClass?: string
   tableId: string
   exportOptions?: ExportOptions
+  page?: number
+  pageSize?: number
+  total?: number
+  totalPage?: number
 }>()
-
 
 const resolvedExportOptions = computed(() => ({
   fileName: props.exportOptions?.fileName ?? `${props.tableId}-export`,
@@ -287,7 +325,6 @@ const resolvedExportOptions = computed(() => ({
     props.exportOptions?.totalAmount ??
     filteredData.value.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0),
 }))
-
 
 const tableRef = ref<any>(null)
 const storageKey = computed(() => `base-table-columns:${props.tableId}`)
