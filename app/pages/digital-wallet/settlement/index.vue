@@ -316,7 +316,14 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   // { accessorKey: "id", header: t("Settlement ID") },
   {
     accessorKey: 'created_date',
-    header: ({ column }) => createSortableHeader(column, t('settlement.settlement_date')),
+    header: ({ column }) =>
+      createSortableHeader(
+        column,
+        t('settlement.settlement_date'),
+        'created_date',
+        'left',
+        (order) => {}
+      ),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),

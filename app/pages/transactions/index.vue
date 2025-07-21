@@ -11,16 +11,18 @@
         </h2>
         <USelectMenu
           v-model="selectedDateFilter"
-          :items="[
-            { label: t('today'), value: 'today' },
-            { label: t('this_week'), value: 'this_week' },
-            { label: t('this_month'), value: 'this_month' },
-            { label: t('this_year'), value: 'this_year' },
-          ]"
-          class="w-40"
+          :items="dateOptions"
+          class="w-auto min-w-[200px]"
           :search-input="false"
           @update:model-value="onDateFilterChange"
-        />
+        >
+          <template #item="{ item }">
+            <span v-html="item.label" />
+          </template>
+          <template #default="{ modelValue }">
+            <span v-if="modelValue" v-html="modelValue.label" />
+          </template>
+        </USelectMenu>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-stretch">
@@ -121,14 +123,44 @@ import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import StatusBadge from '~/components/StatusBadge.vue'
+import { useTable } from '~/composables/utils/useTable'
 
-const dateToCalendarDate = (date: Date): CalendarDate =>
-  new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
+const dateOptions = computed(() => {
+  const todayDate = df.format(today)
+  const startOfWeek = new Date(today)
+  startOfWeek.setDate(today.getDate() - today.getDay() + 1)
+  const endOfWeek = new Date(today)
+  endOfWeek.setDate(startOfWeek.getDate() + 6)
+
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+
+  const startOfYear = new Date(today.getFullYear(), 0, 1)
+  const endOfYear = new Date(today.getFullYear(), 11, 31)
+
+  return [
+    { label: `${t('today')} <span class="text-xs">(${todayDate})</span>`, value: 'today' },
+    {
+      label: `${t('this_week')} <span class="text-xs">(${df.format(startOfWeek)} - ${df.format(endOfWeek)})</span>`,
+      value: 'this_week',
+    },
+    {
+      label: `${t('this_month')} <span class="text-xs">(${df.format(startOfMonth)} - ${df.format(endOfMonth)})</span>`,
+      value: 'this_month',
+    },
+    {
+      label: `${t('this_year')} <span class="text-xs">(${df.format(startOfYear)} - ${df.format(endOfYear)})</span>`,
+      value: 'this_year',
+    },
+  ]
+})
+
+const { createSortableHeader, createRowNumberCell } = useTable()
 const { t, locale } = useI18n()
-const { getSettlementHistory } = useSupplierApi()
 const errorHandler = useErrorHandler()
 const table = ref<InstanceType<typeof BaseTable> | null>(null)
-
+const sortBy = ref<string | null>(null)
+const sortDirection = ref<'asc' | 'desc' | null>(null)
 const selectedRows = computed(() => table.value?.getSelectedRows?.() ?? [])
 const allRows = computed(() => table.value?.getAllRows() ?? [])
 const router = useRouter()
@@ -201,7 +233,7 @@ const onDateFilterChange = (payload: { label: string; value: string }) => {
 const fetchTransactionHistory = async () => {
   loading.value = true
   try {
-    const banks = ['ABA', 'Acleda', 'AMK'] as const
+    const banks = ['ABA', 'ACLEDA', 'AMK'] as const
     const subBillers = [
       'Cambodia Electric Co.',
       'Smart Axiata',
@@ -228,7 +260,7 @@ const fetchTransactionHistory = async () => {
       settlement_type: i % 2 === 0 ? 'Auto' : 'Manual',
       total_amount: 1000000 + i * 5000,
       currency_id: i % 2 === 0 ? 'USD' : 'KHR',
-      status: ['completed', 'pending', 'failed'][i % 3] as string,
+      status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
       settled_by: `User ${i + 1}`,
       transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4],
       sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)],
@@ -547,10 +579,19 @@ const columns: BaseTableColumn<any>[] = [
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    header: t('date'),
+    header: ({ column }) =>
+      createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
+        // Call your API with the new sorting order
+        console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
+        // Trigger your own fetch with the column and direction
+        sortBy.value = 'created_date'
+        sortDirection.value = order
+        fetchTransactionHistory()
+      }),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
+    enableSorting: true,
   },
   {
     id: 'bank_ref',

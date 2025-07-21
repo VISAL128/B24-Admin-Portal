@@ -76,7 +76,7 @@
                   </div>
                 </div>
                 <!-- Sort Select Menu -->
-                <div class="space-y-2">
+                <!-- <div class="space-y-2">
                   <h4 class="text-sm font-medium text-gray-900 dark:text-white">Sort By</h4>
                   <USelectMenu
                     :model-value="{
@@ -104,7 +104,7 @@
                       </div>
                     </template>
                   </USelectMenu>
-                </div>
+                </div> -->
               </div>
             </template>
           </UPopover>
@@ -168,7 +168,7 @@
         @select="onSelect"
         :ui="{
           td: 'px-2 py-3 whitespace-nowrap align-top',
-          th: 'px-2 py-3 whitespace-nowrap text-left',
+          th: 'tb-h-text py-2 whitespace-nowrap text-left',
           thead: 'whitespace-nowrap',
           tbody: 'whitespace-nowrap',
         }"

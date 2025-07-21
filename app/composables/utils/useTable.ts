@@ -7,6 +7,7 @@ export const useTable = <_T>() => {
   const pageSize = ref(10)
   const total = ref(0)
   const totalPage = ref(0)
+  const sortState = ref<{ [columnId: string]: 'asc' | 'desc' | null }>({})
 
   const pagination = computed(() => ({
     page: page.value,
@@ -26,10 +27,10 @@ export const useTable = <_T>() => {
   const createSortableHeader = (
     column: any,
     label: string,
-    alignment: 'left' | 'center' | 'right' = 'left'
+    columnId: string,
+    alignment: 'left' | 'center' | 'right' = 'left',
+    onSortChange?: (order: 'asc' | 'desc' | null) => void
   ) => {
-    const isSorted = column.getIsSorted()
-
     const alignmentClasses = {
       left: 'justify-start text-left',
       center: 'justify-center text-center',
@@ -37,17 +38,26 @@ export const useTable = <_T>() => {
     }
 
     const handleSort = () => {
-      const currentSort = column.getIsSorted()
-      if (currentSort === false) {
-        // None -> Asc
+      const current = sortState.value[columnId] || null
+      if (current === null) {
+        sortState.value[columnId] = 'asc'
         column.toggleSorting(false)
-      } else if (currentSort === 'asc') {
-        // Asc -> Desc
-        column.toggleSorting(true)
+
+      } else if (current === 'asc') {
+        sortState.value[columnId] = 'desc'
+                column.toggleSorting(true)
       } else {
-        // Desc -> None
-        column.clearSorting()
+        sortState.value[columnId] = null
+                column.clearSorting()
       }
+
+      onSortChange?.(sortState.value[columnId])
+    }
+
+    const getIcon = () => {
+      if (sortState.value[columnId] === 'asc') return 'i-solar:sort-from-top-to-bottom-bold'
+      if (sortState.value[columnId] === 'desc') return 'i-solar:sort-from-bottom-to-top-outline'
+      return 'i-lucide-arrow-up-down'
     }
 
     return h('div', { class: `w-full ${alignmentClasses[alignment]}` }, [
@@ -55,11 +65,7 @@ export const useTable = <_T>() => {
         color: 'neutral',
         variant: 'ghost',
         label,
-        icon: isSorted
-          ? isSorted === 'asc'
-            ? 'i-solar:sort-from-top-to-bottom-bold'
-            : 'i-solar:sort-from-bottom-to-top-outline'
-          : 'i-lucide-arrow-up-down',
+        icon: getIcon(),
         class: `w-auto tb-h-text gap-1.5 font-bold`,
         size: 'xs',
         onClick: handleSort,
@@ -67,6 +73,8 @@ export const useTable = <_T>() => {
     ])
   }
 
+
+  
   /**
    * Creates a row number cell with proper pagination and sorting support
    * @param row - The table row object
