@@ -59,8 +59,38 @@ export const useStatusColor = () => {
     }
   };
 
+  const getVariantColorByStatus = (status: string): 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' | 'neutral' | undefined => {
+    switch (status.toLowerCase()) {
+      case 'success':
+      case 'completed':
+      case 'approved':
+      case 'active':
+        return 'success';
+      
+      case 'failed':
+      case 'rejected':
+      case 'error':
+      case 'declined':
+        return 'error';
+
+      case 'pending':
+      case 'processing':
+      case 'in_progress':
+        return 'warning';
+
+      case 'cancelled':
+      case 'inactive':
+        return 'neutral';
+      case 'info':
+        return 'info';
+      default:
+        return undefined;
+    }
+  };
+
   return {
     getStatusBackgroundColor,
-    getStatusTextColor
+    getStatusTextColor,
+    getVariantColorByStatus
   };
 };

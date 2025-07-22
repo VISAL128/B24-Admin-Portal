@@ -1,4 +1,4 @@
-import type { SettlementStatus } from "#imports"
+import type { SettlementStatus } from '#imports'
 
 // 1. Get All Suppliers
 export interface Supplier {
@@ -157,7 +157,7 @@ export interface SettlementHistoryRecord {
   settled_by: string
   total_settled: number
   success: number
-  fail: number
+  failed: number
   status: SettlementStatus
   settle_details: SettlementHistoryDetail[]
 }
@@ -175,7 +175,7 @@ export interface SettlementHistoryMainDetails {
   settled_by: string
   totalSettled: number
   success: number
-  fail: number
+  failed: number
   settle_details: SettlementHistoryDetail[]
 }
 

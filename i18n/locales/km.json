@@ -51,6 +51,7 @@
     "khmer": "ខ្មែរ"
   },
   "status": {
+    "all": "ទាំងអស់",
     "header": "ស្ថានភាព",
     "active": "សកម្ម",
     "inactive": "អសកម្ម",
@@ -58,7 +59,8 @@
     "completed": "បានបញ្ចប់",
     "failed": "បរាជ័យ",
     "success": "ជោគជ័យ",
-    "error": "កំហុស"
+    "error": "កំហុស",
+    "processing": "កំពុងដំណើរការ"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
@@ -182,6 +184,8 @@
     "time_format_24h": "24-ម៉ោង (13:30)",
     "time_format_12h": "12-ម៉ោង (1:30 PM)",
     "default_currency": "រូបិយប័ណ្ណលំនាំដើម",
+    "default_page_size": "ចំនួនធាតុក្នុងទំព័រលំនាំដើម",
+    "default_page_size_description": "កំណត់ចំនួនធាតុលំនាំដើមដែលត្រូវបង្ហាញក្នុងមួយទំព័រនៃតារាង",
     "preview": "មើលជាមុន",
     "preview_date": "កាលបរិច្ឆេទ:",
     "preview_time": "ម៉ោង:",
@@ -286,6 +290,7 @@
     "transaction": "ប្រតិបត្តិការ",
     "title": "ការទូទាត់",
     "search_placeholder": "ស្វែងរក",
+    "select_status": "ជ្រើសរើសស្ថានភាព",
     "settle_amount": "ចំនួនទឹកប្រាក់សម្រាប់ទូទាត់",
     "amount": "ចំនួនទឹកប្រាក់",
     "settlement_bank": "ធនាគារទូទាត់",
@@ -468,8 +473,11 @@
     "current_roles": "តួនាទីបច្ចុប្បន្ន",
     "request_id": "លេខសម្គាល់សំណើ"
   },
-
+  "navigate_back": "ថយក្រោយ",
   "error": {
+    "something_went_wrong": "មានអ្វីមួយមិនប្រក្រតី",
+    "try_again_later": "សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ",
+    "try_again": "សូមព្យាយាមម្តងទៀត",
     "server_error": "កំហុសម៉ាស៊ីនមេ",
     "internal_server_error": "មានកំហុសម៉ាស៊ីនមេកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
     "internal_server_error_title": "កំហុសម៉ាស៊ីនមេខាងក្នុង",
@@ -599,5 +607,9 @@
   "this_week": "សប្ដាហ៍នេះ",
   "this_month": "ខែនេះ",
   "this_year": "ឆ្នាំនេះ",
-  "sub_biller": "ម្ចាស់អាជីវកម្មរង"
+  "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+  "lottie": {
+    "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
+    "install_instruction": "ដំណើរការ: npm install lottie-web"
+  }
 }
