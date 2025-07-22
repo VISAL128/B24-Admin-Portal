@@ -62,6 +62,7 @@
     "search_placeholder": "Search..."
   },
   "status": {
+    "all": "All",
     "header": "Status",
     "active": "Active",
     "inactive": "Inactive",
@@ -69,7 +70,8 @@
     "completed": "Completed",
     "failed": "Failed",
     "success": "Success",
-    "error": "Error"
+    "error": "Error",
+    "processing": "Processing"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -224,6 +226,8 @@
     "time_format_24h": "24-hour (13:30)",
     "time_format_12h": "12-hour (1:30 PM)",
     "default_currency": "Default Currency",
+    "default_page_size": "Default Page Size",
+    "default_page_size_description": "Set the default number of items to display per page in tables",
     "preview": "Preview",
     "preview_date": "Date:",
     "preview_time": "Time:",
@@ -296,6 +300,7 @@
     "title": "Settlement",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
+    "select_status": "Select Status",
     "settle_amount": "Settle Amount",
     "amount": "Amount",
     "settlement_bank": "Settlement Bank",
@@ -449,8 +454,11 @@
     "current_roles": "Current Roles",
     "request_id": "Request ID"
   },
-
+  "navigate_back": "Navigate Back",
   "error": {
+    "something_went_wrong": "Something went wrong",
+    "try_again_later": "Please try again later.",
+    "try_again": "Try Again",
     "server_error": "Server Error",
     "internal_server_error": "An internal server error occurred. Please try again later.",
     "internal_server_error_title": "Internal Server Error",
@@ -599,5 +607,9 @@
   "this_week": "This Week",
   "this_month": "This Month",
   "this_year": "This Year",
-  "sub_biller": "Sub Biller"
+  "sub_biller": "Sub Biller",
+  "lottie": {
+    "library_not_found": "Lottie animation library not available",
+    "install_instruction": "Run: npm install lottie-web"
+  }
 }

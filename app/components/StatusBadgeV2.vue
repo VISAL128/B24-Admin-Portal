@@ -1,5 +1,5 @@
 <template>
-  <UBadge :label="displayText" :color="statusColor" :variant="variant" :size="props.size" />
+  <UBadge :label="displayText" :color="statusColor" :variant="variant" :size="props.size" class="justify-center" />
 </template>
 
 <script setup lang="ts">
@@ -72,6 +72,8 @@ const displayText = computed(() => {
     switch (statusValue) {
       case 'pending':
         return t('status.pending')
+      case 'processing':
+        return t('status.processing')
       case 'completed':
         return t('status.completed')
       case 'failed':

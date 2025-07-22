@@ -17,8 +17,8 @@ export default defineAppConfig({
     card: {
       slots: {
         root: 'rounded-lg overflow-hidden bg-white dark:bg-gray-800',
-        header: 'p-4 sm:px-6',
-        body: 'p-4 sm:p-6',
+        header: 'p-3 sm:px-4',
+        body: 'p-3',
         footer: 'p-4 sm:px-6',
       },
       variants: {
@@ -49,12 +49,21 @@ export default defineAppConfig({
     dropdownMenu: {
       slots: {
         itemLeadingIcon: 'shrink-0 size-4',
-      }
+      },
     },
     button: {
       slots: {
         leadingIcon: 'shrink-0 size-4 text-muted',
-      }
-    }
+        trailingIcon: 'shrink-0 size-4 text-muted',
+      },
+    },
+    input: {
+      slots: {
+        leading: 'ps-2',
+        leadingIcon: 'shrink-0 size-4 text-muted',
+        trailing: 'pe-2',
+        trailingIcon: 'shrink-0 size-4 text-muted',
+      },
+    },
   },
 })

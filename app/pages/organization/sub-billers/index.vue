@@ -49,12 +49,7 @@
           /> -->
         <USelectMenu
           v-model="pageSize"
-          :items="[
-            { label: '10', value: 10 },
-            { label: '25', value: 25 },
-            { label: '50', value: 50 },
-            { label: '100', value: 100 },
-          ]"
+          :items="DEFAULT_PAGE_SIZE_OPTIONS"
           class="w-24"
           :search-input="false"
           @change="onPageSizeChange"
@@ -108,6 +103,7 @@ import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
+import { DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -123,11 +119,12 @@ const allRows = computed(() => table.value?.getAllRows() ?? [])
 const router = useRouter()
 const toast = useToast()
 const notification = useNotification()
+const pref = useUserPreferences().getPreferences()
 
 const page = ref(1)
 const pageSize = ref<{ label: string; value: number }>({
-  label: '10',
-  value: 10,
+  label: pref?.defaultPageSize.toString() || DEFAULT_PAGE_SIZE.label,
+  value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
 const total = ref(0)
 const totalPage = ref(0)
@@ -485,7 +482,7 @@ const handleExport = (item: { click: () => void }) => {
 }
 
 const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
-  if (record.success === 0 && record.fail === 0) {
+  if (record.success === 0 && record.failed === 0) {
     await notification.showWarning({
       title: t('no_transactions_found'),
       description: t('no_transactions_found_desc'),

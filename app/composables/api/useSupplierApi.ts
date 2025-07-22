@@ -1,24 +1,26 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
-  Supplier, Cpo, CpoBySupplierRequest,
-  ConfirmSettlementRequest, ConfirmSettlementResponse,
-  SettlementHistoryQuery, SettlementHistoryResponse,
-  SettlementHistoryRecord,
+  Supplier,
+  Cpo,
+  CpoBySupplierRequest,
+  ConfirmSettlementRequest,
+  ConfirmSettlementResponse,
+  SettlementHistoryQuery,
+  SettlementHistoryResponse,
   InitQuerySettlement,
   SettlementInquiryResponse,
   SettlementHistoryDetailQuery,
-  SettlementHistoryDetailResponse
+  SettlementHistoryDetailResponse,
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
 import type { ApiResponse } from '~/models/baseModel'
 
 export const useSupplierApi = () => {
   const { execute } = useApiExecutor()
+  const { locale } = useI18n()
 
   const getSuppliers = async (): Promise<Supplier[]> => {
-    var rep = await execute(() =>
-      $fetch<ApiResponse<Supplier[]>>('/api/suppliers')
-    )
+    const rep = await execute(() => $fetch<ApiResponse<Supplier[]>>('/api/suppliers'))
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch suppliers:', rep.message)
       return []
@@ -26,10 +28,8 @@ export const useSupplierApi = () => {
     return rep.data
   }
 
-  const getListCPOApi = async (
-    payload: CpoBySupplierRequest
-  ): Promise<Cpo[]> => {
-    var rep = await execute(() =>
+  const getListCPOApi = async (payload: CpoBySupplierRequest): Promise<Cpo[]> => {
+    const rep = await execute(() =>
       $fetch<ApiResponse<Cpo[]>>(`/api/getcpo`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
@@ -41,49 +41,54 @@ export const useSupplierApi = () => {
 
   const getInquirySettlement = async (
     payload: InitQuerySettlement
-  ): Promise<SettlementInquiryResponse> => {
-    var rep = await execute(() =>
-      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/inquiry-settlement`, { method: 'POST', body: payload })
+  ): Promise<SettlementInquiryResponse | null> => {
+    const rep = await execute(() =>
+      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/inquiry-settlement`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch CPO settlements:', rep.message)
-     return null as any
+      return null
     }
-    return rep.data 
+    return rep.data
   }
 
   const confirmSettlementAPI = async (
     payload: ConfirmSettlementRequest
-  ): Promise<{data?: ConfirmSettlementResponse; error?: string}> => {
+  ): Promise<{ data?: ConfirmSettlementResponse; error?: string }> => {
     try {
       if (!payload.settlement_token) {
         throw new Error('Token is required for settlement confirmation')
       }
-      var rep = await execute(() =>
-              $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/submit-settlement`, { method: 'POST', body: payload })
-            )
-    
+      const rep = await execute(() =>
+        $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/submit-settlement`, {
+          method: 'POST',
+          body: payload,
+        })
+      )
+
       if (rep.code !== 'SUCCESS') {
         console.error('Failed to fetch CPO settlements:', rep.message)
         return { error: rep.message }
-        throw new Error(rep.message)
       }
+      return { data: rep.data }
     } catch (error) {
       console.error('Failed to confirm settlement:', error)
       throw error
     }
-    return { data: rep.data }
   }
 
   const getSettlementHistory = async (
     payload: SettlementHistoryQuery
-  ): Promise<SettlementHistoryResponse> => {
-    var rep = await execute(() =>
+  ): Promise<SettlementHistoryResponse | null> => {
+    const rep = await execute(() =>
       $fetch(`/api/settlement-history`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch settlement history:', rep.message)
-      return null as any
+      return null
     }
     return rep.data
   }
@@ -91,12 +96,22 @@ export const useSupplierApi = () => {
   const getSettlementHistoryById = async (
     payload: SettlementHistoryDetailQuery
   ): Promise<SettlementHistoryDetailResponse> => {
-    var rep = await execute(() =>
-      $fetch<ApiResponse<SettlementHistoryDetailResponse>>(`/api/find-settlement-history-detail`, { method: 'POST', body: payload })
+    const rep = await execute(() =>
+      $fetch<ApiResponse<SettlementHistoryDetailResponse>>(`/api/find-settlement-history-detail`, {
+        method: 'POST',
+        body: payload,
+      }),
+      false
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch settlement history by ID:', rep.message)
       throw new Error(rep.message || 'Failed to fetch settlement history detail')
+    }
+    if (!rep.data || !rep.data.records) {
+      throw new Error(
+        locale.value === 'km'
+          ? rep.message_kh || ''
+          : rep.message || 'No settlement history details found'
+      )
     }
     return rep.data
   }
@@ -108,10 +123,6 @@ export const useSupplierApi = () => {
     // getTransactionHistory,
     confirmSettlementAPI,
     getSettlementHistory,
-    getSettlementHistoryById
+    getSettlementHistoryById,
   }
-
 }
-
-
-

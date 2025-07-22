@@ -50,9 +50,9 @@
                   <!-- Profile Display -->
                   <div
                     v-if="auth.currentProfile.value"
-                    class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                    class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-primary/50 dark:border-primary/20"
                   >
-                    <Icon name="heroicons:building-office" class="w-4 h-4 text-primary" />
+                    <Icon name="material-symbols:home-work-outline" class="w-4 h-4 text-primary" />
                     <div class="flex flex-col">
                       <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
                         {{ auth.currentProfile.value.name }}
@@ -145,24 +145,21 @@
                 <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
                   <UAvatar
                     :src="user?.picture"
+                    :alt="String(user?.fullName || 'User')"
                     size="sm"
                     class="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
-                  >
-                    <template v-if="!user?.picture" #default>
-                      <Icon name="heroicons:user" class="w-4 h-4 text-primary" />
-                    </template>
-                  </UAvatar>
+                  />
 
                   <template #content>
                     <div class="w-48 p-2">
                       <!-- User Info Section -->
                       <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
                         <div class="flex items-center gap-3">
-                          <UAvatar :src="user?.picture" size="sm">
-                            <template v-if="!user?.picture" #default>
-                              <Icon name="heroicons:user" class="w-4 h-4 text-[#43B3DE]" />
-                            </template>
-                          </UAvatar>
+                          <UAvatar
+                            :src="user?.picture"
+                            :alt="String(user?.fullName || 'User')"
+                            size="sm"
+                          />
                           <div class="flex flex-col">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                               {{ user?.fullName || 'User' }}
@@ -318,7 +315,7 @@ const handleUserProfile = () => {
 }
 
 const handleSettings = () => {
-  navigateTo('/settings')
+  navigateTo('/settings/generate-details')
 }
 
 const closeConfirmationModal = () => {
@@ -383,13 +380,6 @@ definePageMeta({
     'auth',
     // "permission"
   ],
-  // Proper permission options for admin requirement
-  // permissionOptions: {
-  //   roles: [],
-  //   resource: "Payment Portal",
-  //   action: "access",
-  //   requireAll: true
-  // },
   auth: true, // Ensure this layout requires authentication
 })
 </script>

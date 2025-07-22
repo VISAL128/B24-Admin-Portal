@@ -742,7 +742,8 @@ const getCpoById = (cpoId: string): Cpo | undefined => {
 }
 
 definePageMeta({
-  auth: false,
+  auth: true,
+  middleware: ['auth'],
   breadcrumbs: [
     { label: 'settlement_menu', to: '/digital-wallet/settlement' },
     { label: 'generate_settlement', active: true },
