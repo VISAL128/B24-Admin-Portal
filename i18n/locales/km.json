@@ -287,7 +287,25 @@
     "body": "តើអ្នកប្រាកដជាចង់បន្តទេ?",
     "confirm": "បញ្ជាក់"
   },
+  "navbar": {
+    "theme": "រូបរាង",
+    "language": "ភាសា",
+    "settings": "ការកំណត់",
+    "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
+  },
+  "sidebar": {
+    "dashboard": "ទំព័រដើម",
+    "digital_wallet": "កាបូបឌីជីថល",
+    "settlement": "ការទូទាត់",
+    "settings": "ការកំណត់",
+    "logout": "ចាកចេញ",
+    "profile": "ប្រវត្តិរូប",
+    "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
+  },
   "settlement": {
+    "refresh": "ធ្វើឲ្យថ្មី",
+    "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
+    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 5 វិនាទី។",
     "transaction": "ប្រតិបត្តិការ",
     "title": "ការទូទាត់",
     "search_placeholder": "ស្វែងរក",

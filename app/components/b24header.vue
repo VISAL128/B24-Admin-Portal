@@ -37,6 +37,8 @@ watch(
         "
         alt="Bill24 Logo"
         :class="isNavExpanded ? 'w-full h-auto scale-80' : 'w-10 h-10 scale-80'"
+        class="cursor-pointer"
+        @click="navigateTo('/')"
       />
     </div>
   </ClientOnly>

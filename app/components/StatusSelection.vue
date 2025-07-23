@@ -168,7 +168,7 @@ const getStatusColor = (
     case 'in-progress':
       return 'bg-secondary text-white'
     default:
-      return 'bg-gray-700 text-black'
+      return 'bg-gray-700 dark:bg-gray-200 text-black'
   }
 }
 

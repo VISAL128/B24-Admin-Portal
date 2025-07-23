@@ -25,6 +25,7 @@ const activeStates = ref({
   settings: false,
   settingsGenerateDetails: false,
   settingsFeeConfig: false,
+  settingsDeveloperTools: false,
 })
 
 const items = computed<NavigationMenuItem[][]>(() => [
@@ -144,6 +145,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
           to: '/settings/fee-config',
           active: activeStates.value.settingsFeeConfig,
         },
+        {
+          label: t('navbar.developer_tools'),
+          // icon: 'i-material-symbols-light-code',
+          size: 'lg',
+          to: '/settings/developer-tool',
+          active: activeStates.value.settingsDeveloperTools,
+        },
       ],
     },
   ],
@@ -220,6 +228,10 @@ function activateCurrentRoute() {
   } else if (currentPath.startsWith('/settings/fee-config')) {
     activeStates.value.settings = true
     activeStates.value.settingsFeeConfig = true
+  }
+  else if (currentPath === '/settings/developer-tool') {
+    activeStates.value.settings = true
+    activeStates.value.settingsDeveloperTools = true
   }
   // Legacy settlement routes (keeping for backwards compatibility)
   else if (currentPath.startsWith('/settlement')) {

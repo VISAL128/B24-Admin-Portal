@@ -45,4 +45,11 @@ enum SettlementStatus {
   Failed = 'failed'
 }
 
-export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus };
+enum SettlementHistoryStatus {
+  All = 'all',
+  Pending = 'pending',
+  Processing = 'processing',
+  Completed = 'completed'
+}
+
+export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus };

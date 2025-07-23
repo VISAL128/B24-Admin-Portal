@@ -201,6 +201,15 @@
     "status_success": "Success",
     "status_failed": "Failed"
   },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "digital_wallet": "Digital Wallet",
+    "settlement": "Settlement",
+    "settings": "Settings",
+    "logout": "Logout",
+    "profile": "Profile",
+    "developer_tools": "Developer Tools"
+  },
   "settings": {
     "generate_details": "General Details",
     "fee_config": "Fee Configuration",
@@ -301,7 +310,16 @@
     "body": "Are you sure you want to proceed?",
     "confirm": "Confirm"
   },
+  "navbar": {
+    "theme": "Theme",
+    "language": "Language",
+    "settings": "Settings",
+    "developer_tools": "Developer Tools"
+  },
   "settlement": {
+    "refresh": "Refresh",
+    "auto_refresh": "Auto Refresh",
+    "auto_refresh_desc": "Automatically refresh the settlement history every 5 seconds.",
     "transaction": "Transaction",
     "title": "Settlement",
     "settlement_date": "Settlement Date",

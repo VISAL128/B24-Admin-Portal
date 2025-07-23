@@ -13,7 +13,7 @@
           @input="onSearchInput"
         />
         <UPopover>
-          <UButton color="neutral" variant="subtle" size="sm" icon="i-lucide-calendar">
+          <UButton color="neutral" variant="outline" size="sm" icon="i-lucide-calendar">
             <template v-if="modelValue.start">
               <template v-if="modelValue.end">
                 {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
@@ -40,11 +40,29 @@
           :placeholder="t('settlement.select_status')"
           :searchable="false"
         />
-        <!-- <USwitch
-          :v-model="false"
-          :label="t('settlement.auto_refresh')"
-          size="sm"
-          class="ml-2" /> -->
+        <div class="flex items-center gap-0.5">
+          <USwitch
+            v-model="autoRefresh"
+            :label="t('settlement.auto_refresh')"
+            checked-icon="material-symbols:sync"
+            unchecked-icon="material-symbols:sync-disabled"
+            size="sm"
+            class="ml-2"
+          />
+          <UTooltip :text="t('settlement.auto_refresh_desc')" placement="top">
+            <UIcon name="material-symbols:info-outline" class="size-3.5" />
+          </UTooltip>
+        </div>
+        <UIcon
+          v-if="!autoRefresh"
+          name="material-symbols:sync"
+          :class="[
+            'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+            { 'animate-spin': isRefreshing },
+          ]"
+          :title="t('settlement.refresh')"
+          @click="fetchSettlementHistory(true)"
+        />
       </div>
       <div class="flex items-center gap-2">
         <UButton
@@ -183,17 +201,44 @@ const endDate = ref('')
 const settlements = ref<SettlementHistoryRecord[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
+const isRefreshing = ref(false)
+const autoRefresh = ref(true)
 const selectedStatus = ref<{ label: string; value: string }>({
   label: t('status.all'),
   value: '',
 }) // Default status
-const availableStatuses = ref<string[]>(['all', 'processing', 'completed'])
+const availableStatuses = ref<string[]>(Object.values(SettlementHistoryStatus))
 
 const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 const today = new Date()
 const modelValue = shallowRef({
   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+})
+
+let interval: ReturnType<typeof setInterval> | null = null
+
+watch(autoRefresh, (val) => {
+  if (val) {
+    // Start auto-refresh every 5 seconds
+    interval = setInterval(() => {
+      fetchSettlementHistory(true)
+    }, 5000)
+  } else {
+    // Clear interval when auto-refresh is turned off
+    if (interval) {
+      clearInterval(interval)
+      interval = null
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  // Clear interval on component unmount
+  if (interval) {
+    clearInterval(interval)
+    interval = null
+  }
 })
 
 // Watch and convert modelValue to string ISO
@@ -213,8 +258,11 @@ watch([page, pageSize, selectedStatus], () => {
 })
 
 // Fetch settlement data from API
-const fetchSettlementHistory = async () => {
+const fetchSettlementHistory = async (refreshAction: boolean = false) => {
   loading.value = true
+  if (refreshAction) {
+    isRefreshing.value = true
+  }
   try {
     const payload: SettlementHistoryQuery = {
       name: search.value || undefined,
@@ -235,6 +283,10 @@ const fetchSettlementHistory = async () => {
     errorHandler.handleApiError(error)
   } finally {
     loading.value = false
+    // Add a small delay to ensure the animation completes
+    setTimeout(() => {
+      isRefreshing.value = false
+    }, 200)
   }
 }
 
@@ -272,6 +324,12 @@ onBeforeMount(() => {
 
 // Initial load
 onMounted(() => {
+  if (autoRefresh.value) {
+    // Start auto-refresh if enabled
+    interval = setInterval(() => {
+      fetchSettlementHistory(true)
+    }, 5000)
+  }
   fetchSettlementHistory()
 })
 
@@ -371,8 +429,8 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
   { accessorKey: 'created_by', header: () => t('settled_by') },
 
   {
-    accessorKey: 'transaction',
-    header: () => t('settlement.transaction'),
+    accessorKey: 'total_settled',
+    header: ({ column }) => createSortableHeader(column, t('settlement.transaction')),
     cell: ({ row }) => {
       // return h('span', {
       //   class: `text-sm font-medium`
