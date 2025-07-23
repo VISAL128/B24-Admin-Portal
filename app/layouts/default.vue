@@ -179,7 +179,7 @@
                           class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                           @click="handleUserProfile"
                         >
-                          <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
+                          <Icon name="material-symbols:person-outline-rounded" class="size-4.5 mr-2" />
                           {{ t('user_profile') }}
                         </UButton>
 
@@ -189,17 +189,19 @@
                           class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                           @click="handleSettings"
                         >
-                          <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
+                          <Icon name="material-symbols:settings-outline" class="w-4 h-4 mr-2" />
                           {{ t('profile_popup.settings') }}
                         </UButton>
+
+                        <div class="border-t border-gray-200 dark:border-gray-700" />
 
                         <UButton
                           variant="ghost"
                           size="md"
-                          class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          class="w-full justify-start text-red-600 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30"
                           @click="isShowLogoutConfirmModal = true"
                         >
-                          <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
+                          <Icon name="material-symbols:logout" class="w-4 h-4 mr-2" />
                           {{ t('logout') }}
                         </UButton>
                       </div>
@@ -216,21 +218,22 @@
           v-model:open="isShowLogoutConfirmModal"
           :title="t('confirmation')"
           :transition="true"
-          :description="t('logout')"
+          :fullscreen="false"
           :close="{
             class: 'rounded-full',
             onClick: () => logoutEmit('close', false),
           }"
         >
           <template #body>
-            <div class="flex flex-col items-center text-center py-6">
+            <div class="flex flex-col items-center h-32 text-center">
               <!-- Icon with circle background using Bill24 colors -->
               <div
-                class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                class="size-14 rounded-full flex items-center justify-center mb-4"
                 style="background-color: #eaf6fc"
               >
                 <UIcon
-                  name="i-lucide-alert-triangle"
+                  name="material-symbols:question-mark"
+                  size="24"
                   class="text-3xl opacity-80"
                   style="color: #43b3de"
                 />
@@ -248,13 +251,16 @@
                 :label="t('no')"
                 color="neutral"
                 variant="outline"
+                size="sm"
                 class="w-16 justify-center"
                 @click="closeConfirmationModal"
               />
               <UButton
-                :label="t('yes')"
+                :label="t('yes_logout')"
                 color="primary"
-                class="w-16 justify-center"
+                size="sm"
+                :loading="loggingOut"
+                class="justify-center"
                 @click="handleLogout"
               />
             </div>
@@ -293,6 +299,7 @@ const isShowLogoutConfirmModal = ref(false)
 const auth = useAuth()
 const user = auth.user
 const pref = useUserPreferences().getPreferences()
+const loggingOut = ref(false)
 
 const colorMode = useColorMode ? useColorMode() : null
 const toggleTheme = () => {
@@ -324,6 +331,7 @@ const closeConfirmationModal = () => {
 
 const handleLogout = async () => {
   try {
+    loggingOut.value = true
     await auth.logout()
   } catch (error) {
     console.error('Logout failed:', error)

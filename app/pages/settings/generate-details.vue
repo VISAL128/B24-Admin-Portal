@@ -514,7 +514,7 @@ onMounted(() => {
                     class="border-2 rounded-lg p-4 text-center transition-all duration-200"
                     :class="
                       preferences.theme === theme
-                        ? 'border-[#3F83F8] bg-[#EAF6FC] dark:bg-[#43B3DE]/10'
+                        ? 'border-primary bg-[#EAF6FC] dark:bg-[#43B3DE]/10'
                         : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
                     "
                   >
@@ -529,7 +529,7 @@ onMounted(() => {
                         <UIcon
                           v-else-if="theme === 'dark'"
                           name="i-heroicons-moon"
-                          class="h-6 w-6 text-blue-600"
+                          class="h-6 w-6 text-primary"
                         />
                         <UIcon
                           v-else
