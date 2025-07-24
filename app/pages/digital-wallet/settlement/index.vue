@@ -40,7 +40,7 @@
           :placeholder="t('settlement.select_status')"
           :searchable="false"
         />
-        <div class="flex items-center gap-0.5">
+        <div class="flex items-center gap-1">
           <USwitch
             v-model="autoRefresh"
             :label="t('settlement.auto_refresh')"
@@ -304,7 +304,7 @@ const onSearchInput = (_value: string) => {
 // Filtered rows for table
 const filteredData = computed(() =>
   settlements.value.filter((item) =>
-    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
+    (item.created_by ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
 
@@ -392,6 +392,13 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      class: {
+        td() {
+          return 'text-center cursor-pointer';
+        },
+      },
+    },
   },
   {
     id: 'row_number',
@@ -425,8 +432,16 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     enableMultiSort: true,
     enableSorting: true,
   },
-  { accessorKey: 'currency_id', header: () => t('settlement.currency') },
-  { accessorKey: 'created_by', header: () => t('settled_by') },
+  {
+    accessorKey: 'currency_id',
+    header: () => t('settlement.currency'),
+    cell: ({ row }) => row.original.currency_id || '-',
+  },
+  {
+    accessorKey: 'created_by',
+    header: () => t('settled_by'),
+    cell: ({ row }) => row.original.created_by || '-',
+  },
 
   {
     accessorKey: 'total_settled',

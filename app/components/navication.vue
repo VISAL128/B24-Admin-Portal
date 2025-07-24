@@ -138,20 +138,20 @@ const items = computed<NavigationMenuItem[][]>(() => [
           to: '/settings/generate-details',
           active: activeStates.value.settingsGenerateDetails,
         },
-        {
-          label: t('settings.fee_config'),
-          // icon: 'i-material-symbols-light-switch-access-shortcut',
-          size: 'lg',
-          to: '/settings/fee-config',
-          active: activeStates.value.settingsFeeConfig,
-        },
-        {
-          label: t('navbar.developer_tools'),
-          // icon: 'i-material-symbols-light-code',
-          size: 'lg',
-          to: '/settings/developer-tool',
-          active: activeStates.value.settingsDeveloperTools,
-        },
+        // {
+        //   label: t('settings.fee_config'),
+        //   // icon: 'i-material-symbols-light-switch-access-shortcut',
+        //   size: 'lg',
+        //   to: '/settings/fee-config',
+        //   active: activeStates.value.settingsFeeConfig,
+        // },
+        // {
+        //   label: t('navbar.developer_tools'),
+        //   // icon: 'i-material-symbols-light-code',
+        //   size: 'lg',
+        //   to: '/settings/developer-tool',
+        //   active: activeStates.value.settingsDeveloperTools,
+        // },
       ],
     },
   ],
@@ -221,15 +221,13 @@ function activateCurrentRoute() {
     activeStates.value.transactionAllocation = true
   } else if (currentPath.startsWith('/reports')) {
     activeStates.value.reports = true
-  }
-  else if (currentPath === '/settings/generate-details') {
+  } else if (currentPath === '/settings/generate-details') {
     activeStates.value.settings = true
     activeStates.value.settingsGenerateDetails = true
   } else if (currentPath.startsWith('/settings/fee-config')) {
     activeStates.value.settings = true
     activeStates.value.settingsFeeConfig = true
-  }
-  else if (currentPath === '/settings/developer-tool') {
+  } else if (currentPath === '/settings/developer-tool') {
     activeStates.value.settings = true
     activeStates.value.settingsDeveloperTools = true
   }

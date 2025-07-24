@@ -116,7 +116,7 @@
           :page-count="totalPage"
           :items-per-page="pageSize.value"
           :total="total"
-          v-on:update:page="page = $event"
+          @update:page="page = $event"
         />
       </div>
     </div>
@@ -124,10 +124,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  auth: false,
-  breadcrumbs: [{ label: 'transactions', active: true }],
-})
 import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
@@ -141,6 +137,10 @@ import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
+definePageMeta({
+  auth: false,
+  breadcrumbs: [{ label: 'transactions', active: true }],
+})
 
 const { t } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
@@ -226,7 +226,7 @@ const onPageSizeChange = () => {
 // Filtered rows for table
 const filteredData = computed(() =>
   settlements.value.filter((item) =>
-    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
+    (item.created_by ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
 

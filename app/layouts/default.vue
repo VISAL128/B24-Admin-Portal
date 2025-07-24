@@ -149,16 +149,15 @@
                 </UTooltip>
 
                 <!-- Developer Tools -->
-                <UTooltip :text="t('navbar.developer_tools')" :delay-duration="500">
+                <!-- <UTooltip :text="t('navbar.developer_tools')" :delay-duration="500">
                   <UButton
                     icon="material-symbols:terminal-rounded"
                     variant="ghost"
                     size="sm"
                     class="px-2"
-                    disabled
                     @click="handleDeveloperTools"
                   />
-                </UTooltip>
+                </UTooltip> -->
               </div>
               <!-- User Menu -->
               <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">

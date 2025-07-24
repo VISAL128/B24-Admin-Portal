@@ -63,7 +63,7 @@
     "search_placeholder": "Search..."
   },
   "status": {
-    "all": "All",
+    "all": "All status",
     "header": "Status",
     "active": "Active",
     "inactive": "Inactive",
@@ -322,6 +322,7 @@
     "auto_refresh_desc": "Automatically refresh the settlement history every 5 seconds.",
     "transaction": "Transaction",
     "title": "Settlement",
+    "settlement_list": "Settlement List",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
     "select_status": "Select Status",
@@ -333,9 +334,10 @@
     "supplier": "Biller",
     "settlement_transaction": "Settlement Transaction",
     "transaction_allocations": "Transaction Allocations",
+    "type": "Type",
     "biller": {
-      "code": "Sub Biller Code",
-      "name": "Sub Biller Name"
+      "code": "Biller Code",
+      "name": "Biller Name"
     },
     "sub_biller": {
       "code": "Sub Biller Code",

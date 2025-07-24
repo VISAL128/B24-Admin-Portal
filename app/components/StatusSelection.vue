@@ -15,7 +15,6 @@
     >
       <template #leading="{ modelValue }">
         <div v-if="modelValue" class="size-2 rounded" :class="getStatusColor(modelValue)" />
-
       </template>
       <template #item-leading="{ item }">
         <div v-if="item" class="size-2 rounded" :class="getStatusColor(item)" />

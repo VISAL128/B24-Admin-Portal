@@ -142,6 +142,7 @@ export interface SettlementHistoryDetail {
   bank_ref_id: string
   tran_date: string
   status: string
+  party_type: string
   tran_allocates: TransactionAllocation[]
 }
 
@@ -154,7 +155,7 @@ export interface SettlementHistoryRecord {
   currency_id: string
   supplier_id: string
   supplier: Supplier
-  settled_by: string
+  created_by: string
   total_settled: number
   success: number
   failed: number
