@@ -65,13 +65,7 @@
         />
       </div>
       <div class="flex items-center gap-2">
-        <UButton
-          v-if="false"
-          color="primary"
-          icon="i-lucide-play"
-          size="sm"
-          @click="onGenerateSettlement"
-        >
+        <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
           {{ t('generate_settlement') }}
         </UButton>
 
@@ -86,12 +80,48 @@
           }}</UButton>
         </UDropdownMenu> -->
         <ExportButton :data="filteredData" :headers="exportHeaders" />
+        <LazyUPopover>
+          <UButton variant="ghost" class="p-2 relative">
+            <UIcon name="icon-park-outline:setting-config" class="text-gray-900 dark:text-white" />
+          </UButton>
+          <template #content>
+            <div class="p-2 space-y-1 min-w-50">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-muted">{{
+                  t('settlement_history.column_config.columns')
+                }}</span>
+                <UButton variant="link" class="text-muted" size="sm" @click="onResetColumnConfig">
+                  {{ t('settlement_history.column_config.reset') }}
+                </UButton
+                >
+              </div>
+              <Divider />
+              <div
+                v-for="col in columnConfig"
+                :key="col.id"
+                class="flex items-center justify-between px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <div class="flex items-center gap-2">
+                  <UCheckbox
+                    :id="col.id"
+                    :label="getTranslationHeaderById(col.id)"
+                    :model-value="col.getIsVisible()"
+                    class="text-sm"
+                    size="sm"
+                    @update:model-value="(value) => col.toggleVisibility(value as boolean)"
+                  />
+                </div>
+              </div>
+            </div>
+          </template>
+        </LazyUPopover>
       </div>
     </div>
 
     <!-- Table -->
     <UTable
       ref="table"
+      :column-visibility="columnVisibility"
       :data="filteredData"
       :columns="columns"
       :loading="loading"
@@ -154,12 +184,13 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
+import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import type { TableColumn, TableRow } from '@nuxt/ui'
+import type { Column } from '@tanstack/vue-table'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
+import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { useI18n } from 'vue-i18n'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -168,7 +199,7 @@ import { UButton } from '#components'
 import appConfig from '~~/app.config'
 import ExportButton from '~/components/buttons/ExportButton.vue'
 import ExSearch from '~/components/ExSearch.vue'
-import { DEFAULT_PAGE_SIZE_OPTIONS, DEFAULT_PAGE_SIZE, TABLE_CONSTANTS } from '~/utils/constants'
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 
@@ -184,6 +215,7 @@ const errorHandler = useErrorHandler()
 const { statusCellBuilder } = useStatusBadge()
 const pref = useUserPreferences().getPreferences()
 const { formatAmount } = useCurrency()
+const { currentProfile } = useAuth()
 
 const table = useTemplateRef('table')
 const router = useRouter()
@@ -215,6 +247,45 @@ const modelValue = shallowRef({
   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
 })
+
+const columnConfig = computed<Column<SettlementHistoryRecord>[]>(
+  (): Column<SettlementHistoryRecord>[] => {
+    return (
+      table?.value?.tableApi
+        ?.getAllColumns()
+        .filter((column: Column<SettlementHistoryRecord>) => column.getCanHide()) ?? []
+    )
+  }
+)
+
+// const columnsVisibility = ref<Column<SettlementHistoryRecord>[]>(
+//   table?.value?.tableApi?.getAllColumns().filter((column: Column<SettlementHistoryRecord>) => column.getCanHide()) ?? [])
+
+const onResetColumnConfig = () => {
+  table?.value?.tableApi?.resetColumnVisibility()
+}
+
+// const onColumnVisibilityChange = (columnId: string, isVisible: boolean) => {
+//   if (table.value?.tableApi) {
+//     table.value.tableApi(columnId, isVisible)
+//   }
+// }
+
+const columnVisibility = ref<Record<string, boolean>>({
+  id: false,
+  row_number: true,
+  created_date: true,
+  total_amount: true,
+  currency_id: true,
+  created_by: true,
+  total_settled: true,
+  status: true,
+  select: true,
+})
+
+const getTranslationHeaderById = (id: string) => {
+  return t(`settlement_history.columns.${id}`)
+}
 
 let interval: ReturnType<typeof setInterval> | null = null
 
@@ -265,12 +336,13 @@ const fetchSettlementHistory = async (refreshAction: boolean = false) => {
   }
   try {
     const payload: SettlementHistoryQuery = {
-      name: search.value || undefined,
+      search: search.value || undefined,
       page_size: pageSize.value.value,
       page: page.value,
       start_date: startDate.value,
       end_date: endDate.value,
       status: selectedStatus.value.value || '', // Use selected status value or default to completed
+      supplier_id: currentProfile.value?.id || '', // Use current supplier ID
     }
 
     const data = await getSettlementHistory(payload)
@@ -316,7 +388,7 @@ onBeforeMount(() => {
   endDate.value = new CalendarDate(
     today.getFullYear(),
     today.getMonth() + 1,
-    lastDayOfMonth // Use last day of month
+    lastDayOfMonth
   ).toString()
   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
@@ -395,7 +467,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     meta: {
       class: {
         td() {
-          return 'text-center cursor-pointer';
+          return 'text-center cursor-pointer'
         },
       },
     },
@@ -407,6 +479,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     size: 30,
     maxSize: 30,
     enableSorting: false,
+    enableHiding: false,
   },
   // { accessorKey: "id", header: t("Settlement ID") },
   {
@@ -431,6 +504,8 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       ),
     enableMultiSort: true,
     enableSorting: true,
+    size: 50,
+    maxSize: 150,
   },
   {
     accessorKey: 'currency_id',

@@ -379,7 +379,7 @@ const checkAdminAccess = async () => {
         },
       })
     } else {
-      console.log('✅ Admin access granted')
+      // console.log('✅ Admin access granted')
       // Permission check passed, hide loading screen
       isCheckingPermissions.value = false
     }

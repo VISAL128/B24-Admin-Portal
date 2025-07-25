@@ -1,17 +1,17 @@
-import { defineEventHandler, readBody } from 'h3'
-import type { Cpo, CpoBySupplierRequest, Supplier } from '~/models/settlement'
+import { defineEventHandler } from 'h3'
+import type { Supplier } from '~/models/settlement'
 import type { ApiResponse } from '~/models/baseModel'
-import { getSupplierCsms } from '../logic/management_api_logic';
+import { getSupplierCsms } from '../../logic/management_api_logic'
 
 export default defineEventHandler(async (): Promise<ApiResponse<Supplier[]>> => {
-  const response = await getSupplierCsms({"service_code": "WALLET"});
+  const response = await getSupplierCsms({ service_code: 'WALLET' })
   // Do NOT call .json() again here!
   return {
     code: 'SUCCESS',
     message: 'Success',
-    data: response.data as Supplier[]
-  };
-});
+    data: response.data as Supplier[],
+  }
+})
 
 // export default defineEventHandler(async (): Promise<ApiResponse<Cpo[]>> => {
 //   const plist: Cpo[] = Array.from({ length: 25 }, (_, i) => ({

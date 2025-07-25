@@ -73,7 +73,6 @@
 </template>
 
 <script lang="ts" setup>
-import ShinyText from '~/components/texts/ShinyText.vue'
 const { t } = useI18n()
 const config = useRuntimeConfig()
 </script>

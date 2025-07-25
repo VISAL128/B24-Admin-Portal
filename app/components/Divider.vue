@@ -1,11 +1,3 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
-  $END$
+  <div class="border-b-1 border-gray-300" />
 </template>
-
-<style scoped>
-
-</style>

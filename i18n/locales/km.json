@@ -38,6 +38,12 @@
   "sharing_fee": "ថ្លៃសេវាចែករំលែក",
   "enter_fee_code": "បញ្ចូលកូដ",
   "enter_fee_name": "បញ្ចូលឈ្មោះ",
+  "clipboard": {
+    "copy": "ចម្លង",
+    "copied": "បានចម្លង",
+    "copy_failed": "បរាជ័យក្នុងការចម្លង",
+    "copy_to_clipboard": "ចម្លងទៅក្ដារឈូស"
+  },
   "profile_popup": {
     "title": "អាជីវកម្មអ្នកប្រើប្រាស់",
     "settings": "ការកំណត់",
@@ -302,7 +308,22 @@
     "profile": "ប្រវត្តិរូប",
     "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
   },
+  "settlement_history": {
+    "columns": {
+      "created_date": "កាលបរិច្ឆេទទូទាត់",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "total_settled": "ប្រតិបត្តិការ",
+      "status": "ស្ថានភាព",
+      "created_by": "ទូទាត់ដោយ"
+    },
+    "column_config": {
+      "reset": "កំណត់ឡើងវិញ",
+      "columns": "ជួរឈរ"
+    }
+  },
   "settlement": {
+    "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
     "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
     "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 5 វិនាទី។",

@@ -110,9 +110,10 @@ export interface SettlementHistoryQuery {
   start_date?: string
   end_date?: string
   status?: string
-  name?: string
+  search?: string
   page?: number
   page_size?: number
+  supplier_id: string
 }
 
 export interface SettlementHistoryDetail {

@@ -180,7 +180,6 @@
     "transaction_summary": "Transaction Summary",
     "transaction_allocate": "Transaction Allocation"
   },
-  "settlement_history": "Settlement History",
   "settlement_history_details": {
     "title": "Settlement History Details",
     "subtitle": "View detailed settlement history records",
@@ -316,7 +315,22 @@
     "settings": "Settings",
     "developer_tools": "Developer Tools"
   },
+  "settlement_history": {
+    "columns": {
+      "created_date": "Settlement Date",
+      "total_amount": "Total Amount",
+      "currency_id": "Currency",
+      "total_settled": "Transaction",
+      "status": "Status",
+      "created_by": "Settled By"
+    },
+    "column_config": {
+      "reset": "Reset Columns",
+      "columns": "Columns"
+    }
+  },
   "settlement": {
+    "settlement_details_description": "Details of the settlement",
     "refresh": "Refresh",
     "auto_refresh": "Auto Refresh",
     "auto_refresh_desc": "Automatically refresh the settlement history every 5 seconds.",

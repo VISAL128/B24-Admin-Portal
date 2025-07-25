@@ -11,8 +11,15 @@ export default defineAppConfig({
         td: 'text-xxs py-3 cursor-pointer',
         th: 'tb-h-text py-2',
         thead: 'bg-default',
-        tr: 'border-b border-default hover:bg-red-500/10 bg-red-500/10',
+        tr: 'border-b border-default data-[selected=true]:bg-elevated/50',
       },
+    },
+    chip: {
+      variants: {
+        size: {
+          '3xl': 'text-[8px]'
+        }
+      }
     },
 
     // Card component customization

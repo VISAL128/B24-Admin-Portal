@@ -99,6 +99,8 @@ const sortingHistory = ref([
   },
 ])
 
+const cellClassForRowSelected = 'font-bold'
+
 const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     id: 'row_number',
@@ -107,6 +109,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     size: 30,
     maxSize: 30,
     enableSorting: false,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   // {
   //   accessorKey: 'supplier.name',
@@ -120,6 +129,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     cell: ({ row }) => row.original.cpo?.code || 'N/A',
     size: 50,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'cpo.name',
@@ -127,6 +143,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     cell: ({ row }) => row.original.cpo?.name || 'N/A',
     size: 100,
     maxSize: 200,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'party_type',
@@ -137,6 +160,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 50,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'settle_amount',
@@ -145,6 +175,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'currency',
@@ -152,6 +189,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     cell: () => h('span', { class: '' }, props.currency || 'N/A'),
     size: 10,
     maxSize: 30,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'tran_date',
@@ -166,6 +210,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'total_transactions',
@@ -175,6 +226,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'settlement_bank_name',
@@ -195,6 +253,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'bank_ref_id',
@@ -215,6 +280,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'status',
@@ -229,17 +301,28 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     // },
     size: 120,
     maxSize: 120,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
 ])
+
+const table = useTemplateRef('table')
 
 const onRowSelect = (row: TableRow<SettlementHistoryDetail>) => {
   openSlideover.value = true
   openSliderWithData.value = row.original
+  row.toggleSelected() // Toggle the row selection state
 }
 
 const closeSlideover = () => {
   openSlideover.value = false
   openSliderWithData.value = null
+  table.value?.tableApi.resetRowSelection() // Clear selected rows when closing
 }
 
 const sorting = ref([
@@ -326,7 +409,8 @@ const valueClass = 'text-sm font-bold'
       :title="t('settlement.settlement_transaction')"
       side="right"
       :overlay="false"
-      @close="closeSlideover"
+      :description="t('settlement.settlement_details_description')"
+      @after:leave="closeSlideover"
     >
       <template #body>
         <div v-if="openSliderWithData" class="flex flex-col h-full">
