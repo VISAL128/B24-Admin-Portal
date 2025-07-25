@@ -3,12 +3,12 @@ import type { StorageComposable } from '~/types/storage'
 /**
  * Generic localStorage composable for managing any type of data with expiration support
  */
-export const useStorage = <T = any>(): StorageComposable<T> => {
+export const useStorage = <T>(): StorageComposable<T> => {
   /**
    * Store data in localStorage with optional expiration
    */
   const setItem = (key: string, data: T, expirationInSeconds?: number) => {
-    if (!process.client) return false
+    if (!import.meta.client) return false
 
     try {
       const expiresAt = expirationInSeconds 
@@ -34,7 +34,7 @@ export const useStorage = <T = any>(): StorageComposable<T> => {
    * Retrieve data from localStorage with expiration check
    */
   const getItem = (key: string): T | null => {
-    if (!process.client) return null
+    if (!import.meta.client) return null
 
     try {
       const storedData = localStorage.getItem(key)
@@ -61,7 +61,7 @@ export const useStorage = <T = any>(): StorageComposable<T> => {
    * Remove data from localStorage
    */
   const removeItem = (key: string) => {
-    if (!process.client) return false
+    if (!import.meta.client) return false
 
     try {
       localStorage.removeItem(key)
@@ -77,7 +77,7 @@ export const useStorage = <T = any>(): StorageComposable<T> => {
    * Check if data exists and is not expired
    */
   const hasValidItem = (key: string): boolean => {
-    if (!process.client) return false
+    if (!import.meta.client) return false
 
     try {
       const storedData = localStorage.getItem(key)
@@ -108,7 +108,7 @@ export const useStorage = <T = any>(): StorageComposable<T> => {
    * Get all keys that match a pattern
    */
   const getKeys = (pattern?: string): string[] => {
-    if (!process.client) return []
+    if (!import.meta.client) return []
 
     try {
       const keys = Object.keys(localStorage)
@@ -125,7 +125,7 @@ export const useStorage = <T = any>(): StorageComposable<T> => {
    * Clear all items that match a pattern
    */
   const clearItems = (pattern?: string) => {
-    if (!process.client) return false
+    if (!import.meta.client) return false
 
     try {
       const keys = getKeys(pattern)
@@ -142,7 +142,7 @@ export const useStorage = <T = any>(): StorageComposable<T> => {
    * Get data with metadata (expiration info, timestamp)
    */
   const getItemWithMetadata = (key: string) => {
-    if (!process.client) return null
+    if (!import.meta.client) return null
 
     try {
       const storedData = localStorage.getItem(key)

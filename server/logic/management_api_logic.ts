@@ -20,7 +20,12 @@ interface authRequestPayload {
   refreshToken?: string
 }
 
-export async function authenticateUser(payload: authRequestPayload): Promise<unknown> {
+interface AuthResponse {
+  token: string
+  tokenExpireTime: string | number | Date
+}
+
+export async function authenticateUser(payload: authRequestPayload): Promise<AuthResponse> {
   const response = await fetch(
     `https://staging.bill24.io:22030${MANAGEMENT_API_ENDPOINTS.AUTH.AUTHORIZE}`,
     {
@@ -128,16 +133,18 @@ export async function requestToManagementApi<T>(
   return response.json()
 }
 
-export async function inquirySettlementWallet(body: SettlementInquiryRequest): Promise<any> {
+export async function inquirySettlementWallet(
+  body: SettlementInquiryRequest
+): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.WALLET_INQUIRY, 'POST', body)
 }
-export async function submitSettlement(body: any): Promise<any> {
+export async function submitSettlement(body: unknown): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.WALLET_SUBMIT, 'POST', body)
 }
-export async function getSupplierCsms(body: any): Promise<any> {
+export async function getSupplierCsms(body: unknown): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.DYNAMIC.SUPPLIERS_CSMS, 'POST', body)
 }
-export async function getCPOsBySuppliers(body: any): Promise<any> {
+export async function getCPOsBySuppliers(body: unknown): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.DYNAMIC.SUPPLIERS_CPO, 'POST', body)
 }
 export async function getSettlementHistory(
@@ -152,15 +159,15 @@ export async function getSettlementHistoryById(
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.HISTORY_DETAILS, 'POST', body)
 }
 
-export async function getListFeeConfig(body: { search: string }): Promise<any> {
+export async function getListFeeConfig(body: { search: string }): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.LIST, 'POST', body)
 }
-export async function createFeeConfig(body: FeeModel): Promise<any> {
+export async function createFeeConfig(body: FeeModel): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.CREATE, 'POST', body)
 }
-export async function updateFeeConfig(body: FeeModel): Promise<any> {
+export async function updateFeeConfig(body: FeeModel): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.UPDATE, 'POST', body)
 }
-export async function findFeeConfigById(body: any): Promise<any> {
+export async function findFeeConfigById(body: { id: string }): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.FIND_BY_ID, 'POST', body)
 }

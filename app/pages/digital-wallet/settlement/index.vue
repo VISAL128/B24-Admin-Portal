@@ -92,8 +92,7 @@
                 }}</span>
                 <UButton variant="link" class="text-muted" size="sm" @click="onResetColumnConfig">
                   {{ t('settlement_history.column_config.reset') }}
-                </UButton
-                >
+                </UButton>
               </div>
               <Divider />
               <div
@@ -108,7 +107,13 @@
                     :model-value="col.getIsVisible()"
                     class="text-sm"
                     size="sm"
-                    @update:model-value="(value) => col.toggleVisibility(value as boolean)"
+                    @update:model-value="
+                      (value) => {
+                        col.toggleVisibility(value as boolean)
+                        columnVisibility[col.id] = value as boolean
+                        saveColumnVisibility()
+                      }
+                    "
                   />
                 </div>
               </div>
@@ -184,11 +189,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { computed, h, nextTick, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import type { TableColumn, TableRow } from '@nuxt/ui'
-import type { Column } from '@tanstack/vue-table'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { useI18n } from 'vue-i18n'
@@ -202,6 +206,7 @@ import ExSearch from '~/components/ExSearch.vue'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
+import { useTableConfig } from '~/composables/utils/useTableConfig'
 
 definePageMeta({
   auth: false,
@@ -217,7 +222,8 @@ const pref = useUserPreferences().getPreferences()
 const { formatAmount } = useCurrency()
 const { currentProfile } = useAuth()
 
-const table = useTemplateRef('table')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const table = useTemplateRef<any>('table')
 const router = useRouter()
 
 const page = ref(1)
@@ -248,30 +254,9 @@ const modelValue = shallowRef({
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
 })
 
-const columnConfig = computed<Column<SettlementHistoryRecord>[]>(
-  (): Column<SettlementHistoryRecord>[] => {
-    return (
-      table?.value?.tableApi
-        ?.getAllColumns()
-        .filter((column: Column<SettlementHistoryRecord>) => column.getCanHide()) ?? []
-    )
-  }
-)
-
-// const columnsVisibility = ref<Column<SettlementHistoryRecord>[]>(
-//   table?.value?.tableApi?.getAllColumns().filter((column: Column<SettlementHistoryRecord>) => column.getCanHide()) ?? [])
-
-const onResetColumnConfig = () => {
-  table?.value?.tableApi?.resetColumnVisibility()
-}
-
-// const onColumnVisibilityChange = (columnId: string, isVisible: boolean) => {
-//   if (table.value?.tableApi) {
-//     table.value.tableApi(columnId, isVisible)
-//   }
-// }
-
-const columnVisibility = ref<Record<string, boolean>>({
+// Define table ID and default column visibility
+const TABLE_ID = 'settlement-history'
+const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
   id: false,
   row_number: true,
   created_date: true,
@@ -281,7 +266,71 @@ const columnVisibility = ref<Record<string, boolean>>({
   total_settled: true,
   status: true,
   select: true,
+}
+
+// Use table configuration composable
+const tableConfig = useTableConfig()
+
+// Initialize column visibility from localStorage or defaults
+const initializeColumnVisibility = (): Record<string, boolean> => {
+  const savedConfig = tableConfig.getColumnConfig(TABLE_ID)
+  return savedConfig || DEFAULT_COLUMN_VISIBILITY
+}
+
+const columnVisibility = ref<Record<string, boolean>>(initializeColumnVisibility())
+
+// Save column visibility changes to localStorage
+const saveColumnVisibility = () => {
+  tableConfig.saveColumnConfig(TABLE_ID, columnVisibility.value)
+}
+
+// Watch for changes and auto-save
+watch(columnVisibility, saveColumnVisibility, { deep: true })
+
+// Initialize table column visibility from saved configuration
+const initializeTableColumnVisibility = () => {
+  if (table?.value?.tableApi) {
+    Object.entries(columnVisibility.value).forEach(([columnId, isVisible]) => {
+      const column = table.value.tableApi.getColumn(columnId)
+      if (column) {
+        column.toggleVisibility(isVisible)
+      }
+    })
+  }
+}
+
+// Watch for table API changes to initialize column visibility
+watch(
+  () => table?.value?.tableApi,
+  (newApi) => {
+    if (newApi) {
+      // Small delay to ensure table is fully initialized
+      nextTick(() => {
+        initializeTableColumnVisibility()
+      })
+    }
+  },
+  { immediate: true }
+)
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const columnConfig = computed((): any[] => {
+  return (
+    table?.value?.tableApi
+      ?.getAllColumns()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((column: any) => column.getCanHide()) ?? []
+  )
 })
+
+const onResetColumnConfig = () => {
+  // Reset table API columns
+  table?.value?.tableApi?.resetColumnVisibility()
+
+  // Reset to default visibility and save
+  columnVisibility.value = { ...DEFAULT_COLUMN_VISIBILITY }
+  saveColumnVisibility()
+}
 
 const getTranslationHeaderById = (id: string) => {
   return t(`settlement_history.columns.${id}`)

@@ -304,6 +304,14 @@ import { useI18n } from 'vue-i18n'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { UserPreferences } from '~/models/userPreference'
 
+definePageMeta({
+  middleware: [
+    'auth',
+    // "permission"
+  ],
+  auth: true, // Ensure this layout requires authentication
+})
+
 const { locale, t } = useI18n()
 const { setLanguage } = useLanguage()
 const popoverRef = ref<{ close: () => void } | null>(null)
@@ -345,9 +353,9 @@ const handleSettings = () => {
   navigateTo('/settings/generate-details')
 }
 
-const handleDeveloperTools = () => {
-  navigateTo('/settings/developer-tool')
-}
+// const handleDeveloperTools = () => {
+//   navigateTo('/settings/developer-tool')
+// }
 
 const closeConfirmationModal = () => {
   isShowLogoutConfirmModal.value = false
@@ -405,13 +413,5 @@ onMounted(async () => {
   //     isCheckingPermissions.value = false
   //   }
   // }, 5000)
-})
-
-definePageMeta({
-  middleware: [
-    'auth',
-    // "permission"
-  ],
-  auth: true, // Ensure this layout requires authentication
 })
 </script>
