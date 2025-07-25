@@ -17,34 +17,33 @@ export const useErrorHandler = () => {
   const { t } = useI18n()
 
   const handleApiError = (error: any) => {
-
     // Check if error has notification data from server
     if (error?.data?.showNotification) {
       const errorData: ErrorData = error.data
-      
+
       switch (errorData.notificationType) {
         case 'error':
           notification.showError({
             title: errorData.title || t('error.server_error'),
-            description: errorData.description || t('error.internal_server_error')
+            description: errorData.description || t('error.internal_server_error'),
           })
           break
         case 'warning':
           notification.showWarning({
             title: errorData.title || t('error.server_error'),
-            description: errorData.description || t('error.internal_server_error')
+            description: errorData.description || t('error.internal_server_error'),
           })
           break
         case 'info':
           notification.showInfo({
             title: errorData.title || t('error.server_error'),
-            description: errorData.description || t('error.internal_server_error')
+            description: errorData.description || t('error.internal_server_error'),
           })
           break
         default:
           notification.showError({
             title: errorData.title || t('error.server_error'),
-            description: errorData.description || t('error.internal_server_error')
+            description: errorData.description || t('error.internal_server_error'),
           })
       }
       return
@@ -74,7 +73,7 @@ export const useErrorHandler = () => {
     // Fallback error
     notification.showError({
       title: t('error.server_error'),
-      description: t('error.internal_server_error')
+      description: t('error.internal_server_error'),
     })
   }
 
@@ -85,14 +84,14 @@ export const useErrorHandler = () => {
   const handleValidationError = (message: string) => {
     notification.showWarning({
       title: t('validation_error', 'Validation Error'),
-      description: message
+      description: message,
     })
   }
 
   const handleSuccessResponse = (message?: string) => {
     notification.showSuccess({
       title: t('success', 'Success'),
-      description: message || t('operation_completed', 'Operation completed successfully')
+      description: message || t('operation_completed', 'Operation completed successfully'),
     })
   }
 
@@ -100,6 +99,6 @@ export const useErrorHandler = () => {
     handleApiError,
     handleNetworkError,
     handleValidationError,
-    handleSuccessResponse
+    handleSuccessResponse,
   }
 }

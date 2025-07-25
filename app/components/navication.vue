@@ -23,8 +23,8 @@ const activeStates = ref({
   transactionSummary: false,
   transactionAllocation: false,
   settings: false,
-  generateDetails: false,
-  feeConfig: false,
+  settingsGenerateDetails: false,
+  settingsFeeConfig: false,
 })
 
 const items = computed<NavigationMenuItem[][]>(() => [
@@ -132,17 +132,17 @@ const items = computed<NavigationMenuItem[][]>(() => [
       children: [
         {
           label: t('settings.generate_details'),
-          icon: 'i-lucide-settings',
+          // icon: 'i-lucide-settings',
           size: 'lg',
           to: '/settings/generate-details',
-          active: activeStates.value.generateDetails,
+          active: activeStates.value.settingsGenerateDetails,
         },
         {
           label: t('settings.fee_config'),
-          icon: 'i-material-symbols-light-switch-access-shortcut',
+          // icon: 'i-material-symbols-light-switch-access-shortcut',
           size: 'lg',
           to: '/settings/fee-config',
-          active: activeStates.value.feeConfig,
+          active: activeStates.value.settingsFeeConfig,
         },
       ],
     },
@@ -214,13 +214,20 @@ function activateCurrentRoute() {
   } else if (currentPath.startsWith('/reports')) {
     activeStates.value.reports = true
   }
+  else if (currentPath === '/settings/generate-details') {
+    activeStates.value.settings = true
+    activeStates.value.settingsGenerateDetails = true
+  } else if (currentPath.startsWith('/settings/fee-config')) {
+    activeStates.value.settings = true
+    activeStates.value.settingsFeeConfig = true
+  }
   // Legacy settlement routes (keeping for backwards compatibility)
   else if (currentPath.startsWith('/settlement')) {
     activeStates.value.digitalWallet = true
     activeStates.value.settlement = true
   } else if (currentPath === '/settings/fee-config') {
     activeStates.value.settings = true
-    activeStates.value.feeConfig = true
+    activeStates.value.settingsFeeConfig = true
   }
 }
 

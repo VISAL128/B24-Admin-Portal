@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
+import { DEFAULT_PAGE_SIZE_OPTIONS, LOCAL_STORAGE_KEYS } from '~/utils/constants'
 import type { UserPreferences } from '~/models/userPreference'
 import { useFormat } from '~/composables/utils/useFormat'
 
@@ -22,6 +22,7 @@ const showErrorMessage = ref(false)
 const storage = useStorage<UserPreferences>()
 
 type Option = { label: string; value: string }
+type OptionNumber = { label: string; value: number }
 type DateAndTimeOption = { label: string; value: 'short' | 'medium' | 'long' | 'full' }
 
 const selectedLanguage = ref<Option>({ label: t('settings.languages.en'), value: 'en' })
@@ -35,6 +36,7 @@ const selectedTimeFormat = ref<DateAndTimeOption>({
 })
 const selectedHourFormat = ref<Option>({ label: t('settings.hour_format_12h'), value: '12h' })
 const selectedCurrency = ref<Option>({ label: t('settings.currencies.usd'), value: 'USD' })
+const selectedPageSize = ref<OptionNumber>(DEFAULT_PAGE_SIZE)
 
 // Load preferences from localStorage or use defaults
 const loadPreferences = (): UserPreferences => {
@@ -84,6 +86,8 @@ const currencyOptions = computed(() => [
   { value: 'KHR', label: t('settings.currencies.khr') },
   { value: 'USD', label: t('settings.currencies.usd') },
 ])
+
+const pageSizeOptions = computed(() => DEFAULT_PAGE_SIZE_OPTIONS)
 
 // Watch for theme changes and update color mode
 watch(
@@ -268,6 +272,11 @@ const refreshUIAfterReset = () => {
     value: DEFAULT_USER_PREFERENCES.currency,
   }
 
+  selectedPageSize.value = {
+    label: DEFAULT_USER_PREFERENCES.defaultPageSize.toString(),
+    value: DEFAULT_USER_PREFERENCES.defaultPageSize,
+  }
+
   // Force reactivity update by triggering a re-render
   nextTick(() => {
     // Trigger computed properties to recalculate
@@ -311,6 +320,13 @@ const initializeSelectedOptions = (loadedPref: UserPreferences) => {
     label: loadedPref.hour12 ? t('settings.hour_format_12h') : t('settings.hour_format_24h'),
     value: loadedPref.hour12 ? '12h' : '24h',
   }
+
+  selectedPageSize.value = {
+    label: loadedPref.defaultPageSize
+      ? loadedPref.defaultPageSize.toString()
+      : DEFAULT_PAGE_SIZE.label,
+    value: loadedPref.defaultPageSize ? loadedPref.defaultPageSize : DEFAULT_PAGE_SIZE.value,
+  }
 }
 
 // Watch for changes in selected options and update preferences/i18n
@@ -341,6 +357,12 @@ watch(selectedHourFormat, (newValue) => {
 watch(selectedCurrency, (newValue) => {
   if (newValue && preferences.value.currency !== newValue.value) {
     preferences.value.currency = newValue.value
+  }
+})
+
+watch(selectedPageSize, (newValue) => {
+  if (newValue && preferences.value.defaultPageSize !== newValue.value) {
+    preferences.value.defaultPageSize = newValue.value
   }
 })
 
@@ -492,7 +514,7 @@ onMounted(() => {
                     class="border-2 rounded-lg p-4 text-center transition-all duration-200"
                     :class="
                       preferences.theme === theme
-                        ? 'border-[#3F83F8] bg-[#EAF6FC] dark:bg-[#43B3DE]/10'
+                        ? 'border-primary bg-[#EAF6FC] dark:bg-[#43B3DE]/10'
                         : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
                     "
                   >
@@ -507,7 +529,7 @@ onMounted(() => {
                         <UIcon
                           v-else-if="theme === 'dark'"
                           name="i-heroicons-moon"
-                          class="h-6 w-6 text-blue-600"
+                          class="h-6 w-6 text-primary"
                         />
                         <UIcon
                           v-else
@@ -565,7 +587,7 @@ onMounted(() => {
               {{ $t('settings.format_preferences') }}
             </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
                   {{ $t('settings.date_format') }}
@@ -624,6 +646,24 @@ onMounted(() => {
                   :search-input="false"
                   class="w-full"
                 />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-[#211e1f] dark:text-white mb-2">
+                  {{ $t('settings.default_page_size') }}
+                </label>
+                <USelectMenu
+                  v-model="selectedPageSize"
+                  :items="pageSizeOptions"
+                  option-attribute="label"
+                  value-attribute="value"
+                  placeholder="Select page size"
+                  :search-input="false"
+                  class="w-full"
+                />
+                <!-- <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ $t('settings.default_page_size_description') }}
+                </p> -->
               </div>
             </div>
 

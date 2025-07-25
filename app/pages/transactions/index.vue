@@ -500,7 +500,7 @@ const handleExport = (item: { click: () => void }) => {
 }
 
 const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
-  if (record.success === 0 && record.fail === 0) {
+  if (record.success === 0 && record.failed === 0) {
     await notification.showWarning({
       title: t('no_transactions_found'),
       description: t('no_transactions_found_desc'),

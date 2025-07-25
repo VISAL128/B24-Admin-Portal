@@ -5,11 +5,12 @@
       class="flex flex-wrap items-center justify-between gap-2 px-3 py-3 bg-white dark:bg-gray-900 rounded shadow"
     >
       <div class="flex flex-wrap items-center gap-2">
-        <UInput
+        <ExSearch
           v-model="search"
           :placeholder="t('settlement.search_placeholder')"
           class="w-64"
           size="sm"
+          @input="onSearchInput"
         />
         <UPopover>
           <UButton color="neutral" variant="subtle" size="sm" icon="i-lucide-calendar">
@@ -31,9 +32,28 @@
             <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
           </template>
         </UPopover>
+        <StatusSelection
+          v-model="selectedStatus"
+          :multiple="false"
+          :available-statuses="availableStatuses"
+          :include-all-statuses="false"
+          :placeholder="t('settlement.select_status')"
+          :searchable="false"
+        />
+        <!-- <USwitch
+          :v-model="false"
+          :label="t('settlement.auto_refresh')"
+          size="sm"
+          class="ml-2" /> -->
       </div>
       <div class="flex items-center gap-2">
-        <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
+        <UButton
+          v-if="false"
+          color="primary"
+          icon="i-lucide-play"
+          size="sm"
+          @click="onGenerateSettlement"
+        >
           {{ t('generate_settlement') }}
         </UButton>
 
@@ -93,12 +113,7 @@
         /> -->
         <USelectMenu
           v-model="pageSize"
-          :items="[
-            { label: '10', value: 10 },
-            { label: '25', value: 25 },
-            { label: '50', value: 50 },
-            { label: '100', value: 100 },
-          ]"
+          :items="DEFAULT_PAGE_SIZE_OPTIONS"
           class="w-24"
           size="sm"
           :search-input="false"
@@ -129,12 +144,15 @@ import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalize
 import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
 import { useI18n } from 'vue-i18n'
 import TableEmptyState from '~/components/TableEmptyState.vue'
-import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { UButton } from '#components'
 import appConfig from '~~/app.config'
 import ExportButton from '~/components/buttons/ExportButton.vue'
+import ExSearch from '~/components/ExSearch.vue'
+import { DEFAULT_PAGE_SIZE_OPTIONS, DEFAULT_PAGE_SIZE, TABLE_CONSTANTS } from '~/utils/constants'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import { useCurrency } from '~/composables/utils/useCurrency'
 
 definePageMeta({
   auth: false,
@@ -146,15 +164,16 @@ const { getSettlementHistory } = useSupplierApi()
 const { createSortableHeader, createRowNumberCell } = useTable()
 const errorHandler = useErrorHandler()
 const { statusCellBuilder } = useStatusBadge()
+const pref = useUserPreferences().getPreferences()
+const { formatAmount } = useCurrency()
 
 const table = useTemplateRef('table')
 const router = useRouter()
-const notification = useNotification()
 
 const page = ref(1)
 const pageSize = ref<{ label: string; value: number }>({
-  label: '25',
-  value: 25,
+  label: pref?.defaultPageSize ? pref?.defaultPageSize.toString() : DEFAULT_PAGE_SIZE.label,
+  value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
 const total = ref(0)
 const totalPage = ref(0)
@@ -164,6 +183,11 @@ const endDate = ref('')
 const settlements = ref<SettlementHistoryRecord[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
+const selectedStatus = ref<{ label: string; value: string }>({
+  label: t('status.all'),
+  value: '',
+}) // Default status
+const availableStatuses = ref<string[]>(['all', 'processing', 'completed'])
 
 const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 const today = new Date()
@@ -183,8 +207,8 @@ watch(modelValue, (val) => {
   fetchSettlementHistory()
 })
 
-// Watch pagination
-watch([page, pageSize], () => {
+// Watch pagination and status changes
+watch([page, pageSize, selectedStatus], () => {
   fetchSettlementHistory()
 })
 
@@ -198,7 +222,7 @@ const fetchSettlementHistory = async () => {
       page: page.value,
       start_date: startDate.value,
       end_date: endDate.value,
-      status: 'completed', // Optional filter if needed
+      status: selectedStatus.value.value || '', // Use selected status value or default to completed
     }
 
     const data = await getSettlementHistory(payload)
@@ -217,6 +241,12 @@ const fetchSettlementHistory = async () => {
 const onPageSizeChange = () => {
   page.value = 1
   // fetchSettlementHistory()
+}
+
+// Handle search input
+const onSearchInput = (_value: string) => {
+  // Optional: add debounced search logic here if needed
+  // For now, the filtering is handled in computed filteredData
 }
 
 // Filtered rows for table
@@ -264,13 +294,13 @@ const exportHeaders = [
 ]
 
 const handleViewDetails = (row: TableRow<SettlementHistoryRecord>) => {
-  if (row.original.success === 0 && row.original.fail === 0) {
-    notification.showWarning({
-      title: t('no_transactions_found'),
-      description: t('no_transactions_found_desc'),
-    })
-    return
-  }
+  // if (row.original.success === 0 && row.original.fail === 0) {
+  //   notification.showWarning({
+  //     title: t('no_transactions_found'),
+  //     description: t('no_transactions_found_desc'),
+  //   })
+  //   return
+  // }
   navigateToDetails(row.original.id)
 }
 
@@ -290,7 +320,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       h(
         'div',
         {
-          class: 'flex items-center justify-center h-full w-full',
+          class: 'flex h-full w-full',
           onClick: (e: Event) => e.stopPropagation(),
         },
         [
@@ -332,23 +362,14 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       h(
         'div',
         { class: 'text-right' },
-        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
+        formatAmount(row.original.total_amount, row.original.currency_id)
       ),
     enableMultiSort: true,
     enableSorting: true,
   },
   { accessorKey: 'currency_id', header: () => t('settlement.currency') },
   { accessorKey: 'created_by', header: () => t('settled_by') },
-  {
-    id: 'status',
-    header: () => t('status.header'),
-    cell: ({ row }) => statusCellBuilder(row.original.status, true),
-    // cell: ({ row }) => {
-    //   const status = row.original.status
-    //   const statusClass = status === 'completed' ? 'text-green-500' : 'text-red-500'
-    //   return h('span', { class: `text-xs font-medium ${statusClass}` }, t(`status.${status}`))
-    // },
-  },
+
   {
     accessorKey: 'transaction',
     header: () => t('settlement.transaction'),
@@ -358,7 +379,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       // }, `Total: ${row.original.total_Settled}`)
 
       const success = row.original.success
-      const fail = row.original.fail
+      const failed = row.original.failed
       const total = row.original.total_settled
 
       const UBadge = resolveComponent('UBadge')
@@ -398,10 +419,20 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
             variant: 'subtle',
             class: 'flex items-center gap-1',
           },
-          () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
+          () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, failed)]
         ),
       ])
     },
+  },
+  {
+    id: 'status',
+    header: () => t('status.header'),
+    cell: ({ row }) => statusCellBuilder(row.original.status, true),
+    // cell: ({ row }) => {
+    //   const status = row.original.status
+    //   const statusClass = status === 'completed' ? 'text-green-500' : 'text-red-500'
+    //   return h('span', { class: `text-xs font-medium ${statusClass}` }, t(`status.${status}`))
+    // },
   },
   // Add an action column for viewing details
   // {
