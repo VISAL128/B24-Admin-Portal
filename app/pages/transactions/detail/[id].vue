@@ -11,11 +11,13 @@
           >
             <UIcon name="material-symbols:receipt-long" class="w-4 h-4 text-primary" />
           </div>
-          <h4 class="text-base font-medium text-gray-900 dark:text-white">Transaction</h4>
+          <h4 class="text-base font-medium text-gray-900 dark:text-white">
+            {{ $t('pages.transaction.title') }}
+          </h4>
         </div>
         <div class="flex items-center space-x-2">
-          <StatusBadge :status="transactionData.status" variant="subtle" size="lg" />
-          <UButton color="primary" variant="outline" icon="i-lucide-download" @click="download">
+          <StatusBadge :status="transactionData.status" variant="subtle" size="md" />
+          <UButton color="primary" variant="outline" icon="i-lucide-download" size="sm" @click="download">
           </UButton>
         </div>
       </div>
@@ -51,12 +53,11 @@
             </span>
 
             <!-- Copyable Code Type -->
-            <CopyableText
+            <ClipboardBadge
               v-else-if="field.type === 'code' && field.copyable"
               :text="field.rawValue || field.value"
-              :display-text="field.value"
-              text-class="text-sm text-primary dark:text-primary"
-              font-class="font-mono break-all"
+              :copied-tooltip-text="$t('clipboard.copied')"
+              class="mt-2"
             />
 
             <!-- Regular Text -->
@@ -101,12 +102,11 @@
             </span>
 
             <!-- Copyable Code Type -->
-            <CopyableText
+            <ClipboardBadge
               v-else-if="field.type === 'code' && field.copyable"
               :text="field.rawValue || field.value"
-              :display-text="field.value"
-              text-class="text-sm text-primary dark:text-primary"
-              font-class="font-mono break-all"
+              :copied-tooltip-text="$t('clipboard.copied')"
+              class="mt-2"
             />
 
             <!-- Regular Text -->
@@ -226,7 +226,7 @@
         <div
           class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
         >
-          <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 text-primary" />
+          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 text-primary" />
         </div>
         Push Back Transaction History
       </h4>
@@ -371,11 +371,10 @@
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
-                <CopyableText
+                <ClipboardBadge
                   :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
-                  :display-text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
-                  text-class="text-sm text-primary dark:text-primary"
-                  font-class="font-mono break-all"
+                  :copied-tooltip-text="$t('clipboard.copied')"
+                  class="mt-2"
                 />
               </div>
             </div>
@@ -523,11 +522,10 @@
 
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600 dark:text-gray-400">លេខយោងធនាគារ:</span>
-                  <CopyableText
-                    :text="settlement.bank_ref || 'FT12937HDGT36467H'"
-                    :display-text="settlement.bank_ref || 'FT12937HDGT36467H'"
-                    text-class="text-sm text-gray-900 dark:text-white font-mono"
-                    font-class="font-mono"
+                  <ClipboardBadge
+                    :text="settlement.bank_ref || ''"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                    class="mt-2"
                   />
                 </div>
 
@@ -551,7 +549,7 @@ import html2canvas from 'html2canvas'
 import { computed, h, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import CopyableText from '~/components/CopyableText.vue'
+import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
 import { useClipboard } from '~/composables/useClipboard'
@@ -561,7 +559,7 @@ definePageMeta({
   auth: false,
   breadcrumbs: [
     { label: 'transactions', to: '/transactions' },
-    { label: 'transaction_details', active: true },
+    { label: 'details', active: true },
   ],
 })
 

@@ -651,5 +651,10 @@
   "lottie": {
     "library_not_found": "Lottie animation library not available",
     "install_instruction": "Run: npm install lottie-web"
+  },
+  "pages": {
+    "transaction": {
+      "title": "Transaction"
+    }
   }
 }

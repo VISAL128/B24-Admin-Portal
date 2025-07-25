@@ -93,10 +93,7 @@ const selectedRecord = ref<SettlementHistoryRecord | null>(null)
 
 definePageMeta({
   auth: false,
-  breadcrumbs: [
-    { label: 'transactions', to: '/transactions' },
-    { label: 'overview', active: true },
-  ],
+  breadcrumbs: [{ label: 'transactions', to: '/transactions' }],
 })
 
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
@@ -104,6 +101,7 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import StatusBadge from '~/components/StatusBadge.vue'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
@@ -120,7 +118,6 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import StatusBadge from '~/components/StatusBadge.vue'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -288,7 +285,7 @@ const onGenerateSettlement = () => {
 
 // Handle navigation to details page
 const navigateToDetails = (rowId: string) => {
-  router.push(`/transactions/${rowId}`)
+  router.push(`/transactions/detail/${rowId}`)
 }
 
 const exportHeaders = [
