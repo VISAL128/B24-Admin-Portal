@@ -205,7 +205,7 @@ function createAuthContext(user: AuthenticatedUser | null, token?: string): Auth
 export default defineEventHandler(async (event) => {
   // Skip auth middleware for certain paths
   const url = getRequestURL(event)
-  const skipPaths = ['/api/_nuxt', '/api/health', '/auth/', '/_nuxt', '/favicon.ico']
+  const skipPaths = ['/api/_nuxt', '/api/health', '/auth/', '/_auth', '/_nuxt', '/favicon.ico']
 
   if (skipPaths.some((path) => url.pathname.startsWith(path))) {
     return

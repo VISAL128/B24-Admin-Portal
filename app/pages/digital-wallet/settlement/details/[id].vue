@@ -160,7 +160,7 @@
               <div
                 class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
               >
-                <UIcon name="i-lucide-sigma" class="w-4 h-4" />
+                <UIcon name="uil:invoice" class="w-4 h-4" />
               </div>
               <div class="flex-1 min-w-0">
                 <h3 class="text-xs font-medium opacity-95 mb-0.5 truncate">

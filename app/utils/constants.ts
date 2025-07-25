@@ -60,3 +60,8 @@ export const TABLE_CONSTANTS = {
   LOADING_ANIMATION: 'elastic' as TableLoadingAnimationType,
   LOADING_COLOR: 'primary' as TableLoadingColorType,
 }
+
+export const RoutePath = {
+  GenerateSettlement: '/digital-wallet/settlement/generate',
+  Settlement: '/digital-wallet/settlement',
+}

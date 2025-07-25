@@ -20,9 +20,8 @@ export const useSupplierApi = () => {
   const { locale } = useI18n()
 
   const getSuppliers = async (): Promise<Supplier[]> => {
-    const rep = await execute(() => $fetch<ApiResponse<Supplier[]>>('/api/suppliers'))
+    const rep = await execute(() => $fetch<ApiResponse<Supplier[]>>('/api/management/suppliers'))
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch suppliers:', rep.message)
       return []
     }
     return rep.data
@@ -30,10 +29,9 @@ export const useSupplierApi = () => {
 
   const getListCPOApi = async (payload: CpoBySupplierRequest): Promise<Cpo[]> => {
     const rep = await execute(() =>
-      $fetch<ApiResponse<Cpo[]>>(`/api/getcpo`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<Cpo[]>>(`/api/management/getcpo`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch CPOs:', rep.message)
       return []
     }
     return rep.data
@@ -43,13 +41,12 @@ export const useSupplierApi = () => {
     payload: InitQuerySettlement
   ): Promise<SettlementInquiryResponse | null> => {
     const rep = await execute(() =>
-      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/inquiry-settlement`, {
+      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/management/inquiry-settlement`, {
         method: 'POST',
         body: payload,
       })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch CPO settlements:', rep.message)
       return null
     }
     return rep.data
@@ -63,20 +60,20 @@ export const useSupplierApi = () => {
         throw new Error('Token is required for settlement confirmation')
       }
       const rep = await execute(() =>
-        $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/submit-settlement`, {
+        $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/management/submit-settlement`, {
           method: 'POST',
           body: payload,
         })
       )
 
       if (rep.code !== 'SUCCESS') {
-        console.error('Failed to fetch CPO settlements:', rep.message)
         return { error: rep.message }
       }
       return { data: rep.data }
     } catch (error) {
-      console.error('Failed to confirm settlement:', error)
-      throw error
+      throw new Error(
+        error instanceof Error ? error.message : 'Unknown error during settlement confirmation'
+      )
     }
   }
 
@@ -84,7 +81,7 @@ export const useSupplierApi = () => {
     payload: SettlementHistoryQuery
   ): Promise<SettlementHistoryResponse | null> => {
     const rep = await execute(() =>
-      $fetch(`/api/settlement-history`, { method: 'POST', body: payload })
+      $fetch(`/api/management/settlement-history`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch settlement history:', rep.message)
@@ -96,11 +93,15 @@ export const useSupplierApi = () => {
   const getSettlementHistoryById = async (
     payload: SettlementHistoryDetailQuery
   ): Promise<SettlementHistoryDetailResponse> => {
-    const rep = await execute(() =>
-      $fetch<ApiResponse<SettlementHistoryDetailResponse>>(`/api/find-settlement-history-detail`, {
-        method: 'POST',
-        body: payload,
-      }),
+    const rep = await execute(
+      () =>
+        $fetch<ApiResponse<SettlementHistoryDetailResponse>>(
+          `/api/management/find-settlement-history-detail`,
+          {
+            method: 'POST',
+            body: payload,
+          }
+        ),
       false
     )
     if (rep.code !== 'SUCCESS') {

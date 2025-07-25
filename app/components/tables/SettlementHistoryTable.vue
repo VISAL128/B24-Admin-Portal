@@ -99,6 +99,8 @@ const sortingHistory = ref([
   },
 ])
 
+const cellClassForRowSelected = 'font-bold'
+
 const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     id: 'row_number',
@@ -107,6 +109,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     size: 30,
     maxSize: 30,
     enableSorting: false,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   // {
   //   accessorKey: 'supplier.name',
@@ -116,35 +125,63 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   // },
   {
     accessorKey: 'cpo.code',
-    header: ({column }) => createSortableHeader(
-      column,
-      t('settlement.sub_biller.code')
-    ),
+    header: ({ column }) => createSortableHeader(column, t('settlement.biller.code')),
     cell: ({ row }) => row.original.cpo?.code || 'N/A',
     size: 50,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'cpo.name',
-    header: ({ column }) => createSortableHeader(
-      column,
-      t('settlement.sub_biller.name')
-    ),
+    header: ({ column }) => createSortableHeader(column, t('settlement.biller.name')),
     cell: ({ row }) => row.original.cpo?.name || 'N/A',
     size: 100,
     maxSize: 200,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
+  },
+  {
+    accessorKey: 'party_type',
+    header: () => t('settlement.type'),
+    cell: ({ row }) => {
+      const partyType = row.original.party_type || 'N/A'
+      return h('span', { class: 'text-sm' }, partyType)
+    },
+    size: 50,
+    maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'settle_amount',
-    header: ({ column }) => createSortableHeader(
-      column,
-      t('settlement.amount'),
-      'right'
-    ),
+    header: ({ column }) => createSortableHeader(column, t('settlement.amount'), 'right'),
     cell: ({ row }) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'currency',
@@ -152,13 +189,17 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     cell: () => h('span', { class: '' }, props.currency || 'N/A'),
     size: 10,
     maxSize: 30,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'tran_date',
-    header: ({ column }) => createSortableHeader(
-      column,
-      t('transaction_date')
-    ),
+    header: ({ column }) => createSortableHeader(column, t('transaction_date')),
     cell: ({ row }) => {
       return h('div', { class: 'text-sm' }, [
         format.formatDateTime(row.original.tran_date, {
@@ -169,6 +210,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'total_transactions',
@@ -178,6 +226,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'settlement_bank_name',
@@ -186,10 +241,10 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
       const UAvatar = resolveComponent('UAvatar')
       if (row.original.settlement_bank_logo) {
         // If settlement bank logo is available, display it
-        return h('div', { class: 'flex items-center gap-1' }, [
+        return h('div', { class: 'flex items-center gap-2' }, [
           h(UAvatar, {
             src: row.original.settlement_bank_logo,
-            size: '2xs',
+            size: '3xs',
           }),
           h('div', { class: '' }, row.original.settlement_bank_name || '-'),
         ])
@@ -198,6 +253,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'bank_ref_id',
@@ -218,6 +280,13 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 150,
     maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
   {
     accessorKey: 'status',
@@ -232,17 +301,28 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     // },
     size: 120,
     maxSize: 120,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
   },
 ])
+
+const table = useTemplateRef('table')
 
 const onRowSelect = (row: TableRow<SettlementHistoryDetail>) => {
   openSlideover.value = true
   openSliderWithData.value = row.original
+  row.toggleSelected() // Toggle the row selection state
 }
 
 const closeSlideover = () => {
   openSlideover.value = false
   openSliderWithData.value = null
+  table.value?.tableApi.resetRowSelection() // Clear selected rows when closing
 }
 
 const sorting = ref([
@@ -294,7 +374,7 @@ const valueClass = 'text-sm font-bold'
 </script>
 <template>
   <UCard
-    class="max-h-full flex flex-col"
+    class="max-h-full flex flex-1 flex-col"
     :ui="{
       ...appConfig.ui.card.slots,
       header: 'p-3 sm:px-4 flex flex-shrink-0',
@@ -303,7 +383,7 @@ const valueClass = 'text-sm font-bold'
   >
     <template #header>
       <div class="flex flex-row items-center w-full justify-between">
-        <p class="text-md font-bold">{{ $t('settlement.settlement_transaction') }}</p>
+        <p class="text-md font-bold">{{ $t('settlement.settlement_list') }}</p>
         <ExSearch
           v-model="settlementHistoryQuery.search"
           :placeholder="$t('settlement.search_placeholder')"
@@ -329,7 +409,8 @@ const valueClass = 'text-sm font-bold'
       :title="t('settlement.settlement_transaction')"
       side="right"
       :overlay="false"
-      @close="closeSlideover"
+      :description="t('settlement.settlement_details_description')"
+      @after:leave="closeSlideover"
     >
       <template #body>
         <div v-if="openSliderWithData" class="flex flex-col h-full">
@@ -442,16 +523,18 @@ const valueClass = 'text-sm font-bold'
                   :currency="props.currency"
                 />
               </div> -->
-              <UCard class="flex-1 p-0 sm:p-0 overflow-hidden" :ui="{ body: 'sm:p-0' }">
+              <div
+                class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex-1 shadow-sm"
+              >
                 <UTable
                   v-model:sorting="sorting"
                   :data="openSliderWithData.tran_allocates"
                   :columns="allocationColumns"
                   :ui="{ ...appConfig.ui.table.slots, td: 'cursor-auto' }"
                   sticky
-                  class="h-full"
+                  class="w-full h-full overflow-auto"
                 />
-              </UCard>
+              </div>
             </div>
             <div v-else class="flex-1 flex text-sm items-center justify-center text-gray-500">
               <p>{{ t('settlement.no_transaction_allocations') }}</p>

@@ -70,11 +70,11 @@
             <h3 class="font-medium text-gray-900 mb-2">{{ t('test.server_auth.health_check') }}</h3>
             <p class="text-sm text-gray-600 mb-3">{{ t('test.server_auth.health_description') }}</p>
             <UButton
-              @click="testHealth"
               :loading="loading.health"
               size="sm"
               color="primary"
               class="w-full"
+              @click="testHealth"
             >
               {{ t('test.server_auth.test_api') }}
             </UButton>
@@ -90,11 +90,11 @@
               {{ t('test.server_auth.profile_description') }}
             </p>
             <UButton
-              @click="testProfile"
               :loading="loading.profile"
               size="sm"
               color="success"
               class="w-full"
+              @click="testProfile"
             >
               {{ t('test.server_auth.test_api') }}
             </UButton>
@@ -110,11 +110,11 @@
               {{ t('test.server_auth.suppliers_description') }}
             </p>
             <UButton
-              @click="testSuppliers"
               :loading="loading.suppliers"
               size="sm"
               color="secondary"
               class="w-full"
+              @click="testSuppliers"
             >
               {{ t('test.server_auth.test_api') }}
             </UButton>
@@ -139,11 +139,11 @@
             </h3>
             <p class="text-sm text-gray-600 mb-3">{{ t('test.server_auth.read_description') }}</p>
             <UButton
-              @click="testSettlementRead"
               :loading="loading.settlementRead"
               size="sm"
               color="primary"
               class="w-full"
+              @click="testSettlementRead"
             >
               {{ t('test.server_auth.test_read') }}
             </UButton>
@@ -159,11 +159,11 @@
             </h3>
             <p class="text-sm text-gray-600 mb-3">{{ t('test.server_auth.write_description') }}</p>
             <UButton
-              @click="testSettlementWrite"
               :loading="loading.settlementWrite"
               size="sm"
               color="success"
               class="w-full"
+              @click="testSettlementWrite"
             >
               {{ t('test.server_auth.test_write') }}
             </UButton>
@@ -181,11 +181,11 @@
               {{ t('test.server_auth.execute_description') }}
             </p>
             <UButton
-              @click="testSettlementExecute"
               :loading="loading.settlementExecute"
               size="sm"
               color="warning"
               class="w-full"
+              @click="testSettlementExecute"
             >
               {{ t('test.server_auth.test_execute') }}
             </UButton>
@@ -201,11 +201,11 @@
             </h3>
             <p class="text-sm text-gray-600 mb-3">{{ t('test.server_auth.delete_description') }}</p>
             <UButton
-              @click="testSettlementDelete"
               :loading="loading.settlementDelete"
               size="sm"
               color="error"
               class="w-full"
+              @click="testSettlementDelete"
             >
               {{ t('test.server_auth.test_delete') }}
             </UButton>
@@ -305,13 +305,13 @@ const testProfile = () =>
 
 const testSuppliers = () =>
   handleApiTest('suppliers', async () => {
-    const response = await $fetch('/api/suppliers')
+    const response = await $fetch('/api/management/suppliers')
     return response
   })
 
 const testSettlementRead = () =>
   handleApiTest('settlementRead', async () => {
-    const response = await $fetch('/api/settlement-history', {
+    const response = await $fetch('/api/management/settlement-history', {
       method: 'GET',
       query: { page: 1, limit: 10 },
     })
@@ -320,7 +320,7 @@ const testSettlementRead = () =>
 
 const testSettlementWrite = () =>
   handleApiTest('settlementWrite', async () => {
-    const response = await $fetch('/api/submit-settlement', {
+    const response = await $fetch('/api/management/submit-settlement', {
       method: 'POST',
       body: {
         name: 'Test Settlement',
@@ -333,7 +333,7 @@ const testSettlementWrite = () =>
 
 const testSettlementExecute = () =>
   handleApiTest('settlementExecute', async () => {
-    const response = await $fetch('/api/inquiry-settlement', {
+    const response = await $fetch('/api/management/inquiry-settlement', {
       method: 'POST',
       body: {
         id: 'test-settlement-123',

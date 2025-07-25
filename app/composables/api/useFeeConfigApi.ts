@@ -25,7 +25,10 @@ export const useFeeConfigApi = () => {
 
   const createFeeConfig = async (payload: FeeModel): Promise<FeeModel> => {
     const rep = await useApiExecutor().execute(() =>
-      $fetch<ApiResponse<FeeModel>>(`/api/fee/create-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<FeeModel>>(`/api/management/fee/create-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch fee config:', rep.message)
@@ -35,7 +38,10 @@ export const useFeeConfigApi = () => {
   }
   const updateFeeConfig = async (payload: FeeModel): Promise<FeeModel> => {
     const rep = await useApiExecutor().execute(() =>
-      $fetch<ApiResponse<FeeModel>>(`/api/fee/update-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<FeeModel>>(`/api/management/fee/update-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch fee config:', rep.message)
@@ -46,7 +52,10 @@ export const useFeeConfigApi = () => {
 
   const getListFeeConfig = async (payload: { search: string }): Promise<FeeModel[]> => {
     const rep = await useApiExecutor().execute(() =>
-      $fetch<ApiResponse<FeeModel[]>>(`/api/fee/get-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<FeeModel[]>>(`/api/management/fee/get-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch fee config:', rep.message)
@@ -57,7 +66,10 @@ export const useFeeConfigApi = () => {
 
   const findFeeConfigById = async (payload: { id: string }): Promise<FeeModel> => {
     const rep = await useApiExecutor().execute(() =>
-      $fetch<ApiResponse<FeeModel>>(`/api/fee/find-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<FeeModel>>(`/api/management/fee/find-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch fee config by ID:', rep.message)

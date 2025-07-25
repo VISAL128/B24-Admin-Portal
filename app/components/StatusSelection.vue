@@ -15,7 +15,6 @@
     >
       <template #leading="{ modelValue }">
         <div v-if="modelValue" class="size-2 rounded" :class="getStatusColor(modelValue)" />
-
       </template>
       <template #item-leading="{ item }">
         <div v-if="item" class="size-2 rounded" :class="getStatusColor(item)" />
@@ -168,7 +167,7 @@ const getStatusColor = (
     case 'in-progress':
       return 'bg-secondary text-white'
     default:
-      return 'bg-gray-700 text-black'
+      return 'bg-gray-700 dark:bg-gray-200 text-black'
   }
 }
 

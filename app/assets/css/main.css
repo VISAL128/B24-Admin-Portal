@@ -4,6 +4,15 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+@font-face {
+  font-family: 'Noto Sans Khmer';
+  src: local('Noto Sans Khmer Regular'), local('Noto Sans Khmer');
+  font-display: swap;
+  unicode-range: U+1780-17FF, U+19E0-19FF, U+200C-200D, U+25CC;
+  font-weight: 400;
+  font-style: normal;
+}
+
 @theme {
   --font-display: 'Noto Sans Khmer', 'Preahvihear', 'DM Sans', sans-serif;
 }

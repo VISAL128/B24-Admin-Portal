@@ -1,16 +1,16 @@
 import { defineEventHandler, readBody } from 'h3'
 import type { FeeModel } from '~/models/settlement'
 import type { ApiResponse } from '~/models/baseModel'
-import { createFeeConfig } from '../../logic/management_api_logic'
+import { findFeeConfigById } from '../../../logic/management_api_logic'
 
 export default defineEventHandler(async (event): Promise<ApiResponse<FeeModel | null>> => {
-  const payload = await readBody<FeeModel>(event)
+  const payload = await readBody<{ id: string }>(event)
 
-  const response = await createFeeConfig(payload)
+  const response = await findFeeConfigById(payload)
   if (!response || !response.data) {
     return {
       code: 'ERROR',
-      message: 'Failed to create fee config',
+      message: 'Failed to find fee config',
       data: null,
     }
   }

@@ -63,7 +63,7 @@
     "search_placeholder": "Search..."
   },
   "status": {
-    "all": "All",
+    "all": "All status",
     "header": "Status",
     "active": "Active",
     "inactive": "Inactive",
@@ -180,7 +180,6 @@
     "transaction_summary": "Transaction Summary",
     "transaction_allocate": "Transaction Allocation"
   },
-  "settlement_history": "Settlement History",
   "settlement_history_details": {
     "title": "Settlement History Details",
     "subtitle": "View detailed settlement history records",
@@ -200,6 +199,15 @@
     "status": "Status",
     "status_success": "Success",
     "status_failed": "Failed"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "digital_wallet": "Digital Wallet",
+    "settlement": "Settlement",
+    "settings": "Settings",
+    "logout": "Logout",
+    "profile": "Profile",
+    "developer_tools": "Developer Tools"
   },
   "settings": {
     "generate_details": "General Details",
@@ -301,9 +309,34 @@
     "body": "Are you sure you want to proceed?",
     "confirm": "Confirm"
   },
+  "navbar": {
+    "theme": "Theme",
+    "language": "Language",
+    "settings": "Settings",
+    "developer_tools": "Developer Tools"
+  },
+  "settlement_history": {
+    "columns": {
+      "created_date": "Settlement Date",
+      "total_amount": "Total Amount",
+      "currency_id": "Currency",
+      "total_settled": "Transaction",
+      "status": "Status",
+      "created_by": "Settled By"
+    },
+    "column_config": {
+      "reset": "Reset Columns",
+      "columns": "Columns"
+    }
+  },
   "settlement": {
+    "settlement_details_description": "Details of the settlement",
+    "refresh": "Refresh",
+    "auto_refresh": "Auto Refresh",
+    "auto_refresh_desc": "Automatically refresh the settlement history every 5 seconds.",
     "transaction": "Transaction",
     "title": "Settlement",
+    "settlement_list": "Settlement List",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
     "select_status": "Select Status",
@@ -315,9 +348,10 @@
     "supplier": "Biller",
     "settlement_transaction": "Settlement Transaction",
     "transaction_allocations": "Transaction Allocations",
+    "type": "Type",
     "biller": {
-      "code": "Sub Biller Code",
-      "name": "Sub Biller Name"
+      "code": "Biller Code",
+      "name": "Biller Name"
     },
     "sub_biller": {
       "code": "Sub Biller Code",

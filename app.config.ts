@@ -10,13 +10,22 @@ export default defineAppConfig({
       slots: {
         td: 'text-xxs py-3 cursor-pointer',
         th: 'tb-h-text py-2',
+        thead: 'bg-default',
+        tr: 'border-b border-default data-[selected=true]:bg-elevated/50',
       },
+    },
+    chip: {
+      variants: {
+        size: {
+          '3xl': 'text-[8px]'
+        }
+      }
     },
 
     // Card component customization
     card: {
       slots: {
-        root: 'rounded-lg overflow-hidden bg-white dark:bg-gray-800',
+        root: 'rounded-lg overflow-hidden',
         header: 'p-3 sm:px-4',
         body: 'p-3',
         footer: 'p-4 sm:px-6',

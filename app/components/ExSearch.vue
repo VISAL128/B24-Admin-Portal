@@ -1,6 +1,8 @@
 <template>
   <UInput
+    :id="`ex-search-${Math.random().toString(36).substring(2, 15)}`"
     v-model="searchValue"
+    :name="`ex-search-${Math.random().toString(36).substring(2, 15)}`"
     :placeholder="placeholder"
     :icon="icon"
     :ui="appConfig.ui.input.slots"

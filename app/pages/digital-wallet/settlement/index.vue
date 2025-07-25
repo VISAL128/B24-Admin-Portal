@@ -13,7 +13,7 @@
           @input="onSearchInput"
         />
         <UPopover>
-          <UButton color="neutral" variant="subtle" size="sm" icon="i-lucide-calendar">
+          <UButton color="neutral" variant="outline" size="sm" icon="i-lucide-calendar">
             <template v-if="modelValue.start">
               <template v-if="modelValue.end">
                 {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
@@ -40,20 +40,32 @@
           :placeholder="t('settlement.select_status')"
           :searchable="false"
         />
-        <!-- <USwitch
-          :v-model="false"
-          :label="t('settlement.auto_refresh')"
-          size="sm"
-          class="ml-2" /> -->
+        <div class="flex items-center gap-1">
+          <USwitch
+            v-model="autoRefresh"
+            :label="t('settlement.auto_refresh')"
+            checked-icon="material-symbols:sync"
+            unchecked-icon="material-symbols:sync-disabled"
+            size="sm"
+            class="ml-2"
+          />
+          <UTooltip :text="t('settlement.auto_refresh_desc')" placement="top">
+            <UIcon name="material-symbols:info-outline" class="size-3.5" />
+          </UTooltip>
+        </div>
+        <UIcon
+          v-if="!autoRefresh"
+          name="material-symbols:sync"
+          :class="[
+            'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+            { 'animate-spin': isRefreshing },
+          ]"
+          :title="t('settlement.refresh')"
+          @click="fetchSettlementHistory(true)"
+        />
       </div>
       <div class="flex items-center gap-2">
-        <UButton
-          v-if="false"
-          color="primary"
-          icon="i-lucide-play"
-          size="sm"
-          @click="onGenerateSettlement"
-        >
+        <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
           {{ t('generate_settlement') }}
         </UButton>
 
@@ -68,12 +80,48 @@
           }}</UButton>
         </UDropdownMenu> -->
         <ExportButton :data="filteredData" :headers="exportHeaders" />
+        <LazyUPopover>
+          <UButton variant="ghost" class="p-2 relative">
+            <UIcon name="icon-park-outline:setting-config" class="text-gray-900 dark:text-white" />
+          </UButton>
+          <template #content>
+            <div class="p-2 space-y-1 min-w-50">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-muted">{{
+                  t('settlement_history.column_config.columns')
+                }}</span>
+                <UButton variant="link" class="text-muted" size="sm" @click="onResetColumnConfig">
+                  {{ t('settlement_history.column_config.reset') }}
+                </UButton
+                >
+              </div>
+              <Divider />
+              <div
+                v-for="col in columnConfig"
+                :key="col.id"
+                class="flex items-center justify-between px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <div class="flex items-center gap-2">
+                  <UCheckbox
+                    :id="col.id"
+                    :label="getTranslationHeaderById(col.id)"
+                    :model-value="col.getIsVisible()"
+                    class="text-sm"
+                    size="sm"
+                    @update:model-value="(value) => col.toggleVisibility(value as boolean)"
+                  />
+                </div>
+              </div>
+            </div>
+          </template>
+        </LazyUPopover>
       </div>
     </div>
 
     <!-- Table -->
     <UTable
       ref="table"
+      :column-visibility="columnVisibility"
       :data="filteredData"
       :columns="columns"
       :loading="loading"
@@ -136,12 +184,13 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
+import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import type { TableColumn, TableRow } from '@nuxt/ui'
+import type { Column } from '@tanstack/vue-table'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
+import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { useI18n } from 'vue-i18n'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -150,7 +199,7 @@ import { UButton } from '#components'
 import appConfig from '~~/app.config'
 import ExportButton from '~/components/buttons/ExportButton.vue'
 import ExSearch from '~/components/ExSearch.vue'
-import { DEFAULT_PAGE_SIZE_OPTIONS, DEFAULT_PAGE_SIZE, TABLE_CONSTANTS } from '~/utils/constants'
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 
@@ -166,6 +215,7 @@ const errorHandler = useErrorHandler()
 const { statusCellBuilder } = useStatusBadge()
 const pref = useUserPreferences().getPreferences()
 const { formatAmount } = useCurrency()
+const { currentProfile } = useAuth()
 
 const table = useTemplateRef('table')
 const router = useRouter()
@@ -183,17 +233,83 @@ const endDate = ref('')
 const settlements = ref<SettlementHistoryRecord[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
+const isRefreshing = ref(false)
+const autoRefresh = ref(true)
 const selectedStatus = ref<{ label: string; value: string }>({
   label: t('status.all'),
   value: '',
 }) // Default status
-const availableStatuses = ref<string[]>(['all', 'processing', 'completed'])
+const availableStatuses = ref<string[]>(Object.values(SettlementHistoryStatus))
 
 const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 const today = new Date()
 const modelValue = shallowRef({
   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+})
+
+const columnConfig = computed<Column<SettlementHistoryRecord>[]>(
+  (): Column<SettlementHistoryRecord>[] => {
+    return (
+      table?.value?.tableApi
+        ?.getAllColumns()
+        .filter((column: Column<SettlementHistoryRecord>) => column.getCanHide()) ?? []
+    )
+  }
+)
+
+// const columnsVisibility = ref<Column<SettlementHistoryRecord>[]>(
+//   table?.value?.tableApi?.getAllColumns().filter((column: Column<SettlementHistoryRecord>) => column.getCanHide()) ?? [])
+
+const onResetColumnConfig = () => {
+  table?.value?.tableApi?.resetColumnVisibility()
+}
+
+// const onColumnVisibilityChange = (columnId: string, isVisible: boolean) => {
+//   if (table.value?.tableApi) {
+//     table.value.tableApi(columnId, isVisible)
+//   }
+// }
+
+const columnVisibility = ref<Record<string, boolean>>({
+  id: false,
+  row_number: true,
+  created_date: true,
+  total_amount: true,
+  currency_id: true,
+  created_by: true,
+  total_settled: true,
+  status: true,
+  select: true,
+})
+
+const getTranslationHeaderById = (id: string) => {
+  return t(`settlement_history.columns.${id}`)
+}
+
+let interval: ReturnType<typeof setInterval> | null = null
+
+watch(autoRefresh, (val) => {
+  if (val) {
+    // Start auto-refresh every 5 seconds
+    interval = setInterval(() => {
+      fetchSettlementHistory(true)
+    }, 5000)
+  } else {
+    // Clear interval when auto-refresh is turned off
+    if (interval) {
+      clearInterval(interval)
+      interval = null
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  // Clear interval on component unmount
+  if (interval) {
+    clearInterval(interval)
+    interval = null
+  }
 })
 
 // Watch and convert modelValue to string ISO
@@ -213,16 +329,20 @@ watch([page, pageSize, selectedStatus], () => {
 })
 
 // Fetch settlement data from API
-const fetchSettlementHistory = async () => {
+const fetchSettlementHistory = async (refreshAction: boolean = false) => {
   loading.value = true
+  if (refreshAction) {
+    isRefreshing.value = true
+  }
   try {
     const payload: SettlementHistoryQuery = {
-      name: search.value || undefined,
+      search: search.value || undefined,
       page_size: pageSize.value.value,
       page: page.value,
       start_date: startDate.value,
       end_date: endDate.value,
       status: selectedStatus.value.value || '', // Use selected status value or default to completed
+      supplier_id: currentProfile.value?.id || '', // Use current supplier ID
     }
 
     const data = await getSettlementHistory(payload)
@@ -235,6 +355,10 @@ const fetchSettlementHistory = async () => {
     errorHandler.handleApiError(error)
   } finally {
     loading.value = false
+    // Add a small delay to ensure the animation completes
+    setTimeout(() => {
+      isRefreshing.value = false
+    }, 200)
   }
 }
 
@@ -252,7 +376,7 @@ const onSearchInput = (_value: string) => {
 // Filtered rows for table
 const filteredData = computed(() =>
   settlements.value.filter((item) =>
-    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
+    (item.created_by ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
 
@@ -264,7 +388,7 @@ onBeforeMount(() => {
   endDate.value = new CalendarDate(
     today.getFullYear(),
     today.getMonth() + 1,
-    lastDayOfMonth // Use last day of month
+    lastDayOfMonth
   ).toString()
   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
@@ -272,6 +396,12 @@ onBeforeMount(() => {
 
 // Initial load
 onMounted(() => {
+  if (autoRefresh.value) {
+    // Start auto-refresh if enabled
+    interval = setInterval(() => {
+      fetchSettlementHistory(true)
+    }, 5000)
+  }
   fetchSettlementHistory()
 })
 
@@ -334,6 +464,13 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       ),
     enableSorting: false,
     enableHiding: false,
+    meta: {
+      class: {
+        td() {
+          return 'text-center cursor-pointer'
+        },
+      },
+    },
   },
   {
     id: 'row_number',
@@ -342,6 +479,7 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     size: 30,
     maxSize: 30,
     enableSorting: false,
+    enableHiding: false,
   },
   // { accessorKey: "id", header: t("Settlement ID") },
   {
@@ -366,13 +504,23 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       ),
     enableMultiSort: true,
     enableSorting: true,
+    size: 50,
+    maxSize: 150,
   },
-  { accessorKey: 'currency_id', header: () => t('settlement.currency') },
-  { accessorKey: 'created_by', header: () => t('settled_by') },
+  {
+    accessorKey: 'currency_id',
+    header: () => t('settlement.currency'),
+    cell: ({ row }) => row.original.currency_id || '-',
+  },
+  {
+    accessorKey: 'created_by',
+    header: () => t('settled_by'),
+    cell: ({ row }) => row.original.created_by || '-',
+  },
 
   {
-    accessorKey: 'transaction',
-    header: () => t('settlement.transaction'),
+    accessorKey: 'total_settled',
+    header: ({ column }) => createSortableHeader(column, t('settlement.transaction')),
     cell: ({ row }) => {
       // return h('span', {
       //   class: `text-sm font-medium`

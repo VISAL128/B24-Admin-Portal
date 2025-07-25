@@ -803,6 +803,7 @@ definePageMeta({
                       color="neutral"
                       variant="subtle"
                       icon="i-lucide-calendar"
+                      size="sm"
                       class="w-full justify-start"
                     >
                       {{
@@ -820,10 +821,12 @@ definePageMeta({
                           </label>
                           <div class="flex gap-2">
                             <USelectMenu
+
                               v-model="cutOffDateHour"
                               :items="getHourOptions"
                               :placeholder="t('settlement.generate.form.hour')"
                               class="flex-1"
+                              size="sm"
                               :search-input="false"
                             />
                             <USelectMenu
@@ -831,6 +834,7 @@ definePageMeta({
                               :items="getMinuteOptions"
                               :placeholder="t('settlement.generate.form.minute')"
                               class="flex-1"
+                              size="sm"
                               :search-input="false"
                             />
                             <USelectMenu
@@ -838,6 +842,7 @@ definePageMeta({
                               :items="getSecondOptions"
                               :placeholder="t('settlement.generate.form.second')"
                               class="flex-1"
+                              size="sm"
                               :search-input="false"
                             />
                             <USelectMenu
@@ -846,6 +851,7 @@ definePageMeta({
                               :items="getPeriodOptions"
                               :placeholder="t('settlement.generate.form.am/pm')"
                               class="flex-1"
+                              size="sm"
                               :search-input="false"
                             />
                           </div>
@@ -866,6 +872,7 @@ definePageMeta({
                     option-attribute="value"
                     :placeholder="t('settlement.generate.form.choose_currency')"
                     class="w-full"
+                    size="sm"
                     :search-input="false"
                   >
                     <template #leading>
@@ -879,24 +886,34 @@ definePageMeta({
               <!-- Cpo List Table -->
               <div class="flex flex-col flex-1 min-h-0">
                 <div
-                  class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4 flex-shrink-0"
+                  class="flex flex-col sm:flex-row sm:items-center justify-between pl-2 mb-2 gap-4 flex-shrink-0"
                 >
-                  <h1 class="text-sm font-semibold flex-shrink-0">
-                    {{ t('settlement.generate.form.biller_list') }} ({{
-                      filteredCpoList.length || 0
-                    }})
-                    <span
-                      v-if="searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)"
-                      class="text-gray-500"
-                    >
-                      of {{ cpoList.length || 0 }}
-                    </span>
-                  </h1>
+                  <div class="gap-2 flex items-center">
+                    <UChip :text="cpoList.length || 0" size="3xl">
+                      <UIcon
+                        name="material-symbols:group-outline-rounded"
+                        class="text-lg text-gray-600"
+                      />
+                    </UChip>
+                    <p class="text-sm font-bold">{{ t('settlement.generate.form.biller_list') }}</p>
+                  </div>
+                  <!--                  <h1 class="text-sm font-semibold flex-shrink-0">-->
+                  <!--                    {{ t('settlement.generate.form.biller_list') }} ({{-->
+                  <!--                      filteredCpoList.length || 0-->
+                  <!--                    }})-->
+                  <!--                    <span-->
+                  <!--                      v-if="searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)"-->
+                  <!--                      class="text-gray-500"-->
+                  <!--                    >-->
+                  <!--                      of {{ cpoList.length || 0 }}-->
+                  <!--                    </span>-->
+                  <!--                  </h1>-->
 
                   <!-- Search Input -->
                   <div class="w-full sm:w-64 flex-shrink-0">
                     <UInput
                       v-model="searchQuery"
+                      size="sm"
                       icon="i-lucide-search"
                       :placeholder="t('settlement.generate.form.search_biller')"
                       class="w-full"

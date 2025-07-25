@@ -6,7 +6,7 @@ export async function requestToPgwModuleApi(
   method: string = 'POST',
   body: unknown | null = null
 ): Promise<unknown> {
-  const url = `${useRuntimeConfig().pgw_module_api_url}${endpoint}`
+  const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
   const options: RequestInit = {
     method,
     headers: {
@@ -35,4 +35,3 @@ function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
   }
   return response.json()
 }
-
