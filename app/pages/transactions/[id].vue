@@ -9,16 +9,12 @@
           <div
             class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
           >
-            <UIcon name="i-material-symbols-receipt-long" class="w-5 h-5 text-primary" />
+            <UIcon name="material-symbols:receipt-long" class="w-4 h-4 text-primary" />
           </div>
-          <h4 class="text-base font-medium text-gray-900 dark:text-white">Transaction Detail</h4>
+          <h4 class="text-base font-medium text-gray-900 dark:text-white">Transaction</h4>
         </div>
         <div class="flex items-center space-x-2">
-          <StatusBadge
-            :status="transactionData.status"
-            variant="subtle"
-            size="lg"
-          />
+          <StatusBadge :status="transactionData.status" variant="subtle" size="lg" />
           <UButton color="primary" variant="outline" icon="i-lucide-download" @click="download">
           </UButton>
         </div>
@@ -136,9 +132,9 @@
         <div
           class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
         >
-          <UIcon name="i-heroicons-users" class="w-5 h-5 text-primary" />
+          <UIcon name="material-symbols:list-alt" class="w-4 h-4 text-primary" />
         </div>
-        Customer Information
+        Transaction Detail
       </h4>
       <UTable
         :data="customerDetails"
@@ -174,7 +170,7 @@
         <div
           class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
         >
-          <UIcon name="i-material-symbols-receipt-long" class="w-5 h-5 text-primary" />
+          <UIcon name="i-material-symbols-receipt-long" class="w-4 h-4 text-primary" />
         </div>
         Transaction Allocation
       </h4>
@@ -187,7 +183,9 @@
           th: 'px-2 py-3 whitespace-nowrap text-left',
           thead: 'whitespace-nowrap',
           tbody: 'whitespace-nowrap',
+          tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
         }"
+        @select="onTransactionAllocationSelect"
       >
         <template #cell="{ column, row }">
           <div
@@ -220,7 +218,7 @@
       </UTable>
     </div>
 
-    <!-- Repush Transaction History Table -->
+    <!-- Push Back Transaction History Table -->
     <div
       class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
     >
@@ -230,7 +228,7 @@
         >
           <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 text-primary" />
         </div>
-        Repush Transaction History
+        Push Back Transaction History
       </h4>
       <UTable
         :data="webhookHistoryData"
@@ -241,7 +239,9 @@
           th: 'text-left whitespace-nowrap px-3 py-3',
           td: 'whitespace-nowrap align-top px-3 py-3',
           tbody: 'divide-y divide-gray-200 dark:divide-gray-700',
+          tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
         }"
+        @select="onRowSelect"
       />
     </div>
 
@@ -307,8 +307,242 @@
             @click="showDownloadModal = false"
           />
         </div>
+        i
       </template>
     </UModal>
+
+    <!-- Push Back Transaction Detail Slideover -->
+    <USlideover
+      v-model:open="showPushBackDetail"
+      side="right"
+      :overlay="true"
+      :title="'Push Back Transaction Detail'"
+      @close="closeSlideover"
+    >
+      <template #body>
+        <div class="space-y-4" v-if="selectedPushBackTransaction">
+          <!-- Transaction ID Section -->
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Transaction ID:</span
+                  >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                    getSelectedPushBackDetail()?.transactionId
+                  }}</span>
+                </div>
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Repush Date:</span
+                  >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                    formatDate(getSelectedPushBackDetail()?.date || '')
+                  }}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Repush Status:</span
+                  >
+                  <StatusBadge
+                    :status="getSelectedPushBackDetail()?.status || 'Unknown'"
+                    variant="subtle"
+                    size="sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Biller Configuration Section -->
+          <div class="space-y-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+            >
+              Biller Configuration:
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Type:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                  getSelectedPushBackDetail()?.billerConfiguration.type
+                }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
+                <CopyableText
+                  :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
+                  :display-text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
+                  text-class="text-sm text-primary dark:text-primary"
+                  font-class="font-mono break-all"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Payload Sent Section -->
+          <div class="space-y-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+            >
+              Payload Sent:
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+              <pre class="text-sm text-gray-900 dark:text-white font-mono whitespace-pre-wrap">{{
+                JSON.stringify(getSelectedPushBackDetail()?.payload, null, 2)
+              }}</pre>
+            </div>
+          </div>
+
+          <!-- Response Section -->
+          <div class="space-y-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+            >
+              Response:
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Status Code:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                  getSelectedPushBackDetail()?.response.statusCode
+                }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                  getSelectedPushBackDetail()?.response.message
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </USlideover>
+
+    <!-- Transaction Allocation Detail Slideover -->
+    <USlideover
+      v-model:open="showTransactionAllocationDetail"
+      side="right"
+      :overlay="true"
+      :title="'Transaction Allocation Detail'"
+      @close="closeAllocationSlideover"
+    >
+      <template #body>
+        <div class="space-y-4" v-if="selectedTransactionAllocation">
+          <!-- Customer & Transaction Summary Card -->
+          <UCard>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  Customer
+                </p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ getSelectedAllocationDetail()?.transaction?.customer_name || 'John Doe' }}
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  {{ getSelectedAllocationDetail()?.transaction?.customer_code || 'CUST-001' }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  Biller
+                </p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{
+                    getSelectedAllocationDetail()?.transaction?.biller_name || 'Charge Station A'
+                  }}
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  {{ getSelectedAllocationDetail()?.transaction?.biller_code || 'BS-001' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Amount Summary -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Transaction Amount</span>
+                <span class="text-lg font-bold text-blue-600"
+                  >{{
+                    getSelectedAllocationDetail()?.transaction?.transactionAmount?.toFixed(2) ||
+                    '50.00'
+                  }}
+                  {{ getSelectedAllocationDetail()?.transaction?.currency || 'USD' }}</span
+                >
+              </div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Count</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                  >{{
+                    getSelectedAllocationDetail()?.transaction?.settlement_count || '1'
+                  }}
+                  settlement(s)</span
+                >
+              </div>
+            </div>
+          </UCard>
+
+          <!-- Settlement Details Section -->
+          <div class="space-y-4">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center"
+              >
+                <UIcon name="i-heroicons-building-library" class="w-4 h-4 text-blue-600" />
+              </div>
+              <h4 class="text-base font-medium text-gray-900 dark:text-white">
+                Settlement Details
+              </h4>
+            </div>
+
+            <!-- Settlement Cards -->
+            <div
+              v-for="(settlement, index) in getSelectedAllocationDetail()?.settlement || [
+                mockSettlement,
+              ]"
+              :key="index"
+              class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+            >
+              <!-- Settlement Information -->
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">ចំនួនរៀល:</span>
+                  <span class="text-lg font-bold text-gray-900 dark:text-white">{{
+                    (settlement.amount || 25.0).toLocaleString()
+                  }}</span>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">ធនាគារ:</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                    settlement.bank || 'ACLEDA'
+                  }}</span>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">លេខយោងធនាគារ:</span>
+                  <CopyableText
+                    :text="settlement.bank_ref || 'FT12937HDGT36467H'"
+                    :display-text="settlement.bank_ref || 'FT12937HDGT36467H'"
+                    text-class="text-sm text-gray-900 dark:text-white font-mono"
+                    font-class="font-mono"
+                  />
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">កាលបរិច្ឆេទបញ្ជូន:</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{
+                    settlement.date || '10 កុម្ភៈ 2025 02:43'
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </USlideover>
   </div>
 </template>
 
@@ -340,6 +574,10 @@ const notification = useNotification()
 const transactionId = computed(() => route.params.id as string)
 const loading = ref(true)
 const showDownloadModal = ref(false)
+const showPushBackDetail = ref(false)
+const selectedPushBackTransaction = ref<any>(null)
+const showTransactionAllocationDetail = ref(false)
+const selectedTransactionAllocation = ref<any>(null)
 
 // Customer Details Data
 interface CustomerDetail {
@@ -486,7 +724,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'billerName',
-    header: () => 'Sub Biller',
+    header: () => ' Allocation Party',
     accessorKey: 'billerName',
     size: 160,
     minSize: 150,
@@ -514,84 +752,115 @@ const transactionAllocateColumns = [
   },
 ]
 
-// Webhook History Data
+// Push Back Transaction Data
 const webhookHistoryData = ref([
   {
-    id: '1',
-    date: '05/02/2024 2:30 pm',
+    id: 'pushback-001',
+    transactionId: 'TXN-20240722001',
+    action: 'push back',
+    date: '2024-07-22T10:30:00+07:00',
     status: 'Failed',
-    url: 'https://example.com/webhook',
-    payload: JSON.stringify(
-      {
-        transaction_id: '9876543210',
-        status: 'failed',
-      },
-      null,
-      2
-    ),
     retrying: false,
   },
   {
-    id: '2',
-    date: '06/02/2024 9:15 am',
+    id: 'pushback-002',
+    transactionId: 'TXN-20240722001',
+    action: 'push back',
+    date: '2024-07-22T11:00:00+07:00',
     status: 'Success',
-    url: 'https://example.com/webhook',
-    payload: JSON.stringify(
-      {
-        transaction_id: '9876543210',
-        status: 'success',
-      },
-      null,
-      2
-    ),
-    retrying: false,
-  },
-  {
-    id: '3',
-    date: '06/02/2024 9:45 am',
-    status: 'Failed',
-    url: 'https://example.com/webhook',
-    payload: JSON.stringify(
-      {
-        transaction_id: '9876543210',
-        status: 'failed',
-      },
-      null,
-      2
-    ),
     retrying: false,
   },
 ])
 
-const retryWebhook = (id: string) => {
+// Push Back Detail Data - for slideover
+const pushBackDetailData = ref({
+  'pushback-001': {
+    id: 'pushback-001',
+    transactionId: 'TXN-20240722001',
+    action: 'push back',
+    date: '2024-07-22T10:30:00+07:00',
+    status: 'Failed',
+    billerConfiguration: {
+      type: 'Webhook',
+      url: 'https://example.com/webhook',
+      exchange: null,
+      routingKey: null,
+    },
+    payload: {
+      transaction_id: 'TXN-20240722001',
+      status: 'failed',
+      amount: 10.5,
+      currency: 'USD',
+      customer: {
+        name: 'John Doe',
+        phone: '012345678',
+      },
+    },
+    response: {
+      statusCode: 500,
+      message: 'Internal Server Error',
+    },
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    retrying: false,
+    allowPushBack: true,
+  },
+  'pushback-002': {
+    id: 'pushback-002',
+    transactionId: 'TXN-20240722001',
+    action: 'push back',
+    date: '2024-07-22T11:00:00+07:00',
+    status: 'Success',
+    billerConfiguration: {
+      type: 'Webhook',
+      url: 'https://example.com/webhook',
+      exchange: null,
+      routingKey: null,
+    },
+    payload: {
+      transaction_id: 'TXN-20240722001',
+      status: 'success',
+      amount: 10.5,
+      currency: 'USD',
+      customer: {
+        name: 'John Doe',
+        phone: '012345678',
+      },
+    },
+    response: {
+      statusCode: 200,
+      message: 'Success',
+    },
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    retrying: false,
+    allowPushBack: true,
+  },
+})
+
+const retryPushBack = (id: string) => {
   const item = webhookHistoryData.value.find((x) => x.id === id)
   if (!item) return
 
   item.retrying = true
   notification.showInfo({
-    title: 'Retry Webhook',
-    description: `Retrying webhook for ID ${id}...`,
+    title: 'Retry Push Back',
+    description: `Retrying push back for ID ${id}...`,
   })
 
   setTimeout(() => {
     item.status = 'Success'
     item.retrying = false
     notification.showSuccess({
-      title: 'Webhook Success',
-      description: `Webhook for ID ${id} has been resent successfully.`,
+      title: 'Push Back Success',
+      description: `Push back for ID ${id} has been resent successfully.`,
     })
   }, 1500)
 }
 
 const webhookColumns = [
-  {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row }: any) => h('div', { class: 'text-left font-medium' }, row.index + 1),
-    size: 50,
-    maxSize: 50,
-    enableSorting: false,
-  },
   {
     id: 'actions',
     header: () => 'Actions',
@@ -614,8 +883,8 @@ const webhookColumns = [
                 }
               `,
               disabled: row.original.retrying,
-              onClick: () => retryWebhook(row.original.id),
-              title: row.original.retrying ? 'Retrying...' : 'Repush Transaction',
+              onClick: () => retryPushBack(row.original.id),
+              title: row.original.retrying ? 'Retrying...' : 'Retry Push Back',
             },
             [
               row.original.retrying
@@ -648,7 +917,22 @@ const webhookColumns = [
     id: 'date',
     header: () => 'Date',
     accessorKey: 'date',
-    size: 150,
+    cell: ({ row }: any) => {
+      const date = new Date(row.original.date)
+      return h(
+        'span',
+        {},
+        date.toLocaleString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })
+      )
+    },
+    size: 180,
   },
   {
     id: 'status',
@@ -658,58 +942,9 @@ const webhookColumns = [
       h(StatusBadge, {
         status: row.original.status,
         variant: 'subtle',
-        size: 'md'
+        size: 'md',
       }),
-    size: 100,
-  },
-  {
-    id: 'url',
-    header: () => 'Webhook URL',
-    accessorKey: 'url',
-    cell: ({ row }: any) =>
-      h(
-        'div',
-        {
-          class:
-            'inline-block border border-gray-200 dark:border-gray-700 rounded-md p-1 bg-gray-50 dark:bg-gray-800',
-        },
-        [
-          h(CopyableText, {
-            text: row.original.url,
-            displayText: row.original.url,
-            textClass: 'hover:underline text-sm truncate block',
-            fontClass: '',
-            notificationTitle: 'URL Copied!',
-          }),
-        ]
-      ),
-    size: 200,
-  },
-  {
-    id: 'payload',
-    header: () => 'Payload Data',
-    accessorKey: 'payload',
-    cell: ({ row }: any) => {
-      return h('div', { class: 'space-y-1' }, [
-        h(
-          'div',
-          {
-            class:
-              'inline-block border border-gray-200 dark:border-gray-700 rounded-md p-1 bg-gray-50 dark:bg-gray-800',
-          },
-          [
-            h(CopyableText, {
-              text: row.original.payload,
-              displayText: row.original.payload,
-              textClass: 'hover:underline text-sm truncate block',
-              fontClass: '',
-              notificationTitle: 'Payload Copied!',
-            }),
-          ]
-        ),
-      ])
-    },
-    size: 250,
+    size: 120,
   },
 ]
 
@@ -804,6 +1039,93 @@ const rightColumnFields = computed(() => transactionOverviewFields.value.slice(5
 // Download functions
 const download = async () => {
   showDownloadModal.value = true
+}
+
+// Push Back Transaction Detail function
+const onRowSelect = (row: any) => {
+  selectedPushBackTransaction.value = row.original
+  showPushBackDetail.value = true
+}
+
+const closeSlideover = () => {
+  showPushBackDetail.value = false
+  selectedPushBackTransaction.value = null
+}
+
+// Helper function to get selected push back detail
+const getSelectedPushBackDetail = () => {
+  if (!selectedPushBackTransaction.value || !selectedPushBackTransaction.value.id) return null
+  const id = selectedPushBackTransaction.value.id as string
+  return pushBackDetailData.value[id as keyof typeof pushBackDetailData.value]
+}
+
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+// Transaction Allocation Detail function
+const onTransactionAllocationSelect = (row: any) => {
+  selectedTransactionAllocation.value = row.original
+  showTransactionAllocationDetail.value = true
+}
+
+const closeAllocationSlideover = () => {
+  showTransactionAllocationDetail.value = false
+  selectedTransactionAllocation.value = null
+}
+
+// Mock data for transaction allocation detail
+const mockTransactionAllocationDetail = {
+  transaction: {
+    id: '1',
+    customer_name: 'John Doe',
+    customer_code: 'CUST-001',
+    transactionAmount: 50.0,
+    biller_name: 'Charge Station A',
+    biller_code: 'BS-001',
+    currency: 'USD',
+    date: '15/07/2025 10:30 am',
+    settlement_count: 1,
+  },
+  settlement: [
+    {
+      amount: 25.0,
+      receivedAmount: 25.0,
+      outstandingAmount: 25.0,
+      currency: 'USD',
+      date: '15/07/2025 10:30 am',
+      status: 'Completed',
+      bank: 'Bank of America',
+      bank_ref: 'BA-123456789',
+    },
+  ],
+}
+
+const mockSettlement = {
+  amount: 25.0,
+  receivedAmount: 25.0,
+  outstandingAmount: 25.0,
+  currency: 'USD',
+  date: '15/07/2025 10:30 am',
+  status: 'Completed',
+  bank: 'Bank of America',
+  bank_ref: 'BA-123456789',
+}
+
+// Helper function to get selected transaction allocation detail
+const getSelectedAllocationDetail = () => {
+  // For now, return mock data. In real implementation, this would be based on selectedTransactionAllocation
+  return mockTransactionAllocationDetail
 }
 
 const exportTransaction = async () => {
