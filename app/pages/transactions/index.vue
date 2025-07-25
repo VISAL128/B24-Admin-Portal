@@ -53,17 +53,6 @@
     </div>
 
     <!-- Table -->
-    <!-- <UTable
-        ref="table"
-        :data="filteredData"
-        :columns="columns"
-        sticky
-        class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-      >
-        <template #empty>
-          <TableEmptyState />
-        </template>
-      </UTable> -->
     <BaseTable
       :data="filteredData"
       :columns="columns"
@@ -95,12 +84,6 @@
         <TableEmptyState />
       </template>
     </BaseTable>
-
-    <TransactionDetailDrawer
-      :model-value="showTransactionDrawer"
-      :transaction-id="selectedTransactionId ?? ''"
-      @update:modelValue="(val) => (showTransactionDrawer = val)"
-    />
   </div>
 </template>
 
@@ -110,36 +93,37 @@ const selectedRecord = ref<SettlementHistoryRecord | null>(null)
 
 definePageMeta({
   auth: false,
-  breadcrumbs: [{ label: 'transactions', active: true }],
+  breadcrumbs: [
+    { label: 'transactions', to: '/transactions' },
+    { label: 'overview', active: true },
+  ],
 })
-import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
-import { useRouter } from 'vue-router'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
+import type { DropdownMenuItem } from '@nuxt/ui'
+import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import TableEmptyState from '~/components/TableEmptyState.vue'
+import BaseTable from '~/components/tables/BaseTable.vue'
+import type { BaseTableColumn } from '~/components/tables/table'
+import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
   exportToPDFStyled,
   exportToPDFWithUnicodeSupport,
 } from '~/composables/utils/exportUtils'
-import { useI18n } from 'vue-i18n'
-import TableEmptyState from '~/components/TableEmptyState.vue'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
-import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn } from '~/components/tables/table'
-import { getPDFHeaders } from '~/composables/utils/pdfFonts'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-const showTransactionDrawer = ref(false)
-const selectedTransactionId = ref<string | null>(null)
 const { t, locale } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
 const errorHandler = useErrorHandler()
@@ -177,6 +161,8 @@ const selectedDateFilter = ref({
   label: t('this_month'),
   value: 'this_month',
 })
+
+// ...existing code for watchers, functions, etc...
 // Watch and convert modelValue to string ISO
 watch(modelValue, (val) => {
   startDate.value =
@@ -285,7 +271,7 @@ onBeforeMount(() => {
   endDate.value = new CalendarDate(
     today.getFullYear(),
     today.getMonth() + 1,
-    lastDayOfMonth // Use last day of month
+    lastDayOfMonth
   ).toString()
   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
@@ -302,8 +288,7 @@ const onGenerateSettlement = () => {
 
 // Handle navigation to details page
 const navigateToDetails = (rowId: string) => {
-  selectedTransactionId.value = rowId
-  showTransactionDrawer.value = true
+  router.push(`/transactions/${rowId}`)
 }
 
 const exportHeaders = [
@@ -319,6 +304,7 @@ const exportHeaders = [
 const pdfExportHeaders = computed(() => getPDFHeaders(t))
 
 const exportToExcelHandler = async () => {
+  // ...existing export logic...
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
@@ -399,6 +385,7 @@ const exportToExcelHandler = async () => {
 }
 
 const exportToPDFHandler = async () => {
+  // ...existing export logic...
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
@@ -480,6 +467,7 @@ const exportToPDFHandler = async () => {
     })
   }
 }
+
 const exportItems = ref<DropdownMenuItem[]>([
   {
     label: t('pdf'),
@@ -556,7 +544,6 @@ const columns: BaseTableColumn<any>[] = [
     maxSize: 30,
     enableSorting: false,
   },
-  // { accessorKey: "id", header: t("Settlement ID") },
   {
     id: 'created_date',
     accessorKey: 'created_date',
@@ -585,7 +572,6 @@ const columns: BaseTableColumn<any>[] = [
     accessorKey: 'settlement_type',
     header: t('settlement_type'),
   },
-  // { accessorKey: 'total_supplier', header: t('Total Supplier') },
   {
     id: 'total_amount',
     accessorKey: 'total_amount',
@@ -627,11 +613,9 @@ const columns: BaseTableColumn<any>[] = [
     header: t('sub_biller'),
     enableSorting: true,
   },
-
-  // { id: 'created_by', accessorKey: 'created_by', header: t('settled_by') },
   {
     id: 'status',
-    accessorKey: 'status', // optional if you need sorting/filtering
+    accessorKey: 'status',
     header: t('status.header'),
     enableSorting: true,
     enableColumnFilter: true,
@@ -643,7 +627,7 @@ const columns: BaseTableColumn<any>[] = [
     cell: ({ row }: any) =>
       h(StatusBadge, {
         status: row.original.status,
-        variant: 'table',
+        variant: 'subtle',
         size: 'sm',
       }),
     // cell: ({ row }) => {
