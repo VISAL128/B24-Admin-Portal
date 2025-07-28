@@ -31,6 +31,7 @@
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
+    "lottie-web": "^5.13.0",
     "nuxt": "^3.17.5",
     "nuxt-charts": "0.1.11",
     "nuxt-oidc-auth": "^1.0.0-beta.5",

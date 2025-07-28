@@ -16,14 +16,11 @@
         'inline-flex items-center justify-center w-4 h-4 rounded transition-colors',
         copied
           ? 'text-green-600 dark:text-green-400'
-          : 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300',
+          : 'text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
       ]"
       :title="copied ? 'Copied!' : 'Copy to clipboard'"
     >
-      <UIcon
-        :name="copied ? 'i-heroicons-check' : 'i-heroicons-clipboard-document'"
-        class="w-3 h-3"
-      />
+      <UIcon :name="copied ? 'i-heroicons-check' : 'i-lucide-copy'" class="w-3 h-3" />
     </button>
   </div>
 </template>
@@ -58,7 +55,7 @@ const handleCopy = async () => {
   try {
     await copy(props.text)
     copied.value = true
-    
+
     if (props.showNotification) {
       notification.showSuccess({
         title: props.notificationTitle,

@@ -42,9 +42,8 @@ enum Status {
 enum SettlementStatus {
   Pending = 'pending',
   Completed = 'completed',
-  Failed = 'failed',
+  Failed = 'failed'
 }
-
 enum FeeType {
   Fixed = 'fixed',
   Percentage = 'percentage',
@@ -54,13 +53,12 @@ enum Currency {
   USD = 'USD',
   KHR = 'KHR',
 }
-export {
-  SortDirection,
-  FilterOperator,
-  FilterType,
-  PartyType,
-  Status,
-  SettlementStatus,
-  FeeType,
-  Currency,
+
+enum SettlementHistoryStatus {
+  All = 'all',
+  Pending = 'pending',
+  Processing = 'processing',
+  Completed = 'completed'
 }
+
+export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus,FeeType ,Currency};

@@ -1,4 +1,5 @@
 import { usePgwModuleApi } from './api/usePgwModuleApi'
+import { useUserPreferences } from './utils/useUserPreferences'
 
 /**
  * Composable for managing splash screen state and functionality
@@ -64,6 +65,26 @@ export const useSplashScreen = () => {
         const { isAuthenticated } = useAuth()
         if (!isAuthenticated.value) {
           return false
+        }
+
+        // Step 2.5: Ensure user preferences are loaded
+        updateProgress('loading_preferences', 30)
+        const preferences = useUserPreferences().getPreferences()
+        if (!preferences) {
+          // Set default preferences if none exist
+          useUserPreferences().savePreferences(DEFAULT_USER_PREFERENCES)
+        } else {
+          // Ensure all default preferences are set
+          let preferencesUpdated = false
+          for (const key in DEFAULT_USER_PREFERENCES) {
+            if (!(key in preferences)) {
+              preferences[key] = DEFAULT_USER_PREFERENCES[key]
+              preferencesUpdated = true
+            }
+          }
+          if (preferencesUpdated) {
+            useUserPreferences().savePreferences(preferences)
+          }
         }
 
         // Step 3: Check for existing profile

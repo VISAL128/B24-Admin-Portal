@@ -1,6 +1,7 @@
 {
   "yes": "Yes",
   "no": "No",
+  "yes_logout": "Yes, Logout",
   "hello": "Hello",
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -71,6 +72,7 @@
     "search_placeholder": "Search..."
   },
   "status": {
+    "all": "All status",
     "header": "Status",
     "active": "Active",
     "inactive": "Inactive",
@@ -78,7 +80,8 @@
     "completed": "Completed",
     "failed": "Failed",
     "success": "Success",
-    "error": "Error"
+    "error": "Error",
+    "processing": "Processing"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -148,6 +151,11 @@
     "transactions": "Transactions",
     "received": "Received",
     "settlement": "Settlement",
+    "select_wallet_type": "Select wallet type",
+    "history": "History",
+    "wallets": "Wallets",
+    "no_wallets_found": "No wallets found",
+    "loading": "Loading",
     "biller_categories": "Biller Categories",
     "view_all": "View All",
     "recent_transactions": "Recent Transactions",
@@ -181,7 +189,6 @@
     "transaction_summary": "Transaction Summary",
     "transaction_allocate": "Transaction Allocation"
   },
-  "settlement_history": "Settlement History",
   "settlement_history_details": {
     "title": "Settlement History Details",
     "subtitle": "View detailed settlement history records",
@@ -201,6 +208,15 @@
     "status": "Status",
     "status_success": "Success",
     "status_failed": "Failed"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "digital_wallet": "Digital Wallet",
+    "settlement": "Settlement",
+    "settings": "Settings",
+    "logout": "Logout",
+    "profile": "Profile",
+    "developer_tools": "Developer Tools"
   },
   "settings": {
     "generate_details": "General Details",
@@ -233,6 +249,8 @@
     "time_format_24h": "24-hour (13:30)",
     "time_format_12h": "12-hour (1:30 PM)",
     "default_currency": "Default Currency",
+    "default_page_size": "Default Page Size",
+    "default_page_size_description": "Set the default number of items to display per page in tables",
     "preview": "Preview",
     "preview_date": "Date:",
     "preview_time": "Time:",
@@ -300,11 +318,37 @@
     "body": "Are you sure you want to proceed?",
     "confirm": "Confirm"
   },
+  "navbar": {
+    "theme": "Theme",
+    "language": "Language",
+    "settings": "Settings",
+    "developer_tools": "Developer Tools"
+  },
+  "settlement_history": {
+    "columns": {
+      "created_date": "Settlement Date",
+      "total_amount": "Total Amount",
+      "currency_id": "Currency",
+      "total_settled": "Transaction",
+      "status": "Status",
+      "created_by": "Settled By"
+    },
+    "column_config": {
+      "reset": "Reset Columns",
+      "columns": "Columns"
+    }
+  },
   "settlement": {
+    "settlement_details_description": "Details of the settlement",
+    "refresh": "Refresh",
+    "auto_refresh": "Auto Refresh",
+    "auto_refresh_desc": "Automatically refresh the settlement history every 5 seconds.",
     "transaction": "Transaction",
     "title": "Settlement",
+    "settlement_list": "Settlement List",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
+    "select_status": "Select Status",
     "settle_amount": "Settle Amount",
     "amount": "Amount",
     "settlement_bank": "Settlement Bank",
@@ -313,9 +357,10 @@
     "supplier": "Biller",
     "settlement_transaction": "Settlement Transaction",
     "transaction_allocations": "Transaction Allocations",
+    "type": "Type",
     "biller": {
-      "code": "Sub Biller Code",
-      "name": "Sub Biller Name"
+      "code": "Biller Code",
+      "name": "Biller Name"
     },
     "sub_biller": {
       "code": "Sub Biller Code",
@@ -458,8 +503,11 @@
     "current_roles": "Current Roles",
     "request_id": "Request ID"
   },
-
+  "navigate_back": "Navigate Back",
   "error": {
+    "something_went_wrong": "Something went wrong",
+    "try_again_later": "Please try again later.",
+    "try_again": "Try Again",
     "server_error": "Server Error",
     "internal_server_error": "An internal server error occurred. Please try again later.",
     "internal_server_error_title": "Internal Server Error",
@@ -608,5 +656,14 @@
   "this_week": "This Week",
   "this_month": "This Month",
   "this_year": "This Year",
-  "sub_biller": "Sub Biller"
+  "sub_biller": "Sub Biller",
+  "lottie": {
+    "library_not_found": "Lottie animation library not available",
+    "install_instruction": "Run: npm install lottie-web"
+  },
+  "pages": {
+    "transaction": {
+      "title": "Transaction"
+    }
+  }
 }

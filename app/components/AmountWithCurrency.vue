@@ -64,7 +64,7 @@ const amountClasses = computed(() => {
     : (() => {
         const variantClasses = {
           default: 'text-gray-900 dark:text-gray-100',
-          primary: 'text-blue-600 dark:text-blue-400',
+          primary: 'text-primary dark:text-primary',
           secondary: 'text-gray-600 dark:text-gray-300',
           success: 'text-green-600 dark:text-green-400',
           error: 'text-red-600 dark:text-red-400',
@@ -90,7 +90,7 @@ const currencyClasses = computed(() => {
     : (() => {
         const variantClasses = {
           default: 'text-gray-700 dark:text-gray-50',
-          primary: 'text-blue-500 dark:text-blue-300',
+          primary: 'text-primary dark:text-primary',
           secondary: 'text-gray-400 dark:text-gray-200',
           success: 'text-green-500 dark:text-green-300',
           error: 'text-red-500 dark:text-red-300',

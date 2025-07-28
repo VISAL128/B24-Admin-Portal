@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isVisible"
-    class="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-[#bfe9f9] to-white transition-all duration-500"
+    class="fixed inset-0 z-50 flex flex-col bg-gradient-to-br from-[white] via-[#caf0f8] to-white transition-all duration-500"
     :class="{ 'opacity-0': isFadingOut }"
   >
     <!-- Main Content - Centered -->
@@ -33,15 +33,15 @@
             <div
               v-for="i in 3"
               :key="i"
-              class="h-3 w-3 rounded-full bg-primary animate-bounce"
+              class="size-1.5 rounded-full bg-primary animate-bounce"
               :style="{ animationDelay: `${i * 0.2}s` }"
             />
           </div>
         </div>
 
         <!-- Progress Bar -->
-        <div class="mt-6 w-64 mx-auto">
-          <div class="h-1 bg-[#211e1f]/10 rounded-full overflow-hidden">
+        <div class="mt-4 w-64 mx-auto">
+          <div class="bg-[#211e1f]/10 rounded-full overflow-hidden" style="height: 3px">
             <div
               class="h-full bg-primary rounded-full transition-all duration-1000 ease-out"
               :style="{ width: `${progress}%` }"
@@ -106,8 +106,6 @@ const checkAppReadinessWithProgress = async () => {
       // Hide splash screen immediately when ready
       hideSplashScreen()
     }
-    // If not ready, it means we were redirected to profile error page
-    // No need to hide splash screen as we're navigating away
   } catch (error) {
     console.error('App readiness check failed:', error)
     // Error handling is done in the composable (redirect to profile-error)

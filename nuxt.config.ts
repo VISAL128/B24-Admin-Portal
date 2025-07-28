@@ -58,7 +58,8 @@ export default defineNuxtConfig({
             : process.env.KEYCLOAK_REDIRECT_URI ||
               'https://admin-staging.bill24.io/auth/keycloak/callback',
         exposeAccessToken: true,
-        logoutRedirectUri: process.env.BASE_URL || 'http://localhost:3000',
+        logoutRedirectUri:
+          process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.BASE_URL,
         // pkce: true,
         sessionConfiguration: {
           singleSignOut: true,
@@ -98,8 +99,8 @@ export default defineNuxtConfig({
     client: true,
   },
   runtimeConfig: {
-    management_api_url: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
-    pgw_module_api_url: process.env.PGW_MODULE_API_URL || 'https://staging.bill24.io:22043',
+    managementApiUrl: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
+    pgwModuleApiUrl: process.env.PGW_MODULE_API_URL || 'https://staging.bill24.io:22043',
     // Public runtime config
     public: {
       appVersion: process.env.APP_VERSION || 'v1.0.1',
