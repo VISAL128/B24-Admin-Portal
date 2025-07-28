@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 rounded">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between h-12">
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+            <h1 class="text-1xl font-semibold text-gray-900 dark:text-white">
               {{ t('wallet_page.wallets') }}
             </h1>
           </div>
@@ -47,167 +47,199 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Wallet Cards -->
-      <div v-if="walletTypes.length > 0 || isLoadingWalletTypes" class="mb-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <!-- Individual Wallet Cards -->
-          <div
-            v-for="(wallet, index) in walletBalanceItems"
-            :key="`wallet-${wallet.wallet_account_number}-${index}`"
-            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200"
-          >
-            <!-- Wallet Header -->
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-center space-x-3">
-                <div
-                  class="w-10 h-10 rounded-lg flex items-center justify-center"
-                  :class="getCurrencyIconClass(wallet.currency)"
-                >
-                  <UIcon name="i-heroicons-wallet" class="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 class="text-sm font-medium text-gray-900 dark:text-white">
-                    <!-- {{ wallet.currency }} {{ t('wallet_page.wallet') }} -->
-                    {{ wallet.wallet_type }}
-                  </h3>
-                  <!-- <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ wallet.wallet_type }}
-                  </p> -->
-                </div>
-              </div>
-              <UBadge
-                :color="wallet.currency === 'USD' ? 'success' : 'primary'"
-                variant="subtle"
-                size="xs"
+    <div class="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-3 rounded">
+      <!-- Selected Wallet Display -->
+      <div v-if="walletTypes.length > 0 && walletBalanceItems.length > 0" class="mb-6">
+        <!-- Main Wallet Card -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
+        >
+          <!-- Header Section -->
+          <div class="flex items-start justify-between mb-6">
+            <div class="flex items-center space-x-4">
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center border border-blue-200 dark:border-blue-700"
               >
+                <UIcon
+                  :name="getWalletTypeIcon(selectedWalletTypeData?.name || '')"
+                  class="w-7 h-7 text-blue-600 dark:text-blue-400"
+                />
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                  {{ selectedWalletTypeData?.label || t('wallet_page.wallet') }}
+                </h2>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">
+                  {{ walletBalanceItems[0]?.wallet_account_number }}
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <UBadge color="success" variant="soft" size="md" class="px-3 py-1">
+                <UIcon name="i-heroicons-check-circle" class="w-4 h-4 mr-1" />
                 {{ t('wallet_page.active') }}
               </UBadge>
             </div>
+          </div>
 
-            <!-- Balance -->
-            <div class="mb-4">
-              <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                <span class="text-sm text-gray-600 dark:text-gray-400 font-medium mr-1">{{
-                  wallet.currency
-                }}</span>
+          <!-- Balance Display -->
+          <div class="mb-6">
+            <div class="mb-3">
+              <div
+                class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+              >
+                {{ t('wallet_page.current_balance') }}
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-2">
+              <div
+                class="text-base font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full"
+              >
+                {{ walletBalanceItems[0]?.currency }}
+              </div>
+              <div class="text-3xl font-bold text-gray-900 dark:text-white">
                 {{
-                  wallet.current_balance_display ||
-                  formatCurrency(wallet.current_balance, wallet.currency)
+                  walletBalanceItems[0]?.current_balance_display ||
+                  formatCurrency(
+                    walletBalanceItems[0]?.current_balance || 0,
+                    walletBalanceItems[0]?.currency || 'KHR'
+                  )
                 }}
               </div>
             </div>
+          </div>
 
-            <!-- Account Details -->
-            <div class="space-y-3 text-xs">
-              <div class="flex justify-between items-center">
-                <span class="text-gray-500 dark:text-gray-400 font-medium">{{
-                  t('wallet_page.account')
-                }}</span>
-                <div class="flex items-center space-x-2">
-                  <span
-                    class="font-mono text-sm font-medium text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded border"
-                  >
-                    {{ formatAccountNumber(wallet.wallet_account_number) }}
-                  </span>
-                  <UButton
-                    variant="ghost"
-                    size="xs"
-                    icon="i-heroicons-clipboard"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    @click="copyToClipboard(wallet.wallet_account_number)"
+          <!-- Account Details -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-identification"
+                    class="w-4 h-4 text-blue-600 dark:text-blue-400"
                   />
                 </div>
+                <div>
+                  <div
+                    class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1"
+                  >
+                    {{ t('wallet_page.account_number') }}
+                  </div>
+                  <div class="text-sm font-semibold text-gray-900 dark:text-white">
+                    {{ formatAccountNumber(walletBalanceItems[0]?.wallet_account_number || '') }}
+                  </div>
+                </div>
+                <button
+                  class="ml-auto p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-colors group"
+                  :title="t('wallet_page.copy_account_number')"
+                  @click="copyToClipboard(walletBalanceItems[0]?.wallet_account_number || '')"
+                >
+                  <UIcon
+                    name="i-heroicons-clipboard-document"
+                    class="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  />
+                </button>
               </div>
-              <div v-if="wallet.settlement_bank" class="flex justify-between items-center">
-                <span class="text-gray-500 dark:text-gray-400 font-medium">{{
-                  t('wallet_page.settlement_bank')
-                }}</span>
-                <span class="text-gray-900 dark:text-white font-medium">{{
-                  wallet.settlement_bank
-                }}</span>
+
+              <div
+                v-if="walletBalanceItems[0]?.settlement_bank"
+                class="flex items-center space-x-3"
+              >
+                <div
+                  class="w-9 h-9 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-building-library"
+                    class="w-4 h-4 text-green-600 dark:text-green-400"
+                  />
+                </div>
+                <div>
+                  <div
+                    class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1"
+                  >
+                    {{ t('wallet_page.settlement_bank') }}
+                  </div>
+                  <div class="text-sm font-semibold text-gray-900 dark:text-white">
+                    {{ walletBalanceItems[0].settlement_bank }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          <!-- Loading Skeleton Cards -->
-          <template v-if="isWalletLoading && walletBalanceItems.length === 0">
-            <div
-              v-for="n in 3"
-              :key="`skeleton-${n}`"
-              class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
-            >
-              <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse" />
-                  <div>
-                    <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
-                    <div class="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  </div>
-                </div>
-                <div class="h-5 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-              </div>
-              <div class="mb-4">
-                <div class="h-8 w-32 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
-                <div class="h-4 w-24 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-              </div>
-              <div class="space-y-2">
-                <div class="flex justify-between">
-                  <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="flex items-center space-x-2">
-                    <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                    <div class="h-3 w-3 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  </div>
-                </div>
-                <div class="flex justify-between">
-                  <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                </div>
-              </div>
-            </div>
-          </template>
-        </div>
-
-        <!-- Empty State -->
-        <div
-          v-if="
-            walletBalanceItems.length === 0 &&
-            !isWalletLoading &&
-            !isLoadingWalletTypes &&
-            selectedWalletTypeAPI
-          "
-          class="text-center py-12"
-        >
-          <UIcon name="i-heroicons-wallet" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {{ t('wallet_page.no_wallets_found') }}
-          </h3>
-          <p class="text-gray-500 dark:text-gray-400">{{ t('wallet_page.no_wallets_for_type') }}</p>
         </div>
       </div>
 
-      <!-- Transaction Summary -->
-      <div v-if="walletTypes.length > 0">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('wallet_page.transaction_summary') }}
-          </h2>
-          <div class="flex items-center space-x-4">
-            <UBadge variant="subtle" color="neutral">
-              {{ selectedWalletTypeData?.name || t('wallet_page.wallet') }}
-            </UBadge>
-            <UButton
-              variant="ghost"
-              size="sm"
-              :disabled="isLoadingSummary"
-              @click="toggleSummaryCurrency"
-            >
-              {{ summaryDisplayCurrency }}
-              <UIcon name="i-heroicons-arrow-path" class="w-3 h-3 ml-1" />
-            </UButton>
+      <!-- Loading State for Main Wallet -->
+      <div v-else-if="isWalletLoading" class="mb-6">
+        <div
+          class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-xl animate-pulse"
+        >
+          <!-- Header Section -->
+          <div class="flex items-start justify-between mb-6">
+            <div class="flex items-center space-x-4">
+              <div class="w-14 h-14 bg-gray-200 dark:bg-gray-600 rounded-xl" />
+              <div>
+                <div class="h-6 w-32 bg-gray-200 dark:bg-gray-600 rounded mb-2" />
+                <div class="h-4 w-28 bg-gray-200 dark:bg-gray-600 rounded" />
+              </div>
+            </div>
+            <div class="h-7 w-18 bg-gray-200 dark:bg-gray-600 rounded-full" />
+          </div>
+
+          <!-- Balance Display -->
+          <div class="mb-6">
+            <div class="mb-3">
+              <div class="h-4 w-24 bg-gray-200 dark:bg-gray-600 rounded" />
+            </div>
+            <div class="flex items-baseline space-x-2">
+              <div class="h-7 w-14 bg-gray-200 dark:bg-gray-600 rounded-full" />
+              <div class="h-9 w-48 bg-gray-200 dark:bg-gray-600 rounded" />
+            </div>
+          </div>
+
+          <!-- Account Details -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 bg-gray-200 dark:bg-gray-600 rounded-lg" />
+                <div class="flex-1">
+                  <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded mb-2" />
+                  <div class="h-4 w-24 bg-gray-200 dark:bg-gray-600 rounded" />
+                </div>
+                <div class="h-8 w-8 bg-gray-200 dark:bg-gray-600 rounded-lg" />
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 bg-gray-200 dark:bg-gray-600 rounded-lg" />
+                <div class="flex-1">
+                  <div class="h-3 w-24 bg-gray-200 dark:bg-gray-600 rounded mb-2" />
+                  <div class="h-4 w-28 bg-gray-200 dark:bg-gray-600 rounded" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
+      <!-- Empty State -->
+      <div
+        v-else-if="
+          walletBalanceItems.length === 0 &&
+          !isWalletLoading &&
+          !isLoadingWalletTypes &&
+          selectedWalletTypeAPI
+        "
+        class="text-center py-12 mb-6"
+      >
+        <UIcon name="i-heroicons-wallet" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {{ t('wallet_page.no_wallets_found') }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400">{{ t('wallet_page.no_wallets_for_type') }}</p>
+      </div>
+      <!-- Transaction Summary -->
+      <div v-if="walletTypes.length > 0">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Today -->
           <div
@@ -654,17 +686,6 @@ const formatAccountNumber = (accountNumber: string) => {
     : accountNumber
 }
 
-const getCurrencyIconClass = (currency: string) => {
-  switch (currency) {
-    case 'KHR':
-      return 'bg-gradient-to-r from-blue-500 to-indigo-600'
-    case 'USD':
-      return 'bg-gradient-to-r from-emerald-500 to-teal-600'
-    default:
-      return 'bg-gradient-to-r from-gray-500 to-gray-600'
-  }
-}
-
 // Computed wallet type data
 const selectedWalletTypeData = computed(() => {
   if (walletTypes.value.length === 0) return null
@@ -672,11 +693,6 @@ const selectedWalletTypeData = computed(() => {
     walletTypes.value.find((type) => type.id === selectedWalletType.value) || walletTypes.value[0]
   )
 })
-
-// Toggle summary currency display
-const toggleSummaryCurrency = () => {
-  summaryDisplayCurrency.value = summaryDisplayCurrency.value === 'KHR' ? 'USD' : 'KHR'
-}
 
 const summaryData = computed(() => {
   const walletTypeLower = selectedWalletType.value.toLowerCase()
