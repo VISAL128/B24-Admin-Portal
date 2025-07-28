@@ -3,14 +3,13 @@ import type { FeeModel } from '~/models/settlement'
 import type { ApiResponse } from '~/models/baseModel'
 import { RESPONSE_HTTP_CODE } from '~/utils/constants'
 import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
-// import { findFeeConfigById } from '../../logic/management_api_logic'
 
 export default defineEventHandler(async (event): Promise<ApiResponse<FeeModel | null>> => {
-  const payload = await readBody<any>(event)
+  const request = await readBody<{ id: string }>(event)
   try {
     const response = (await requestToPgwModuleApi(
       event,
-      `/get_fee_config_by_id/${payload.id}`,
+      `/get_fee_config_by_id/${request.id}`,
       'POST'
     )) as ApiResponse<FeeModel | null>
 
@@ -18,7 +17,6 @@ export default defineEventHandler(async (event): Promise<ApiResponse<FeeModel | 
       return {
         code: 'ERROR',
 
-           
         message: response.message,
         data: null,
       }
