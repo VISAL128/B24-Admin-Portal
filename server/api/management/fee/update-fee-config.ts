@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody } from 'h3'
 import type { FeeModel } from '~/models/settlement'
 import type { ApiResponse } from '~/models/baseModel'
-import { updateFeeConfig } from '../../logic/management_api_logic'
+import { updateFeeConfig } from '../../../logic/management_api_logic'
 
 export default defineEventHandler(async (event): Promise<ApiResponse<FeeModel | null>> => {
   const payload = await readBody<FeeModel>(event)

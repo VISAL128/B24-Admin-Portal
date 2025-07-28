@@ -4,4 +4,5 @@ export interface UserPreferences {
   timeFormat: 'short' | 'medium' | 'long' | 'full'
   hour12: boolean
   currency: string
+  defaultPageSize: number
 }

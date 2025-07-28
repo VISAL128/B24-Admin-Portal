@@ -1,74 +1,102 @@
 <template>
-  <span :class="`inline-block font-mono px-2 py-1 rounded text-xs ${statusClasses}`">
-    {{ displayText }}
-  </span>
+  <UBadge
+    :label="displayText"
+    :color="statusColor"
+    :variant="variant"
+    :size="props.size"
+    :ui="{ base: rounded ? 'rounded-full' : 'rounded' }"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   status: string
-  variant?: 'default' | 'table' | 'header'
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+  variant?: 'solid' | 'outline' | 'soft' | 'subtle'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  useTranslation?: boolean
+  rounded?: boolean // New prop for rounded style
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  variant: 'default',
+  variant: 'subtle',
   size: 'md',
+  useTranslation: true,
+  rounded: false, // Default to non-fully-rounded
 })
 
-// Get status classes based on the status value
-const statusClasses = computed(() => {
-  const baseClasses = getStatusClasses(props.status)
-  const sizeClasses = getSizeClasses(props.size)
-  return `${baseClasses} ${sizeClasses}`
-})
+const { t } = useI18n()
 
-// Display text based on variant
-const displayText = computed(() => {
-  if (props.variant === 'table') {
-    return props.status.toLowerCase()
-  }
-  return props.status
-})
+// Map status to Nuxt UI Badge color
+const statusColor = computed(() => {
+  const statusValue = props.status.toLowerCase()
 
-// Get color classes for different statuses
-function getStatusClasses(status: string): string {
-  switch (status.toLowerCase()) {
+  switch (statusValue) {
+    // Settlement Status - Success states
     case 'success':
-      return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+    case 'completed':
+      return 'success'
+
+    // Settlement Status - Failed states
     case 'failed':
     case 'fail':
     case 'error':
-      return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-    case 'unpaid':
+      return 'error'
+
+    // Settlement Status - Pending states
     case 'pending':
+    case 'unpaid':
     case 'warning':
-      return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+      return 'warning'
+
+    // Active/Inactive states
+    case 'active':
+      return 'success'
+    case 'inactive':
+      return 'neutral'
+
+    // Other states
     case 'canceled':
     case 'cancelled':
     case 'expired':
-      return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300'
+      return 'neutral'
     case 'reversed':
-      return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+      return 'warning'
     case 'processing':
     case 'in-progress':
-      return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+      return 'info'
     default:
-      return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300'
+      return 'neutral'
   }
-}
+})
 
-// Get size classes
-function getSizeClasses(size: string): string {
-  switch (size) {
-    case 'sm':
-      return 'px-1.5 py-0.5 text-xs'
-    case 'lg':
-      return 'px-3 py-1.5 text-sm'
-    default: // md
-      return 'px-2 py-1 text-xs'
+// Display text based on variant, translation preference, and capitalized
+const displayText = computed(() => {
+  const statusValue = props.status.toLowerCase()
+
+  if (props.useTranslation) {
+    // Use translation keys for settlement status
+    switch (statusValue) {
+      case 'pending':
+        return t('status.pending')
+      case 'completed':
+        return t('status.completed')
+      case 'failed':
+        return t('status.failed')
+      case 'success':
+        return t('status.success')
+      case 'error':
+        return t('status.error')
+      case 'active':
+        return t('status.active')
+      case 'inactive':
+        return t('status.inactive')
+      default:
+        return props.status
+    }
   }
-}
+  return props.status
+})
 </script>

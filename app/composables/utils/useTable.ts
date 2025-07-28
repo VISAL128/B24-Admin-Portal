@@ -59,7 +59,7 @@ export const useTable = <_T>() => {
           ? isSorted === 'asc'
             ? 'i-solar:sort-from-top-to-bottom-bold'
             : 'i-solar:sort-from-bottom-to-top-outline'
-          : 'i-lucide-arrow-up-down',
+          : 'i-solar:sort-vertical-outline',
         class: `w-auto tb-h-text gap-1.5 font-bold`,
         size: 'xs',
         onClick: handleSort,

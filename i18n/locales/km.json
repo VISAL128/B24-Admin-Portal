@@ -1,6 +1,7 @@
 {
   "yes": "បាទ",
   "no": "ទេ",
+  "yes_logout": "បាទ, ចាកចេញ",
   "hello": "សួស្តី",
   "cancel": "បោះបង់",
   "confirm": "បញ្ជាក់",
@@ -37,6 +38,12 @@
   "sharing_fee": "ថ្លៃសេវាចែករំលែក",
   "enter_fee_code": "បញ្ចូលកូដ",
   "enter_fee_name": "បញ្ចូលឈ្មោះ",
+  "clipboard": {
+    "copy": "ចម្លង",
+    "copied": "បានចម្លង",
+    "copy_failed": "បរាជ័យក្នុងការចម្លង",
+    "copy_to_clipboard": "ចម្លងទៅក្ដារឈូស"
+  },
   "profile_popup": {
     "title": "អាជីវកម្មអ្នកប្រើប្រាស់",
     "settings": "ការកំណត់",
@@ -51,6 +58,7 @@
     "khmer": "ខ្មែរ"
   },
   "status": {
+    "all": "គ្រប់ស្ថានភាព",
     "header": "ស្ថានភាព",
     "active": "សកម្ម",
     "inactive": "អសកម្ម",
@@ -58,7 +66,8 @@
     "completed": "បានបញ្ចប់",
     "failed": "បរាជ័យ",
     "success": "ជោគជ័យ",
-    "error": "កំហុស"
+    "error": "កំហុស",
+    "processing": "កំពុងដំណើរការ"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
@@ -184,6 +193,8 @@
     "time_format_24h": "24-ម៉ោង (13:30)",
     "time_format_12h": "12-ម៉ោង (1:30 PM)",
     "default_currency": "រូបិយប័ណ្ណលំនាំដើម",
+    "default_page_size": "ចំនួនធាតុក្នុងទំព័រលំនាំដើម",
+    "default_page_size_description": "កំណត់ចំនួនធាតុលំនាំដើមដែលត្រូវបង្ហាញក្នុងមួយទំព័រនៃតារាង",
     "preview": "មើលជាមុន",
     "preview_date": "កាលបរិច្ឆេទ:",
     "preview_time": "ម៉ោង:",
@@ -284,10 +295,45 @@
     "body": "តើអ្នកប្រាកដជាចង់បន្តទេ?",
     "confirm": "បញ្ជាក់"
   },
+  "navbar": {
+    "theme": "រូបរាង",
+    "language": "ភាសា",
+    "settings": "ការកំណត់",
+    "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
+  },
+  "sidebar": {
+    "dashboard": "ទំព័រដើម",
+    "digital_wallet": "កាបូបឌីជីថល",
+    "settlement": "ការទូទាត់",
+    "settings": "ការកំណត់",
+    "logout": "ចាកចេញ",
+    "profile": "ប្រវត្តិរូប",
+    "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
+  },
+  "settlement_history": {
+    "columns": {
+      "created_date": "កាលបរិច្ឆេទទូទាត់",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "total_settled": "ប្រតិបត្តិការ",
+      "status": "ស្ថានភាព",
+      "created_by": "ទូទាត់ដោយ"
+    },
+    "column_config": {
+      "reset": "កំណត់ឡើងវិញ",
+      "columns": "ជួរឈរ"
+    }
+  },
   "settlement": {
+    "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
+    "refresh": "ធ្វើឲ្យថ្មី",
+    "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
+    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 5 វិនាទី។",
     "transaction": "ប្រតិបត្តិការ",
     "title": "ការទូទាត់",
+    "settlement_list": "បញ្ជីការទូទាត់",
     "search_placeholder": "ស្វែងរក",
+    "select_status": "ជ្រើសរើសស្ថានភាព",
     "settle_amount": "ចំនួនទឹកប្រាក់សម្រាប់ទូទាត់",
     "amount": "ចំនួនទឹកប្រាក់",
     "settlement_bank": "ធនាគារទូទាត់",
@@ -306,6 +352,7 @@
     "failed": "បរាជ័យ",
     "detailed_transactions_message": "ទិន្នន័យប្រតិបត្តិការលម្អិតនឹងត្រូវបង្ហាញនៅទីនេះ",
     "supplier": "ម្ចាស់អាជីវកម្ម",
+    "type": "ប្រភេទ",
     "biller": {
       "code": "លេខកូដម្ចាស់អាជីវកម្ម",
       "name": "ឈ្មោះម្ចាស់អាជីវកម្ម"
@@ -470,8 +517,11 @@
     "current_roles": "តួនាទីបច្ចុប្បន្ន",
     "request_id": "លេខសម្គាល់សំណើ"
   },
-
+  "navigate_back": "ថយក្រោយ",
   "error": {
+    "something_went_wrong": "មានអ្វីមួយមិនប្រក្រតី",
+    "try_again_later": "សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ",
+    "try_again": "សូមព្យាយាមម្តងទៀត",
     "server_error": "កំហុសម៉ាស៊ីនមេ",
     "internal_server_error": "មានកំហុសម៉ាស៊ីនមេកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
     "internal_server_error_title": "កំហុសម៉ាស៊ីនមេខាងក្នុង",
@@ -551,8 +601,8 @@
   "total_settlement_amount": "ចំនួនទឹកប្រាក់សរុបដែលបានទូទាត់",
   "failed_transactions": "ប្រតិបត្តិការបរាជ័យ",
   "underDevelopment": {
-    "title": "កំពុងអភិវឌ្ឍ",
-    "description": "មុខងារនេះកំពុងត្រូវបានអភិវឌ្ឍ និងនឹងអាចប្រើប្រាស់ឆាប់ៗនេះ។",
+    "title": "កំពុងអភិវឌ្ឍន៍",
+    "description": "មុខងារនេះកំពុងត្រូវបានអភិវឌ្ឍន៍ និងនឹងអាចប្រើប្រាស់ឆាប់ៗនេះ។",
     "workingOnIt": "យើងកំពុងធ្វើការលើវា...",
     "goBack": "ត្រឡប់ក្រោយ"
   },
@@ -601,5 +651,14 @@
   "this_week": "សប្ដាហ៍នេះ",
   "this_month": "ខែនេះ",
   "this_year": "ឆ្នាំនេះ",
-  "sub_biller": "ម្ចាស់អាជីវកម្មរង"
+  "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+  "lottie": {
+    "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
+    "install_instruction": "ដំណើរការ: npm install lottie-web"
+  },
+   "pages": {
+    "transaction": {
+      "title": "ប្រតិបត្តិការ"
+    }
+  }
 }

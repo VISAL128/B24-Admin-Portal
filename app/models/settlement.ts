@@ -1,4 +1,4 @@
-import type { SettlementStatus } from "#imports"
+import type { SettlementStatus } from '#imports'
 
 // 1. Get All Suppliers
 export interface Supplier {
@@ -110,9 +110,10 @@ export interface SettlementHistoryQuery {
   start_date?: string
   end_date?: string
   status?: string
-  name?: string
+  search?: string
   page?: number
   page_size?: number
+  supplier_id: string
 }
 
 export interface SettlementHistoryDetail {
@@ -142,6 +143,7 @@ export interface SettlementHistoryDetail {
   bank_ref_id: string
   tran_date: string
   status: string
+  party_type: string
   tran_allocates: TransactionAllocation[]
 }
 
@@ -154,10 +156,10 @@ export interface SettlementHistoryRecord {
   currency_id: string
   supplier_id: string
   supplier: Supplier
-  settled_by: string
+  created_by: string
   total_settled: number
   success: number
-  fail: number
+  failed: number
   status: SettlementStatus
   settle_details: SettlementHistoryDetail[]
 }
@@ -175,7 +177,7 @@ export interface SettlementHistoryMainDetails {
   settled_by: string
   totalSettled: number
   success: number
-  fail: number
+  failed: number
   settle_details: SettlementHistoryDetail[]
 }
 

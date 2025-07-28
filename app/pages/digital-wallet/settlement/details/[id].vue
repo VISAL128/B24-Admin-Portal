@@ -10,15 +10,43 @@
     <LoadingSpinner v-if="loading" fullscreen />
 
     <!-- Error state -->
-    <UAlert
-      v-else-if="error"
+    <!-- <UAlert
+      v-else-if="true"
       title="Error"
       color="error"
       variant="soft"
       icon="i-lucide-alert-circle"
     >
       {{ error }}
-    </UAlert>
+    </UAlert> -->
+
+    <div v-else-if="error" class="flex flex-1 items-center justify-center">
+      <UCard class="bg-error-100 dark:bg-error-300/50" variant="solid">
+        <LottieJson
+          path="/animations/lotties/alert-icon.json"
+          width="30rem"
+          height="6rem"
+          :loop="false"
+          renderer="svg"
+        />
+        <div class="text-center">
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2">
+            {{ error || t('error.something_went_wrong') }}
+          </h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {{ errorDesc || t('error.try_again_later') }}
+          </p>
+          <UButton
+            color="neutral"
+            variant="outline"
+            class="mt-2"
+            @click="navigateTo('/digital-wallet/settlement')"
+          >
+            {{ $t('navigate_back') }}
+          </UButton>
+        </div>
+      </UCard>
+    </div>
 
     <!-- Content when data is loaded -->
     <div v-else-if="settlementDetails" class="gap-4 flex flex-shrink-0 flex-row">
@@ -35,33 +63,31 @@
           />
         </UCard>
         <!-- Settlement card -->
-        <UCard class="flex-1">
+        <UCard class="flex-1" :ui="appConfig.ui.card.slots">
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="text-md font-semibold text-gray-900 dark:text-white">
                 {{ $t('settlement.title') }}
               </h2>
-              <UBadge
-                :color="
-                  settlementDetails.records.success > settlementDetails.records.fail
+              <StatusBadgeV2
+                :status="
+                  settlementDetails.records.success > settlementDetails.records.failed
                     ? 'success'
-                    : 'error'
+                    : 'failed'
                 "
-                size="md"
-                variant="soft"
-              >
-                {{
-                  settlementDetails.records.success > settlementDetails.records.fail
-                    ? $t('settlement_history_details.status_success')
-                    : $t('settlement_history_details.status_failed')
-                }}
-              </UBadge>
+                :size="'md'"
+                :variant="'subtle'"
+              />
             </div>
           </template>
 
           <div class="flex flex-row justify-between md:grid-rows-2 lg:grid-rows-4">
             <div class="flex flex-col items-start text-center">
-              <UIcon name="material-symbols:calendar-today-outline-rounded" :class="iconSizeClass" class="mb-2" />
+              <UIcon
+                name="material-symbols:calendar-today-outline-rounded"
+                :class="iconSizeClass"
+                class="mb-2"
+              />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.settlement_date') }}
               </h3>
@@ -76,7 +102,11 @@
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="material-symbols:group-outline-rounded" :class="iconSizeClass" class="mb-2" />
+              <UIcon
+                name="material-symbols:group-outline-rounded"
+                :class="iconSizeClass"
+                class="mb-2"
+              />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.total_sub_biller') }}
               </h3>
@@ -86,7 +116,11 @@
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="material-symbols:credit-card-outline" :class="iconSizeClass" class="mb-2" />
+              <UIcon
+                name="material-symbols:credit-card-outline"
+                :class="iconSizeClass"
+                class="mb-2"
+              />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.total_transactions') }}
               </h3>
@@ -96,7 +130,11 @@
             </div>
 
             <div class="flex flex-col items-start text-center">
-              <UIcon name="material-symbols:check-circle-outline" :class="iconSizeClass" class="mb-2" />
+              <UIcon
+                name="material-symbols:check-circle-outline"
+                :class="iconSizeClass"
+                class="mb-2"
+              />
               <h3 class="text-sm font-medium opacity-90 mb-1">
                 {{ $t('settlement_history_details.settled_by') }}
               </h3>
@@ -108,7 +146,7 @@
         </UCard>
       </div>
       <!-- Settlement stats card -->
-      <UCard class="flex-1">
+      <UCard class="flex-1" :ui="appConfig.ui.card.slots">
         <template #header>
           <h2 class="text-md font-semibold text-gray-900 dark:text-white">
             {{ $t('settlement.statistics') }}
@@ -122,7 +160,7 @@
               <div
                 class="bg-white/30 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
               >
-                <UIcon name="i-lucide-sigma" class="w-4 h-4" />
+                <UIcon name="uil:invoice" class="w-4 h-4" />
               </div>
               <div class="flex-1 min-w-0">
                 <h3 class="text-xs font-medium opacity-95 mb-0.5 truncate">
@@ -167,7 +205,7 @@
                   {{ $t('settlement.failed') }}
                 </h3>
                 <p class="text-lg font-bold">
-                  {{ settlementDetails.records.fail }}
+                  {{ settlementDetails.records.failed }}
                 </p>
               </div>
             </div>
@@ -202,10 +240,12 @@ import type {
 import SettlementHistoryTable from '~/components/tables/SettlementHistoryTable.vue'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import appConfig from '~~/app.config'
 const supplierApi = useSupplierApi()
 
 const { t } = useI18n()
 const route = useRoute()
+const notification = useNotification()
 
 definePageMeta({
   auth: true,
@@ -229,11 +269,12 @@ const userPreferences = useUserPreferences().getPreferences()
 // State management
 const loading = ref(true)
 const error = ref('')
+const errorDesc = ref('')
 const settlementDetails = ref<SettlementHistoryDetailResponse>()
 const settlementHistoryDetails = ref<SettlementHistoryDetail[]>([])
 const settlementHistoryQuery = ref<SettlementHistoryDetailQuery>({
   search: '',
-  status: 'success',
+  status: '',
   settlement_history_id: settlementId,
   page: 1,
   page_size: 10,
@@ -252,7 +293,7 @@ const fetchSettlementDetails = async (showError = true) => {
       settlementHistoryDetails.value = response.records.settle_details || []
     } else {
       if (showError) {
-        await useNotification().showError({
+        notification.showError({
           title: 'No Settlement Details Found',
           description: 'No settlement details found for this ID.',
         })
@@ -263,8 +304,6 @@ const fetchSettlementDetails = async (showError = true) => {
     }
   } catch (e: unknown) {
     error.value = (e as Error).message || 'Failed to load settlement details'
-    useErrorHandler().handleApiError(e)
-    // Optionally, you can show a toast notification here
   } finally {
     loading.value = false
   }
@@ -272,7 +311,6 @@ const fetchSettlementDetails = async (showError = true) => {
 
 // Handle search submit from SettlementHistoryTable
 const handleSearchSubmit = (query: SettlementHistoryDetailQuery) => {
-  console.log('Search query submitted:', query)
   settlementHistoryQuery.value = query
   fetchSettlementDetails(false)
 }

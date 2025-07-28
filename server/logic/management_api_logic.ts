@@ -1,5 +1,13 @@
-import type { FeeModel, SettlementHistoryDetailQuery } from '~/models/settlement'
+import type {
+  FeeModel,
+  SettlementHistoryDetailQuery,
+  SettlementHistoryQuery,
+  SettlementHistoryResponse,
+} from '~/models/settlement'
 import type { SettlementInquiryRequest } from '~~/server/model/management_api/settlement'
+import type { H3Event } from 'h3'
+import type { ApiResponse } from '~/models/baseModel'
+import { MANAGEMENT_API_ENDPOINTS } from '../utils/management-api-endpoints'
 
 let token: string | PromiseLike<string | null> | null = null
 let tokenExpireTime: string | number | Date | null = null
@@ -12,14 +20,22 @@ interface authRequestPayload {
   refreshToken?: string
 }
 
-export async function authenticateUser(payload: authRequestPayload): Promise<any> {
-  const response = await fetch('https://staging.bill24.io:22030/security/authorize', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
+interface AuthResponse {
+  token: string
+  tokenExpireTime: string | number | Date
+}
+
+export async function authenticateUser(payload: authRequestPayload): Promise<AuthResponse> {
+  const response = await fetch(
+    `https://staging.bill24.io:22030${MANAGEMENT_API_ENDPOINTS.AUTH.AUTHORIZE}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    }
+  )
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
@@ -50,11 +66,12 @@ export async function getToken(): Promise<string | null> {
   return token
 }
 
-export async function requestToManagementApi(
+export async function requestToManagementApi<T>(
   endpoint: string,
   method: string = 'POST',
-  body: any = null
-): Promise<any> {
+  body: unknown = null,
+  event?: H3Event
+): Promise<T> {
   const token = await getToken()
   if (!token) {
     throw createError({
@@ -68,7 +85,7 @@ export async function requestToManagementApi(
       },
     })
   }
-  const url = `${useRuntimeConfig().management_api_url}${endpoint}`
+  const url = `${useRuntimeConfig(event).managementApiUrl}${endpoint}`
   const options: RequestInit = {
     method,
     headers: {
@@ -116,34 +133,41 @@ export async function requestToManagementApi(
   return response.json()
 }
 
-export async function inquirySettlementWallet(body: SettlementInquiryRequest): Promise<any> {
-  return requestToManagementApi('/settlement/wallet/inquiry', 'POST', body)
+export async function inquirySettlementWallet(
+  body: SettlementInquiryRequest
+): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.WALLET_INQUIRY, 'POST', body)
 }
-export async function submitSettlement(body: any): Promise<any> {
-  return requestToManagementApi('/settlement/wallet/submit', 'POST', body)
+export async function submitSettlement(body: unknown): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.WALLET_SUBMIT, 'POST', body)
 }
-export async function getSupplierCsms(body: any): Promise<any> {
-  return requestToManagementApi('/dynamic/suppliers-csms', 'POST', body)
+export async function getSupplierCsms(body: unknown): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.DYNAMIC.SUPPLIERS_CSMS, 'POST', body)
 }
-export async function getCPOsBySuppliers(body: any): Promise<any> {
-  return requestToManagementApi('/dynamic/suppliers-cpo', 'POST', body)
+export async function getCPOsBySuppliers(body: unknown): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.DYNAMIC.SUPPLIERS_CPO, 'POST', body)
 }
-export async function getSettlementHistory(body: any): Promise<any> {
-  return requestToManagementApi('/dynamic/settlement-history', 'POST', body)
+export async function getSettlementHistory(
+  body: SettlementHistoryQuery,
+  event: H3Event
+): Promise<ApiResponse<SettlementHistoryResponse>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.HISTORY, 'POST', body, event)
 }
-export async function getSettlementHistoryById(body: SettlementHistoryDetailQuery): Promise<any> {
-  return requestToManagementApi(`/dynamic/settlement-history-details`, 'POST', body)
+export async function getSettlementHistoryById(
+  body: SettlementHistoryDetailQuery
+): Promise<ApiResponse<SettlementHistoryResponse>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.HISTORY_DETAILS, 'POST', body)
 }
 
-export async function getListFeeConfig(body: { search: '' }): Promise<any> {
-  return requestToManagementApi('/get_list_fee_config', 'POST', body)
+export async function getListFeeConfig(body: { search: string }): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.LIST, 'POST', body)
 }
-export async function createFeeConfig(body: FeeModel): Promise<any> {
-  return requestToManagementApi('/create_fee_config', 'POST', body)
+export async function createFeeConfig(body: FeeModel): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.CREATE, 'POST', body)
 }
-export async function updateFeeConfig(body: FeeModel): Promise<any> {
-  return requestToManagementApi('/update_fee_config', 'POST', body)
+export async function updateFeeConfig(body: FeeModel): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.UPDATE, 'POST', body)
 }
-export async function findFeeConfigById(body: any): Promise<any> {
-  return requestToManagementApi('/find_fee_config_by_id', 'POST', body)
+export async function findFeeConfigById(body: { id: string }): Promise<ApiResponse<unknown>> {
+  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.FIND_BY_ID, 'POST', body)
 }

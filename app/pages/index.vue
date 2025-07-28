@@ -24,7 +24,7 @@
             <div class="text-sm text-gray-600">{{ $t('index.generate_settlement_desc') }}</div>
           </NuxtLink>
           <NuxtLink
-            to="/settings"
+            to="/settings/generate-details"
             class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-[#EAF6FC] dark:hover:bg-gray-500 transition-colors"
           >
             <div class="font-medium text-primary">{{ $t('settings.title') }}</div>
