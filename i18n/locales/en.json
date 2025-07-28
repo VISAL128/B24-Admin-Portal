@@ -334,7 +334,9 @@
       "created_by": "Settled By"
     },
     "column_config": {
-      "reset": "Reset Columns",
+      "tooltip": "Hide/Show Columns",
+      "reset": "Reset All",
+      "reset_description": "Reset columns and sorting to defaults",
       "columns": "Columns"
     }
   },
@@ -342,7 +344,7 @@
     "settlement_details_description": "Details of the settlement",
     "refresh": "Refresh",
     "auto_refresh": "Auto Refresh",
-    "auto_refresh_desc": "Automatically refresh the settlement history every 5 seconds.",
+    "auto_refresh_desc": "Automatically refresh the settlement history every 30 seconds.",
     "transaction": "Transaction",
     "title": "Settlement",
     "settlement_list": "Settlement List",
