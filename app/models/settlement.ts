@@ -1,4 +1,4 @@
-import type { SettlementStatus } from "#imports"
+import type { SettlementStatus } from '#imports'
 
 // 1. Get All Suppliers
 export interface Supplier {
@@ -220,27 +220,22 @@ export interface FeeDetail {
   end_amount: number
   fee_amount: number
   fee_rate: number
+  fee_type?: string | 'fixed'
 }
 
 export interface AlloCateDetail {
   editable: boolean
   party_id: string
-  party_name: string
+  name: string
   logo?: string
   party_type: number
   value: number
 }
 
-export interface FeeModelRequest {
+export interface SharingSupplier {
   id: string
   code: string
   name: string
-  fee_type: 'fixed' | 'percentage'
-  currency: 'KHR' | 'USD'
-  sharing_rules?: Array<{
-    name: string
-    value: string
-  }>
-  created_at?: string
-  updated_at?: string
+  logo?: string
+  value: number
 }

@@ -6,23 +6,32 @@ export async function requestToPgwModuleApi(
   method: string = 'POST',
   body: unknown | null = null
 ): Promise<unknown> {
-  const url = `${useRuntimeConfig().pgw_module_api_url}${endpoint}`
-  const options: RequestInit = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${event.context.auth?.token || ''}`,
-    },
-  }
+  try {
+    const url = `${useRuntimeConfig().pgw_module_api_url}${endpoint}`
+    const options: RequestInit = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${event.context.auth?.token || ''}`,
+      },
+      signal: AbortSignal.timeout(30000),
+    }
 
-  console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: options.headers })
-  // Only add body for non-GET/HEAD
-  if (body && method !== 'GET' && method !== 'HEAD') {
-    options.body = JSON.stringify(body)
-  }
+    console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: options.headers })
+    // Only add body for non-GET/HEAD
+    if (body && method !== 'GET' && method !== 'HEAD') {
+      options.body = JSON.stringify(body)
+    }
 
-  const response = await fetch(url, options)
-  return handlePgwModuleApiResponse(response)
+    const response = await fetch(url, options)
+    return handlePgwModuleApiResponse(response)
+  } catch (error) {
+    console.error('Error fetching fee config :', error)
+    throw createError({
+      statusCode: 500,
+      statusMessage: (error as Error).message ?? 'Internal Server Error',
+    })
+  }
 }
 
 function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
@@ -35,4 +44,3 @@ function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
   }
   return response.json()
 }
-

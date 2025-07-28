@@ -1,5 +1,7 @@
 import type { UserPreferences } from '~/models/userPreference'
 
+// Import FeeType from its module (update the path as needed)
+
 export const APP_CONSTANTS = {
   DEFAULT_TITLE: 'Bill24 Payment Portal',
   DEFAULT_PAGE_SIZE: { label: '10', value: 10 },
@@ -52,6 +54,14 @@ export type TableLoadingColorType =
   | 'error'
   | 'neutral'
   | undefined
+
+export const RESPONSE_HTTP_CODE = {
+  SUCCESS: '000',  //Success code
+  ERROR: 'ERROR',
+  NOT_FOUND: 'NOT_FOUND',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+}
+
 
 export const TABLE_CONSTANTS = {
   LOADING_ANIMATION: 'elastic' as TableLoadingAnimationType,

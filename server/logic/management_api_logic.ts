@@ -142,8 +142,8 @@ export async function createFeeConfig(body: FeeModel): Promise<any> {
   return requestToManagementApi('/create_fee_config', 'POST', body)
 }
 export async function updateFeeConfig(body: FeeModel): Promise<any> {
-  return requestToManagementApi('/update_fee_config', 'POST', body)
+  return requestToManagementApi('/update_fee_config', 'PUT', body)
 }
 export async function findFeeConfigById(body: any): Promise<any> {
-  return requestToManagementApi('/find_fee_config_by_id', 'POST', body)
+  return requestToManagementApi('/get_fee_config_by_id', 'POST', body)
 }
