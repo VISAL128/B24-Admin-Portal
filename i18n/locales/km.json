@@ -318,7 +318,9 @@
       "created_by": "ទូទាត់ដោយ"
     },
     "column_config": {
-      "reset": "កំណត់ឡើងវិញ",
+      "tooltip": "លាក់/បង្ហាញជួរឈរ",
+      "reset": "កំណត់ឡើងវិញទាំងអស់",
+      "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
       "columns": "ជួរឈរ"
     }
   },
@@ -326,7 +328,7 @@
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
     "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
-    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 5 វិនាទី។",
+    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 30 វិនាទី។",
     "transaction": "ប្រតិបត្តិការ",
     "title": "ការទូទាត់",
     "settlement_list": "បញ្ជីការទូទាត់",
@@ -654,7 +656,7 @@
     "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
     "install_instruction": "ដំណើរការ: npm install lottie-web"
   },
-   "pages": {
+  "pages": {
     "transaction": {
       "title": "ប្រតិបត្តិការ"
     }
