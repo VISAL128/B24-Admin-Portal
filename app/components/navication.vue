@@ -40,7 +40,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: t('transactions'),
-      icon: 'i-material-symbols-receipt-long',
+      icon: 'material-symbols:credit-card-clock-outline',
       size: 'lg',
       to: '/transactions',
       active: activeStates.value.transactions,
