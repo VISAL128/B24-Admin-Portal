@@ -70,6 +70,7 @@
                 {{ $t('settlement.title') }}
               </h2>
               <StatusBadgeV2
+              v-if="settlementDetails.records.success || settlementDetails.records.failed"
                 :status="
                   settlementDetails.records.success > settlementDetails.records.failed
                     ? 'success'

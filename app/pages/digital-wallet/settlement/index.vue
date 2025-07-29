@@ -33,8 +33,8 @@
           </template>
         </UPopover>
         <StatusSelection
-          v-model="selectedStatus"
-          :multiple="false"
+          v-model="selectedStatuses"
+          :multiple="true"
           :available-statuses="availableStatuses"
           :include-all-statuses="false"
           :placeholder="t('settlement.select_status')"
@@ -49,20 +49,20 @@
             size="sm"
             class="ml-2"
           />
-          <UTooltip :text="t('settlement.auto_refresh_desc')" placement="top">
+          <UTooltip :text="t('settlement.auto_refresh_desc')" :delay-duration="200" placement="top">
             <UIcon name="material-symbols:info-outline" class="size-3.5" />
           </UTooltip>
         </div>
-        <UIcon
-          v-if="!autoRefresh"
-          name="material-symbols:sync"
-          :class="[
-            'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
-            { 'animate-spin': isRefreshing },
-          ]"
-          :title="t('settlement.refresh')"
-          @click="fetchSettlementHistory(true)"
-        />
+        <UTooltip v-if="!autoRefresh" :text="t('settlement.refresh')">
+          <UIcon
+            name="material-symbols:sync"
+            :class="[
+              'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+              { 'animate-spin': isRefreshing },
+            ]"
+            @click="fetchSettlementHistory(true)"
+          />
+        </UTooltip>
       </div>
       <div class="flex items-center gap-2">
         <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
@@ -80,46 +80,121 @@
           }}</UButton>
         </UDropdownMenu> -->
         <ExportButton :data="filteredData" :headers="exportHeaders" />
-        <LazyUPopover>
-          <UButton variant="ghost" class="p-2 relative">
-            <UIcon name="icon-park-outline:setting-config" class="text-gray-900 dark:text-white" />
-          </UButton>
+        <UPopover>
+          <UTooltip
+            key="column-config-tooltip"
+            :text="t('settlement_history.column_config.tooltip')"
+            :delay-duration="200"
+            placement="top"
+          >
+            <UButton variant="ghost" class="p-2 relative">
+              <UIcon
+                name="icon-park-outline:setting-config"
+                class="text-gray-900 dark:text-white"
+              />
+            </UButton>
+          </UTooltip>
           <template #content>
             <div class="p-2 space-y-1 min-w-50">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-medium text-muted">{{
                   t('settlement_history.column_config.columns')
                 }}</span>
-                <UButton variant="link" class="text-muted" size="sm" @click="onResetColumnConfig">
+                <!-- <UButton variant="solid" class="text-muted" size="xs" @click="onResetColumnConfig">
                   {{ t('settlement_history.column_config.reset') }}
-                </UButton>
+                </UButton> -->
+                <UTooltip
+                  :text="t('settlement_history.column_config.reset')"
+                  :delay-duration="500"
+                  :open-delay="500"
+                  :close-delay="200"
+                  placement="top"
+                  :default-open="false"
+                >
+                  <UButton
+                    variant="ghost"
+                    class="text-muted hover:text-primary"
+                    size="sm"
+                    @click="onResetColumnVisibility"
+                  >
+                    <UIcon
+                      name="material-symbols:replay-rounded"
+                      size="sm"
+                      class="text-muted hover:text-primary"
+                    />
+                  </UButton>
+                </UTooltip>
               </div>
               <Divider />
-              <div
+              <!-- <UButton
                 v-for="col in columnConfig"
                 :key="col.id"
-                class="flex items-center justify-between px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                size="sm"
+                variant="ghost"
+                class="w-full text-left flex items-center"
+                @click="
+                  (event) => {
+                    col.toggleVisibility(!col.getIsVisible())
+                    columnVisibility[col.id] = !col.getIsVisible()
+                    saveColumnVisibility()
+                  }
+                "
               >
-                <div class="flex items-center gap-2">
-                  <UCheckbox
-                    :id="col.id"
-                    :label="getTranslationHeaderById(col.id)"
-                    :model-value="col.getIsVisible()"
-                    class="text-sm"
-                    size="sm"
-                    @update:model-value="
-                      (value) => {
-                        col.toggleVisibility(value as boolean)
-                        columnVisibility[col.id] = value as boolean
-                        saveColumnVisibility()
-                      }
-                    "
-                  />
-                </div>
-              </div>
+                <UCheckbox
+                  :id="col.id"
+                  :label="getTranslationHeaderById(col.id)"
+                  :model-value="col.getIsVisible()"
+                  class="text-sm"
+                  size="sm"
+                  @update:model-value="
+                    (value) => {
+                      col.toggleVisibility(value as boolean)
+                      columnVisibility[col.id] = value as boolean
+                      saveColumnVisibility()
+                    }
+                  "
+                />
+              </UButton> -->
+              <UCheckbox
+                v-for="col in columnConfig"
+                :id="col.id"
+                :key="col.id"
+                :label="getTranslationHeaderById(col.id)"
+                :model-value="col.getIsVisible()"
+                class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                size="sm"
+                @update:model-value="
+                  (value) => {
+                    col.toggleVisibility(value as boolean)
+                    columnVisibility[col.id] = value as boolean
+                    // saveColumnVisibility()
+                  }
+                "
+              />
+              <!-- <div
+                v-for="col in columnConfig"
+                :key="col.id"
+                class="flex items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <UCheckbox
+                  :id="col.id"
+                  as="button"
+                  :label="getTranslationHeaderById(col.id)"
+                  :model-value="col.getIsVisible()"
+                  class="text-sm px-2 py-1 w-full h-full"
+                  size="sm"
+                  @update:model-value="
+                    (value) => {
+                      col.toggleVisibility(value as boolean)
+                      columnVisibility[col.id] = value as boolean
+                      // saveColumnVisibility()
+                    }
+                  "
+                />
+              </div> -->
             </div>
           </template>
-        </LazyUPopover>
+        </UPopover>
       </div>
     </div>
 
@@ -127,6 +202,7 @@
     <UTable
       ref="table"
       :column-visibility="columnVisibility"
+      :sorting="sortingState"
       :data="filteredData"
       :columns="columns"
       :loading="loading"
@@ -136,6 +212,7 @@
       sticky
       class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
       @select="handleViewDetails"
+      @update:sorting="onSortingChange"
     >
       <template #empty>
         <TableEmptyState />
@@ -207,6 +284,7 @@ import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
+import { SettlementHistoryStatus } from '~/utils/enumModel'
 
 definePageMeta({
   auth: false,
@@ -240,11 +318,58 @@ const settlements = ref<SettlementHistoryRecord[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
 const isRefreshing = ref(false)
-const autoRefresh = ref(true)
-const selectedStatus = ref<{ label: string; value: string }>({
-  label: t('status.all'),
-  value: '',
-}) // Default status
+const autoRefresh = ref(false)
+
+// Initialize status filter from localStorage or defaults
+const initializeStatusFilter = () => {
+  const savedStatusValues = tableConfig.getStatusFilter(TABLE_ID)
+
+  if (savedStatusValues && savedStatusValues.length > 0) {
+    // Create the status objects with current language translation
+    // Filter out empty string if there are specific statuses to avoid "All" + specific status conflict
+    const filteredValues = savedStatusValues.filter((value) => {
+      // If we have specific statuses, remove the "All" (empty string) option
+      const hasSpecificStatuses = savedStatusValues.some((v) => v !== '')
+      return hasSpecificStatuses ? value !== '' : true
+    })
+
+    selectedStatuses.value = filteredValues.map((value) => ({
+      label: value === '' ? t('status.all') : getTranslatedStatusLabel(value),
+      value,
+    }))
+  } else {
+    // Default to "All" status when no saved values
+    selectedStatuses.value = [
+      {
+        label: t('status.all'),
+        value: '',
+      },
+    ]
+  }
+}
+
+// Helper function to get translated status label
+const getTranslatedStatusLabel = (statusValue: string): string => {
+  if (statusValue === '') return t('status.all')
+
+  switch (statusValue.toLowerCase()) {
+    case 'pending':
+      return t('status.pending')
+    case 'processing':
+      return t('status.processing')
+    case 'completed':
+      return t('status.completed')
+    default:
+      return statusValue
+  }
+}
+
+const selectedStatuses = ref<{ label: string; value: string }[]>([
+  {
+    label: t('status.all'),
+    value: '',
+  },
+])
 const availableStatuses = ref<string[]>(Object.values(SettlementHistoryStatus))
 
 const df = new DateFormatter('en-US', { dateStyle: 'medium' })
@@ -257,7 +382,6 @@ const modelValue = shallowRef({
 // Define table ID and default column visibility
 const TABLE_ID = 'settlement-history'
 const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
-  id: false,
   row_number: true,
   created_date: true,
   total_amount: true,
@@ -279,13 +403,50 @@ const initializeColumnVisibility = (): Record<string, boolean> => {
 
 const columnVisibility = ref<Record<string, boolean>>(initializeColumnVisibility())
 
+// Initialize sorting state from localStorage or defaults
+const initializeSortingState = (): Array<{ id: string; desc: boolean }> => {
+  const savedSorting = tableConfig.getSortingState(TABLE_ID)
+  return savedSorting || []
+}
+
+const sortingState = ref<Array<{ id: string; desc: boolean }>>(initializeSortingState())
+
 // Save column visibility changes to localStorage
 const saveColumnVisibility = () => {
   tableConfig.saveColumnConfig(TABLE_ID, columnVisibility.value)
 }
 
+// Save sorting state changes to localStorage
+const saveSortingState = () => {
+  tableConfig.saveSortingState(TABLE_ID, sortingState.value)
+}
+
+// Save status filter changes to localStorage
+const saveStatusFilter = () => {
+  tableConfig.saveStatusFilter(
+    TABLE_ID,
+    selectedStatuses.value.map((status) => status.value)
+  )
+}
+
 // Watch for changes and auto-save
 watch(columnVisibility, saveColumnVisibility, { deep: true })
+watch(sortingState, saveSortingState, { deep: true })
+watch(selectedStatuses, saveStatusFilter, { deep: true })
+
+// Watch for language changes to update status label
+const { locale } = useI18n()
+watch(
+  locale,
+  () => {
+    // Update the selected status labels when language changes
+    selectedStatuses.value = selectedStatuses.value.map((status) => ({
+      ...status,
+      label: status.value === '' ? t('status.all') : getTranslatedStatusLabel(status.value),
+    }))
+  },
+  { immediate: false }
+)
 
 // Initialize table column visibility from saved configuration
 const initializeTableColumnVisibility = () => {
@@ -299,7 +460,25 @@ const initializeTableColumnVisibility = () => {
   }
 }
 
-// Watch for table API changes to initialize column visibility
+// Initialize table sorting state from saved configuration
+const initializeTableSortingState = () => {
+  if (table?.value?.tableApi && sortingState.value.length > 0) {
+    // Apply saved sorting state
+    table.value.tableApi.setSorting(sortingState.value)
+  }
+}
+
+// Listen to sorting state changes from the table and save them
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const onSortingChange = (updater: any) => {
+  if (table?.value?.tableApi) {
+    const currentSorting = table.value.tableApi.getState().sorting
+    const newSorting = typeof updater === 'function' ? updater(currentSorting) : updater
+    sortingState.value = newSorting
+  }
+}
+
+// Watch for table API changes to initialize column visibility and sorting
 watch(
   () => table?.value?.tableApi,
   (newApi) => {
@@ -307,6 +486,7 @@ watch(
       // Small delay to ensure table is fully initialized
       nextTick(() => {
         initializeTableColumnVisibility()
+        initializeTableSortingState()
       })
     }
   },
@@ -323,13 +503,10 @@ const columnConfig = computed((): any[] => {
   )
 })
 
-const onResetColumnConfig = () => {
+const onResetColumnVisibility = () => {
   // Reset table API columns
   table?.value?.tableApi?.resetColumnVisibility()
-
-  // Reset to default visibility and save
   columnVisibility.value = { ...DEFAULT_COLUMN_VISIBILITY }
-  saveColumnVisibility()
 }
 
 const getTranslationHeaderById = (id: string) => {
@@ -340,10 +517,10 @@ let interval: ReturnType<typeof setInterval> | null = null
 
 watch(autoRefresh, (val) => {
   if (val) {
-    // Start auto-refresh every 5 seconds
+    // Start auto-refresh every 30 seconds
     interval = setInterval(() => {
       fetchSettlementHistory(true)
-    }, 5000)
+    }, 30000)
   } else {
     // Clear interval when auto-refresh is turned off
     if (interval) {
@@ -351,6 +528,8 @@ watch(autoRefresh, (val) => {
       interval = null
     }
   }
+  // Save auto-refresh state to table config
+  tableConfig.saveAutoRefresh(TABLE_ID, val)
 })
 
 onBeforeUnmount(() => {
@@ -373,7 +552,7 @@ watch(modelValue, (val) => {
 })
 
 // Watch pagination and status changes
-watch([page, pageSize, selectedStatus], () => {
+watch([page, pageSize, selectedStatuses], () => {
   fetchSettlementHistory()
 })
 
@@ -390,7 +569,7 @@ const fetchSettlementHistory = async (refreshAction: boolean = false) => {
       page: page.value,
       start_date: startDate.value,
       end_date: endDate.value,
-      status: selectedStatus.value.value || '', // Use selected status value or default to completed
+      status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
     }
 
@@ -445,12 +624,13 @@ onBeforeMount(() => {
 
 // Initial load
 onMounted(() => {
-  if (autoRefresh.value) {
-    // Start auto-refresh if enabled
-    interval = setInterval(() => {
-      fetchSettlementHistory(true)
-    }, 5000)
+  // Initialize auto-refresh state from table config
+  const isAutoRefresh = tableConfig.getIsAutoRefresh(TABLE_ID)
+  if (isAutoRefresh !== null) {
+    autoRefresh.value = isAutoRefresh
   }
+
+  initializeStatusFilter()
   fetchSettlementHistory()
 })
 

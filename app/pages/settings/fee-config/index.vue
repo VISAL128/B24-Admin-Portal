@@ -9,7 +9,8 @@ import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useTable } from '~/composables/utils/useTable'
 import { UButton } from '#components'
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
-import { avatar } from '#build/ui'
+import appConfig from '~~/app.config'
+import { useTableConfig } from '~/composables/utils/useTableConfig'
 
 definePageMeta({
   auth: false,
@@ -31,6 +32,13 @@ const feeList = ref<FeeModel[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
 
+// Add loading state for create button
+const isCreating = ref(false)
+
+// Add loading states for view and edit actions
+const viewingFeeId = ref<string | null>(null)
+const editingFeeId = ref<string | null>(null)
+
 // Fetch fee config data from API
 const fetchFeeConfig = async () => {
   loading.value = true
@@ -46,12 +54,75 @@ const fetchFeeConfig = async () => {
   }
 }
 
+const TABLE_ID = 'settlement-history'
+const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
+  row_number: true,
+  code: true,
+  fee_name: true,
+  Currency: true,
+  fee_type: true,
+  sharing_fee: true,
+}
+
+const columnConfig = computed((): any[] => {
+  return (
+    table?.value?.tableApi
+      ?.getAllColumns()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((column: any) => column.getCanHide()) ?? []
+  )
+})
+
+const getTranslationHeaderById = (id: string) => {
+  return t(`fee_configs.columns.${id}`)
+}
+
 // Filtered rows for table
 const filteredData = computed(() =>
   feeList.value.filter((item) =>
     (item.name ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
+
+// Use table configuration composable
+const tableConfig = useTableConfig()
+
+// Initialize column visibility from localStorage or defaults
+const initializeColumnVisibility = (): Record<string, boolean> => {
+  const savedConfig = tableConfig.getColumnConfig(TABLE_ID)
+  return savedConfig || DEFAULT_COLUMN_VISIBILITY
+}
+
+const columnVisibility = ref<Record<string, boolean>>(initializeColumnVisibility())
+
+// Initialize sorting state from localStorage or defaults
+// const initializeSortingState = (): Array<{ id: string; desc: boolean }> => {
+//   const savedSorting = tableConfig.getSortingState(TABLE_ID)
+//   return savedSorting || []
+// }
+
+// const sortingState = ref<Array<{ id: string; desc: boolean }>>(initializeSortingState())
+
+// Save column visibility changes to localStorage
+const saveColumnVisibility = () => {
+  tableConfig.saveColumnConfig(TABLE_ID, columnVisibility.value)
+}
+
+// // Save sorting state changes to localStorage
+// const saveSortingState = () => {
+//   tableConfig.saveSortingState(TABLE_ID, sortingState.value)
+// }
+
+// // Save status filter changes to localStorage
+// const saveStatusFilter = () => {
+//   tableConfig.saveStatusFilter(
+//     TABLE_ID,
+//     selectedStatuses.value.map((status) => status.value)
+//   )
+// }
+
+// Watch for changes and auto-save
+watch(columnVisibility, saveColumnVisibility, { deep: true })
 
 onBeforeMount(() => {
   // Get last day of current month
@@ -62,24 +133,67 @@ onMounted(() => {
   fetchFeeConfig()
 })
 
-// Handle navigation to details page
-const navigateToDetails = (feeId: string) => {
-  router.push(`/settings/fee-config/${feeId}`)
+// Handle navigation to crud page
+
+const handleEditFee = (fee: FeeModel) => async () => {
+  editingFeeId.value = fee.id
+  try {
+    await router.push(`/settings/fee-config/${fee.id}/edit`)
+  } catch (error) {
+    errorHandler.handleApiError(error)
+  } finally {
+    // Reset loading after a short delay to prevent flash
+    setTimeout(() => {
+      editingFeeId.value = null
+    }, 500)
+  }
 }
 
-const handleViewDetails = (fee: FeeModel) => async () => {
-  // if (record.success === 0 && record.fail === 0) {
-  //   await notification.showWarning({
-  //     title: t('no_transactions_found'),
-  //     description: t('no_transactions_found_desc'),
-  //   })
-  //   return
-  // }
-  navigateToDetails(fee.id)
+const exportHeaders = [
+  { key: 'currency_id', label: t('settlement.currency') },
+  { key: 'created_date', label: t('fee_configs_details.settlement_date') },
+  { key: 'total_supplier', label: t('fee_configs_details.total_supplier') },
+  { key: 'created_by', label: t('settled_by') },
+  { key: 'total_amount', label: t('total_amount') },
+  // { key: "status", label: t("status") },
+]
+
+const onResetColumnVisibility = () => {
+  // Reset table API columns
+  table?.value?.tableApi?.resetColumnVisibility()
+  columnVisibility.value = { ...DEFAULT_COLUMN_VISIBILITY }
 }
 
-const onCreateFeeConfig = () => {
-  router.push('/settings/fee-config/create')
+const onSearchInput = (_value: string) => {
+  // Optional: add debounced search logic here if needed
+  // For now, the filtering is handled in computed filteredData
+}
+
+const handleViewFee = (fee: FeeModel) => async () => {
+  viewingFeeId.value = fee.id
+  try {
+    await router.push(`/settings/fee-config/${fee.id}/view`)
+  } catch (error) {
+    errorHandler.handleApiError(error)
+  } finally {
+    // Reset loading after a short delay to prevent flash
+    setTimeout(() => {
+      viewingFeeId.value = null
+    }, 500)
+  }
+}
+const onCreateFeeConfig = async () => {
+  isCreating.value = true
+  try {
+    await router.push('/settings/fee-config/create')
+  } catch (error) {
+    errorHandler.handleApiError(error)
+  } finally {
+    // Reset loading after a short delay to prevent flash
+    setTimeout(() => {
+      isCreating.value = false
+    }, 500)
+  }
 }
 
 const columns: TableColumn<FeeModel>[] = [
@@ -113,7 +227,7 @@ const columns: TableColumn<FeeModel>[] = [
             variant: 'subtle',
             class: 'flex items-center gap-1',
           },
-          () => [h('span', { class: 'text-sm' }, t(`${feeType}`))]
+          () => [h('span', { class: 'text-xs' }, t(`${feeType}`))]
         ),
       ])
     },
@@ -129,21 +243,21 @@ const columns: TableColumn<FeeModel>[] = [
           h(
             resolveComponent('UBadge'),
             {
-              color: detail.value > 0 ? 'green' : 'gray',
+              // color: detail.value > 0 ? 'success' : 'primary',
               variant: 'outline',
-              avatar: {
-                src: 'https://github.com/nuxt.png',
-              },
+              // avatar: {
+              //   src: 'https://github.com/nuxt.png',
+              // },
               class: 'flex items-center gap-1',
             },
             () => [
-              h('span', { class: 'text-sm' }, `${detail.party_name} : `),
+              h('span', { class: 'text-xs' }, `${detail.name} : `),
               h(
                 'span',
                 {
-                  class: `text-sm font-semibold ${detail.value > 0 ? 'text-color-primary' : 'text-gray-500'}`,
+                  class: `text-xs font-semibold ${detail.value > 0 ? 'text-color-primary' : 'text-gray-500'}`,
                 },
-                `${detail.value}${row.original.fee_type === 'percentage' ? '%' : ''}`
+                `${detail.value}${row.original.fee_type === 'percentage' ? '%' : row.original.currency === 'KHR' ? '៛' : '$'}`
               ),
             ]
           )
@@ -161,9 +275,19 @@ const columns: TableColumn<FeeModel>[] = [
           color: 'primary',
           variant: 'ghost',
           icon: 'i-lucide-eye',
-          size: 'sm',
-          onClick: handleViewDetails(row.original),
+          size: 'xs',
+          loading: viewingFeeId.value === row.original.id,
+          onClick: handleViewFee(row.original),
           // title: translations.view_details
+        }),
+        h(resolveComponent('UButton'), {
+          color: 'primary',
+          variant: 'ghost',
+          icon: 'i-lucide-edit',
+          size: 'xs',
+          loading: editingFeeId.value === row.original.id,
+          onClick: handleEditFee(row.original),
+          // title: translations.edit
         }),
       ]),
   },
@@ -174,12 +298,87 @@ const columns: TableColumn<FeeModel>[] = [
   <div class="flex flex-col h-full w-full space-y-4 overflow-hidden">
     <!-- Header -->
     <div
-      class="flex flex-wrap items-end justify-end gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
+      class="flex flex-wrap items-center justify-between gap-2 px-3 py-3 bg-white dark:bg-gray-900 rounded shadow"
     >
-      <div class="flex items-end gap-2">
-        <UButton color="primary" @click="onCreateFeeConfig">
+      <div class="flex flex-wrap items-center gap-2">
+        <ExSearch
+          v-model="search"
+          :placeholder="t('settlement.search_placeholder')"
+          class="w-64"
+          size="sm"
+          @input="onSearchInput"
+        />
+      </div>
+      <div class="flex items-center gap-2">
+        <UButton color="primary" size="sm" :loading="isCreating" @click="onCreateFeeConfig">
           {{ t('create_new') }}
         </UButton>
+        <ExportButton :data="filteredData" :headers="exportHeaders" />
+        <UPopover>
+          <UTooltip
+            key="column-config-tooltip"
+            :text="t('fee_configs.column_config.tooltip')"
+            :delay-duration="200"
+            placement="top"
+          >
+            <UButton variant="ghost" class="p-2 relative">
+              <UIcon
+                name="icon-park-outline:setting-config"
+                class="text-gray-900 dark:text-white"
+              />
+            </UButton>
+          </UTooltip>
+          <template #content>
+            <div class="p-2 space-y-1 min-w-50">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-muted">{{
+                  t('fee_configs.column_config.columns')
+                }}</span>
+                <!-- <UButton variant="solid" class="text-muted" size="xs" @click="onResetColumnConfig">
+                  {{ t('fee_configs.column_config.reset') }}
+                </UButton> -->
+                <UTooltip
+                  :text="t('fee_configs.column_config.reset')"
+                  :delay-duration="500"
+                  :open-delay="500"
+                  :close-delay="200"
+                  placement="top"
+                  :default-open="false"
+                >
+                  <UButton
+                    variant="ghost"
+                    class="text-muted hover:text-primary"
+                    size="sm"
+                    @click="onResetColumnVisibility"
+                  >
+                    <UIcon
+                      name="material-symbols:replay-rounded"
+                      size="sm"
+                      class="text-muted hover:text-primary"
+                    />
+                  </UButton>
+                </UTooltip>
+              </div>
+              <Divider />
+              <UCheckbox
+                v-for="col in columnConfig"
+                :id="col.id"
+                :key="col.id"
+                :label="getTranslationHeaderById(col.id)"
+                :model-value="col.getIsVisible()"
+                class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                size="sm"
+                @update:model-value="
+                  (value) => {
+                    col.toggleVisibility(value as boolean)
+                    columnVisibility[col.id] = value as boolean
+                    // saveColumnVisibility()
+                  }
+                "
+              />
+            </div>
+          </template>
+        </UPopover>
       </div>
     </div>
 
@@ -187,7 +386,11 @@ const columns: TableColumn<FeeModel>[] = [
     <UTable
       ref="table"
       :data="filteredData"
+      :loading="loading"
+      :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+      :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
       :columns="columns"
+      :ui="appConfig.ui.table.slots"
       sticky
       class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
     >

@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { FeeModel } from '~/models/settlement'
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
+import { useHelper } from '~/composables/utils/useHelper'
 
 definePageMeta({
   auth: false,
@@ -18,6 +19,7 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const feeConfigApi = useFeeConfigApi()
+const { formatAmount } = useHelper()
 
 const feeModel = ref<FeeModel>({
   code: '',
@@ -58,6 +60,13 @@ const fetchFeeConfig = async () => {
 }
 
 const formatCurrency = (amount: number, currency: string) => {
+  // const formatter = formatAmountWithSymbol(amount, currency);
+  // Debug: Log inputs to check for invalid values
+  console.log('Formatting amount:', amount, 'with currency:', currency)
+  if (!currency || typeof currency !== 'string') {
+    console.warn('Invalid currency:', currency)
+    return '-'
+  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
@@ -79,9 +88,7 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto max-w-full px-1">
-    <div v-if="loading" class="flex justify-center items-center h-64">
-      <USpinner size="lg" />
-    </div>
+    <LoadingSpinner v-if="loading" fullscreen />
 
     <div
       v-else
@@ -105,7 +112,7 @@ onMounted(() => {
                   <h2 class="text-lg text-primary font-semibold dark:text-white flex items-center">
                     {{ t('view_fee_detail') }}
                   </h2>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {{ t('view_fee_detail_description') }}
                   </p>
                 </div>
@@ -116,48 +123,50 @@ onMounted(() => {
           <!-- Basic Information -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('code') }}
               </label>
               <div
-                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-gray-900 dark:text-gray-100">{{ feeModel.code }}</span>
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{ feeModel.code }}</span>
               </div>
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('fee_name') }}
               </label>
               <div
-                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-gray-900 dark:text-gray-100">{{ feeModel.name }}</span>
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{ feeModel.name }}</span>
               </div>
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('fee_type') }}
               </label>
               <div
-                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-gray-900 dark:text-gray-100">{{
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{
                   getFeeTypeLabel(feeModel.fee_type)
                 }}</span>
               </div>
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('currency') }}
               </label>
               <div
-                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+                class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-gray-900 dark:text-gray-100">{{ feeModel.currency }}</span>
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{
+                  feeModel.currency
+                }}</span>
               </div>
             </div>
           </div>
@@ -205,24 +214,39 @@ onMounted(() => {
                       :key="index"
                       class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
-                      <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
-                            ? `${feeDetail.start_amount}%`
+                            ? `${formatAmount(feeDetail.start_amount, feeModel.currency, { showSymbol: false })}`
                             : formatCurrency(feeDetail.start_amount, feeModel.currency)
                         }}
                       </td>
-                      <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
-                            ? `${feeDetail.end_amount}%`
+                            ? `${formatAmount(feeDetail.end_amount, feeModel.currency, { showSymbol: false })}`
                             : formatCurrency(feeDetail.end_amount, feeModel.currency)
                         }}
                       </td>
-                      <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
+                          // formatAmount(
+                          //   feeDetail.fee_amount,
+                          //   (feeDetail.fee_type === 'percentage'
+                          //     ? feeDetail.fee_rate > 0 || feeDetail.fee_type === 'percentage'
+                          //       ? '%'
+                          //       : feeModel.currency
+                          //     : feeModel.currency),
+                          //   { showSymbol: false}
+                          // )
                           feeModel.fee_type === 'percentage'
-                            ? `${feeDetail.fee_amount}%`
+                            ? `${formatAmount(feeDetail.fee_amount, feeModel.currency, { showSymbol: false })} ${
+                                feeDetail.fee_rate > 0 || feeDetail.fee_type === 'percentage'
+                                  ? '%'
+                                  : feeModel.currency === 'KHR'
+                                    ? '៛'
+                                    : '$'
+                              }`
                             : formatCurrency(feeDetail.fee_amount, feeModel.currency)
                         }}
                       </td>
@@ -278,10 +302,10 @@ onMounted(() => {
                       :key="index"
                       class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
-                      <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
-                        {{ sharing.party_name }}
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
+                        {{ sharing.name }}
                       </td>
-                      <td class="px-4 py-3 text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
                             ? `${sharing.value}%`
@@ -304,10 +328,10 @@ onMounted(() => {
         <div
           class="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700"
         >
-          <UButton color="primary" variant="outline" @click="router.back()">
+          <UButton color="primary" size="xs" variant="outline" @click="router.back()">
             {{ t('back') }}
           </UButton>
-          <UButton color="primary" icon="i-lucide-edit" @click="editFeeConfig">
+          <UButton color="primary" size="xs" icon="i-lucide-edit" @click="editFeeConfig">
             {{ t('edit') }}
           </UButton>
         </div>

@@ -8,7 +8,7 @@ export enum ColumnType {
 }
 enum SortDirection {
   Ascending = 'asc',
-  Descending = 'desc'
+  Descending = 'desc',
 }
 enum FilterOperator {
   Equals = 'equals',
@@ -18,31 +18,40 @@ enum FilterOperator {
   GreaterThan = 'greater_than',
   LessThan = 'less_than',
   In = 'in',
-  NotIn = 'not_in'
+  NotIn = 'not_in',
 }
 enum FilterType {
   Text = 'text',
   Number = 'number',
   DateTime = 'datetime',
   Select = 'select',
-  MultiSelect = 'multi_select'
+  MultiSelect = 'multi_select',
 }
 
 enum PartyType {
   Supplier = 2,
-  Bank = 1
+  Bank = 1,
 }
 
 enum Status {
   Pending = 'pending',
   Completed = 'completed',
-  Failed = 'failed'
+  Failed = 'failed',
 }
 
 enum SettlementStatus {
   Pending = 'pending',
   Completed = 'completed',
   Failed = 'failed'
+}
+enum FeeType {
+  Fixed = 'fixed',
+  Percentage = 'percentage',
+}
+
+enum Currency {
+  USD = 'USD',
+  KHR = 'KHR',
 }
 
 enum SettlementHistoryStatus {
@@ -52,4 +61,4 @@ enum SettlementHistoryStatus {
   Completed = 'completed'
 }
 
-export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus };
+export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus,FeeType ,Currency};

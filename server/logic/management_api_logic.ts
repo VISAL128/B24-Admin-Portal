@@ -165,9 +165,9 @@ export async function getListFeeConfig(body: { search: string }): Promise<ApiRes
 export async function createFeeConfig(body: FeeModel): Promise<ApiResponse<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.CREATE, 'POST', body)
 }
-export async function updateFeeConfig(body: FeeModel): Promise<ApiResponse<unknown>> {
-  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.UPDATE, 'POST', body)
+export async function updateFeeConfig(body: FeeModel): Promise<any> {
+  return requestToManagementApi('/update_fee_config', 'PUT', body)
 }
-export async function findFeeConfigById(body: { id: string }): Promise<ApiResponse<unknown>> {
-  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.FIND_BY_ID, 'POST', body)
+export async function findFeeConfigById(body: any): Promise<any> {
+  return requestToManagementApi('/get_fee_config_by_id', 'POST', body)
 }

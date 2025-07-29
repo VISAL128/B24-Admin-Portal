@@ -8,5 +8,6 @@
     "source.fixAll.eslint": "explicit"
   },
   "vue.enable": true,
-  "volar.takeOverMode.enabled": true
+  "volar.takeOverMode.enabled": true,
+  "git.ignoreLimitWarning": true
 }

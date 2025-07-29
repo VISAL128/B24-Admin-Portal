@@ -40,7 +40,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: t('transactions'),
-      icon: 'i-material-symbols-receipt-long',
+      icon: 'material-symbols:credit-card-clock-outline',
       size: 'lg',
       to: '/transactions',
       active: activeStates.value.transactions,
@@ -74,35 +74,35 @@ const items = computed<NavigationMenuItem[][]>(() => [
         },
       ],
     },
-    // {
-    //   label: t('navigation.organization'),
-    //   icon: 'i-material-symbols-light-home-work',
-    //   size: 'lg',
-    //   active: activeStates.value.organization,
-    //   children: [
-    //     {
-    //       label: t('navigation.banks'),
-    //       // icon: 'i-material-symbols-account-balance-rounded',
-    //       size: 'lg',
-    //       to: '/organization/banks',
-    //       active: activeStates.value.banks,
-    //     },
-    //     {
-    //       label: t('navigation.sub_billers'),
-    //       // icon: 'i-material-symbols-light:article-person',
-    //       size: 'lg',
-    //       to: '/organization/sub-billers',
-    //       active: activeStates.value.subBillers,
-    //     },
-    //     {
-    //       label: t('navigation.users'),
-    //       // icon: 'i-material-symbols-light-group',
-    //       size: 'lg',
-    //       to: '/organization/users',
-    //       active: activeStates.value.users,
-    //     },
-    //   ],
-    // },
+    {
+      label: t('navigation.organization'),
+      icon: 'i-material-symbols-home-work-outline',
+      size: 'lg',
+      active: activeStates.value.organization,
+      children: [
+        {
+          label: t('navigation.banks'),
+          // icon: 'i-material-symbols-account-balance-rounded',
+          size: 'lg',
+          to: '/organization/banks',
+          active: activeStates.value.banks,
+        },
+        // {
+        //   label: t('navigation.sub_billers'),
+        //   // icon: 'i-material-symbols-light:article-person',
+        //   size: 'lg',
+        //   to: '/organization/sub-billers',
+        //   active: activeStates.value.subBillers,
+        // },
+        // {
+        //   label: t('navigation.users'),
+        //   // icon: 'i-material-symbols-light-group',
+        //   size: 'lg',
+        //   to: '/organization/users',
+        //   active: activeStates.value.users,
+        // },
+      ],
+    },
     // {
     //   label: t('navigation.reports'),
     //   icon: 'i-material-symbols-light-bar-chart',
@@ -138,13 +138,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
           to: '/settings/generate-details',
           active: activeStates.value.settingsGenerateDetails,
         },
-        // {
-        //   label: t('settings.fee_config'),
-        //   // icon: 'i-material-symbols-light-switch-access-shortcut',
-        //   size: 'lg',
-        //   to: '/settings/fee-config',
-        //   active: activeStates.value.settingsFeeConfig,
-        // },
+        {
+          label: t('settings.fee_config'),
+          // icon: 'i-material-symbols-light-switch-access-shortcut',
+          size: 'lg',
+          to: '/settings/fee-config',
+          active: activeStates.value.settingsFeeConfig,
+        },
         // {
         //   label: t('navbar.developer_tools'),
         //   // icon: 'i-material-symbols-light-code',
@@ -262,7 +262,7 @@ const props = defineProps<{
       class="w-full flex-1 transition-all duration-200"
       :ui="{
         linkLeadingIcon: 'shrink-0 size-4.5',
-        linkLabel: 'text-sm font-medium truncate',
+        linkLabel: 'text-xs font-medium truncate',
         link: 'p-2 cursor-pointer transition-colors duration-200',
         linkTrailingIcon: 'shrink-0 size-4',
       }"

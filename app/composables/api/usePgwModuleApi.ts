@@ -54,24 +54,32 @@ export const usePgwModuleApi = () => {
   /**
    * Get top-up summary transactions from PGW Module API
    */
-  const getTopUpSummary = async () => {
+  const getTopUpSummary = async (currency?: string) => {
+    const params = currency ? `?currency=${currency}` : ''
     return await executeV2(() =>
-      $fetch<TopUpSummaryResponse>(`/api/pgw-module/walletmgnt/get-top-up-summary-transactions`, {
-        method: 'GET',
-        onResponseError() {},
-      })
+      $fetch<TopUpSummaryResponse>(
+        `/api/pgw-module/walletmgnt/get-top-up-summary-transactions${params}`,
+        {
+          method: 'GET',
+          onResponseError() {},
+        }
+      )
     )
   }
 
   /**
    * Get fee (settlement) summary transactions from PGW Module API
    */
-  const getFeeSummary = async () => {
+  const getFeeSummary = async (currency?: string) => {
+    const params = currency ? `?currency=${currency}` : ''
     return await executeV2(() =>
-      $fetch<FeeSummaryResponse>(`/api/pgw-module/walletmgnt/get-fee-summary-transactions`, {
-        method: 'GET',
-        onResponseError() {},
-      })
+      $fetch<FeeSummaryResponse>(
+        `/api/pgw-module/walletmgnt/get-fee-summary-transactions${params}`,
+        {
+          method: 'GET',
+          onResponseError() {},
+        }
+      )
     )
   }
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import type { FeeModel, SharingSupplier, AlloCateDetail } from '~/models/settlement'
+import type { FeeModel } from '~/models/settlement'
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
 import { useHelper } from '~/composables/utils/useHelper'
 
@@ -10,14 +10,15 @@ definePageMeta({
   auth: false,
   breadcrumbs: [
     { label: 'settings.fee_config', to: '/settings/fee-config' },
-    { label: 'create_new_fee', active: true },
+    { label: 'edit_fee', active: true },
   ],
 })
 
-// declare available
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
+const feeConfigApi = useFeeConfigApi()
 const { formatAmount } = useHelper()
 
 const feeModel = ref<FeeModel>({
@@ -31,9 +32,6 @@ const feeModel = ref<FeeModel>({
   supplier_id: '',
   id: '',
 })
-const feeConfigApi = useFeeConfigApi()
-const auth = useAuth()
-const defaultSupplier = auth.currentProfile
 
 // Form validation errors
 const errors = reactive({
@@ -43,7 +41,7 @@ const errors = reactive({
   currency: '',
 })
 
-// Loading state
+// Loading states
 const loading = ref(true)
 const saving = ref(false)
 
@@ -62,11 +60,60 @@ const feeTypeSelection = ref<{ label: string; value: string }>({
   label: t('fixed_fee'),
   value: 'fixed',
 })
-
 const currencySelection = ref<{ label: string; value: string }>({
-  label: 'KHR - Cambodian Riel',
+  label: t('KHR - Cambodian Riel'),
   value: 'KHR',
 })
+
+// Fetch existing fee config
+const fetchFeeConfig = async () => {
+  try {
+    loading.value = true
+    const feeId = route.params.id as string
+    const response = await feeConfigApi.findFeeConfigById({ id: feeId })
+
+    if (response) {
+      feeModel.value = response
+
+      // Set selections based on fetched data
+      feeTypeSelection.value = (feeTypeOptions.find((opt) => opt.value === response.fee_type) ||
+        feeTypeOptions[0]) ?? { label: t('fixed_fee'), value: 'fixed' }
+      currencySelection.value = (currencyOptions.find((opt) => opt.value === response.currency) ||
+        currencyOptions[0]) ?? { label: 'KHR - Cambodian Riel', value: 'KHR' }
+    }
+  } catch (error) {
+    console.error('Error fetching fee config:', error)
+    toast.add({
+      title: t('error'),
+      description: t('failed_to_load_fee_config'),
+      color: 'error',
+    })
+    router.back()
+  } finally {
+    loading.value = false
+  }
+}
+
+// // Add validation for end amount changes
+// const handleEndAmountInput = (event: Event, index: number) => {
+//   const target = event.target as HTMLInputElement
+//   const numValue = parseFloat(target.value)
+//   const feeDetail = feeModel.value.fee_details[index]
+
+//   if (!isNaN(numValue) && feeDetail) {
+//     feeDetail.end_amount = numValue
+
+//     // Check if fee amount is now >= end amount for fixed type
+//     if (feeModel.value.fee_type === 'fixed' && feeDetail.fee_amount >= numValue) {
+//       toast.add({
+//         title: t('validation_error'),
+//         description: t('fee_amount_adjusted_due_to_end_amount_change'),
+//         color: 'warning',
+//       })
+//       feeDetail.fee_amount = Math.max(0, numValue - 1)
+//     }
+//   }
+// }
 
 // Form validation
 const isFormValid = computed(() => {
@@ -81,7 +128,6 @@ const isFormValid = computed(() => {
 
 // Validation function
 const validateForm = () => {
-  // Reset errors
   Object.keys(errors).forEach((key) => {
     errors[key as keyof typeof errors] = ''
   })
@@ -111,9 +157,8 @@ const validateForm = () => {
   return isValid
 }
 
-// Add sharing rule
+// Add/Remove fee rows
 const addSharingRow = () => {
-  // Only allow adding rows for percentage fee type and limit to 10 records
   if (feeModel.value.fee_type === 'percentage') {
     if (feeModel.value.fee_details.length >= 10) {
       toast.add({
@@ -129,12 +174,10 @@ const addSharingRow = () => {
       end_amount: 0,
       fee_amount: 0,
       fee_rate: 0,
-      fee_type: 'percentage',
     })
   }
 }
 
-// Remove sharing rule
 const removeSharingRow = (index: number) => {
   feeModel.value?.fee_details.splice(index, 1)
 }
@@ -165,35 +208,23 @@ const saveFee = async () => {
       fee_details: feeModel.value.fee_details,
       allocate_details: feeModel.value.allocate_details,
       allocation_rule_id: feeModel.value.allocation_rule_id,
-      supplier_id: defaultSupplier.value?.id || '',
+      supplier_id: feeModel.value.supplier_id || '',
       id: feeModel.value.id || '',
     }
-    console.log('Saving fee:', feeData)
+    await feeConfigApi.updateFeeConfig(feeData)
 
-    // Simulate API call
-    const result = await feeConfigApi.createFeeConfig(feeData)
-    if (result !== null && result.id !== '' && result.code !== '') {
-      toast.add({
-        title: t('success'),
-        description: t('fee_created_successfully'),
-        color: 'success',
-      })
+    toast.add({
+      title: t('success'),
+      description: t('fee_updated_successfully'),
+      color: 'success',
+    })
 
-      // Navigate back to fee config page
-      router.push('/settings/fee-config')
-    } else {
-      toast.add({
-        title: t('error'),
-        description: t('fee_already_exists'),
-        color: 'error',
-      })
-      return
-    }
+    router.push('/settings/fee-config')
   } catch (error) {
-    console.error('Error saving fee:', error)
+    console.error('Error updating fee:', error)
     toast.add({
       title: t('error'),
-      description: t('failed_to_create_fee'),
+      description: t('failed_to_update_fee'),
       color: 'error',
     })
   } finally {
@@ -201,48 +232,61 @@ const saveFee = async () => {
   }
 }
 
-// Watch for fee type selection changes
-watch(
-  feeTypeSelection,
-  (newValue) => {
-    feeModel.value.fee_type = newValue.value
+// Event handlers
+const handleFeeAmountInput = (event: Event, index: number) => {
+  const target = event.target as HTMLInputElement
+  let value = target.value
 
-    // Reset fee details when changing fee type
-    if (newValue.value === 'fixed') {
-      // For fixed fee, only one row with unlimited end amount
-      feeModel.value.fee_details = [
-        {
-          start_amount: 0,
-          end_amount: 0, // null represents unlimited
-          fee_amount: 0,
-          fee_rate: 0,
-          fee_type: 'fixed',
-        },
-      ]
+  // Remove any non-numeric characters except decimal point
+  value = value.replace(/[^0-9.]/g, '')
+
+  const numValue = parseFloat(value)
+  const feeDetail = feeModel.value.fee_details[index]
+
+  if (!isNaN(numValue) && feeDetail) {
+    // Determine if this row is using percentage or fixed based on which field has a value
+    const isPercentageType =
+      feeDetail.fee_rate > 0 || (feeDetail.fee_amount === 0 && feeDetail.fee_rate === 0)
+
+    if (isPercentageType && (feeDetail.fee_type == null || feeDetail.fee_type === 'percentage')) {
+      // For percentage, limit to 100 and update fee_rate
+      if (numValue > 100) {
+        toast.add({
+          title: t('validation_error'),
+          description: t('percentage_cannot_exceed_100'),
+          color: 'error',
+        })
+        target.value = '100'
+        feeDetail.fee_rate = 100
+        return
+      }
+      feeDetail.fee_rate = numValue
+      feeDetail.fee_amount = 0 // Clear the other field
     } else {
-      // For percentage fee, start with one empty row
-      feeModel.value.fee_details = [
-        {
-          start_amount: 0,
-          end_amount: 0,
-          fee_amount: 0,
-          fee_rate: 0,
-          fee_type: 'percentage',
-        },
-      ]
+      // For fixed value, update fee_amount
+      if (
+        (feeModel.value.fee_type === 'fixed' ||
+          (feeDetail.fee_type !== null && feeDetail.fee_type === 'fixed')) &&
+        feeDetail.end_amount > 0 &&
+        numValue >= feeDetail.end_amount
+      ) {
+        toast.add({
+          title: t('validation_error'),
+          description: t('fee_amount_cannot_exceed_end_amount'),
+          color: 'error',
+        })
+        target.value = String(feeDetail.end_amount - 1)
+        feeDetail.fee_amount = feeDetail.end_amount - 1
+        return
+      }
+      feeDetail.fee_amount = numValue
+      feeDetail.fee_rate = 0 // Clear the other field
     }
-  },
-  { immediate: true }
-)
-
-// Watch for currency selection changes
-watch(
-  currencySelection,
-  (newValue) => {
-    feeModel.value.currency = newValue.value
-  },
-  { immediate: true }
-)
+  } else if (value === '' && feeDetail) {
+    // Clear both fields when input is empty
+    feeDetail.fee_amount = 0
+  }
+}
 
 // Sharing value input handler
 const handleSharingValueInput = (event: Event, index: number) => {
@@ -277,75 +321,27 @@ const handleSharingValueInput = (event: Event, index: number) => {
   }
 }
 
-// Fetch existing fee config
-const fetchSharingSuppliers = async (): Promise<SharingSupplier[]> => {
-  try {
-    loading.value = true
-    const result = await feeConfigApi.getAllSharingSupplier()
-    return result
-  } catch (error) {
-    console.error('Error fetching fee config:', error)
-    toast.add({
-      title: t('error'),
-      description: t('failed_to_load_fee_config'),
-      color: 'error',
-    })
-    router.back()
-  } finally {
-    loading.value = false
+// Handle fee detail type change (fixed/percentage)
+const handleFeeDetailTypeChange = (index: number, value: string) => {
+  const feeDetail = feeModel.value.fee_details[index]
+  if (feeDetail) {
+    // Store the current value before switching
+    const currentValue = feeDetail.fee_amount || feeDetail.fee_rate || 0
+    feeDetail.fee_type = value
+    // If switching to percentage, move value to fee_rate and clear fee_amount
+    if (value === 'percentage') {
+      feeDetail.fee_rate = currentValue
+      feeDetail.fee_amount = 0
+    }
+    // If switching to fixed, move value to fee_amount and clear fee_rate
+    else if (value === 'fixed') {
+      feeDetail.fee_amount = currentValue
+      feeDetail.fee_rate = 0
+    }
   }
-  return []
 }
 
-// Initialize with one sharing rule
-onMounted(async () => {
-  // Fetch existing sharing suppliers
-  const sharingSuppliers = await fetchSharingSuppliers()
-  const getAllocateList: AlloCateDetail[] = sharingSuppliers.map((sup) => ({
-    editable: true,
-    party_id: sup.id,
-    name: sup.name,
-    party_type: 1,
-    value: 50, // Default sharing value
-  }))
-
-  // Set default Sharing fee and currency
-  feeModel.value.allocate_details = [
-    {
-      editable: true,
-      party_id: defaultSupplier.value?.id || '3904u39fu39u090f3f3',
-      name: `${defaultSupplier.value?.name || 'Default Supplier'} (${t('you')})`,
-      party_type: 1,
-      value: 50,
-    },
-  ]
-
-  // Add additional allocate details from sharing suppliers
-  feeModel.value.allocate_details.push(...getAllocateList)
-
-  // Initialize based on default fee type
-  if (feeModel.value.fee_type === 'fixed') {
-    feeModel.value.fee_details = [
-      {
-        start_amount: 0,
-        end_amount: 0, // null represents unlimited
-        fee_amount: 0,
-        fee_rate: 0,
-        fee_type: 'fixed',
-      },
-    ]
-  } else {
-    feeModel.value?.fee_details.push({
-      start_amount: 0,
-      end_amount: 1000,
-      fee_amount: 10,
-      fee_rate: 5,
-      fee_type: 'percentage',
-    })
-  }
-})
-
-// Add handler for formatted amount inputs
+// Add new handler for formatted amount inputs
 const handleAmountInput = (event: Event, index: number, field: 'start_amount' | 'end_amount') => {
   const target = event.target as HTMLInputElement
   let value = target.value
@@ -411,262 +407,134 @@ const handleNumericKeyPress = (event: KeyboardEvent) => {
   }
 }
 
-// Event handler for fee amount/rate input
-const handleFeeAmountInput = (event: Event, index: number) => {
-  const target = event.target as HTMLInputElement
-  let value = target.value
+// Watch for changes
+watch(
+  feeTypeSelection,
+  (newValue) => {
+    feeModel.value.fee_type = newValue.value
+  },
+  { immediate: true }
+)
 
-  // Remove any non-numeric characters except decimal point
-  value = value.replace(/[^0-9.]/g, '')
+watch(
+  currencySelection,
+  (newValue) => {
+    feeModel.value.currency = newValue.value
+  },
+  { immediate: true }
+)
 
-  const numValue = parseFloat(value)
-  const feeDetail = feeModel.value.fee_details[index]
-
-  if (!isNaN(numValue) && feeDetail) {
-    // Determine if this row is using percentage or fixed based on which field has a value
-    const isPercentageType =
-      feeDetail.fee_rate > 0 || (feeDetail.fee_amount === 0 && feeDetail.fee_rate === 0)
-
-    if (isPercentageType && (feeDetail.fee_type == null || feeDetail.fee_type === 'percentage')) {
-      // For percentage, limit to 100 and update fee_rate
-      if (numValue > 100) {
-        toast.add({
-          title: t('validation_error'),
-          description: t('percentage_cannot_exceed_100'),
-          color: 'error',
-        })
-        target.value = '100'
-        feeDetail.fee_rate = 100
-        return
-      }
-      feeDetail.fee_rate = numValue
-      feeDetail.fee_amount = 0 // Clear the other field
-    } else {
-      // For fixed value, update fee_amount
-      if (
-        (feeModel.value.fee_type === 'fixed' ||
-          (feeDetail.fee_type !== null && feeDetail.fee_type === 'fixed')) &&
-        feeDetail.end_amount > 0 &&
-        numValue >= feeDetail.end_amount
-      ) {
-        toast.add({
-          title: t('validation_error'),
-          description: t('fee_amount_cannot_exceed_end_amount'),
-          color: 'error',
-        })
-        target.value = String(feeDetail.end_amount - 1)
-        feeDetail.fee_amount = feeDetail.end_amount - 1
-        return
-      }
-      feeDetail.fee_amount = numValue
-      feeDetail.fee_rate = 0 // Clear the other field
-    }
-  } else if (value === '' && feeDetail) {
-    // Clear both fields when input is empty
-    feeDetail.fee_amount = 0
-  }
-}
-
-// Add validation for end amount changes
-// const handleEndAmountInput = (event: Event, index: number) => {
-//   const target = event.target as HTMLInputElement
-//   const numValue = parseFloat(target.value)
-//   const feeDetail = feeModel.value.fee_details[index]
-
-//   if (!isNaN(numValue) && feeDetail) {
-//     feeDetail.end_amount = numValue
-
-//     // Check if fee amount is now >= end amount for fixed type
-//     if (feeModel.value.fee_type === 'fixed' && feeDetail.fee_amount >= numValue) {
-//       toast.add({
-//         title: t('validation_error'),
-//         description: t('fee_amount_adjusted_due_to_end_amount_change'),
-//         color: 'warning',
-//       })
-//       feeDetail.fee_amount = Math.max(0, numValue - 1)
-//     }
-//   }
-// }
-
-// Handle fee detail type change (fixed/percentage)
-const handleFeeDetailTypeChange = (index: number, value: string) => {
-  const feeDetail = feeModel.value.fee_details[index]
-  if (feeDetail) {
-    // Store the current value before switching
-    const currentValue = feeDetail.fee_amount || feeDetail.fee_rate || 0
-    feeDetail.fee_type = value
-    // If switching to percentage, move value to fee_rate and clear fee_amount
-    if (value === 'percentage') {
-      feeDetail.fee_rate = currentValue
-      feeDetail.fee_amount = 0
-    }
-    // If switching to fixed, move value to fee_amount and clear fee_rate
-    else if (value === 'fixed') {
-      feeDetail.fee_amount = currentValue
-      feeDetail.fee_rate = 0
-    }
-  }
-}
+onMounted(() => {
+  fetchFeeConfig()
+})
 </script>
 
 <template>
   <div class="container mx-auto max-w-full px-1">
     <LoadingSpinner v-if="loading" fullscreen />
+
     <div
+      v-else
       class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
       <div class="p-6 lg:p-8">
         <form class="space-y-8" @submit.prevent="saveFee">
-          <!-- Basic Information Section -->
-          <div class="space-y-6">
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <UButton
-                    color="primary"
-                    variant="ghost"
-                    icon="i-lucide-arrow-left"
-                    size="xl"
-                    class="mr-4 bg-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                    @click="router.back()"
-                  />
-                  <div>
-                    <h2
-                      class="text-lg text-primary font-semibold dark:text-white flex items-center"
-                    >
-                      {{ t('title_create_fee') }}
-                    </h2>
-                    <p class="text-xxs text-gray-500 dark:text-gray-400 mt-1">
-                      {{ t('description_create_fee') }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <!-- Code Field -->
-              <div class="space-y-2">
-                <label
-                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {{ t('code') }}
-                  <span class="text-red-500 ml-1">*</span>
-                </label>
-                <UInput
-                  v-model="feeModel.code"
-                  :placeholder="t('enter_fee_code')"
-                  :error="!!errors.code"
-                  required
-                  size="sm"
-                  class="transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent w-full"
-                />
-              </div>
-
-              <!-- Name Field -->
-              <div class="space-y-2">
-                <label
-                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {{ t('fee_name') }}
-                  <span class="text-red-500 ml-1">*</span>
-                </label>
-                <UInput
-                  v-model="feeModel.name"
-                  :placeholder="t('enter_fee_name')"
-                  :error="!!errors.name"
-                  required
-                  size="sm"
-                  class="transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent w-full"
-                />
-                <p
-                  v-if="errors.name"
-                  class="text-xxs text-red-600 dark:text-red-400 flex items-center"
-                >
-                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  {{ errors.name }}
-                </p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <!-- Fee Type -->
-              <div class="space-y-2">
-                <label
-                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {{ t('fee_type') }}
-                  <!-- <span class="text-red-500 ml-1">*</span> -->
-                </label>
-                <USelectMenu
-                  v-model="feeTypeSelection"
-                  :items="feeTypeOptions"
-                  :placeholder="t('select_fee_type')"
-                  :search-input="false"
-                  option-attribute="label"
-                  value-attribute="value"
-                  size="sm"
-                  class="transition-all duration-200 w-full"
-                />
-                <p
-                  v-if="errors.fee_type"
-                  class="text-xxs text-red-600 dark:text-red-400 flex items-center"
-                >
-                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  {{ errors.fee_type }}
-                </p>
-              </div>
-
-              <!-- Currency -->
-              <div class="space-y-2">
-                <label
-                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {{ t('currency') }}
-                  <!-- <span class="text-red-500 ml-1">*</span> -->
-                </label>
-                <USelectMenu
-                  v-model="currencySelection"
-                  :items="currencyOptions"
-                  :placeholder="t('select_currency')"
-                  :search-input="false"
-                  option-attribute="label"
-                  value-attribute="value"
-                  size="sm"
-                  class="transition-all duration-200 w-full"
-                />
-                <p
-                  v-if="errors.currency"
-                  class="text-xxs text-red-600 dark:text-red-400 flex items-center"
-                >
-                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  {{ errors.currency }}
+          <!-- Header -->
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+            <div class="flex items-center">
+              <UButton
+                color="primary"
+                variant="ghost"
+                icon="i-lucide-arrow-left"
+                size="xl"
+                class="mr-4 bg-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                @click="router.back()"
+              />
+              <div>
+                <h2 class="text-lg text-primary font-semibold dark:text-white">
+                  {{ t('edit_fee') }}
+                </h2>
+                <p class="text-xxs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ t('edit_fee_description') }}
                 </p>
               </div>
             </div>
           </div>
 
+          <!-- Basic Information -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
+                {{ t('code') }}
+                <span class="text-red-500 ml-1">*</span>
+              </label>
+              <UInput
+                v-model="feeModel.code"
+                :placeholder="t('enter_fee_code')"
+                :error="!!errors.code"
+                required
+                size="sm"
+                class="w-full"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
+                {{ t('fee_name') }}
+                <span class="text-red-500 ml-1">*</span>
+              </label>
+              <UInput
+                v-model="feeModel.name"
+                :placeholder="t('enter_fee_name')"
+                :error="!!errors.name"
+                required
+                size="sm"
+                class="w-full"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
+                {{ t('fee_type') }}
+              </label>
+              <USelectMenu
+                v-model="feeTypeSelection"
+                :items="feeTypeOptions"
+                :search-input="false"
+                size="sm"
+                option-attribute="label"
+                value-attribute="value"
+                class="w-full"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
+                {{ t('currency') }}
+              </label>
+              <USelectMenu
+                v-model="currencySelection"
+                :items="currencyOptions"
+                :search-input="false"
+                size="sm"
+                option-attribute="label"
+                value-attribute="value"
+                class="w-full"
+              />
+            </div>
+          </div>
+
           <!-- Two Tables Side by Side -->
           <div class="grid grid-cols-1 xl:grid-cols-5 gap-8 items-start">
-            <!-- Add New Fee Table - 60% -->
+            <!-- Charge Fee Table -->
             <div class="xl:col-span-3 space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-primary dark:text-white">
@@ -720,7 +588,9 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                       class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
                     >
                       <tr
-                        v-for="(feeSharing, index) in feeModel.fee_details"
+                        v-for="(feeSharing, index) in feeModel.fee_type === 'fixed'
+                          ? feeModel.fee_details.slice(0, 1)
+                          : feeModel.fee_details"
                         :key="index"
                         class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                       >
@@ -776,28 +646,31 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                               class="flex-1"
                               size="sm"
                               @input="handleFeeAmountInput($event, index)"
+                              @keypress="handleNumericKeyPress($event)"
                             />
                             <USelectMenu
                               v-if="feeModel.fee_type === 'percentage'"
                               :model-value="{
                                 label:
-                                  feeSharing.fee_type === 'percentage'
+                                  feeSharing.fee_rate > 0 || feeSharing.fee_type === 'percentage'
                                     ? '%'
                                     : feeModel.currency === 'KHR'
                                       ? '៛'
                                       : '$',
                                 value:
-                                  feeSharing.fee_type === 'percentage' ? 'percentage' : 'fixed',
+                                  feeSharing.fee_rate > 0 || feeSharing.fee_type === 'percentage'
+                                    ? 'percentage'
+                                    : 'fixed',
                               }"
                               :items="[
                                 { label: feeModel.currency === 'KHR' ? '៛' : '$', value: 'fixed' },
                                 { label: '%', value: 'percentage' },
                               ]"
+                              size="sm"
                               option-attribute="label"
                               value-attribute="value"
                               :search-input="false"
                               class="w-24"
-                              size="sm"
                               @update:model-value="handleFeeDetailTypeChange(index, $event.value)"
                             />
                           </div>
@@ -814,33 +687,22 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                       </tr>
                     </tbody>
                   </table>
-
-                  <!-- Empty State for Fee Details -->
-                  <div v-if="feeModel.fee_details.length === 0" class="p-8">
-                    <TableEmptyState />
-                  </div>
                 </div>
               </div>
             </div>
-            <!-- Vertical Divider -->
-            <!-- <div class="hidden xl:flex xl:col-span-0 justify-center items-stretch min-h-full w-1">
-              <div class="w-px bg-gray-200 dark:bg-gray-700 self-stretch" />
-            </div> -->
 
-            <!-- Fee Sharing Configuration Table - 40% -->
+            <!-- Sharing Fee Table -->
             <div class="xl:col-span-2 space-y-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <h3 class="text-lg font-semibold text-primary dark:text-white">
-                    {{ t('sharing_fee') }}
-                  </h3>
-                  <UTooltip text="The fee value is set to match the charge fees">
-                    <UIcon
-                      name="i-lucide-info"
-                      class="w-4 h-4 text-gray-600 hover:text-primary cursor-help transition-colors duration-200"
-                    />
-                  </UTooltip>
-                </div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-semibold text-primary dark:text-white">
+                  {{ t('sharing_fee') }}
+                </h3>
+                <UTooltip text="The fee value is set to match the charge fees">
+                  <UIcon
+                    name="i-lucide-info"
+                    class="w-4 h-4 text-gray-600 hover:text-primary cursor-help transition-colors duration-200"
+                  />
+                </UTooltip>
               </div>
 
               <div
@@ -883,34 +745,33 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                         </td>
                         <td class="px-4 py-3">
                           <UInput
-                            v-model="sharing.value"
-                            size="sm"
-                            type="number"
-                            :step="feeModel.fee_type === 'percentage' ? '0.01' : '0.01'"
-                            :max="feeModel.fee_type === 'percentage' ? 100 : undefined"
-                            :placeholder="feeModel.fee_type === 'percentage' ? '10.5' : '1093'"
+                            :model-value="
+                              feeModel.fee_type === 'percentage'
+                                ? sharing.value.toString()
+                                : formatAmount(sharing.value, feeModel.currency, {
+                                    showSymbol: false,
+                                  })
+                            "
+                            type="text"
+                            :placeholder="
+                              feeModel.fee_type === 'percentage'
+                                ? '10.5'
+                                : formatAmount(1093, feeModel.currency, { showSymbol: false })
+                            "
                             :trailing-icon="
                               feeModel.fee_type === 'percentage' ? 'i-lucide-percent' : undefined
                             "
-                            class="w-full text-xxs"
+                            size="sm"
+                            class="w-full"
                             @input="handleSharingValueInput($event, index)"
-                            @keypress="handleNumericKeyPress"
+                            @keypress="handleNumericKeyPress($event)"
                           />
                         </td>
                       </tr>
                     </tbody>
                   </table>
-
-                  <!-- Empty State for Sharing Configuration -->
-                  <div v-if="feeModel.allocate_details.length === 0" class="p-8">
-                    <TableEmptyState />
-                  </div>
                 </div>
               </div>
-              <!-- Note about Set value fee of Charge fees -->
-              <!-- <div class="text-xxs text-gray-500 dark:text-gray-400 mt-2">
-                <p><strong>Note:</strong> The fee value is set to match the charge fees.</p>
-              </div> -->
             </div>
           </div>
 
@@ -918,13 +779,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
           <div
             class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700"
           >
-            <UButton
-              color="primary"
-              variant="outline"
-              size="xs"
-              class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-              @click="router.back()"
-            >
+            <UButton color="primary" size="xs" variant="outline" @click="router.back()">
               {{ t('cancel') }}
             </UButton>
             <UButton
@@ -945,7 +800,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                   />
                 </svg>
               </template>
-              {{ saving ? t('saving') : t('save') }}
+              {{ saving ? t('saving') : t('update') }}
             </UButton>
           </div>
         </form>
@@ -953,25 +808,3 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Tailwind CSS animations and transitions */
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.3s ease;
-}
-
-.list-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-
-.list-move {
-  transition: transform 0.3s ease;
-}
-</style>

@@ -1,0 +1,229 @@
+export default defineEventHandler(async (event) => {
+  try {
+    // Extract query parameters
+    const query = getQuery(event)
+    const {
+      search = '',
+      _page = 1,
+      _page_size = 25,
+      is_settlement_bank,
+      is_collection_bank,
+      is_active,
+      country_code,
+      currency_code,
+    } = query
+
+    // Mock bank data - in real implementation, this would come from a database
+    const mockBanks = [
+      {
+        id: '1',
+        bank_code: 'ABA',
+        bank_name: 'ABA Bank',
+        bank_short_name: 'ABA',
+        swift_code: 'ABABKHPP',
+        description: 'Advanced Bank of Asia Limited',
+        country_code: 'KH',
+        currency_code: 'USD',
+        is_settlement_bank: true,
+        is_collection_bank: true,
+        account_number: '000123456789',
+        account_name: 'Bill24 Settlement Account',
+        branch_name: 'Central Branch',
+        branch_code: 'ABA001',
+        contact_person: 'John Smith',
+        contact_phone: '+855 23 225 333',
+        contact_email: 'settlement@ababank.com',
+        address: 'No. 148, Preah Sihanouk Blvd, Phnom Penh',
+        logo_url: '/images/banks/aba-logo.png',
+        website_url: 'https://www.ababank.com',
+        is_active: true,
+        created_at: '2024-01-15T08:30:00Z',
+        updated_at: '2024-01-20T10:15:00Z',
+        created_by: 'system',
+        updated_by: 'admin',
+      },
+      {
+        id: '2',
+        bank_code: 'AC',
+        bank_name: 'Acleda Bank',
+        bank_short_name: 'ACLEDA',
+        swift_code: 'ACLDKHPP',
+        description: 'ACLEDA Bank Plc.',
+        country_code: 'KH',
+        currency_code: 'KHR',
+        is_settlement_bank: true,
+        is_collection_bank: false,
+        account_number: '001987654321',
+        account_name: 'Bill24 Main Account',
+        branch_name: 'Monivong Branch',
+        branch_code: 'AC002',
+        contact_person: 'Jane Doe',
+        contact_phone: '+855 23 994 444',
+        contact_email: 'corporate@acleda.com.kh',
+        address: 'No. 61, Preah Monivong Blvd, Phnom Penh',
+        logo_url: '/images/banks/acleda-logo.png',
+        website_url: 'https://www.acleda.com.kh',
+        is_active: true,
+        created_at: '2024-01-10T09:00:00Z',
+        updated_at: '2024-01-18T14:30:00Z',
+        created_by: 'system',
+        updated_by: 'admin',
+      },
+      {
+        id: '3',
+        bank_code: 'CB',
+        bank_name: 'Canadia Bank',
+        bank_short_name: 'Canadia',
+        swift_code: 'CANBKHPP',
+        description: 'Canadia Bank Plc.',
+        country_code: 'KH',
+        currency_code: 'USD',
+        is_settlement_bank: false,
+        is_collection_bank: true,
+        account_number: '002456789123',
+        account_name: 'Bill24 Collection Account',
+        branch_name: 'Russian Blvd Branch',
+        branch_code: 'CB003',
+        contact_person: 'David Wilson',
+        contact_phone: '+855 23 215 286',
+        contact_email: 'business@canadiabank.com.kh',
+        address: 'No. 315, Preah Monivong Blvd, Phnom Penh',
+        logo_url: '/images/banks/canadia-logo.png',
+        website_url: 'https://www.canadiabank.com.kh',
+        is_active: true,
+        created_at: '2024-01-12T11:45:00Z',
+        updated_at: '2024-01-22T16:20:00Z',
+        created_by: 'system',
+        updated_by: 'admin',
+      },
+      {
+        id: '4',
+        bank_code: 'PPB',
+        bank_name: 'Phnom Penh Commercial Bank',
+        bank_short_name: 'PPCB',
+        swift_code: 'PPCLKHPP',
+        description: 'Phnom Penh Commercial Bank Plc.',
+        country_code: 'KH',
+        currency_code: 'KHR',
+        is_settlement_bank: true,
+        is_collection_bank: true,
+        account_number: '003789456123',
+        account_name: 'Bill24 Multi-Purpose Account',
+        branch_name: 'Head Office',
+        branch_code: 'PPB001',
+        contact_person: 'Sarah Johnson',
+        contact_phone: '+855 23 999 000',
+        contact_email: 'corporate@ppcbank.com.kh',
+        address: 'No. 33, Preah Sihanouk Blvd, Phnom Penh',
+        logo_url: '/images/banks/ppcb-logo.png',
+        website_url: 'https://www.ppcbank.com.kh',
+        is_active: false,
+        created_at: '2024-01-08T13:20:00Z',
+        updated_at: '2024-01-25T09:10:00Z',
+        created_by: 'system',
+        updated_by: 'admin',
+      },
+      {
+        id: '5',
+        bank_code: 'FTB',
+        bank_name: 'Foreign Trade Bank of Cambodia',
+        bank_short_name: 'FTB',
+        swift_code: 'FTBCKHPP',
+        description: 'Foreign Trade Bank of Cambodia',
+        country_code: 'KH',
+        currency_code: 'USD',
+        is_settlement_bank: false,
+        is_collection_bank: false,
+        account_number: '004123789456',
+        account_name: 'Bill24 Reserve Account',
+        branch_name: 'Central Market Branch',
+        branch_code: 'FTB005',
+        contact_person: 'Michael Brown',
+        contact_phone: '+855 23 724 466',
+        contact_email: 'business@ftbbank.com.kh',
+        address: 'No. 24-26, Preah Norodom Blvd, Phnom Penh',
+        logo_url: '/images/banks/ftb-logo.png',
+        website_url: 'https://www.ftbbank.com.kh',
+        is_active: true,
+        created_at: '2024-01-14T15:30:00Z',
+        updated_at: '2024-01-19T11:45:00Z',
+        created_by: 'system',
+        updated_by: 'admin',
+      },
+    ]
+
+    // Apply filters
+    const filteredBanks = mockBanks.filter((bank) => {
+      let matches = true
+
+      // Search filter
+      if (search) {
+        const searchTerm = search.toString().toLowerCase()
+        matches = (bank.bank_code.toLowerCase().includes(searchTerm) ||
+          bank.bank_name.toLowerCase().includes(searchTerm) ||
+          bank.bank_short_name.toLowerCase().includes(searchTerm) ||
+          (bank.swift_code && bank.swift_code.toLowerCase().includes(searchTerm))) as boolean
+      }
+
+      // Settlement bank filter
+      if (is_settlement_bank !== undefined) {
+        matches = matches && bank.is_settlement_bank === (is_settlement_bank === 'true')
+      }
+
+      // Collection bank filter
+      if (is_collection_bank !== undefined) {
+        matches = matches && bank.is_collection_bank === (is_collection_bank === 'true')
+      }
+
+      // Active status filter
+      if (is_active !== undefined) {
+        matches = matches && bank.is_active === (is_active === 'true')
+      }
+
+      // Country filter
+      if (country_code) {
+        matches = matches && bank.country_code === country_code
+      }
+
+      // Currency filter
+      if (currency_code) {
+        matches = matches && bank.currency_code === currency_code
+      }
+
+      return matches
+    })
+
+    // Apply pagination
+    const pageNum = 1
+    const pageSizeNum = 10
+    const startIndex = (pageNum - 1) * pageSizeNum
+    const endIndex = startIndex + pageSizeNum
+    const paginatedBanks = filteredBanks.slice(startIndex, endIndex)
+
+    const totalRecords = filteredBanks.length
+    const totalPages = Math.ceil(totalRecords / pageSizeNum)
+
+    return {
+      code: 'SUCCESS',
+      message: 'Banks retrieved successfully',
+      data: {
+        records: paginatedBanks,
+        total_record: totalRecords,
+        total_page: totalPages,
+        current_page: pageNum,
+        page_size: pageSizeNum,
+      },
+    }
+  } catch (error) {
+    console.error('Error in banks API:', error)
+    return createError({
+      statusCode: 500,
+      statusMessage: 'Internal Server Error',
+      data: {
+        code: 'ERROR',
+        message: 'Failed to retrieve banks',
+        data: null,
+      },
+    })
+  }
+})
