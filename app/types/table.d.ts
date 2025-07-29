@@ -12,6 +12,8 @@ export interface TableConfiguration {
     id: string
     desc: boolean
   }>
+  autoRefresh?: boolean
+  statusFilter?: string[]
 }
 
 export interface TableConfigStorage {
@@ -26,4 +28,10 @@ export interface TableConfigComposable {
   resetTableConfig: (tableId: string) => boolean
   getAllTableConfigs: () => TableConfigStorage | null
   clearAllTableConfigs: () => boolean
+  getIsAutoRefresh: (tableId: string) => boolean | null
+  saveAutoRefresh: (tableId: string, isEnabled: boolean) => boolean
+  saveSortingState: (tableId: string, sortingState: Array<{ id: string; desc: boolean }>) => boolean
+  getSortingState: (tableId: string) => Array<{ id: string; desc: boolean }> | null
+  getStatusFilter: (tableId: string) => string[] | null
+  saveStatusFilter: (tableId: string, statusFilterValue: string[]) => boolean
 }

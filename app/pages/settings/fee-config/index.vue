@@ -9,7 +9,6 @@ import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useTable } from '~/composables/utils/useTable'
 import { UButton } from '#components'
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
-import { avatar } from '#build/ui'
 
 definePageMeta({
   auth: false,
@@ -30,6 +29,13 @@ const search = ref('')
 const feeList = ref<FeeModel[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
+
+// Add loading state for create button
+const isCreating = ref(false)
+
+// Add loading states for view and edit actions
+const viewingFeeId = ref<string | null>(null)
+const editingFeeId = ref<string | null>(null)
 
 // Fetch fee config data from API
 const fetchFeeConfig = async () => {
@@ -62,24 +68,47 @@ onMounted(() => {
   fetchFeeConfig()
 })
 
-// Handle navigation to details page
-const navigateToDetails = (feeId: string) => {
-  router.push(`/settings/fee-config/${feeId}`)
+// Handle navigation to crud page
+
+const handleEditFee = (fee: FeeModel) => async () => {
+  editingFeeId.value = fee.id
+  try {
+    await router.push(`/settings/fee-config/${fee.id}/edit`)
+  } catch (error) {
+    errorHandler.handleApiError(error)
+  } finally {
+    // Reset loading after a short delay to prevent flash
+    setTimeout(() => {
+      editingFeeId.value = null
+    }, 500)
+  }
 }
 
-const handleViewDetails = (fee: FeeModel) => async () => {
-  // if (record.success === 0 && record.fail === 0) {
-  //   await notification.showWarning({
-  //     title: t('no_transactions_found'),
-  //     description: t('no_transactions_found_desc'),
-  //   })
-  //   return
-  // }
-  navigateToDetails(fee.id)
+const handleViewFee = (fee: FeeModel) => async () => {
+  viewingFeeId.value = fee.id
+  try {
+    await router.push(`/settings/fee-config/${fee.id}/view`)
+  } catch (error) {
+    errorHandler.handleApiError(error)
+  } finally {
+    // Reset loading after a short delay to prevent flash
+    setTimeout(() => {
+      viewingFeeId.value = null
+    }, 500)
+  }
 }
-
-const onCreateFeeConfig = () => {
-  router.push('/settings/fee-config/create')
+const onCreateFeeConfig = async () => {
+  isCreating.value = true
+  try {
+    await router.push('/settings/fee-config/create')
+  } catch (error) {
+    errorHandler.handleApiError(error)
+  } finally {
+    // Reset loading after a short delay to prevent flash
+    setTimeout(() => {
+      isCreating.value = false
+    }, 500)
+  }
 }
 
 const columns: TableColumn<FeeModel>[] = [
@@ -129,21 +158,21 @@ const columns: TableColumn<FeeModel>[] = [
           h(
             resolveComponent('UBadge'),
             {
-              color: detail.value > 0 ? 'green' : 'gray',
+              // color: detail.value > 0 ? 'success' : 'primary',
               variant: 'outline',
-              avatar: {
-                src: 'https://github.com/nuxt.png',
-              },
+              // avatar: {
+              //   src: 'https://github.com/nuxt.png',
+              // },
               class: 'flex items-center gap-1',
             },
             () => [
-              h('span', { class: 'text-sm' }, `${detail.party_name} : `),
+              h('span', { class: 'text-sm' }, `${detail.name} : `),
               h(
                 'span',
                 {
                   class: `text-sm font-semibold ${detail.value > 0 ? 'text-color-primary' : 'text-gray-500'}`,
                 },
-                `${detail.value}${row.original.fee_type === 'percentage' ? '%' : ''}`
+                `${detail.value}${row.original.fee_type === 'percentage' ? '%' : row.original.currency === 'KHR' ? '៛' : '$'}`
               ),
             ]
           )
@@ -162,8 +191,18 @@ const columns: TableColumn<FeeModel>[] = [
           variant: 'ghost',
           icon: 'i-lucide-eye',
           size: 'sm',
-          onClick: handleViewDetails(row.original),
+          loading: viewingFeeId.value === row.original.id,
+          onClick: handleViewFee(row.original),
           // title: translations.view_details
+        }),
+        h(resolveComponent('UButton'), {
+          color: 'primary',
+          variant: 'ghost',
+          icon: 'i-lucide-edit',
+          size: 'sm',
+          loading: editingFeeId.value === row.original.id,
+          onClick: handleEditFee(row.original),
+          // title: translations.edit
         }),
       ]),
   },
@@ -177,7 +216,7 @@ const columns: TableColumn<FeeModel>[] = [
       class="flex flex-wrap items-end justify-end gap-2 px-4 py-4 bg-white dark:bg-gray-900 rounded shadow"
     >
       <div class="flex items-end gap-2">
-        <UButton color="primary" @click="onCreateFeeConfig">
+        <UButton color="primary" :loading="isCreating" @click="onCreateFeeConfig">
           {{ t('create_new') }}
         </UButton>
       </div>
@@ -187,6 +226,9 @@ const columns: TableColumn<FeeModel>[] = [
     <UTable
       ref="table"
       :data="filteredData"
+      :loading="loading"
+      :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+      :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
       :columns="columns"
       sticky
       class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"

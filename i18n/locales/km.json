@@ -12,6 +12,10 @@
   "add_fee": "បន្ថែមថ្លៃសេវា",
   "create_new": "បង្កើតថ្មី",
   "create_new_fee": "បង្កើតថ្លៃសេវាថ្មី",
+  "title_create_fee": "បង្កើតថ្លៃសេវា",
+  "description_create_fee": "បង្កើតការកំណត់ថ្លៃសេវាថ្មីសម្រាប់ប្រភេទថ្លៃសេវាដែលបានជ្រើសរើស។",
+  "edit_fee": "កែប្រែថ្លៃសេវា",
+  "edit_fee_description": "កែប្រែការកំណត់ថ្លៃសេវាដែលបានជ្រើសរើស",
   "view_fee_detail": "មើលព័ត៌មានលម្អិតថ្លៃសេវា",
   "view_fee_detail_description": "មើលព័ត៌មានលម្អិតនៃការកំណត់ថ្លៃសេវាដែលបានជ្រើសរើស",
   "fee_amount_adjusted_due_to_end_amount_change": "ចំនួនថ្លៃសេវាត្រូវបានកែប្រែដោយសារតែការផ្លាស់ប្តូរចំនួនបញ្ចប់",
@@ -22,6 +26,13 @@
   "fee_name": "ឈ្មោះថ្លៃសេវា",
   "fee_type": "ប្រភេទថ្លៃសេវា",
   "allocate_details": "ព័ត៌មានលម្អិតការបែងចែក",
+  "fee_created_successfully": "បានបង្កើតថ្លៃសេវាដោយជោគជ័យ",
+  "fee_updated_successfully": "បានអាប់ដេតថ្លៃសេវាដោយជោគជ័យ",
+  "at_least_one_fee_detail_required": "ត្រូវការព័ត៌មានលម្អិតថ្លៃសេវាអស់ពីមួយ",
+  "maximum_10_fee_details_allowed": "អនុញ្ញាតឱ្យមានព័ត៌មានលម្អិតថ្លៃសេវា 10 ព័ត៌មានប៉ុណ្ណោះ",
+  "failed_to_create_fee": "បរាជ័យក្នុងការបង្កើតថ្លៃសេវា",
+  "code_required": "ត្រូវការកូដ",
+  "name_required": "ត្រូវការឈ្មោះ",
   "new": "បន្ថែម",
   "edit": "កែប្រែ",
   "delete": "លុប",
@@ -320,7 +331,9 @@
       "created_by": "ទូទាត់ដោយ"
     },
     "column_config": {
+      "tooltip": "លាក់/បង្ហាញជួរឈរ",
       "reset": "កំណត់ឡើងវិញ",
+      "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
       "columns": "ជួរឈរ"
     }
   },
@@ -328,7 +341,7 @@
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
     "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
-    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 5 វិនាទី។",
+    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 30 វិនាទី។",
     "transaction": "ប្រតិបត្តិការ",
     "title": "ការទូទាត់",
     "settlement_list": "បញ្ជីការទូទាត់",
@@ -656,7 +669,7 @@
     "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
     "install_instruction": "ដំណើរការ: npm install lottie-web"
   },
-   "pages": {
+  "pages": {
     "transaction": {
       "title": "ប្រតិបត្តិការ"
     }

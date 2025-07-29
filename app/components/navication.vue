@@ -40,7 +40,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: t('transactions'),
-      icon: 'i-material-symbols-receipt-long',
+      icon: 'material-symbols:credit-card-clock-outline',
       size: 'lg',
       to: '/transactions',
       active: activeStates.value.transactions,
@@ -138,13 +138,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
           to: '/settings/generate-details',
           active: activeStates.value.settingsGenerateDetails,
         },
-        // {
-        //   label: t('settings.fee_config'),
-        //   // icon: 'i-material-symbols-light-switch-access-shortcut',
-        //   size: 'lg',
-        //   to: '/settings/fee-config',
-        //   active: activeStates.value.settingsFeeConfig,
-        // },
+        {
+          label: t('settings.fee_config'),
+          // icon: 'i-material-symbols-light-switch-access-shortcut',
+          size: 'lg',
+          to: '/settings/fee-config',
+          active: activeStates.value.settingsFeeConfig,
+        },
         // {
         //   label: t('navbar.developer_tools'),
         //   // icon: 'i-material-symbols-light-code',
