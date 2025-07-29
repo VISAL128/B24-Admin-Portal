@@ -17,30 +17,77 @@
               :items="walletTypes"
               value-key="id"
               option-attribute="label"
-              class="w-64"
+              class="min-w-[280px]"
               :loading="isLoadingWalletTypes"
               :disabled="isLoadingWalletTypes || walletTypes.length === 0"
               :placeholder="t('wallet_page.select_wallet_type')"
+              size="md"
+            >
+              <!-- <template #leading>
+                <div
+                  v-if="selectedWalletTypeData"
+                  class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center"
+                >
+                  <UIcon
+                    :name="selectedWalletTypeData.icon"
+                    class="w-4 h-4 text-gray-600 dark:text-gray-400"
+                  />
+                </div>
+                <div
+                  v-else
+                  class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center"
+                >
+                  <UIcon name="i-heroicons-wallet" class="w-4 h-4 text-gray-400" />
+                </div>
+              </template> -->
+            </USelectMenu>
+
+            <!-- Auto Refresh Toggle -->
+            <div class="flex items-center gap-1">
+              <USwitch
+                v-model="isAutoRefreshEnabled"
+                :label="t('wallet_page.auto_refresh')"
+                checked-icon="material-symbols:sync"
+                unchecked-icon="material-symbols:sync-disabled"
+                size="sm"
+                class="ml-2"
+                :disabled="isRefreshing"
+              />
+              <UTooltip
+                :text="t('wallet_page.auto_refresh_tooltip')"
+                :delay-duration="200"
+                placement="top"
+              >
+                <UIcon name="material-symbols:info-outline" class="size-3.5" />
+              </UTooltip>
+              <!-- Countdown Display -->
+              <div
+                v-if="isAutoRefreshEnabled && countdown > 0"
+                class="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded ml-2"
+              >
+                {{ countdown }}s
+              </div>
+            </div>
+
+            <!-- Manual Refresh Icon (when auto-refresh is disabled) -->
+            <UIcon
+              v-if="!isAutoRefreshEnabled"
+              name="material-symbols:sync"
+              :class="[
+                'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+                { 'animate-spin': isRefreshing },
+              ]"
+              :title="t('wallet_page.refresh')"
+              @click="refreshBalances"
             />
 
-            <UButton
-              variant="outline"
-              color="neutral"
-              icon="i-heroicons-arrow-path"
-              :loading="isRefreshing"
-              @click="refreshBalances"
-            >
-              {{ t('wallet_page.refresh') }}
-            </UButton>
-
-            <UButton
-              variant="outline"
-              color="neutral"
-              icon="i-heroicons-clock"
+            <!-- History Icon -->
+            <UIcon
+              name="material-symbols:history"
+              class="w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200"
+              :title="t('wallet_page.history')"
               @click="navigateToHistory"
-            >
-              {{ t('wallet_page.history') }}
-            </UButton>
+            />
           </div>
         </div>
       </div>
@@ -535,6 +582,13 @@ const summaryDisplayCurrency = ref('KHR')
 const isLoadingWalletTypes = ref(false)
 const isLoadingSummary = ref(false)
 
+// Auto refresh state
+const isAutoRefreshEnabled = ref(false)
+const autoRefreshInterval = ref<NodeJS.Timeout | null>(null)
+const autoRefreshDelay = 30000 // 30 seconds
+const countdownInterval = ref<NodeJS.Timeout | null>(null)
+const countdown = ref(0)
+
 // Wallet state
 const walletBalanceItems = ref<WalletBalanceItem[]>([])
 const selectedWalletTypeAPI = ref<string>('')
@@ -928,6 +982,12 @@ const refreshBalances = async () => {
   isRefreshing.value = true
   isWalletLoading.value = true
 
+  // Temporarily pause auto-refresh during manual refresh
+  const wasAutoRefreshEnabled = isAutoRefreshEnabled.value
+  if (wasAutoRefreshEnabled) {
+    stopCountdown()
+  }
+
   try {
     await Promise.all([loadWalletBalance(), loadTransactionSummary()])
   } catch (error) {
@@ -935,6 +995,11 @@ const refreshBalances = async () => {
   } finally {
     isRefreshing.value = false
     isWalletLoading.value = false
+
+    // Resume auto-refresh if it was enabled
+    if (wasAutoRefreshEnabled) {
+      startCountdown()
+    }
   }
 }
 
@@ -967,6 +1032,71 @@ const copyToClipboard = async (text: string) => {
     console.error('Failed to copy to clipboard:', error)
   }
 }
+
+// Auto refresh functionality
+const startCountdown = () => {
+  countdown.value = autoRefreshDelay / 1000 // Convert to seconds
+
+  if (countdownInterval.value) {
+    clearInterval(countdownInterval.value)
+  }
+
+  countdownInterval.value = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      countdown.value = autoRefreshDelay / 1000
+    }
+  }, 1000)
+}
+
+const stopCountdown = () => {
+  if (countdownInterval.value) {
+    clearInterval(countdownInterval.value)
+    countdownInterval.value = null
+  }
+  countdown.value = 0
+}
+
+const startAutoRefresh = () => {
+  if (autoRefreshInterval.value) {
+    clearInterval(autoRefreshInterval.value)
+  }
+
+  startCountdown()
+
+  autoRefreshInterval.value = setInterval(async () => {
+    if (!isRefreshing.value) {
+      try {
+        await refreshBalances()
+      } catch (error) {
+        console.error('Auto refresh failed:', error)
+      }
+    }
+  }, autoRefreshDelay)
+}
+
+const stopAutoRefresh = () => {
+  if (autoRefreshInterval.value) {
+    clearInterval(autoRefreshInterval.value)
+    autoRefreshInterval.value = null
+  }
+  stopCountdown()
+}
+
+// Watch auto-refresh toggle
+watch(isAutoRefreshEnabled, (enabled) => {
+  if (enabled) {
+    startAutoRefresh()
+  } else {
+    stopAutoRefresh()
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  stopAutoRefresh()
+  stopCountdown()
+})
 </script>
 
 <style scoped>
