@@ -58,11 +58,14 @@
   },
   "fee_configs": {
     "columns": {
+      "row_number": "លេខជួរដេក",
+      "name": "ឈ្មោះ",
       "code": "លេខកូដ",
       "fee_name": "ឈ្មោះថ្លៃសេវា",
       "currency": "រូបិយប័ណ្ណ",
       "fee_type": "ប្រភេទថ្លៃសេវា",
-      "sharing_fee": "ថ្លៃសេវាចែករំលែក"
+      "sharing": "ថ្លៃសេវាចែករំលែក",
+      "actions": "សកម្មភាព"
     },
     "column_config": {
       "tooltip": "Hide/Show Columns",
