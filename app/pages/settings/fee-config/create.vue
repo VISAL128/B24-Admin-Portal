@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { FeeModel, SharingSupplier, AlloCateDetail } from '~/models/settlement'
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
+import { useHelper } from '~/composables/utils/useHelper'
 
 definePageMeta({
   auth: false,
@@ -17,6 +18,8 @@ definePageMeta({
 const { t } = useI18n()
 const router = useRouter()
 const toast = useToast()
+const { formatAmount } = useHelper()
+
 const feeModel = ref<FeeModel>({
   code: '',
   name: '',
@@ -350,6 +353,72 @@ onMounted(async () => {
   }
 })
 
+// Add handler for formatted amount inputs
+const handleAmountInput = (event: Event, index: number, field: 'start_amount' | 'end_amount') => {
+  const target = event.target as HTMLInputElement
+  let value = target.value
+
+  // Remove all non-numeric characters except decimal point and minus sign
+  value = value.replace(/[^\d.-]/g, '')
+
+  // Ensure only one decimal point
+  const parts = value.split('.')
+  if (parts.length > 2) {
+    value = parts[0] + '.' + parts.slice(1).join('')
+  }
+
+  // Ensure minus sign only at the beginning
+  if (value.includes('-')) {
+    const minusCount = (value.match(/-/g) || []).length
+    if (minusCount > 1 || value.indexOf('-') !== 0) {
+      value = value.replace(/-/g, '')
+      if (value.charAt(0) !== '-') {
+        value = '-' + value
+      }
+    }
+  }
+
+  // Update the input value to reflect filtered value
+  target.value = value
+
+  const numValue = parseFloat(value) || 0
+
+  const feeDetail = feeModel.value.fee_details[index]
+  if (feeDetail) {
+    feeDetail[field] = numValue
+  }
+}
+
+// Add handler for preventing non-numeric input in real-time
+const handleNumericKeyPress = (event: KeyboardEvent) => {
+  const char = String.fromCharCode(event.which)
+  const input = event.target as HTMLInputElement
+  const currentValue = input.value
+
+  // Allow: backscape, delete, tab, escape, enter
+  if (
+    [8, 9, 27, 13, 46].indexOf(event.keyCode) !== -1 ||
+    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    (event.keyCode === 65 && event.ctrlKey === true) ||
+    (event.keyCode === 67 && event.ctrlKey === true) ||
+    (event.keyCode === 86 && event.ctrlKey === true) ||
+    (event.keyCode === 88 && event.ctrlKey === true)
+  ) {
+    return
+  }
+
+  // Ensure that it is a number or decimal point and stop the keypress
+  if ((char < '0' || char > '9') && char !== '.') {
+    event.preventDefault()
+    return
+  }
+
+  // Only allow one decimal point
+  if (char === '.' && currentValue.indexOf('.') !== -1) {
+    event.preventDefault()
+  }
+}
+
 // Event handler for fee amount/rate input
 const handleFeeAmountInput = (event: Event, index: number) => {
   const target = event.target as HTMLInputElement
@@ -657,21 +726,30 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                       >
                         <td class="px-4 py-3">
                           <UInput
-                            v-model="feeSharing.start_amount"
-                            type="number"
-                            :placeholder="feeModel.fee_type === 'percentage' ? '0%' : '0'"
+                            :model-value="
+                              formatAmount(feeSharing.start_amount, feeModel.currency, {
+                                showSymbol: false,
+                              })
+                            "
+                            type="text"
                             :readonly="feeModel.fee_type === 'fixed' && index === 0"
                             class="w-full"
+                            @input="handleAmountInput($event, index, 'start_amount')"
+                            @keypress="!readonly && handleNumericKeyPress($event)"
                           />
                         </td>
                         <td class="px-4 py-3">
                           <UInput
                             v-if="feeModel.fee_type === 'percentage'"
-                            v-model="feeSharing.end_amount"
-                            type="number"
-                            :placeholder="'0'"
+                            :model-value="
+                              formatAmount(feeSharing.end_amount, feeModel.currency, {
+                                showSymbol: false,
+                              })
+                            "
+                            type="text"
                             class="w-full"
-                            @input="handleEndAmountInput($event, index)"
+                            @input="handleAmountInput($event, index, 'end_amount')"
+                            @keypress="handleNumericKeyPress($event)"
                           />
                           <div v-else class="px-3 py-2 text-gray-600 dark:text-gray-400 italic">
                             {{ t('unlimited') }}
@@ -682,19 +760,17 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                             <UInput
                               :model-value="
                                 feeSharing.fee_rate > 0
-                                  ? feeSharing.fee_rate
-                                  : feeSharing.fee_amount
+                                  ? feeSharing.fee_rate.toString()
+                                  : formatAmount(feeSharing.fee_amount, feeModel.currency, {
+                                      showSymbol: false,
+                                    })
                               "
-                              type="number"
-                              :step="0.01"
-                              :max="
+                              type="text"
+                              :placeholder="
                                 feeSharing.fee_rate > 0
-                                  ? 100
-                                  : feeSharing.end_amount > 0
-                                    ? feeSharing.end_amount - 1
-                                    : undefined
+                                  ? '10.5'
+                                  : formatAmount(1093, feeModel.currency, { showSymbol: false })
                               "
-                              :placeholder="feeSharing.fee_rate > 0 ? '10.5' : '1093'"
                               class="flex-1"
                               @input="handleFeeAmountInput($event, index)"
                             />
@@ -813,6 +889,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                             "
                             class="w-full text-sm"
                             @input="handleSharingValueInput($event, index)"
+                            @keypress="handleNumericKeyPress"
                           />
                         </td>
                       </tr>
