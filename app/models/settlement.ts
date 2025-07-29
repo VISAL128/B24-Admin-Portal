@@ -109,7 +109,7 @@ export interface ConfirmSettlementResponse {
 export interface SettlementHistoryQuery {
   start_date?: string
   end_date?: string
-  status?: string
+  status?: string[]
   search?: string
   page?: number
   page_size?: number
