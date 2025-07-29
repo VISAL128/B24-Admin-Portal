@@ -11,14 +11,12 @@ export const useStorage = <T>(): StorageComposable<T> => {
     if (!import.meta.client) return false
 
     try {
-      const expiresAt = expirationInSeconds 
-        ? Date.now() + (expirationInSeconds * 1000)
-        : null
+      const expiresAt = expirationInSeconds ? Date.now() + expirationInSeconds * 1000 : null
 
       const dataToStore = {
         data,
         expiresAt,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       localStorage.setItem(key, JSON.stringify(dataToStore))
@@ -41,7 +39,7 @@ export const useStorage = <T>(): StorageComposable<T> => {
       if (!storedData) return null
 
       const { data, expiresAt } = JSON.parse(storedData)
-      
+
       // Check if data is expired
       if (expiresAt && expiresAt < Date.now()) {
         console.log(`⏰ Stored data with key ${key} is expired, removing from localStorage`)
@@ -84,10 +82,10 @@ export const useStorage = <T>(): StorageComposable<T> => {
       if (!storedData) return false
 
       const { expiresAt } = JSON.parse(storedData)
-      
+
       // If no expiration set, consider it valid
       if (!expiresAt) return true
-      
+
       return expiresAt > Date.now()
     } catch (error) {
       console.error(`❌ Failed to check validity of data with key ${key}:`, error)
@@ -98,7 +96,11 @@ export const useStorage = <T>(): StorageComposable<T> => {
   /**
    * Update existing data in localStorage
    */
-  const updateItem = (key: string, updater: (currentData: T | null) => T, expirationInSeconds?: number) => {
+  const updateItem = (
+    key: string,
+    updater: (currentData: T | null) => T,
+    expirationInSeconds?: number
+  ) => {
     const currentData = getItem(key)
     const newData = updater(currentData)
     return setItem(key, newData, expirationInSeconds)
@@ -112,9 +114,7 @@ export const useStorage = <T>(): StorageComposable<T> => {
 
     try {
       const keys = Object.keys(localStorage)
-      return pattern 
-        ? keys.filter(key => key.includes(pattern))
-        : keys
+      return pattern ? keys.filter((key) => key.includes(pattern)) : keys
     } catch (error) {
       console.error('❌ Failed to get localStorage keys:', error)
       return []
@@ -129,7 +129,7 @@ export const useStorage = <T>(): StorageComposable<T> => {
 
     try {
       const keys = getKeys(pattern)
-      keys.forEach(key => removeItem(key))
+      keys.forEach((key) => removeItem(key))
       console.log(`🗑️ Cleared ${keys.length} items from localStorage`)
       return true
     } catch (error) {
@@ -149,13 +149,13 @@ export const useStorage = <T>(): StorageComposable<T> => {
       if (!storedData) return null
 
       const parsed = JSON.parse(storedData)
-      
+
       return {
         data: parsed.data,
         expiresAt: parsed.expiresAt,
         timestamp: parsed.timestamp,
         isExpired: parsed.expiresAt ? parsed.expiresAt < Date.now() : false,
-        timeUntilExpiration: parsed.expiresAt ? Math.max(0, parsed.expiresAt - Date.now()) : null
+        timeUntilExpiration: parsed.expiresAt ? Math.max(0, parsed.expiresAt - Date.now()) : null,
       }
     } catch (error) {
       console.error(`❌ Failed to retrieve metadata for key ${key}:`, error)
@@ -171,6 +171,6 @@ export const useStorage = <T>(): StorageComposable<T> => {
     updateItem,
     getKeys,
     clearItems,
-    getItemWithMetadata
+    getItemWithMetadata,
   }
 }

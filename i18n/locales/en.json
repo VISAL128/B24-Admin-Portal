@@ -335,7 +335,7 @@
     },
     "column_config": {
       "tooltip": "Hide/Show Columns",
-      "reset": "Reset All",
+      "reset": "Reset",
       "reset_description": "Reset columns and sorting to defaults",
       "columns": "Columns"
     }

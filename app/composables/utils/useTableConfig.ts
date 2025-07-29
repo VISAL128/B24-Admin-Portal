@@ -147,6 +147,131 @@ export const useTableConfig = (): TableConfigComposable => {
       return false
     }
   }
+  /**
+   * Check if auto-refresh is enabled for a specific table
+   * @param tableId - Unique identifier for the table
+   */
+  const getIsAutoRefresh = (tableId: string): boolean | null => {
+    try {
+      const config = getTableConfig(tableId)
+      return config?.autoRefresh ?? null
+    } catch (error) {
+      console.error(`❌ Failed to check auto-refresh for table ${tableId}:`, error)
+      return null
+    }
+  }
+
+  /**
+   * Save auto-refresh setting for a specific table
+   * @param tableId - Unique identifier for the table
+   * @param isEnabled - Whether auto-refresh is enabled
+   */
+
+  const saveAutoRefresh = (tableId: string, isEnabled: boolean): boolean => {
+    try {
+      const config = getTableConfig(tableId)
+      if (!config) {
+        console.warn(`Table config for ${tableId} does not exist, creating a new one.`)
+        return saveTableConfig(tableId, {
+          columnVisibility: {},
+          autoRefresh: isEnabled,
+          pageSize: DEFAULT_PAGE_SIZE.value,
+          sortingState: [],
+        })
+      }
+      config.autoRefresh = isEnabled
+      saveTableConfig(tableId, config)
+      return true
+    } catch (error) {
+      console.error(`❌ Failed to save auto-refresh for table ${tableId}:`, error)
+      return false
+    }
+  }
+
+  /**
+   * Save sorting state for a specific table
+   * @param tableId - Unique identifier for the table
+   * @param sortingState - Array of sorting configurations
+   */
+  const saveSortingState = (
+    tableId: string,
+    sortingState: Array<{ id: string; desc: boolean }>
+  ): boolean => {
+    try {
+      const allConfigs = getAllConfigs()
+
+      if (!allConfigs[tableId]) {
+        allConfigs[tableId] = {
+          columnVisibility: {},
+          sortingState,
+        }
+      } else {
+        allConfigs[tableId].sortingState = sortingState
+      }
+
+      const success = storage.setItem(getStorageKey(), allConfigs)
+
+      return success
+    } catch (error) {
+      console.error(`❌ Failed to save sorting state for table ${tableId}:`, error)
+      return false
+    }
+  }
+
+  /**
+   * Get sorting state for a specific table
+   * @param tableId - Unique identifier for the table
+   */
+  const getSortingState = (tableId: string): Array<{ id: string; desc: boolean }> | null => {
+    try {
+      const allConfigs = getAllConfigs()
+      return allConfigs[tableId]?.sortingState || null
+    } catch (error) {
+      console.error(`❌ Failed to get sorting state for table ${tableId}:`, error)
+      return null
+    }
+  }
+
+  /**
+   * Save status filter for a specific table
+   * @param tableId - Unique identifier for the table
+   * @param statusFilterValue - Selected status filter value (only store the value, not the label)
+   */
+  const saveStatusFilter = (tableId: string, statusFilterValue: string[]): boolean => {
+    try {
+      const allConfigs = getAllConfigs()
+
+      if (!allConfigs[tableId]) {
+        allConfigs[tableId] = {
+          columnVisibility: {},
+          statusFilter: statusFilterValue,
+        }
+      } else {
+        allConfigs[tableId].statusFilter = statusFilterValue
+      }
+
+      const success = storage.setItem(getStorageKey(), allConfigs)
+
+      return success
+    } catch (error) {
+      console.error(`❌ Failed to save status filter for table ${tableId}:`, error)
+      return false
+    }
+  }
+
+  /**
+   * Get status filter for a specific table
+   * @param tableId - Unique identifier for the table
+   */
+  const getStatusFilter = (tableId: string): string[] | null => {
+    try {
+      const allConfigs = getAllConfigs()
+      return allConfigs[tableId]?.statusFilter || null
+    } catch (error) {
+      console.error(`❌ Failed to get status filter for table ${tableId}:`, error)
+      return null
+    }
+  }
 
   return {
     saveColumnConfig,
@@ -156,5 +281,11 @@ export const useTableConfig = (): TableConfigComposable => {
     resetTableConfig,
     getAllTableConfigs,
     clearAllTableConfigs,
+    getIsAutoRefresh,
+    saveAutoRefresh,
+    saveSortingState,
+    getSortingState,
+    saveStatusFilter,
+    getStatusFilter,
   }
 }
