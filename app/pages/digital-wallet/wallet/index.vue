@@ -16,8 +16,8 @@
               v-model="selectedWalletType"
               :items="walletTypes"
               value-key="id"
-              option-attribute="name"
-              class="w-48"
+              option-attribute="label"
+              class="w-64"
               :loading="isLoadingWalletTypes"
               :disabled="isLoadingWalletTypes || walletTypes.length === 0"
               :placeholder="t('wallet_page.select_wallet_type')"
@@ -58,27 +58,18 @@
           <div class="flex items-start justify-between mb-6">
             <div class="flex items-center space-x-4">
               <div
-                class="w-14 h-14 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center border border-blue-200 dark:border-blue-700"
+                class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center"
               >
                 <UIcon
                   :name="getWalletTypeIcon(selectedWalletTypeData?.name || '')"
-                  class="w-7 h-7 text-blue-600 dark:text-blue-400"
+                  class="w-6 h-6 text-gray-600 dark:text-gray-400"
                 />
               </div>
               <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ selectedWalletTypeData?.label || t('wallet_page.wallet') }}
                 </h2>
-                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">
-                  {{ walletBalanceItems[0]?.wallet_account_number }}
-                </p>
               </div>
-            </div>
-            <div class="text-right">
-              <UBadge color="success" variant="soft" size="md" class="px-3 py-1">
-                <UIcon name="i-heroicons-check-circle" class="w-4 h-4 mr-1" />
-                {{ t('wallet_page.active') }}
-              </UBadge>
             </div>
           </div>
 
@@ -128,7 +119,7 @@
                     {{ t('wallet_page.account_number') }}
                   </div>
                   <div class="text-sm font-semibold text-gray-900 dark:text-white">
-                    {{ formatAccountNumber(walletBalanceItems[0]?.wallet_account_number || '') }}
+                    {{ walletBalanceItems[0]?.wallet_account_number || '' }}
                   </div>
                 </div>
                 <button
@@ -143,10 +134,7 @@
                 </button>
               </div>
 
-              <div
-                v-if="walletBalanceItems[0]?.settlement_bank"
-                class="flex items-center space-x-3"
-              >
+              <div class="flex items-center space-x-3">
                 <div
                   class="w-9 h-9 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center"
                 >
@@ -162,7 +150,7 @@
                     {{ t('wallet_page.settlement_bank') }}
                   </div>
                   <div class="text-sm font-semibold text-gray-900 dark:text-white">
-                    {{ walletBalanceItems[0].settlement_bank }}
+                    {{ walletBalanceItems[0]?.settlement_bank || 'N/A' }}
                   </div>
                 </div>
               </div>
@@ -245,7 +233,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div class="flex items-center justify-between mb-4">
+            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.today') }}
               </h3>
@@ -298,6 +286,12 @@
 
             <!-- Loading State -->
             <div v-else class="space-y-3">
+              <!-- Header with icon skeleton -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse" />
+              </div>
+
               <div>
                 <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
                 <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
@@ -319,7 +313,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div class="flex items-center justify-between mb-4">
+            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_week') }}
               </h3>
@@ -375,6 +369,12 @@
 
             <!-- Loading State -->
             <div v-else class="space-y-3">
+              <!-- Header with icon skeleton -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse" />
+              </div>
+
               <div>
                 <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
                 <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
@@ -396,7 +396,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div class="flex items-center justify-between mb-4">
+            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_month') }}
               </h3>
@@ -452,6 +452,12 @@
 
             <!-- Loading State -->
             <div v-else class="space-y-3">
+              <!-- Header with icon skeleton -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse" />
+              </div>
+
               <div>
                 <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
                 <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
@@ -530,8 +536,6 @@ const isLoadingWalletTypes = ref(false)
 const isLoadingSummary = ref(false)
 
 // Wallet state
-const topUpWalletIds = ref<string[]>([])
-const settlementWalletIds = ref<string[]>([])
 const walletBalanceItems = ref<WalletBalanceItem[]>([])
 const selectedWalletTypeAPI = ref<string>('')
 
@@ -545,8 +549,11 @@ const walletTypes = ref<
     id: string
     label: string
     name: string
+    walletType: string
+    currency: string
     nameKey: string
     icon: string
+    walletId: string
   }>
 >([])
 
@@ -560,23 +567,32 @@ const loadWalletTypes = async () => {
     const response = await getWalletTypes()
 
     if (response.data?.wallet_type) {
-      // Update wallet types from API
-      walletTypes.value = response.data.wallet_type.map((type: string) => ({
-        id: type.toLowerCase().replace(/\s+/g, '_'),
-        label: type,
-        name: type,
-        nameKey: `wallet_page.${type.toLowerCase().replace(/\s+/g, '_')}`,
-        icon: getWalletTypeIcon(type),
-      }))
-
-      // Store wallet IDs separately for balance fetching
-      topUpWalletIds.value = response.data.topup_wallet_ids || []
-      settlementWalletIds.value = response.data.settlement_wallet_ids || []
+      // Update wallet types from API - new format where keys are wallet IDs and values are objects
+      const walletTypeData = response.data.wallet_type
+      walletTypes.value = Object.entries(walletTypeData).map(([walletId, walletInfo]) => {
+        const info = walletInfo as unknown as { type: string; name: string; currency: string }
+        const cleanType = info.name.split(' - ')[0] || info.name
+        return {
+          id: walletId, // Use the wallet ID as the identifier
+          label: info.name, // Full name with ID (e.g., "Settlement Wallet - 000000229")
+          name: cleanType, // Clean type name for display (e.g., "Settlement Wallet")
+          walletType: info.type, // API type (e.g., "settlement_wallet")
+          currency: info.currency, // Wallet currency (e.g., "KHR")
+          nameKey: `wallet_page.${cleanType.toLowerCase().replace(/\s+/g, '_')}`,
+          icon: getWalletTypeIcon(cleanType),
+          walletId: walletId, // Store the wallet ID for API calls
+        }
+      })
 
       // Set default wallet type
       if (walletTypes.value.length > 0) {
         selectedWalletType.value = walletTypes.value[0]?.id || ''
         selectedWalletTypeAPI.value = walletTypes.value[0]?.name || ''
+
+        // Set initial currency based on first wallet
+        if (walletTypes.value[0]?.currency) {
+          summaryDisplayCurrency.value = walletTypes.value[0].currency
+        }
 
         // Sync with store
         walletStore.setSelectedWalletType(selectedWalletType.value, selectedWalletTypeAPI.value)
@@ -590,24 +606,16 @@ const loadWalletTypes = async () => {
 }
 
 const loadWalletBalance = async () => {
-  if (!selectedWalletTypeAPI.value) return
+  if (!selectedWalletType.value) return
 
-  // Determine which wallet IDs to use based on wallet type
-  const walletTypeLower = selectedWalletTypeAPI.value.toLowerCase()
-  const isSettlementWallet = walletTypeLower.includes('settlement')
-  const walletIdsToUse = isSettlementWallet ? settlementWalletIds.value : topUpWalletIds.value
-
-  if (walletIdsToUse.length === 0) {
-    console.warn(`No ${isSettlementWallet ? 'settlement' : 'top-up'} wallet IDs available`)
-    walletBalanceItems.value = []
-    return
-  }
+  // Get the selected wallet data
+  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  if (!selectedWallet) return
 
   try {
     isWalletLoading.value = true
     const response = await getWalletBalance({
-      wallet_ids: walletIdsToUse,
-      wallet_type: selectedWalletTypeAPI.value,
+      wallet_ids: [selectedWallet.walletId], // Use the specific wallet ID
       page: 1,
       page_size: 50,
     })
@@ -629,30 +637,41 @@ const loadTransactionSummary = async () => {
   try {
     isLoadingSummary.value = true
 
-    // Load both top-up and fee summaries in parallel
-    const [topUpResponse, feeResponse] = await Promise.all([
-      getTopUpSummary().catch((error) => {
-        console.error('Top-up summary API error:', error)
-        return { data: null }
-      }),
-      getFeeSummary().catch((error) => {
-        console.error('Fee summary API error:', error)
-        return { data: null }
-      }),
-    ])
-
-    // Handle top-up summary response
-    if (topUpResponse.data?.settlement_wallet) {
-      topUpSummaryData.value = topUpResponse.data.settlement_wallet
-    } else {
-      console.warn('No top-up wallet data received')
+    // Get the selected wallet to determine type and currency
+    const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+    if (!selectedWallet) {
+      console.warn('No selected wallet found for summary')
+      return
     }
 
-    // Handle fee summary response
-    if (feeResponse.data?.settlement_wallet) {
-      feeSummaryData.value = feeResponse.data.settlement_wallet
+    const currency = selectedWallet.currency
+    const isSettlementWallet = selectedWallet.walletType === 'settlement_wallet'
+
+    // Call appropriate endpoint based on wallet type
+    if (isSettlementWallet) {
+      // Call fee summary endpoint for settlement wallets
+      const feeResponse = await getFeeSummary(currency).catch((error) => {
+        console.error('Fee summary API error:', error)
+        return { data: null }
+      })
+
+      if (feeResponse.data?.settlement_wallet) {
+        feeSummaryData.value = feeResponse.data.settlement_wallet
+      } else {
+        console.warn('No settlement wallet data received')
+      }
     } else {
-      console.warn('No settlement wallet data received')
+      // Call top-up summary endpoint for top-up wallets
+      const topUpResponse = await getTopUpSummary(currency).catch((error) => {
+        console.error('Top-up summary API error:', error)
+        return { data: null }
+      })
+
+      if (topUpResponse.data?.settlement_wallet) {
+        topUpSummaryData.value = topUpResponse.data.settlement_wallet
+      } else {
+        console.warn('No top-up wallet data received')
+      }
     }
   } catch (error) {
     console.error('Failed to load transaction summary:', error)
@@ -678,14 +697,6 @@ const getWalletTypeIcon = (type: string) => {
   }
 }
 
-// Utility methods for wallet display
-const formatAccountNumber = (accountNumber: string) => {
-  if (!accountNumber) return ''
-  return accountNumber.length > 8
-    ? `${accountNumber.slice(0, 4)}•••${accountNumber.slice(-4)}`
-    : accountNumber
-}
-
 // Computed wallet type data
 const selectedWalletTypeData = computed(() => {
   if (walletTypes.value.length === 0) return null
@@ -695,68 +706,18 @@ const selectedWalletTypeData = computed(() => {
 })
 
 const summaryData = computed(() => {
-  const walletTypeLower = selectedWalletType.value.toLowerCase()
+  // Get the selected wallet to determine if it's settlement or top-up
+  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  if (!selectedWallet) {
+    return getDefaultSummaryData()
+  }
 
-  // Use top-up data for personal, business, savings, investment wallets
-  // Use fee (settlement) data for settlement wallets
-  const isSettlementWallet = walletTypeLower.includes('settlement')
+  // Use fee (settlement) data for settlement wallets, top-up data for others
+  const isSettlementWallet = selectedWallet.walletType === 'settlement_wallet'
   const sourceData = isSettlementWallet ? feeSummaryData.value : topUpSummaryData.value
 
   if (!sourceData) {
-    // Return default/empty data if no API data is available yet
-    const now = new Date()
-    const isoString = now.toISOString()
-    const currentDate = isoString.split('T')[0] || '2024-01-01'
-    const monthStart = currentDate.substring(0, 7) + '-01'
-
-    return {
-      khr: {
-        today: {
-          date: currentDate,
-          totalTransactions: 0,
-          totalReceived: 0,
-          totalSettlement: 0,
-          currency: 'KHR',
-        },
-        week: {
-          date: `${currentDate} - ${currentDate}`,
-          totalTransactions: 0,
-          totalReceived: 0,
-          totalSettlement: 0,
-          currency: 'KHR',
-        },
-        month: {
-          date: monthStart,
-          totalTransactions: 0,
-          totalReceived: 0,
-          totalSettlement: 0,
-          currency: 'KHR',
-        },
-      },
-      usd: {
-        today: {
-          date: currentDate,
-          totalTransactions: 0,
-          totalReceived: 0,
-          totalSettlement: 0,
-          currency: 'USD',
-        },
-        week: {
-          date: `${currentDate} - ${currentDate}`,
-          totalTransactions: 0,
-          totalReceived: 0,
-          totalSettlement: 0,
-          currency: 'USD',
-        },
-        month: {
-          date: monthStart,
-          totalTransactions: 0,
-          totalReceived: 0,
-          totalSettlement: 0,
-          currency: 'USD',
-        },
-      },
-    }
+    return getDefaultSummaryData()
   }
 
   // Log the data for debugging
@@ -764,6 +725,63 @@ const summaryData = computed(() => {
 
   return sourceData
 })
+
+const getDefaultSummaryData = () => {
+  // Return default/empty data if no API data is available yet
+  const now = new Date()
+  const isoString = now.toISOString()
+  const currentDate = isoString.split('T')[0] || '2024-01-01'
+  const monthStart = currentDate.substring(0, 7) + '-01'
+
+  return {
+    khr: {
+      today: {
+        date: currentDate,
+        totalTransactions: 0,
+        totalReceived: 0,
+        totalSettlement: 0,
+        currency: 'KHR',
+      },
+      week: {
+        date: `${currentDate} - ${currentDate}`,
+        totalTransactions: 0,
+        totalReceived: 0,
+        totalSettlement: 0,
+        currency: 'KHR',
+      },
+      month: {
+        date: monthStart,
+        totalTransactions: 0,
+        totalReceived: 0,
+        totalSettlement: 0,
+        currency: 'KHR',
+      },
+    },
+    usd: {
+      today: {
+        date: currentDate,
+        totalTransactions: 0,
+        totalReceived: 0,
+        totalSettlement: 0,
+        currency: 'USD',
+      },
+      week: {
+        date: `${currentDate} - ${currentDate}`,
+        totalTransactions: 0,
+        totalReceived: 0,
+        totalSettlement: 0,
+        currency: 'USD',
+      },
+      month: {
+        date: monthStart,
+        totalTransactions: 0,
+        totalReceived: 0,
+        totalSettlement: 0,
+        currency: 'USD',
+      },
+    },
+  }
+}
 
 // Computed property for current summary data based on selected currency
 const currentSummaryData = computed(() => {
@@ -880,7 +898,13 @@ const currentSummaryData = computed(() => {
 // Watch for wallet type changes to trigger animations and reload balance
 watch(selectedWalletType, async (newType, oldType) => {
   if (newType !== oldType) {
-    selectedWalletTypeAPI.value = selectedWalletTypeData.value?.name || ''
+    const selectedWallet = walletTypes.value.find((type) => type.id === newType)
+    selectedWalletTypeAPI.value = selectedWallet?.name || ''
+
+    // Update summary display currency based on selected wallet
+    if (selectedWallet?.currency) {
+      summaryDisplayCurrency.value = selectedWallet.currency
+    }
 
     // Sync with store
     walletStore.setSelectedWalletType(newType, selectedWalletTypeAPI.value)
@@ -924,8 +948,8 @@ const navigateToHistory = () => {
   }
 
   // Check if it's a settlement wallet type
-  const walletTypeLower = selectedWalletTypeAPI.value.toLowerCase()
-  const isSettlementWallet = walletTypeLower.includes('settlement')
+  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
 
   // Navigate to appropriate page based on wallet type
   if (isSettlementWallet) {

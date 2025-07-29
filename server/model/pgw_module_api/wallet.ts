@@ -17,7 +17,6 @@ export interface WalletTypeData {
 
 export interface WalletBalanceRequest {
   wallet_ids: string[]
-  wallet_type: string
   page: number
   page_size: number
 }
