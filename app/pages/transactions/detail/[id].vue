@@ -97,10 +97,10 @@
               <div
                 class="flex justify-between items-center py-3 border-t border-dotted border-gray-200 dark:border-gray-700"
               >
-                <span class="text-sm text-gray-600 dark:text-gray-400">Supplier</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white"
-                  >Charge Station A</span
-                >
+                <span class="text-sm text-gray-600 dark:text-gray-400">Biller Name</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                  transactionData.biller
+                }}</span>
               </div>
             </div>
           </div>
@@ -113,15 +113,21 @@
         <div
           class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
         >
-          <div class="flex items-center space-x-3 mb-2">
-            <div
-              class="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center"
-            >
-              <UIcon name="i-heroicons-building-library" class="w-4 h-4 text-green-600" />
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center space-x-3">
+              <div class="flex items-center">
+                <div
+                  class="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-2"
+                >
+                  <UIcon name="i-heroicons-building-library" class="w-4 h-4 text-green-600" />
+                </div>
+                <h4 class="text-base font-medium text-gray-900 dark:text-white">Settlement Bank</h4>
+              </div>
             </div>
-            <h4 class="text-base font-medium text-gray-900 dark:text-white">Settlement</h4>
+            <!-- <div class="flex items-center space-x-2">
+              <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
+            </div> -->
           </div>
-
           <!-- Horizontal line below header -->
           <hr class="border-gray-200 dark:border-gray-700 mb-2 -mx-4" />
 
@@ -143,9 +149,9 @@
 
             <!-- Bank Reference -->
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Bank Reference</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">Account Number</span>
               <ClipboardBadge
-                :text="transactionData.bankReference"
+                :text="maskAccountNumber(transactionData.accountNumber)"
                 :copied-tooltip-text="$t('clipboard.copied')"
                 class="mt-1"
               />
@@ -154,7 +160,7 @@
             <!-- Settlement Amount -->
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Amount</span>
-              <span class="text-lg font-bold text-green-600">
+              <span class="text-lg font-bold text-blue-600">
                 {{ useCurrency().formatAmount(transactionData.settlementAmount) }}
                 {{ transactionData.currency }}
               </span>
@@ -352,16 +358,26 @@
                     })
                   }}</span>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2 mb-1">
                   <span class="text-sm font-medium text-gray-900 dark:text-white"
                     >Repush Status:</span
                   >
                   <StatusBadge
+
                     :status="getSelectedPushBackDetail()?.status || 'Unknown'"
                     variant="subtle"
                     size="sm"
                   />
                 </div>
+                 <div class="flex items-center space-x-2 mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Total Repush:</span
+                  >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                    getSelectedPushBackDetail()?.totalRepush || '0'
+                  }}</span>
+                </div>
+                
               </div>
             </div>
           </div>
@@ -639,7 +655,7 @@ const customerColumns = [
   },
   {
     id: 'customerName',
-    header: ({ column }: any) => createSortableHeader(column, 'Name'),
+    header: ({ column }: any) => createSortableHeader(column, 'Name', 'left'),
     accessorKey: 'customerName',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerName),
     size: 200,
@@ -648,7 +664,7 @@ const customerColumns = [
   },
   {
     id: 'customerCode',
-    header: ({ column }: any) => createSortableHeader(column, 'Code'),
+    header: ({ column }: any) => createSortableHeader(column, 'Code', 'left'),
     accessorKey: 'customerCode',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerCode),
     size: 150,
@@ -657,11 +673,20 @@ const customerColumns = [
   },
   {
     id: 'billNumber',
-    header: ({ column }: any) => createSortableHeader(column, 'Bill Number'),
+    header: ({ column }: any) => createSortableHeader(column, 'Bill Number', 'left'),
     accessorKey: 'billNumber',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
     size: 180,
     minSize: 160,
+    enableSorting: true,
+  },
+  {
+    id: 'currency',
+    header: () => h('div', { class: 'text-left' }, 'Currency'),
+    accessorKey: 'currency',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
+    size: 80,
+    minSize: 70,
     enableSorting: true,
   },
   {
@@ -673,16 +698,7 @@ const customerColumns = [
     size: 120,
     minSize: 100,
     enableSorting: true,
-  },
-  {
-    id: 'currency',
-    header: () => 'Currency',
-    accessorKey: 'currency',
-    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
-    size: 80,
-    minSize: 70,
-    enableSorting: true,
-  },
+  }
 ] as any[]
 
 // Transaction Allocation Data
@@ -708,6 +724,7 @@ const transactionAllocateData: TransactionAllocateData[] = [
     outstandingAmount: 75.0,
     currency: 'USD',
     date: '2025-07-15T10:30:00+07:00',
+    status: 'pending',
   },
   {
     id: '2',
@@ -718,6 +735,7 @@ const transactionAllocateData: TransactionAllocateData[] = [
     outstandingAmount: 75.0,
     currency: 'USD',
     date: '2025-07-15T12:00:00+07:00',
+    status: 'pending',
   },
 ]
 
@@ -732,11 +750,11 @@ const transactionAllocateColumns = [
   },
   {
     id: 'date',
-    header: ({ column }: any) => createSortableHeader(column, 'Date'),
+    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
     accessorKey: 'date',
     cell: ({ row }: any) => {
       try {
-        return h('div', { class: 'text-sm' }, [
+        return h('div', { class: 'text-sm text-left' }, [
           format.formatDateTime(row.original.date, {
             dateStyle: userPreferences?.dateFormat || 'medium',
             timeStyle: userPreferences?.timeFormat || 'short',
@@ -753,7 +771,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'customer',
-    header: ({ column }: any) => createSortableHeader(column, 'Customer'),
+    header: ({ column }: any) => createSortableHeader(column, 'Customer', 'left'),
     accessorKey: 'customer',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customer),
     size: 180,
@@ -761,22 +779,35 @@ const transactionAllocateColumns = [
     enableSorting: true,
   },
   {
-    id: 'transactionAmount',
-    header: ({ column }: any) => createSortableHeader(column, 'Amount', 'right'),
-    accessorKey: 'transactionAmount',
-    cell: ({ row }: any) =>
-      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.transactionAmount)),
-    size: 140,
-    minSize: 120,
-    enableSorting: true,
-  },
-  {
     id: 'billerName',
-    header: ({ column }: any) => createSortableHeader(column, 'Allocation Party'),
+    header: ({ column }: any) => createSortableHeader(column, 'Allocation Party', 'left'),
     accessorKey: 'billerName',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billerName),
     size: 160,
     minSize: 150,
+    enableSorting: true,
+  },
+  {
+    id: 'status',
+    header: ({column}: any) => h('div', { class: 'text-left' }, 'Status'),
+    accessorKey: 'status',
+    enableSorting: false,
+    cell: ({ row }: any) =>
+      h(StatusBadge, {
+        class: 'text-left',
+        status: row.original.status,
+        variant: 'subtle',
+        size: 'sm',
+      }),
+    size: 120,
+  },
+  {
+    id: 'currency',
+    header: () => h('div', { class: 'text-left' }, 'Currency'),
+    accessorKey: 'currency',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
+    size: 80,
+    minSize: 70,
     enableSorting: true,
   },
   {
@@ -799,15 +830,6 @@ const transactionAllocateColumns = [
     minSize: 120,
     enableSorting: true,
   },
-  {
-    id: 'currency',
-    header: () => 'Currency',
-    accessorKey: 'currency',
-    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
-    size: 80,
-    minSize: 70,
-    enableSorting: true,
-  },
 ]
 
 // Push Back Transaction Data
@@ -817,17 +839,11 @@ const webhookHistoryData = ref([
     transactionId: 'TXN-20240722001',
     action: 'push back',
     date: '2024-07-22T10:30:00+07:00',
+    type: 'webhook',
     status: 'Failed',
+    totalRepush: 1,
     retrying: false,
-  },
-  {
-    id: 'pushback-002',
-    transactionId: 'TXN-20240722001',
-    action: 'push back',
-    date: '2024-07-22T11:00:00+07:00',
-    status: 'Success',
-    retrying: false,
-  },
+  }
 ])
 
 // Push Back Detail Data - for slideover
@@ -836,10 +852,11 @@ const pushBackDetailData = ref({
     id: 'pushback-001',
     transactionId: 'TXN-20240722001',
     action: 'push back',
+    totalRepush: 1,
     date: '2024-07-22T10:30:00+07:00',
     status: 'Failed',
     billerConfiguration: {
-      type: 'Webhook',
+      type: 'webhook',
       url: 'https://example.com/webhook',
       exchange: null,
       routingKey: null,
@@ -863,39 +880,7 @@ const pushBackDetailData = ref({
     },
     retrying: false,
     allowPushBack: true,
-  },
-  'pushback-002': {
-    id: 'pushback-002',
-    transactionId: 'TXN-20240722001',
-    action: 'push back',
-    date: '2024-07-22T11:00:00+07:00',
-    status: 'Success',
-    billerConfiguration: {
-      type: 'Webhook',
-      url: 'https://example.com/webhook',
-      exchange: null,
-      routingKey: null,
-    },
-    payload: {
-      transaction_id: 'TXN-20240722001',
-      status: 'success',
-      amount: 10.5,
-      currency: 'USD',
-      customer: {
-        name: 'John Doe',
-        phone: '012345678',
-      },
-    },
-    response: {
-      statusCode: 200,
-      message: 'Success',
-    },
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    retrying: false,
-    allowPushBack: true,
-  },
+  }
 })
 
 const retryPushBack = (id: string) => {
@@ -929,7 +914,7 @@ const webhookColumns = [
   },
   {
     id: 'actions',
-    header: () => 'Actions',
+    header: () => h('div', { class: 'text-left' }, 'Actions'),
     cell: ({ row }: any) =>
       h(
         'div',
@@ -982,31 +967,50 @@ const webhookColumns = [
   },
   {
     id: 'date',
-    header: ({ column }: any) => createSortableHeader(column, 'Date'),
+    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
     accessorKey: 'date',
     enableSorting: true,
     cell: ({ row }: any) => {
-      return h('div', { class: 'text-sm' }, [
+      return h('div', { class: 'text-sm text-left' }, [
         format.formatDateTime(row.original.date, {
           dateStyle: userPreferences?.dateFormat || 'medium',
           timeStyle: userPreferences?.timeFormat || 'short',
         }),
       ])
     },
-    size: 180,
+    size: 100,
+  },
+   {
+    id: 'total_repush',
+    header: () => h('div', { class: 'text-right' }, 'Total Repush'),
+    accessorKey: 'total_repush',
+    enableSorting: false,
+    cell:  ({ row }: any) =>
+      h('div', { class: 'text-right' },row.original.totalRepush),
+    size: 50,
+  },
+  {
+    id: 'type',
+    header: () => h('div', { class: 'text-left' }, 'Type'),
+    accessorKey: 'type',
+    enableSorting: false,
+    cell:  ({ row }: any) =>
+      h('div', { class: 'text-left' },row.original.type),
+    size: 100,
   },
   {
     id: 'status',
-    header: () => 'Status',
+    header: () => h('div', { class: 'text-left' }, 'Status'),
     accessorKey: 'status',
     enableSorting: false,
     cell: ({ row }: any) =>
       h(StatusBadge, {
+        class: 'text-left',
         status: row.original.status,
         variant: 'subtle',
         size: 'sm',
       }),
-    size: 120,
+    size: 100,
   },
 ]
 
@@ -1016,7 +1020,7 @@ const transactionData = {
   date: '2025-07-15T12:00:00+07:00',
   transactionType: 'Wallet Payment',
   currency: 'USD',
-  status: 'failed',
+  status: 'success',
   transactionAmount: 150,
   settlementAmount: 147, // 150 - 3 fee
   customerFee: 0.0,
@@ -1024,6 +1028,9 @@ const transactionData = {
   bankReference: 'AC0123243253',
   settlementBank: 'ACLEDA',
   accountNumber: 'BANK-12345678',
+  biller: 'Charge Station A',
+  transactionReference: 'DC0123243253',
+  settlementStatus: 'success',
 }
 
 // Helper function to mask account number
@@ -1071,6 +1078,13 @@ const transactionOverviewFields = computed(() => [
     value: `${useCurrency().formatAmount(transactionData.supplierFee)} ${transactionData.currency}`,
     type: 'amount',
   },
+  {
+    label: 'Bank Reference',
+    value: `${transactionData.transactionReference}`,
+    type: 'code',
+    copyable: true,
+    rawValue: transactionData.transactionReference,
+  },
 ])
 
 // Show all fields in a single column
@@ -1099,19 +1113,6 @@ const getSelectedPushBackDetail = () => {
   return pushBackDetailData.value[id as keyof typeof pushBackDetailData.value]
 }
 
-// Helper function to format date
-const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  })
-}
 
 // Transaction Allocation Detail function
 const onTransactionAllocationSelect = (row: any) => {
