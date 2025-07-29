@@ -682,6 +682,7 @@
   "this_month": "This Month",
   "this_year": "This Year",
   "sub_biller": "Sub Biller",
+  "overview": "Overview",
   "lottie": {
     "library_not_found": "Lottie animation library not available",
     "install_instruction": "Run: npm install lottie-web"

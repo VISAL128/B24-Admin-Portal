@@ -9,31 +9,34 @@
       <div class="flex gap-2 flex-wrap items-center">
         <div class="flex flex-wrap items-center gap-2">
           <UInput v-model="search" :placeholder="t('table.search_placeholder')" class="w-64" />
-          <UPopover>
-            <UButton
-              color="neutral"
-              variant="subtle"
-              icon="i-lucide-calendar"
-              class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700"
-            >
-              <template v-if="modelValue.start">
-                <template v-if="modelValue.end">
-                  {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
-                  {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
+          <template v-if="showDateFilter">
+            <UPopover>
+              <UButton
+                color="neutral"
+                variant="subtle"
+                icon="i-lucide-calendar"
+                class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700"
+              >
+                <template v-if="modelValue.start">
+                  <template v-if="modelValue.end">
+                    {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
+                    {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
+                  </template>
+                  <template v-else>
+                    {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }}
+                  </template>
                 </template>
                 <template v-else>
-                  {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }}
+                  {{ t('pick_a_date') }}
                 </template>
-              </template>
-              <template v-else>
-                {{ t('pick_a_date') }}
-              </template>
-            </UButton>
+              </UButton>
 
-            <template #content>
-              <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
-            </template>
-          </UPopover>
+              <template #content>
+                <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
+              </template>
+            </UPopover>
+          </template>
+
           <UPopover v-model:open="showAdvancedOptions">
             <UButton variant="ghost" class="p-2 relative">
               <UIcon name="i-lucide:filter" class="w-4 h-4 text-gray-900 dark:text-white" />
@@ -76,7 +79,7 @@
                   </div>
                 </div>
                 <!-- Sort Select Menu -->
-                <div class="space-y-2">
+                <!-- <div class="space-y-2">
                   <h4 class="text-sm font-medium text-gray-900 dark:text-white">Sort By</h4>
                   <USelectMenu
                     :model-value="{
@@ -104,7 +107,7 @@
                       </div>
                     </template>
                   </USelectMenu>
-                </div>
+                </div> -->
               </div>
             </template>
           </UPopover>
@@ -168,7 +171,7 @@
         @select="onSelect"
         :ui="{
           td: 'px-2 py-3 whitespace-nowrap align-top',
-          th: 'px-2 py-3 whitespace-nowrap text-left',
+          th: 'tb-h-text py-2 whitespace-nowrap text-left',
           thead: 'whitespace-nowrap',
           tbody: 'whitespace-nowrap',
         }"
@@ -199,7 +202,12 @@
         <div class="flex items-center gap-4">
           <USelectMenu
             :model-value="{ label: String(props.pageSize ?? 10), value: props.pageSize ?? 10 }"
-            :items="DEFAULT_PAGE_SIZE_OPTIONS"
+            :items="[
+              { label: '10', value: 10 },
+              { label: '25', value: 25 },
+              { label: '50', value: 50 },
+              { label: '100', value: 100 },
+            ]"
             class="w-24"
             :search-input="false"
             @update:modelValue="(val) => emit('update:pageSize', val.value)"
@@ -234,7 +242,6 @@ import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import ExportButton from '../buttons/ExportButton.vue'
-import { DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
 
 const selectedSortFieldLabel = computed(() => {
   return (
@@ -254,6 +261,7 @@ const startDate = ref('')
 const endDate = ref('')
 const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 const today = new Date()
+const showDateFilter = computed(() => props.showDateFilter ?? true)
 const modelValue = shallowRef({
   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
@@ -308,6 +316,7 @@ const props = defineProps<{
   pageSize?: number
   total?: number
   totalPage?: number
+  showDateFilter?: boolean
 }>()
 
 const resolvedExportOptions = computed(() => ({
@@ -338,6 +347,10 @@ const columnOptions = computed(() =>
       value: col.id!,
     }))
 )
+
+const debouncedEmitSearch = debounce((val: string) => {
+  emit('search-change', val)
+})
 
 const sortDirectionOptions = [
   { label: t('ascending'), value: 'asc' },
@@ -430,6 +443,14 @@ function toggleSort(columnId: string) {
   }
 
   emit('sort-change', selectedSortField.value, selectedSortDirection.value)
+}
+
+function debounce(fn: (...args: any[]) => void, delay = 300) {
+  let timeout: ReturnType<typeof setTimeout>
+  return (...args: any[]) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => fn(...args), delay)
+  }
 }
 
 function onSortFieldChange(value: string) {
@@ -527,7 +548,7 @@ watch(
 )
 
 watch(search, (val) => {
-  emit('search-change', val)
+  debouncedEmitSearch(val)
 })
 
 watch(modelValue, (val) => {

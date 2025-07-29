@@ -686,6 +686,7 @@
   "this_month": "ខែនេះ",
   "this_year": "ឆ្នាំនេះ",
   "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+  "overview": "ទូទៅ",
   "lottie": {
     "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
     "install_instruction": "ដំណើរការ: npm install lottie-web"
