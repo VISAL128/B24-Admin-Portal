@@ -91,10 +91,10 @@
                         <div class="flex flex-col gap-1 p-2 w-28">
                           <UButton
                             variant="ghost"
-                            class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                            class="cursor-pointer transition-all justify-start text-left"
                             block
                             :class="
-                              locale === 'en' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
+                              locale === 'en' ? 'bg-primary/10 dark:bg-gray-700 text-primary' : ''
                             "
                             size="sm"
                             @click="
@@ -112,9 +112,9 @@
                           </UButton>
                           <UButton
                             variant="ghost"
-                            class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                            class="cursor-pointer transition-all justify-start text-left"
                             :class="
-                              locale === 'km' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
+                              locale === 'km' ? 'bg-primary/10 dark:bg-gray-700 text-primary' : ''
                             "
                             block
                             size="sm"

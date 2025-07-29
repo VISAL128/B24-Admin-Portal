@@ -53,16 +53,16 @@
             <UIcon name="material-symbols:info-outline" class="size-3.5" />
           </UTooltip>
         </div>
-        <UIcon
-          v-if="!autoRefresh"
-          name="material-symbols:sync"
-          :class="[
-            'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
-            { 'animate-spin': isRefreshing },
-          ]"
-          :title="t('settlement.refresh')"
-          @click="fetchSettlementHistory(true)"
-        />
+        <UTooltip v-if="!autoRefresh" :text="t('settlement.refresh')">
+          <UIcon
+            name="material-symbols:sync"
+            :class="[
+              'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+              { 'animate-spin': isRefreshing },
+            ]"
+            @click="fetchSettlementHistory(true)"
+          />
+        </UTooltip>
       </div>
       <div class="flex items-center gap-2">
         <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
