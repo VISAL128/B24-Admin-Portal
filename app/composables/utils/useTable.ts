@@ -27,7 +27,6 @@ export const useTable = <_T>() => {
   const createSortableHeader = (
     column: any,
     label: string,
-    columnId: string,
     alignment: 'left' | 'center' | 'right' = 'left',
     onSortChange?: (order: 'asc' | 'desc' | null) => void
   ) => {
@@ -38,23 +37,24 @@ export const useTable = <_T>() => {
     }
 
     const handleSort = () => {
+      const columnId = column.id
       const current = sortState.value[columnId] || null
       if (current === null) {
         sortState.value[columnId] = 'asc'
         column.toggleSorting(false)
-
       } else if (current === 'asc') {
         sortState.value[columnId] = 'desc'
-                column.toggleSorting(true)
+        column.toggleSorting(true)
       } else {
         sortState.value[columnId] = null
-                column.clearSorting()
+        column.clearSorting()
       }
 
       onSortChange?.(sortState.value[columnId])
     }
 
     const getIcon = () => {
+      const columnId = column.id
       if (sortState.value[columnId] === 'asc') return 'i-solar:sort-from-top-to-bottom-bold'
       if (sortState.value[columnId] === 'desc') return 'i-solar:sort-from-bottom-to-top-outline'
       return 'i-lucide-arrow-up-down'
@@ -73,8 +73,6 @@ export const useTable = <_T>() => {
     ])
   }
 
-
-  
   /**
    * Creates a row number cell with proper pagination and sorting support
    * @param row - The table row object
