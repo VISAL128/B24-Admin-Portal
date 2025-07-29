@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { FeeModel } from '~/models/settlement'
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
+import { useHelper } from '~/composables/utils/useHelper'
 
 definePageMeta({
   auth: false,
@@ -18,6 +19,7 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const feeConfigApi = useFeeConfigApi()
+const {  formatAmount } = useHelper()
 
 const feeModel = ref<FeeModel>({
   code: '',
@@ -58,6 +60,13 @@ const fetchFeeConfig = async () => {
 }
 
 const formatCurrency = (amount: number, currency: string) => {
+  // const formatter = formatAmountWithSymbol(amount, currency);
+  // Debug: Log inputs to check for invalid values
+  console.log('Formatting amount:', amount, 'with currency:', currency)
+  if (!currency || typeof currency !== 'string') {
+    console.warn('Invalid currency:', currency)
+    return '-'
+  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
@@ -208,14 +217,14 @@ onMounted(() => {
                       <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
-                            ? `${feeDetail.start_amount}`
+                            ? `${formatAmount(feeDetail.start_amount, feeModel.currency, { showSymbol: false })}`
                             : formatCurrency(feeDetail.start_amount, feeModel.currency)
                         }}
                       </td>
                       <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
-                            ? `${feeDetail.end_amount}`
+                            ? `${formatAmount(feeDetail.end_amount, feeModel.currency, { showSymbol: false })}`
                             : formatCurrency(feeDetail.end_amount, feeModel.currency)
                         }}
                       </td>
@@ -231,7 +240,7 @@ onMounted(() => {
                           //   { showSymbol: false}
                           // )
                           feeModel.fee_type === 'percentage'
-                            ? `${feeDetail.fee_amount} ${
+                            ? `${formatAmount(feeDetail.fee_amount, feeModel.currency, { showSymbol: false })} ${
                                 feeDetail.fee_rate > 0 || feeDetail.fee_type === 'percentage'
                                   ? '%'
                                   : feeModel.currency === 'KHR'

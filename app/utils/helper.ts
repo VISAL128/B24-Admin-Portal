@@ -108,7 +108,7 @@ export function getCurrencySymbol(currency: string): string {
  * @param currency - Currency code
  * @param customSymbol - Custom symbol to use
  */
-export function formatAmountWithSymbol(
+export function formatAmountWithSymbolTest(
   amount: number | string | null | undefined,
   currency: string = 'USD',
   customSymbol?: string
