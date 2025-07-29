@@ -1,12 +1,49 @@
 {
   "yes": "បាទ",
   "no": "ទេ",
+  "yes_logout": "បាទ, ចាកចេញ",
   "hello": "សួស្តី",
   "cancel": "បោះបង់",
   "confirm": "បញ្ជាក់",
   "confirmation": "ការបញ្ជាក់",
   "logout_confirmation": "តើអ្នកប្រាកដជាចង់ចាកចេញទេ?",
   "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24 Payment Portal",
+  "code": "Code",
+  "add_fee": "បន្ថែមថ្លៃសេវា",
+  "create_new": "បង្កើតថ្មី",
+  "create_new_fee": "បង្កើតថ្លៃសេវាថ្មី",
+  "view_fee_detail": "មើលព័ត៌មានលម្អិតថ្លៃសេវា",
+  "view_fee_detail_description": "មើលព័ត៌មានលម្អិតនៃការកំណត់ថ្លៃសេវាដែលបានជ្រើសរើស",
+  "fee_amount_adjusted_due_to_end_amount_change": "ចំនួនថ្លៃសេវាត្រូវបានកែប្រែដោយសារតែការផ្លាស់ប្តូរចំនួនបញ្ចប់",
+  "fee_amount_cannot_exceed_end_amount": "ចំនួនថ្លៃសេវាមិនអាចលើសចំនួនបញ្ចប់បានទេ",
+  "percentage_cannot_exceed_100": "ចំនួនភាគរយមិនអាចលើស 100% បានទេ",
+  "name": "ឈ្មោះ",
+  "charge_fee": "គិតថ្លៃសេវា",
+  "fee_name": "ឈ្មោះថ្លៃសេវា",
+  "fee_type": "ប្រភេទថ្លៃសេវា",
+  "allocate_details": "ព័ត៌មានលម្អិតការបែងចែក",
+  "new": "បន្ថែម",
+  "edit": "កែប្រែ",
+  "delete": "លុប",
+  "save": "រក្សាទុក",
+  "update": "អាប់ដេត",
+  "search": "ស្វែងរក",
+  "fixed_fee": "ថេរ",
+  "percentage_fee": "ភាគរយ",
+  "fee_sharing_configuration": "កំណត់ថ្លៃសេវាចែករំលែក",
+  "start_amount": "ចំនួនចាប់ផ្តើម",
+  "end_amount": "ចំនួនបញ្ចប់",
+  "fee_amount": "ចំនួនថ្លៃសេវា",
+  "fee_rate": "អត្រាថ្លៃសេវា",
+  "sharing_fee": "ថ្លៃសេវាចែករំលែក",
+  "enter_fee_code": "បញ្ចូលកូដ",
+  "enter_fee_name": "បញ្ចូលឈ្មោះ",
+  "clipboard": {
+    "copy": "ចម្លង",
+    "copied": "បានចម្លង",
+    "copy_failed": "បរាជ័យក្នុងការចម្លង",
+    "copy_to_clipboard": "ចម្លងទៅក្ដារឈូស"
+  },
   "profile_popup": {
     "title": "អាជីវកម្មអ្នកប្រើប្រាស់",
     "settings": "ការកំណត់",
@@ -21,6 +58,7 @@
     "khmer": "ខ្មែរ"
   },
   "status": {
+    "all": "គ្រប់ស្ថានភាព",
     "header": "ស្ថានភាព",
     "active": "សកម្ម",
     "inactive": "អសកម្ម",
@@ -28,7 +66,8 @@
     "completed": "បានបញ្ចប់",
     "failed": "បរាជ័យ",
     "success": "ជោគជ័យ",
-    "error": "កំហុស"
+    "error": "កំហុស",
+    "processing": "កំពុងដំណើរការ"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
@@ -57,10 +96,10 @@
     "account_number": "លេខគណនី",
     "last_transaction": "ប្រតិបត្តិការចុងក្រោយ",
     "copy_success": "បានចម្លង!",
-    "copy_success_message": "លេខគណនីត្រូវបានចម្លងទៅក្ដារឈូស",
-    "copy_to_clipboard": "ចម្លងទៅក្ដារឈូស",
+    "copy_success_message": "លេខគណនីត្រូវបានចម្លង",
+    "copy_to_clipboard": "ចម្លងទៅក្ដារ",
     "copy_failed": "ចម្លងបរាជ័យ",
-    "copy_failed_message": "បរាជ័យក្នុងការចម្លងទៅក្ដារឈូស",
+    "copy_failed_message": "បរាជ័យក្នុងការចម្លងទៅក្ដារ",
     "wallet_type": "ប្រភេទកាបូប",
     "personal_wallet": "កាបូបផ្ទាល់ខ្លួន",
     "business_wallet": "កាបូបអាជីវកម្ម",
@@ -88,6 +127,11 @@
     "transactions": "ប្រតិបត្តិការ",
     "received": "បានទទួល",
     "settlement": "ការទូទាត់",
+    "select_wallet_type": "ជ្រើសរើសប្រភេទកាបូប",
+    "history": "ប្រវត្តិ",
+    "wallets": "កាបូប",
+    "no_wallets_found": "រកមិនឃើញកាបូប",
+    "loading": "កំពុងទាញយក",
     "biller_categories": "ប្រភេទអ្នកផ្តល់សេវា",
     "view_all": "មើលទាំងអស់",
     "recent_transactions": "ប្រតិបត្តិការថ្មីៗ",
@@ -117,6 +161,8 @@
   "user_profile": "អាជីវកម្មអ្នកប្រើប្រាស់",
   "details": "ព័ត៌មានលម្អិត",
   "settings": {
+    "generate_details": "ព័ត៌មានទូទៅ",
+    "fee_config": "ការកំណត់ថ្លៃសេវា",
     "date_format_short": "ខ្លី (DD/MM/YYYY)",
     "date_format_medium": "មធ្យម (DD MMM YYYY)",
     "date_format_long": "វែង (DD MMMM YYYY)",
@@ -145,6 +191,8 @@
     "time_format_24h": "24-ម៉ោង (13:30)",
     "time_format_12h": "12-ម៉ោង (1:30 PM)",
     "default_currency": "រូបិយប័ណ្ណលំនាំដើម",
+    "default_page_size": "ចំនួនធាតុក្នុងទំព័រលំនាំដើម",
+    "default_page_size_description": "កំណត់ចំនួនធាតុលំនាំដើមដែលត្រូវបង្ហាញក្នុងមួយទំព័រនៃតារាង",
     "preview": "មើលជាមុន",
     "preview_date": "កាលបរិច្ឆេទ:",
     "preview_time": "ម៉ោង:",
@@ -245,10 +293,45 @@
     "body": "តើអ្នកប្រាកដជាចង់បន្តទេ?",
     "confirm": "បញ្ជាក់"
   },
+  "navbar": {
+    "theme": "រូបរាង",
+    "language": "ភាសា",
+    "settings": "ការកំណត់",
+    "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
+  },
+  "sidebar": {
+    "dashboard": "ទំព័រដើម",
+    "digital_wallet": "កាបូបឌីជីថល",
+    "settlement": "ការទូទាត់",
+    "settings": "ការកំណត់",
+    "logout": "ចាកចេញ",
+    "profile": "ប្រវត្តិរូប",
+    "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
+  },
+  "settlement_history": {
+    "columns": {
+      "created_date": "កាលបរិច្ឆេទទូទាត់",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "total_settled": "ប្រតិបត្តិការ",
+      "status": "ស្ថានភាព",
+      "created_by": "ទូទាត់ដោយ"
+    },
+    "column_config": {
+      "reset": "កំណត់ឡើងវិញ",
+      "columns": "ជួរឈរ"
+    }
+  },
   "settlement": {
+    "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
+    "refresh": "ធ្វើឲ្យថ្មី",
+    "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
+    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 5 វិនាទី។",
     "transaction": "ប្រតិបត្តិការ",
     "title": "ការទូទាត់",
+    "settlement_list": "បញ្ជីការទូទាត់",
     "search_placeholder": "ស្វែងរក",
+    "select_status": "ជ្រើសរើសស្ថានភាព",
     "settle_amount": "ចំនួនទឹកប្រាក់សម្រាប់ទូទាត់",
     "amount": "ចំនួនទឹកប្រាក់",
     "settlement_bank": "ធនាគារទូទាត់",
@@ -267,6 +350,7 @@
     "failed": "បរាជ័យ",
     "detailed_transactions_message": "ទិន្នន័យប្រតិបត្តិការលម្អិតនឹងត្រូវបង្ហាញនៅទីនេះ",
     "supplier": "ម្ចាស់អាជីវកម្ម",
+    "type": "ប្រភេទ",
     "biller": {
       "code": "លេខកូដម្ចាស់អាជីវកម្ម",
       "name": "ឈ្មោះម្ចាស់អាជីវកម្ម"
@@ -431,8 +515,11 @@
     "current_roles": "តួនាទីបច្ចុប្បន្ន",
     "request_id": "លេខសម្គាល់សំណើ"
   },
-
+  "navigate_back": "ថយក្រោយ",
   "error": {
+    "something_went_wrong": "មានអ្វីមួយមិនប្រក្រតី",
+    "try_again_later": "សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ",
+    "try_again": "សូមព្យាយាមម្តងទៀត",
     "server_error": "កំហុសម៉ាស៊ីនមេ",
     "internal_server_error": "មានកំហុសម៉ាស៊ីនមេកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
     "internal_server_error_title": "កំហុសម៉ាស៊ីនមេខាងក្នុង",
@@ -512,8 +599,8 @@
   "total_settlement_amount": "ចំនួនទឹកប្រាក់សរុបដែលបានទូទាត់",
   "failed_transactions": "ប្រតិបត្តិការបរាជ័យ",
   "underDevelopment": {
-    "title": "កំពុងអភិវឌ្ឍ",
-    "description": "មុខងារនេះកំពុងត្រូវបានអភិវឌ្ឍ និងនឹងអាចប្រើប្រាស់ឆាប់ៗនេះ។",
+    "title": "កំពុងអភិវឌ្ឍន៍",
+    "description": "មុខងារនេះកំពុងត្រូវបានអភិវឌ្ឍន៍ និងនឹងអាចប្រើប្រាស់ឆាប់ៗនេះ។",
     "workingOnIt": "យើងកំពុងធ្វើការលើវា...",
     "goBack": "ត្រឡប់ក្រោយ"
   },
@@ -563,5 +650,9 @@
   "this_month": "ខែនេះ",
   "this_year": "ឆ្នាំនេះ",
   "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-  "overview": "ទូទៅ"
+  "overview": "ទូទៅ",
+  "lottie": {
+    "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
+    "install_instruction": "ដំណើរការ: npm install lottie-web"
+  }
 }

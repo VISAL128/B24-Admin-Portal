@@ -1,13 +1,48 @@
 {
   "yes": "Yes",
   "no": "No",
+  "yes_logout": "Yes, Logout",
   "hello": "Hello",
   "cancel": "Cancel",
   "confirm": "Confirm",
   "bank": "Bank",
   "confirmation": "Confirmation",
   "logout_confirmation": "Are you sure you want to log out?",
+  "code": "Code",
+  "fee_name": "Fee Name",
+  "name": "Name",
+  "fee_type": "Fee Type",
+  "allocate_details": "Allocate Details",
   "welcome": "Welcome to Bill24 Management Portal",
+  "add_fee": "Add Fee",
+  "create_new_fee": "Create New Fee",
+  "create_new": "Create New",
+  "charge_fee": "Charge Fee",
+  "view_fee_detail": "View Fee Details",
+  "view_fee_detail_description": "View the details of the selected fee configuration",
+  "new": "New",
+  "edit": "Edit",
+  "delete": "Delete",
+  "save": "Save",
+  "update": "Update",
+  "search": "Search",
+  "fixed_fee": "Fixed Fee",
+  "percentage_fee": "Percentage Fee",
+  "sharing_fee": "Sharing Fee",
+  "fee_sharing_configuration": "Set the Entity Sharing Fee",
+  "fee_amount_adjusted_due_to_end_amount_change": "Fee amount adjusted due to end amount change",
+  "fee_amount_cannot_exceed_end_amount": "Fee amount cannot exceed end amount",
+  "percentage_cannot_exceed_100": "Percentage cannot exceed 100%",
+  "start_amount": "Start Amount",
+  "end_amount": "End Amount",
+  "fee_amount": "Fee Amount",
+  "fee_rate": "Fee Rate",
+  "title_create_fee": "Create Fee",
+  "title_edit_fee": "Edit Fee",
+  "enter_fee_code": "Enter Code",
+  "enter_fee_name": "Enter Name",
+  "description_create_fee": "Create a new fee configuration for your organization",
+  "description_edit_fee": "Edit the existing fee configuration for your organization",
   "profile_popup": {
     "title": "User Profile",
     "settings": "Settings",
@@ -28,6 +63,7 @@
     "search_placeholder": "Search..."
   },
   "status": {
+    "all": "All status",
     "header": "Status",
     "active": "Active",
     "inactive": "Inactive",
@@ -35,7 +71,8 @@
     "completed": "Completed",
     "failed": "Failed",
     "success": "Success",
-    "error": "Error"
+    "error": "Error",
+    "processing": "Processing"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -105,6 +142,11 @@
     "transactions": "Transactions",
     "received": "Received",
     "settlement": "Settlement",
+    "select_wallet_type": "Select wallet type",
+    "history": "History",
+    "wallets": "Wallets",
+    "no_wallets_found": "No wallets found",
+    "loading": "Loading",
     "biller_categories": "Biller Categories",
     "view_all": "View All",
     "recent_transactions": "Recent Transactions",
@@ -138,7 +180,6 @@
     "transaction_summary": "Transaction Summary",
     "transaction_allocate": "Transaction Allocation"
   },
-  "settlement_history": "Settlement History",
   "settlement_history_details": {
     "title": "Settlement History Details",
     "subtitle": "View detailed settlement history records",
@@ -159,7 +200,18 @@
     "status_success": "Success",
     "status_failed": "Failed"
   },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "digital_wallet": "Digital Wallet",
+    "settlement": "Settlement",
+    "settings": "Settings",
+    "logout": "Logout",
+    "profile": "Profile",
+    "developer_tools": "Developer Tools"
+  },
   "settings": {
+    "generate_details": "General Details",
+    "fee_config": "Fee Configuration",
     "date_format_short": "Short (DD/MM/YYYY)",
     "date_format_medium": "Medium (DD MMM YYYY)",
     "date_format_long": "Long (DD MMMM YYYY)",
@@ -188,6 +240,8 @@
     "time_format_24h": "24-hour (13:30)",
     "time_format_12h": "12-hour (1:30 PM)",
     "default_currency": "Default Currency",
+    "default_page_size": "Default Page Size",
+    "default_page_size_description": "Set the default number of items to display per page in tables",
     "preview": "Preview",
     "preview_date": "Date:",
     "preview_time": "Time:",
@@ -255,11 +309,37 @@
     "body": "Are you sure you want to proceed?",
     "confirm": "Confirm"
   },
+  "navbar": {
+    "theme": "Theme",
+    "language": "Language",
+    "settings": "Settings",
+    "developer_tools": "Developer Tools"
+  },
+  "settlement_history": {
+    "columns": {
+      "created_date": "Settlement Date",
+      "total_amount": "Total Amount",
+      "currency_id": "Currency",
+      "total_settled": "Transaction",
+      "status": "Status",
+      "created_by": "Settled By"
+    },
+    "column_config": {
+      "reset": "Reset Columns",
+      "columns": "Columns"
+    }
+  },
   "settlement": {
+    "settlement_details_description": "Details of the settlement",
+    "refresh": "Refresh",
+    "auto_refresh": "Auto Refresh",
+    "auto_refresh_desc": "Automatically refresh the settlement history every 5 seconds.",
     "transaction": "Transaction",
     "title": "Settlement",
+    "settlement_list": "Settlement List",
     "settlement_date": "Settlement Date",
     "search_placeholder": "Search",
+    "select_status": "Select Status",
     "settle_amount": "Settle Amount",
     "amount": "Amount",
     "settlement_bank": "Settlement Bank",
@@ -268,9 +348,10 @@
     "supplier": "Biller",
     "settlement_transaction": "Settlement Transaction",
     "transaction_allocations": "Transaction Allocations",
+    "type": "Type",
     "biller": {
-      "code": "Sub Biller Code",
-      "name": "Sub Biller Name"
+      "code": "Biller Code",
+      "name": "Biller Name"
     },
     "sub_biller": {
       "code": "Sub Biller Code",
@@ -413,8 +494,11 @@
     "current_roles": "Current Roles",
     "request_id": "Request ID"
   },
-
+  "navigate_back": "Navigate Back",
   "error": {
+    "something_went_wrong": "Something went wrong",
+    "try_again_later": "Please try again later.",
+    "try_again": "Try Again",
     "server_error": "Server Error",
     "internal_server_error": "An internal server error occurred. Please try again later.",
     "internal_server_error_title": "Internal Server Error",
@@ -564,5 +648,9 @@
   "this_month": "This Month",
   "this_year": "This Year",
   "sub_biller": "Sub Biller",
-  "overview": "Overview"
+  "overview": "Overview",
+  "lottie": {
+    "library_not_found": "Lottie animation library not available",
+    "install_instruction": "Run: npm install lottie-web"
+  }
 }

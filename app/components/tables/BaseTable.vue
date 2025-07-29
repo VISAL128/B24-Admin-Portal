@@ -199,12 +199,7 @@
         <div class="flex items-center gap-4">
           <USelectMenu
             :model-value="{ label: String(props.pageSize ?? 10), value: props.pageSize ?? 10 }"
-            :items="[
-              { label: '10', value: 10 },
-              { label: '25', value: 25 },
-              { label: '50', value: 50 },
-              { label: '100', value: 100 },
-            ]"
+            :items="DEFAULT_PAGE_SIZE_OPTIONS"
             class="w-24"
             :search-input="false"
             @update:modelValue="(val) => emit('update:pageSize', val.value)"
@@ -239,6 +234,7 @@ import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import ExportButton from '../buttons/ExportButton.vue'
+import { DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
 
 const selectedSortFieldLabel = computed(() => {
   return (

@@ -1,6 +1,7 @@
 export interface ApiResponse<T> {
-  code: string // e.g., "SUCCESS"
+  code: string | number // e.g., "SUCCESS"
   message: string
+  message_kh?: string // Optional localized message
   total_records?: number
   total_pages?: number
   page?: number

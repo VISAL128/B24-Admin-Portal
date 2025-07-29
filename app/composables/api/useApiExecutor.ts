@@ -2,23 +2,27 @@ import type { ApiResponse } from '~/models/baseModel'
 
 export const useApiExecutor = () => {
   const errorHandler = useErrorHandler()
+  const { locale } = useI18n()
 
-  const execute = async <T>(requestFn: () => Promise<ApiResponse<T>>): Promise<ApiResponse<T>> => {
+  const execute = async <T>(
+    requestFn: () => Promise<ApiResponse<T>>,
+    showErrorMessage: boolean = true
+  ): Promise<ApiResponse<T>> => {
     try {
       const response = await requestFn()
 
       if (response.code !== 'SUCCESS') {
-        console.error('API Error:', response.message)
-        // Show error notification for API failures
-        errorHandler.handleApiError({ message: response.message || 'API request failed' })
-        throw new Error(response.message || 'Unknown error')
+        throw new Error(
+          locale.value === 'km' ? response.message_kh : response.message || 'Unknown error'
+        )
       }
 
       return response
     } catch (error: unknown) {
-      console.error('Request failed:', error)
       // Handle and show error notification
-      errorHandler.handleApiError(error)
+      if (showErrorMessage) {
+        errorHandler.handleApiError(error)
+      }
       return {
         code: 'ERROR',
         message: (error as Error)?.message || 'Failed to fetch',

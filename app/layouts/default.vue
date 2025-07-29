@@ -41,28 +41,28 @@
 
       <!-- Main content area -->
       <div class="flex flex-col h-full w-full overflow-x-hidden">
-        <div class="flex-row">
-          <UCard class="top-0 right-0 z-50" variant="soft">
-            <div class="flex flex-row items-center justify-between gap-2 w-full h-2">
-              <breadcrumb />
-              <div class="flex flex-row items-center justify-end gap-4 h-full">
-                <div class="flex items-center gap-2">
-                  <!-- Profile Display -->
-                  <div
-                    v-if="auth.currentProfile.value"
-                    class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
-                  >
-                    <Icon name="heroicons:building-office" class="w-4 h-4 text-primary" />
-                    <div class="flex flex-col">
-                      <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
-                        {{ auth.currentProfile.value.name }}
-                      </span>
-                      <!-- <span class="text-xs text-gray-500 dark:text-gray-400">
+        <UCard class="top-0 right-0 z-50" variant="soft">
+          <div class="flex flex-row items-center justify-between gap-2 w-full h-2">
+            <breadcrumb />
+            <div class="flex flex-row items-center justify-end gap-4 h-full">
+              <div class="flex items-center gap-2">
+                <!-- Profile Display -->
+                <div
+                  v-if="auth.currentProfile.value"
+                  class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-primary/50 dark:border-primary/20"
+                >
+                  <Icon name="material-symbols:home-work-outline" class="w-4 h-4 text-primary" />
+                  <div class="flex flex-col">
+                    <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
+                      {{ auth.currentProfile.value.name }}
+                    </span>
+                    <!-- <span class="text-xs text-gray-500 dark:text-gray-400">
                         {{ auth.currentProfile.value.code }}
                       </span> -->
-                    </div>
                   </div>
-                  <!-- Theme Switcher -->
+                </div>
+                <!-- Theme Switcher -->
+                <UTooltip :text="t('navbar.theme')" :delay-duration="500">
                   <UButton
                     :icon="
                       colorMode?.preference === 'dark'
@@ -76,63 +76,69 @@
                   >
                     <span class="sr-only">Toggle Theme</span>
                   </UButton>
-                  <!-- Language Switcher -->
-                  <UPopover placement="bottom-end" :offset="[0, 10]">
-                    <UButton
-                      icon="material-symbols:language"
-                      variant="ghost"
-                      size="sm"
-                      class="px-2"
-                    />
-                    <template #content>
-                      <div class="flex flex-col gap-1 p-2 w-28">
-                        <UButton
-                          variant="ghost"
-                          class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
-                          block
-                          :class="
-                            locale === 'en' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
-                          "
-                          size="sm"
-                          @click="
-                            () => {
-                              setLanguage('en')
-                            }
-                          "
-                          >🇬🇧
-                          <span class="text-left w-full">
-                            <!-- {{
+                </UTooltip>
+                <!-- Language Switcher -->
+                <UTooltip :text="t('navbar.language')" :delay-duration="500">
+                  <div>
+                    <UPopover placement="bottom-end" :offset="[0, 10]">
+                      <UButton
+                        icon="material-symbols:language"
+                        variant="ghost"
+                        size="sm"
+                        class="px-2"
+                      />
+                      <template #content>
+                        <div class="flex flex-col gap-1 p-2 w-28">
+                          <UButton
+                            variant="ghost"
+                            class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                            block
+                            :class="
+                              locale === 'en' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
+                            "
+                            size="sm"
+                            @click="
+                              () => {
+                                setLanguage('en')
+                              }
+                            "
+                            >🇬🇧
+                            <span class="text-left w-full">
+                              <!-- {{
                       t("lang.english")
                     }} -->
-                            English
-                          </span>
-                        </UButton>
-                        <UButton
-                          variant="ghost"
-                          class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
-                          :class="
-                            locale === 'km' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
-                          "
-                          block
-                          size="sm"
-                          @click="
-                            () => {
-                              setLanguage('km')
-                            }
-                          "
-                          >🇰🇭
-                          <span class="text-left w-full">
-                            ភាសាខ្មែរ
-                            <!-- {{
+                              English
+                            </span>
+                          </UButton>
+                          <UButton
+                            variant="ghost"
+                            class="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all justify-start text-left"
+                            :class="
+                              locale === 'km' ? 'bg-blue-100 dark:bg-gray-700 text-primary' : ''
+                            "
+                            block
+                            size="sm"
+                            @click="
+                              () => {
+                                setLanguage('km')
+                              }
+                            "
+                            >🇰🇭
+                            <span class="text-left w-full">
+                              ភាសាខ្មែរ
+                              <!-- {{
                             t("lang.khmer")
                           }} -->
-                          </span></UButton
-                        >
-                      </div>
-                    </template>
-                  </UPopover>
+                            </span></UButton
+                          >
+                        </div>
+                      </template>
+                    </UPopover>
+                  </div>
+                </UTooltip>
 
-                  <!-- Setting -->
+                <!-- Setting -->
+                <UTooltip :text="t('navbar.settings')" :delay-duration="500">
                   <UButton
                     icon="material-symbols:settings-outline"
                     variant="ghost"
@@ -140,100 +146,114 @@
                     class="px-2"
                     @click="handleSettings"
                   />
-                </div>
-                <!-- User Menu -->
-                <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
-                  <UAvatar
-                    :src="user?.picture"
-                    size="sm"
-                    class="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
-                  >
-                    <template v-if="!user?.picture" #default>
-                      <Icon name="heroicons:user" class="w-4 h-4 text-primary" />
-                    </template>
-                  </UAvatar>
+                </UTooltip>
 
-                  <template #content>
-                    <div class="w-48 p-2">
-                      <!-- User Info Section -->
-                      <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
-                        <div class="flex items-center gap-3">
-                          <UAvatar :src="user?.picture" size="sm">
-                            <template v-if="!user?.picture" #default>
-                              <Icon name="heroicons:user" class="w-4 h-4 text-[#43B3DE]" />
-                            </template>
-                          </UAvatar>
-                          <div class="flex flex-col">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {{ user?.fullName || 'User' }}
-                            </span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                              {{ user?.email || 'user@example.com' }}
-                            </span>
-                          </div>
+                <!-- Developer Tools -->
+                <!-- <UTooltip :text="t('navbar.developer_tools')" :delay-duration="500">
+                  <UButton
+                    icon="material-symbols:terminal-rounded"
+                    variant="ghost"
+                    size="sm"
+                    class="px-2"
+                    @click="handleDeveloperTools"
+                  />
+                </UTooltip> -->
+              </div>
+              <!-- User Menu -->
+              <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
+                <UAvatar
+                  :src="user?.picture"
+                  :alt="String(user?.fullName || 'User')"
+                  size="sm"
+                  class="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
+                />
+
+                <template #content>
+                  <div class="w-48 p-2">
+                    <!-- User Info Section -->
+                    <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
+                      <div class="flex items-center gap-3">
+                        <UAvatar
+                          :src="user?.picture"
+                          :alt="String(user?.fullName || 'User')"
+                          size="sm"
+                        />
+                        <div class="flex flex-col">
+                          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ user?.fullName || 'User' }}
+                          </span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ user?.email || 'user@example.com' }}
+                          </span>
                         </div>
                       </div>
-
-                      <!-- Menu Items -->
-                      <div class="space-y-1">
-                        <UButton
-                          variant="ghost"
-                          size="md"
-                          class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                          @click="handleUserProfile"
-                        >
-                          <Icon name="heroicons:user" class="w-4 h-4 mr-2" />
-                          {{ t('user_profile') }}
-                        </UButton>
-
-                        <UButton
-                          variant="ghost"
-                          size="md"
-                          class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                          @click="handleSettings"
-                        >
-                          <Icon name="heroicons:cog-6-tooth" class="w-4 h-4 mr-2" />
-                          {{ t('profile_popup.settings') }}
-                        </UButton>
-
-                        <UButton
-                          variant="ghost"
-                          size="md"
-                          class="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          @click="isShowLogoutConfirmModal = true"
-                        >
-                          <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
-                          {{ t('logout') }}
-                        </UButton>
-                      </div>
                     </div>
-                  </template>
-                </UPopover>
-              </div>
+
+                    <!-- Menu Items -->
+                    <div class="space-y-1">
+                      <UButton
+                        variant="ghost"
+                        size="md"
+                        class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        @click="handleUserProfile"
+                      >
+                        <Icon
+                          name="material-symbols:person-outline-rounded"
+                          class="size-4.5 mr-2"
+                        />
+                        {{ t('user_profile') }}
+                      </UButton>
+
+                      <UButton
+                        variant="ghost"
+                        size="md"
+                        class="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        @click="handleSettings"
+                      >
+                        <Icon name="material-symbols:settings-outline" class="w-4 h-4 mr-2" />
+                        {{ t('profile_popup.settings') }}
+                      </UButton>
+
+                      <div class="border-t border-gray-200 dark:border-gray-700" />
+
+                      <UButton
+                        variant="ghost"
+                        size="md"
+                        class="w-full justify-start text-red-600 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30"
+                        @click="isShowLogoutConfirmModal = true"
+                      >
+                        <Icon name="material-symbols:logout" class="w-4 h-4 mr-2" />
+                        {{ t('logout') }}
+                      </UButton>
+                    </div>
+                  </div>
+                </template>
+              </UPopover>
             </div>
-          </UCard>
-        </div>
+          </div>
+        </UCard>
 
         <!-- Confirmation Logout Modal -->
         <UModal
           v-model:open="isShowLogoutConfirmModal"
           :title="t('confirmation')"
           :transition="true"
-          :description="t('logout')"
+          :fullscreen="false"
           :close="{
             class: 'rounded-full',
             onClick: () => logoutEmit('close', false),
           }"
         >
           <template #body>
-            <div class="flex flex-col items-center text-center py-6">
+            <div class="flex flex-col items-center h-32 text-center">
               <!-- Icon with circle background using Bill24 colors -->
               <div
-                class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                class="size-14 rounded-full flex items-center justify-center mb-4"
                 style="background-color: #eaf6fc"
               >
                 <UIcon
-                  name="i-lucide-alert-triangle"
+                  name="material-symbols:question-mark"
+                  size="24"
                   class="text-3xl opacity-80"
                   style="color: #43b3de"
                 />
@@ -251,13 +271,16 @@
                 :label="t('no')"
                 color="neutral"
                 variant="outline"
+                size="sm"
                 class="w-16 justify-center"
                 @click="closeConfirmationModal"
               />
               <UButton
-                :label="t('yes')"
+                :label="t('yes_logout')"
                 color="primary"
-                class="w-16 justify-center"
+                size="sm"
+                :loading="loggingOut"
+                class="justify-center"
                 @click="handleLogout"
               />
             </div>
@@ -296,6 +319,7 @@ const isShowLogoutConfirmModal = ref(false)
 const auth = useAuth()
 const user = auth.user
 const pref = useUserPreferences().getPreferences()
+const loggingOut = ref(false)
 
 const colorMode = useColorMode ? useColorMode() : null
 const toggleTheme = () => {
@@ -318,7 +342,11 @@ const handleUserProfile = () => {
 }
 
 const handleSettings = () => {
-  navigateTo('/settings')
+  navigateTo('/settings/generate-details')
+}
+
+const handleDeveloperTools = () => {
+  navigateTo('/settings/developer-tool')
 }
 
 const closeConfirmationModal = () => {
@@ -327,6 +355,7 @@ const closeConfirmationModal = () => {
 
 const handleLogout = async () => {
   try {
+    loggingOut.value = true
     await auth.logout()
   } catch (error) {
     console.error('Logout failed:', error)
@@ -350,7 +379,7 @@ const checkAdminAccess = async () => {
         },
       })
     } else {
-      console.log('✅ Admin access granted')
+      // console.log('✅ Admin access granted')
       // Permission check passed, hide loading screen
       isCheckingPermissions.value = false
     }
@@ -383,13 +412,6 @@ definePageMeta({
     'auth',
     // "permission"
   ],
-  // Proper permission options for admin requirement
-  // permissionOptions: {
-  //   roles: [],
-  //   resource: "Payment Portal",
-  //   action: "access",
-  //   requireAll: true
-  // },
   auth: true, // Ensure this layout requires authentication
 })
 </script>
