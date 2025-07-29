@@ -107,7 +107,6 @@ import StatusBadge from '~/components/StatusBadge.vue'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -117,10 +116,10 @@ import {
 import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
+import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import { useTable } from '~/composables/utils/useTable'
 
 const dateOptions = computed(() => {
   const todayDate = df.format(today)
@@ -576,15 +575,16 @@ const columns: BaseTableColumn<any>[] = [
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    header: ({ column }) =>
-      createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
-        // Call your API with the new sorting order
-        console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
-        // Trigger your own fetch with the column and direction
-        sortBy.value = 'created_date'
-        sortDirection.value = order
-        fetchTransactionHistory()
-      }),
+    // header: ({ column }) =>
+    //   createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
+    //     // Call your API with the new sorting order
+    //     console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
+    //     // Trigger your own fetch with the column and direction
+    //     sortBy.value = 'created_date'
+    //     sortDirection.value = order
+    //     fetchTransactionHistory()
+    //   }),
+    header: t('date'),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
