@@ -9,6 +9,7 @@
   "logout_confirmation": "តើអ្នកប្រាកដជាចង់ចាកចេញទេ?",
   "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24 Payment Portal",
   "code": "Code",
+  "fee_already_exists": "ថ្លៃសេវានេះមានរួចហើយ",
   "add_fee": "បន្ថែមថ្លៃសេវា",
   "create_new": "បង្កើតថ្មី",
   "create_new_fee": "បង្កើតថ្លៃសេវាថ្មី",
@@ -54,6 +55,21 @@
     "copied": "បានចម្លង",
     "copy_failed": "បរាជ័យក្នុងការចម្លង",
     "copy_to_clipboard": "ចម្លងទៅក្ដារឈូស"
+  },
+  "fee_configs": {
+    "columns": {
+      "code": "លេខកូដ",
+      "fee_name": "ឈ្មោះថ្លៃសេវា",
+      "currency": "រូបិយប័ណ្ណ",
+      "fee_type": "ប្រភេទថ្លៃសេវា",
+      "sharing_fee": "ថ្លៃសេវាចែករំលែក"
+    },
+    "column_config": {
+      "tooltip": "Hide/Show Columns",
+      "reset": "Reset",
+      "reset_description": "Reset columns and sorting to defaults",
+      "columns": "Columns"
+    }
   },
   "profile_popup": {
     "title": "អាជីវកម្មអ្នកប្រើប្រាស់",

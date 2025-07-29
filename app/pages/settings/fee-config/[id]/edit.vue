@@ -454,7 +454,7 @@ onMounted(() => {
                 <h2 class="text-lg text-primary font-semibold dark:text-white">
                   {{ t('edit_fee') }}
                 </h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p class="text-xxs text-gray-500 dark:text-gray-400 mt-1">
                   {{ t('edit_fee_description') }}
                 </p>
               </div>
@@ -464,7 +464,9 @@ onMounted(() => {
           <!-- Basic Information -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="space-y-2">
-              <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ t('code') }}
                 <span class="text-red-500 ml-1">*</span>
               </label>
@@ -473,12 +475,15 @@ onMounted(() => {
                 :placeholder="t('enter_fee_code')"
                 :error="!!errors.code"
                 required
+                size="sm"
                 class="w-full"
               />
             </div>
 
             <div class="space-y-2">
-              <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ t('fee_name') }}
                 <span class="text-red-500 ml-1">*</span>
               </label>
@@ -487,17 +492,22 @@ onMounted(() => {
                 :placeholder="t('enter_fee_name')"
                 :error="!!errors.name"
                 required
+                size="sm"
                 class="w-full"
               />
             </div>
 
             <div class="space-y-2">
-              <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ t('fee_type') }}
               </label>
               <USelectMenu
                 v-model="feeTypeSelection"
                 :items="feeTypeOptions"
+                :search-input="false"
+                size="sm"
                 option-attribute="label"
                 value-attribute="value"
                 class="w-full"
@@ -505,12 +515,16 @@ onMounted(() => {
             </div>
 
             <div class="space-y-2">
-              <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+              >
                 {{ t('currency') }}
               </label>
               <USelectMenu
                 v-model="currencySelection"
                 :items="currencyOptions"
+                :search-input="false"
+                size="sm"
                 option-attribute="label"
                 value-attribute="value"
                 class="w-full"
@@ -548,23 +562,23 @@ onMounted(() => {
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('start_amount') }}
                         </th>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('end_amount') }}
                         </th>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('fee_amount') }}
                         </th>
                         <th
                           v-if="feeModel.fee_type === 'percentage'"
-                          class="px-4 py-3 text-center text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider w-16"
+                          class="px-4 py-3 text-center text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider w-16"
                         >
                           {{ t('actions') }}
                         </th>
@@ -590,6 +604,7 @@ onMounted(() => {
                             type="text"
                             :readonly="feeModel.fee_type === 'fixed' && index === 0"
                             class="w-full"
+                            size="sm"
                             @input="handleAmountInput($event, index, 'start_amount')"
                             @keypress="!readonly && handleNumericKeyPress($event)"
                           />
@@ -604,6 +619,7 @@ onMounted(() => {
                             "
                             type="text"
                             class="w-full"
+                            size="sm"
                             @input="handleAmountInput($event, index, 'end_amount')"
                             @keypress="handleNumericKeyPress($event)"
                           />
@@ -628,6 +644,7 @@ onMounted(() => {
                                   : formatAmount(1093, feeModel.currency, { showSymbol: false })
                               "
                               class="flex-1"
+                              size="sm"
                               @input="handleFeeAmountInput($event, index)"
                               @keypress="handleNumericKeyPress($event)"
                             />
@@ -649,6 +666,7 @@ onMounted(() => {
                                 { label: feeModel.currency === 'KHR' ? '៛' : '$', value: 'fixed' },
                                 { label: '%', value: 'percentage' },
                               ]"
+                              size="sm"
                               option-attribute="label"
                               value-attribute="value"
                               :search-input="false"
@@ -695,12 +713,12 @@ onMounted(() => {
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('name') }}
                         </th>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('fee_amount') }}
                         </th>
@@ -716,7 +734,7 @@ onMounted(() => {
                       >
                         <td class="px-4 py-3">
                           <div
-                            class="px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
+                            class="px-3 py-1.5 text-xxs bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
                           >
                             <span v-if="sharing.name.includes('(')">
                               {{ sharing.name.split('(')[0] }}
@@ -743,7 +761,8 @@ onMounted(() => {
                             :trailing-icon="
                               feeModel.fee_type === 'percentage' ? 'i-lucide-percent' : undefined
                             "
-                            class="w-full text-sm"
+                            size="sm"
+                            class="w-full"
                             @input="handleSharingValueInput($event, index)"
                             @keypress="handleNumericKeyPress($event)"
                           />
@@ -760,7 +779,7 @@ onMounted(() => {
           <div
             class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700"
           >
-            <UButton color="primary" variant="outline" @click="router.back()">
+            <UButton color="primary" size="xs" variant="outline" @click="router.back()">
               {{ t('cancel') }}
             </UButton>
             <UButton
@@ -768,6 +787,7 @@ onMounted(() => {
               type="submit"
               :loading="saving"
               :disabled="!isFormValid"
+              size="xs"
               class="hover:scale-105 transition-transform duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <template v-if="!saving" #leading>

@@ -12,6 +12,7 @@
   "fee_name": "Fee Name",
   "name": "Name",
   "fee_type": "Fee Type",
+    "fee_already_exists": "This fee already exists",
   "allocate_details": "Allocate Details",
   "welcome": "Welcome to Bill24 Management Portal",
   "add_fee": "Add Fee",
@@ -323,6 +324,21 @@
     "language": "Language",
     "settings": "Settings",
     "developer_tools": "Developer Tools"
+  },
+  "fee_configs": {
+    "columns": {
+      "code": "Code",
+      "fee_name": "Fee Name",
+      "currency": "Currency",
+      "fee_type": "Fee Type",
+      "sharing_fee": "Sharing Fee"
+    },
+    "column_config": {
+      "tooltip": "Hide/Show Columns",
+      "reset": "Reset",
+      "reset_description": "Reset columns and sorting to defaults",
+      "columns": "Columns"
+    }
   },
   "settlement_history": {
     "columns": {
