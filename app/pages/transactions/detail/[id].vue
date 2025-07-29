@@ -1,124 +1,199 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
-    <!-- Transaction Detail Section -->
-    <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
-    >
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center">
-          <div
-            class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
-          >
-            <UIcon name="material-symbols:receipt-long" class="w-4 h-4 text-primary" />
+    <!-- Main Layout: Left and Right Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <!-- Left Section: Transaction Detail (50% width) -->
+      <div class="lg:col-span-1">
+        <div
+          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+        >
+          <!-- Transaction Detail Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="flex items-center">
+                <div
+                  class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
+                >
+                  <UIcon name="material-symbols:receipt-long" class="w-4 h-4 text-primary" />
+                </div>
+                <h4 class="text-base font-medium text-gray-900 dark:text-white">Transaction</h4>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
+              <UButton
+                color="primary"
+                variant="outline"
+                icon="i-heroicons-eye"
+                size="sm"
+                @click="download"
+              >
+              </UButton>
+            </div>
           </div>
-          <h4 class="text-base font-medium text-gray-900 dark:text-white">
-            {{ $t('pages.transaction.title') }}
-          </h4>
-        </div>
-        <div class="flex items-center space-x-2">
-          <StatusBadge :status="transactionData.status" variant="subtle" size="md" />
-          <UButton color="primary" variant="outline" icon="i-lucide-download" size="sm" @click="download">
-          </UButton>
+
+          <!-- Transaction Data Display Box -->
+          <div
+            class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4"
+          >
+            <!-- Single Column Layout for Transaction Fields -->
+            <div class="space-y-0">
+              <div
+                v-for="(field, index) in allFields"
+                :key="index"
+                :class="[
+                  'flex justify-between items-center py-3',
+                  index < allFields.length - 1
+                    ? 'border-b border-dotted border-gray-200 dark:border-gray-700'
+                    : '',
+                ]"
+              >
+                <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
+                  {{ field.label }}
+                </span>
+
+                <!-- Badge Type -->
+                <TransactionTypeBadge
+                  v-if="field.type === 'badge'"
+                  :transaction-type="field.value"
+                  size="sm"
+                />
+
+                <!-- Amount Type -->
+                <span
+                  v-else-if="field.type === 'amount'"
+                  class="text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  {{ field.value }}
+                </span>
+
+                <!-- Copyable Code Type -->
+                <!-- <ClipboacrdBadge
+                  v-else-if="field.type === 'code' && field.copyable"
+                  :text="field.rawValue || field.value"
+                  :copied-tooltip-text="$t('clipboard.copied')"
+                /> -->
+
+                <ClipboardBadge
+                  v-else-if="field.type === 'code' && field.copyable"
+                  :text="field.rawValue"
+                  :copied-tooltip-text="$t('clipboard.copied')"
+                  class="mt-1"
+                />
+
+                <!-- Regular Text -->
+                <span
+                  v-else
+                  :class="[
+                    'text-sm font-medium text-gray-900 dark:text-white',
+                    field.type === 'code' ? 'font-mono break-all' : '',
+                  ]"
+                >
+                  {{ field.value }}
+                </span>
+              </div>
+
+              <!-- Supplier Section at the end -->
+              <div
+                class="flex justify-between items-center py-3 border-t border-dotted border-gray-200 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-600 dark:text-gray-400">Supplier</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                  >Charge Station A</span
+                >
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Two Column Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Left Column -->
-        <div class="space-y-0">
-          <div
-            v-for="(field, index) in leftColumnFields"
-            :key="index"
-            :class="[
-              'flex justify-between items-start py-3',
-              index < leftColumnFields.length - 1
-                ? 'border-b border-dotted border-gray-200 dark:border-gray-700'
-                : '',
-            ]"
-          >
-            <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
-              {{ field.label }}
-            </span>
-
-            <!-- Badge Type -->
-            <TransactionTypeBadge
-              v-if="field.type === 'badge'"
-              :transaction-type="field.value"
-              size="sm"
-            />
-
-            <!-- Amount Type -->
-            <span v-else-if="field.type === 'amount'" class="text-sm text-gray-900 dark:text-white">
-              {{ field.value }}
-            </span>
-
-            <!-- Copyable Code Type -->
-            <ClipboardBadge
-              v-else-if="field.type === 'code' && field.copyable"
-              :text="field.rawValue || field.value"
-              :copied-tooltip-text="$t('clipboard.copied')"
-              class="mt-2"
-            />
-
-            <!-- Regular Text -->
-            <span
-              v-else
-              :class="[
-                'text-sm text-gray-900 dark:text-white',
-                field.type === 'code' ? 'font-mono break-all' : '',
-              ]"
+      <!-- Right Section: Settlement Bank & Push Back Transaction (50% width) -->
+      <div class="space-y-3 flex flex-col h-full">
+        <!-- Settlement Bank Section -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+        >
+          <div class="flex items-center space-x-3 mb-2">
+            <div
+              class="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center"
             >
-              {{ field.value }}
-            </span>
+              <UIcon name="i-heroicons-building-library" class="w-4 h-4 text-green-600" />
+            </div>
+            <h4 class="text-base font-medium text-gray-900 dark:text-white">Settlement</h4>
+          </div>
+
+          <!-- Horizontal line below header -->
+          <hr class="border-gray-200 dark:border-gray-700 mb-2 -mx-4" />
+
+          <div class="space-y-3">
+            <!-- Bank Name -->
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Bank Name</span>
+              <div class="flex items-center space-x-2">
+                <UAvatar
+                  src="https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png"
+                  alt="ACLEDA Bank"
+                  size="sm"
+                />
+                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ transactionData.settlementBank }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Bank Reference -->
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Bank Reference</span>
+              <ClipboardBadge
+                :text="transactionData.bankReference"
+                :copied-tooltip-text="$t('clipboard.copied')"
+                class="mt-1"
+              />
+            </div>
+
+            <!-- Settlement Amount -->
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Amount</span>
+              <span class="text-lg font-bold text-green-600">
+                {{ useCurrency().formatAmount(transactionData.settlementAmount) }}
+                {{ transactionData.currency }}
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- Right Column -->
-        <div class="space-y-0">
-          <div
-            v-for="(field, index) in rightColumnFields"
-            :key="index"
-            :class="[
-              'flex justify-between items-start py-3',
-              index < rightColumnFields.length - 1
-                ? 'border-b border-dotted border-gray-200 dark:border-gray-700'
-                : '',
-            ]"
-          >
-            <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
-              {{ field.label }}
-            </span>
-
-            <!-- Badge Type -->
-            <TransactionTypeBadge
-              v-if="field.type === 'badge'"
-              :transaction-type="field.value"
-              size="sm"
-            />
-
-            <!-- Amount Type -->
-            <span v-else-if="field.type === 'amount'" class="text-sm text-gray-900 dark:text-white">
-              {{ field.value }}
-            </span>
-
-            <!-- Copyable Code Type -->
-            <ClipboardBadge
-              v-else-if="field.type === 'code' && field.copyable"
-              :text="field.rawValue || field.value"
-              :copied-tooltip-text="$t('clipboard.copied')"
-              class="mt-2"
-            />
-
-            <!-- Regular Text -->
-            <span
-              v-else
-              :class="[
-                'text-sm text-gray-900 dark:text-white',
-                field.type === 'code' ? 'font-mono break-all' : '',
-              ]"
+        <!-- Push Back Transaction Section -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex-1 flex flex-col"
+        >
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 bg-orange-50 dark:bg-orange-900/20 rounded-lg flex items-center justify-center"
             >
-              {{ field.value }}
-            </span>
+              <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 text-orange-600" />
+            </div>
+            <h4 class="text-base font-medium text-gray-900 dark:text-white">
+              Push Back Transaction
+            </h4>
+          </div>
+
+          <!-- Push Back Transaction History Table -->
+          <div class="flex-1">
+            <UTable
+              :data="webhookHistoryData"
+              :columns="webhookColumns"
+              class="w-full"
+              sortable
+              v-model:sort="webhookSorting"
+              :ui="{
+                td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
+                th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
+                thead: 'whitespace-nowrap',
+                tbody: 'whitespace-nowrap',
+                tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
+              }"
+              @select="onRowSelect"
+            />
           </div>
         </div>
       </div>
@@ -126,9 +201,9 @@
 
     <!-- Customer Information Table -->
     <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
     >
-      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+      <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
         <div
           class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
         >
@@ -140,33 +215,22 @@
         :data="customerDetails"
         :columns="customerColumns"
         class="w-full"
+        sortable
+        v-model:sort="customerSorting"
         :ui="{
-          td: 'px-2 py-3 whitespace-nowrap align-top',
-          th: 'px-2 py-3 whitespace-nowrap text-left',
+          td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
+          th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
           thead: 'whitespace-nowrap',
           tbody: 'whitespace-nowrap',
         }"
-      >
-        <template #cell="{ column, row }">
-          <div
-            :class="{
-              'text-left': ['customerName', 'customerCode', 'billNumber'].includes(column.id),
-              'text-right': ['amount'].includes(column.id),
-              'text-center': ['currency'].includes(column.id),
-            }"
-            class="w-full"
-          >
-            {{ row.original[column.id] }}
-          </div>
-        </template>
-      </UTable>
+      />
     </div>
 
     <!-- Transaction Allocation Table -->
     <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
     >
-      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+      <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
         <div
           class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
         >
@@ -178,73 +242,18 @@
         :data="transactionAllocateData"
         :columns="transactionAllocateColumns"
         class="w-full"
+        sortable
+        v-model:sort="transactionAllocationSorting"
         :ui="{
-          td: 'px-2 py-3 whitespace-nowrap align-top',
-          th: 'px-2 py-3 whitespace-nowrap text-left',
+          td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
+          th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
           thead: 'whitespace-nowrap',
           tbody: 'whitespace-nowrap',
           tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
         }"
         @select="onTransactionAllocationSelect"
-      >
-        <template #cell="{ column, row }">
-          <div
-            :class="{
-              'text-left': ['date', 'customer', 'billerName', 'currency'].includes(column.id),
-              'text-right': ['transactionAmount', 'amount', 'outstandingAmount'].includes(
-                column.id
-              ),
-              'text-center': false,
-            }"
-            class="w-full"
-          >
-            <span
-              v-if="column.id === 'transactionAmount'"
-              class="text-gray-900 dark:text-white font-medium"
-            >
-              {{ row.original[column.id].toFixed(2) }}
-            </span>
-            <span v-else-if="column.id === 'amount'" class="text-blue-600 font-medium">
-              {{ row.original[column.id].toFixed(2) }}
-            </span>
-            <span v-else-if="column.id === 'outstandingAmount'" class="text-orange-600 font-medium">
-              {{ row.original[column.id].toFixed(2) }}
-            </span>
-            <span v-else class="text-gray-900 dark:text-white">
-              {{ row.original[column.id] }}
-            </span>
-          </div>
-        </template>
-      </UTable>
-    </div>
-
-    <!-- Push Back Transaction History Table -->
-    <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
-    >
-      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-        <div
-          class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
-        >
-          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 text-primary" />
-        </div>
-        Push Back Transaction History
-      </h4>
-      <UTable
-        :data="webhookHistoryData"
-        :columns="webhookColumns"
-        class="w-full"
-        :ui="{
-          thead: 'whitespace-nowrap',
-          th: 'text-left whitespace-nowrap px-3 py-3',
-          td: 'whitespace-nowrap align-top px-3 py-3',
-          tbody: 'divide-y divide-gray-200 dark:divide-gray-700',
-          tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
-        }"
-        @select="onRowSelect"
       />
     </div>
-
     <!-- Download Modal -->
     <UModal
       v-model:open="showDownloadModal"
@@ -307,7 +316,6 @@
             @click="showDownloadModal = false"
           />
         </div>
-        i
       </template>
     </UModal>
 
@@ -338,7 +346,10 @@
                     >Repush Date:</span
                   >
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                    formatDate(getSelectedPushBackDetail()?.date || '')
+                    format.formatDateTime(getSelectedPushBackDetail()?.date, {
+                      dateStyle: userPreferences?.dateFormat || 'medium',
+                      timeStyle: userPreferences?.timeFormat || 'short',
+                    })
                   }}</span>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -387,11 +398,10 @@
             >
               Payload Sent:
             </h3>
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-              <pre class="text-sm text-gray-900 dark:text-white font-mono whitespace-pre-wrap">{{
-                JSON.stringify(getSelectedPushBackDetail()?.payload, null, 2)
-              }}</pre>
-            </div>
+            <CopyableCodeBlock
+              :content="getSelectedPushBackDetail()?.payload"
+              success-message="Payload copied to clipboard"
+            />
           </div>
 
           <!-- Response Section -->
@@ -401,20 +411,25 @@
             >
               Response:
             </h3>
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Status Code:</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                  getSelectedPushBackDetail()?.response.statusCode
-                }}</span>
+            <CopyableCodeBlock
+              :content="getSelectedPushBackDetail()?.response"
+              success-message="Response copied to clipboard"
+            >
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Status Code:</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                    getSelectedPushBackDetail()?.response.statusCode
+                  }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                    getSelectedPushBackDetail()?.response.message
+                  }}</span>
+                </div>
               </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                  getSelectedPushBackDetail()?.response.message
-                }}</span>
-              </div>
-            </div>
+            </CopyableCodeBlock>
           </div>
         </div>
       </template>
@@ -465,8 +480,9 @@
                 <span class="text-sm text-gray-600 dark:text-gray-400">Transaction Amount</span>
                 <span class="text-lg font-bold text-blue-600"
                   >{{
-                    getSelectedAllocationDetail()?.transaction?.transactionAmount?.toFixed(2) ||
-                    '50.00'
+                    useCurrency().formatAmount(
+                      getSelectedAllocationDetail()?.transaction?.transactionAmount
+                    ) || '50.00'
                   }}
                   {{ getSelectedAllocationDetail()?.transaction?.currency || 'USD' }}</span
                 >
@@ -545,15 +561,19 @@
 </template>
 
 <script setup lang="ts">
-import html2canvas from 'html2canvas'
 import { computed, h, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
+import CopyableCodeBlock from '~/components/CopyableCodeBlock.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
+import { useCurrency } from '~/composables/utils/useCurrency'
+import { useFormat } from '~/composables/utils/useFormat'
+import { useTable } from '~/composables/utils/useTable'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 
 definePageMeta({
   auth: false,
@@ -568,7 +588,11 @@ const router = useRouter()
 const { t } = useI18n()
 const { copy } = useClipboard()
 const notification = useNotification()
+const { createRowNumberCell, createSortableHeader } = useTable()
+const format = useFormat()
+const userPreferences = useUserPreferences().getPreferences()
 
+const isTransactionSelected = ref(false)
 const transactionId = computed(() => route.params.id as string)
 const loading = ref(true)
 const showDownloadModal = ref(false)
@@ -577,13 +601,18 @@ const selectedPushBackTransaction = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
 
+// Sorting state for tables
+const customerSorting = ref([])
+const transactionAllocationSorting = ref([])
+const webhookSorting = ref([{ id: 'date', desc: true }])
+
 // Customer Details Data
 interface CustomerDetail {
   id: string
   customerName: string
   customerCode: string
   billNumber: string
-  amount: string
+  amount: number
   currency: string
   [key: string]: any
 }
@@ -591,18 +620,10 @@ interface CustomerDetail {
 const customerDetails: CustomerDetail[] = [
   {
     id: '1',
-    customerName: 'John Doe',
+    customerName: 'So Sorphorn',
     customerCode: 'CUST-001',
-    billNumber: 'BILL-TX000001-A',
-    amount: '1,200.00',
-    currency: 'USD',
-  },
-  {
-    id: '2',
-    customerName: 'Jane Smith',
-    customerCode: 'CUST-002',
-    billNumber: 'BILL-TX000001-B',
-    amount: '800.00',
+    billNumber: 'BILL-TX000001A',
+    amount: 150,
     currency: 'USD',
   },
 ]
@@ -611,46 +632,56 @@ const customerColumns = [
   {
     id: 'row_number',
     header: () => '#',
-    cell: ({ row }: any) => h('div', { class: 'text-left font-medium' }, row.index + 1),
+    cell: ({ row, table }: any) => createRowNumberCell(row, table),
     size: 50,
     maxSize: 50,
     enableSorting: false,
   },
   {
     id: 'customerName',
-    header: () => 'Name',
+    header: ({ column }: any) => createSortableHeader(column, 'Name'),
     accessorKey: 'customerName',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerName),
     size: 200,
     minSize: 180,
+    enableSorting: true,
   },
   {
     id: 'customerCode',
-    header: () => 'Code',
+    header: ({ column }: any) => createSortableHeader(column, 'Code'),
     accessorKey: 'customerCode',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerCode),
     size: 150,
     minSize: 120,
+    enableSorting: true,
   },
   {
     id: 'billNumber',
-    header: () => 'Bill Number',
+    header: ({ column }: any) => createSortableHeader(column, 'Bill Number'),
     accessorKey: 'billNumber',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
     size: 180,
     minSize: 160,
+    enableSorting: true,
   },
   {
     id: 'amount',
-    header: () => 'Amount',
+    header: ({ column }: any) => createSortableHeader(column, 'Amount', 'right'),
     accessorKey: 'amount',
-    cell: ({ row }: any) => h('span', { class: 'font-medium' }, row.original.amount),
+    cell: ({ row }: any) =>
+      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
     size: 120,
     minSize: 100,
+    enableSorting: true,
   },
   {
     id: 'currency',
     header: () => 'Currency',
     accessorKey: 'currency',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
     size: 80,
     minSize: 70,
+    enableSorting: true,
   },
 ] as any[]
 
@@ -670,23 +701,23 @@ interface TransactionAllocateData {
 const transactionAllocateData: TransactionAllocateData[] = [
   {
     id: '1',
-    customer: 'John Doe',
-    transactionAmount: 50.0,
+    customer: 'So Sorphorn',
+    transactionAmount: 150.0,
     billerName: 'Charge Station A',
-    amount: 25.0,
-    outstandingAmount: 25.0,
+    amount: 75.0,
+    outstandingAmount: 75.0,
     currency: 'USD',
-    date: '15/07/2025 10:30 am',
+    date: '2025-07-15T10:30:00+07:00',
   },
   {
     id: '2',
-    customer: 'John Doe',
-    transactionAmount: 50.0,
-    billerName: 'EV Plus (Station B)',
-    amount: 25.0,
-    outstandingAmount: 20.0,
+    customer: 'So Sorphorn',
+    transactionAmount: 150.0,
+    billerName: 'Oone Go EV Charger',
+    amount: 75.0,
+    outstandingAmount: 75.0,
     currency: 'USD',
-    date: '15/07/2025 12:00 pm',
+    date: '2025-07-15T12:00:00+07:00',
   },
 ]
 
@@ -694,59 +725,88 @@ const transactionAllocateColumns = [
   {
     id: 'row_number',
     header: () => '#',
-    cell: ({ row }: any) => h('div', { class: 'text-left font-medium' }, row.index + 1),
+    cell: ({ row, table }: any) => createRowNumberCell(row, table),
     size: 50,
     maxSize: 50,
     enableSorting: false,
   },
   {
     id: 'date',
-    header: () => 'Date',
+    header: ({ column }: any) => createSortableHeader(column, 'Date'),
     accessorKey: 'date',
+    cell: ({ row }: any) => {
+      try {
+        return h('div', { class: 'text-sm' }, [
+          format.formatDateTime(row.original.date, {
+            dateStyle: userPreferences?.dateFormat || 'medium',
+            timeStyle: userPreferences?.timeFormat || 'short',
+          }),
+        ])
+      } catch (error) {
+        // Fallback to original date string if formatting fails
+        return h('div', { class: 'text-sm' }, [row.original.date])
+      }
+    },
     size: 160,
     minSize: 140,
+    enableSorting: true,
   },
   {
     id: 'customer',
-    header: () => 'Customer',
+    header: ({ column }: any) => createSortableHeader(column, 'Customer'),
     accessorKey: 'customer',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customer),
     size: 180,
     minSize: 160,
+    enableSorting: true,
   },
   {
     id: 'transactionAmount',
-    header: () => 'Amount',
+    header: ({ column }: any) => createSortableHeader(column, 'Amount', 'right'),
     accessorKey: 'transactionAmount',
+    cell: ({ row }: any) =>
+      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.transactionAmount)),
     size: 140,
     minSize: 120,
+    enableSorting: true,
   },
   {
     id: 'billerName',
-    header: () => ' Allocation Party',
+    header: ({ column }: any) => createSortableHeader(column, 'Allocation Party'),
     accessorKey: 'billerName',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billerName),
     size: 160,
     minSize: 150,
+    enableSorting: true,
   },
   {
     id: 'amount',
-    header: () => 'Received Amount',
+    header: ({ column }: any) => createSortableHeader(column, 'Received Amount', 'right'),
     accessorKey: 'amount',
+    cell: ({ row }: any) =>
+      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
     size: 120,
     minSize: 100,
+    enableSorting: true,
   },
   {
     id: 'outstandingAmount',
-    header: () => 'Outstanding Amount',
+    header: ({ column }: any) => createSortableHeader(column, 'Outstanding Amount', 'right'),
     accessorKey: 'outstandingAmount',
+    cell: ({ row }: any) =>
+      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.outstandingAmount)),
     size: 140,
     minSize: 120,
+    enableSorting: true,
   },
   {
     id: 'currency',
     header: () => 'Currency',
     accessorKey: 'currency',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
     size: 80,
     minSize: 70,
+    enableSorting: true,
   },
 ]
 
@@ -860,6 +920,14 @@ const retryPushBack = (id: string) => {
 
 const webhookColumns = [
   {
+    id: 'row_number',
+    header: () => '#',
+    cell: ({ row, table }: any) => createRowNumberCell(row, table),
+    size: 50,
+    maxSize: 50,
+    enableSorting: false,
+  },
+  {
     id: 'actions',
     header: () => 'Actions',
     cell: ({ row }: any) =>
@@ -873,7 +941,7 @@ const webhookColumns = [
             'button',
             {
               class: `
-                inline-flex items-center justify-center w-8 h-8 rounded transition-colors
+                inline-flex items-center justify-center w-6 h-6 rounded transition-colors
                 ${
                   row.original.retrying
                     ? 'text-gray-400 cursor-not-allowed bg-gray-100 dark:text-gray-500 dark:bg-gray-800'
@@ -887,7 +955,7 @@ const webhookColumns = [
             [
               row.original.retrying
                 ? h('svg', {
-                    class: 'animate-spin h-4 w-4',
+                    class: 'animate-spin h-3 w-3',
                     xmlns: 'http://www.w3.org/2000/svg',
                     fill: 'none',
                     viewBox: '0 0 24 24',
@@ -897,7 +965,7 @@ const webhookColumns = [
                     `,
                   })
                 : h('svg', {
-                    class: 'w-4 h-4',
+                    class: 'w-3 h-3',
                     xmlns: 'http://www.w3.org/2000/svg',
                     fill: 'none',
                     viewBox: '0 0 24 24',
@@ -910,25 +978,20 @@ const webhookColumns = [
         ]
       ),
     size: 80,
+    enableSorting: false,
   },
   {
     id: 'date',
-    header: () => 'Date',
+    header: ({ column }: any) => createSortableHeader(column, 'Date'),
     accessorKey: 'date',
+    enableSorting: true,
     cell: ({ row }: any) => {
-      const date = new Date(row.original.date)
-      return h(
-        'span',
-        {},
-        date.toLocaleString('en-GB', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        })
-      )
+      return h('div', { class: 'text-sm' }, [
+        format.formatDateTime(row.original.date, {
+          dateStyle: userPreferences?.dateFormat || 'medium',
+          timeStyle: userPreferences?.timeFormat || 'short',
+        }),
+      ])
     },
     size: 180,
   },
@@ -936,11 +999,12 @@ const webhookColumns = [
     id: 'status',
     header: () => 'Status',
     accessorKey: 'status',
+    enableSorting: false,
     cell: ({ row }: any) =>
       h(StatusBadge, {
         status: row.original.status,
         variant: 'subtle',
-        size: 'md',
+        size: 'sm',
       }),
     size: 120,
   },
@@ -948,15 +1012,15 @@ const webhookColumns = [
 
 // Transaction data
 const transactionData = {
-  transactionNo: transactionId.value || 'TX000001',
-  date: '15/07/2025 10:03 am',
-  transactionType: 'Deeplink / Checkout',
+  transactionNo: transactionId.value || 'TXN-20250729001',
+  date: '2025-07-15T12:00:00+07:00',
+  transactionType: 'Wallet Payment',
   currency: 'USD',
   status: 'failed',
-  transactionAmount: 150.75,
-  settlementAmount: 148.25,
+  transactionAmount: 150,
+  settlementAmount: 147, // 150 - 3 fee
   customerFee: 0.0,
-  supplierFee: 2.5,
+  supplierFee: 3.0,
   bankReference: 'AC0123243253',
   settlementBank: 'ACLEDA',
   accountNumber: 'BANK-12345678',
@@ -981,7 +1045,7 @@ const transactionOverviewFields = computed(() => [
   },
   {
     label: 'Transaction Amount',
-    value: `${transactionData.transactionAmount.toFixed(2)} ${transactionData.currency}`,
+    value: `${useCurrency().formatAmount(transactionData.transactionAmount)} ${transactionData.currency}`,
     type: 'amount',
   },
   {
@@ -991,48 +1055,26 @@ const transactionOverviewFields = computed(() => [
   },
   {
     label: 'Date',
-    value: transactionData.date,
+    value: format.formatDateTime(transactionData.date, {
+      dateStyle: userPreferences?.dateFormat || 'medium',
+      timeStyle: userPreferences?.timeFormat || 'short',
+    }),
     type: 'text',
   },
   {
-    label: 'Settlement Amount',
-    value: `${transactionData.settlementAmount.toFixed(2)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
     label: 'Customer Fee',
-    value: `${transactionData.customerFee.toFixed(2)} ${transactionData.currency}`,
+    value: `${useCurrency().formatAmount(transactionData.customerFee)} ${transactionData.currency}`,
     type: 'amount',
   },
   {
     label: 'Supplier Fee',
-    value: `${transactionData.supplierFee.toFixed(2)} ${transactionData.currency}`,
+    value: `${useCurrency().formatAmount(transactionData.supplierFee)} ${transactionData.currency}`,
     type: 'amount',
-  },
-  {
-    label: 'Bank Reference',
-    value: transactionData.bankReference,
-    type: 'code',
-    copyable: true,
-    rawValue: transactionData.bankReference,
-  },
-  {
-    label: 'Settlement Bank',
-    value: transactionData.settlementBank,
-    type: 'text',
-  },
-  {
-    label: 'Account Number',
-    value: maskAccountNumber(transactionData.accountNumber),
-    type: 'code',
-    copyable: true,
-    rawValue: transactionData.accountNumber,
   },
 ])
 
-// Split fields into left and right columns
-const leftColumnFields = computed(() => transactionOverviewFields.value.slice(0, 5))
-const rightColumnFields = computed(() => transactionOverviewFields.value.slice(5))
+// Show all fields in a single column
+const allFields = computed(() => transactionOverviewFields.value)
 
 // Download functions
 const download = async () => {
@@ -1133,101 +1175,6 @@ const exportTransaction = async () => {
       title: 'Generating Export',
       description: 'Please wait while we capture the transaction details...',
     })
-
-    const tempDiv = document.createElement('div')
-    tempDiv.style.position = 'absolute'
-    tempDiv.style.top = '-9999px'
-    tempDiv.style.left = '-9999px'
-    tempDiv.style.width = '800px'
-    tempDiv.style.height = 'auto'
-    tempDiv.style.backgroundColor = 'white'
-    tempDiv.style.fontFamily = 'Arial, sans-serif'
-    tempDiv.style.color = 'black'
-
-    tempDiv.innerHTML = `
-      <div style="background: white; padding: 30px; color: black; font-family: Arial, sans-serif;">
-        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #ccc; padding-bottom: 20px;">
-          <h1 style="margin: 0; color: #333; font-size: 24px;">Transaction Details</h1>
-          <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Bill24 Payment System</p>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px;">
-          <div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Transaction No:</span><br>
-              <span style="color: #0066cc; font-family: monospace; font-weight: bold;">${transactionData.transactionNo}</span>
-            </div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Amount:</span><br>
-              <span style="color: #333; font-weight: bold;">${transactionData.transactionAmount.toFixed(2)} ${transactionData.currency}</span>
-            </div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Type:</span><br>
-              <span style="background: #e6f3ff; color: #0066cc; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${transactionData.transactionType}</span>
-            </div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Date:</span><br>
-              <span style="color: #333;">${transactionData.date}</span>
-            </div>
-            <div style="margin-bottom: 15px;">
-              <span style="color: #666; font-size: 14px;">Settlement Amount:</span><br>
-              <span style="color: #333; font-weight: bold;">${transactionData.settlementAmount.toFixed(2)} ${transactionData.currency}</span>
-            </div>
-          </div>
-          <div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Customer Fee:</span><br>
-              <span style="color: #333; font-weight: bold;">${transactionData.customerFee.toFixed(2)} ${transactionData.currency}</span>
-            </div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Supplier Fee:</span><br>
-              <span style="color: #333; font-weight: bold;">${transactionData.supplierFee.toFixed(2)} ${transactionData.currency}</span>
-            </div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Bank Reference:</span><br>
-              <span style="color: #0066cc; font-family: monospace; font-weight: bold;">${transactionData.bankReference}</span>
-            </div>
-            <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
-              <span style="color: #666; font-size: 14px;">Settlement Bank:</span><br>
-              <span style="color: #333;">${transactionData.settlementBank}</span>
-            </div>
-            <div style="margin-bottom: 15px;">
-              <span style="color: #666; font-size: 14px;">Account Number:</span><br>
-              <span style="color: #0066cc; font-family: monospace; font-weight: bold;">${maskAccountNumber(transactionData.accountNumber)}</span>
-            </div>
-          </div>
-        </div>
-        <div style="text-align: center; margin: 30px 0;">
-          <span style="display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: bold; ${
-            transactionData.status === 'Success'
-              ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;'
-              : transactionData.status === 'Failed'
-                ? 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'
-                : 'background: #f8f9fa; color: #495057; border: 1px solid #dee2e6;'
-          }">Status: ${transactionData.status}</span>
-        </div>
-        <div style="text-align: center; border-top: 1px solid #ccc; padding-top: 20px; color: #666; font-size: 12px;">
-          <p style="margin: 0;">Generated on ${new Date().toLocaleDateString()}</p>
-        </div>
-      </div>
-    `
-
-    document.body.appendChild(tempDiv)
-    await new Promise((resolve) => setTimeout(resolve, 200))
-
-    const canvas = await html2canvas(tempDiv.firstElementChild as HTMLElement, {
-      backgroundColor: 'white',
-      scale: 2,
-    })
-
-    document.body.removeChild(tempDiv)
-
-    const link = document.createElement('a')
-    link.download = `${transactionData.transactionNo}-transaction-details.png`
-    link.href = canvas.toDataURL('image/png')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
     notification.showSuccess({
       title: 'Export Complete',
       description: 'Transaction details exported successfully',
@@ -1248,45 +1195,6 @@ const downloadReceiptAsImage = async () => {
       title: 'Generating Receipt',
       description: 'Please wait while we capture the receipt...',
     })
-
-    const tempDiv = document.createElement('div')
-    tempDiv.style.position = 'absolute'
-    tempDiv.style.top = '-9999px'
-    tempDiv.style.left = '-9999px'
-    tempDiv.style.width = '400px'
-    tempDiv.style.backgroundColor = 'white'
-    tempDiv.style.fontFamily = 'Arial, sans-serif'
-    tempDiv.style.color = 'black'
-
-    tempDiv.innerHTML = `
-      <div style="background: white; padding: 25px; text-align: center; color: black; font-family: Arial, sans-serif;">
-        <h2 style="margin: 0 0 25px 0; color: black; font-size: 20px;">Bill24 Receipt</h2>
-        <div style="border-bottom: 1px dashed #999; padding-bottom: 15px; margin-bottom: 15px; text-align: left;">
-          <div style="margin: 8px 0; color: black;"><strong>Transaction:</strong> ${transactionData.transactionNo}</div>
-          <div style="margin: 8px 0; color: black;"><strong>Amount:</strong> ${transactionData.transactionAmount.toFixed(2)} ${transactionData.currency}</div>
-          <div style="margin: 8px 0; color: black;"><strong>Date:</strong> ${transactionData.date}</div>
-          <div style="margin: 8px 0; color: black;"><strong>Status:</strong> ${transactionData.status}</div>
-        </div>
-        <div style="font-size: 12px; color: #666; margin-top: 20px;">Thank you for using Bill24</div>
-      </div>
-    `
-
-    document.body.appendChild(tempDiv)
-    await new Promise((resolve) => setTimeout(resolve, 200))
-
-    const canvas = await html2canvas(tempDiv.firstElementChild as HTMLElement, {
-      backgroundColor: 'white',
-      scale: 2,
-    })
-
-    document.body.removeChild(tempDiv)
-
-    const link = document.createElement('a')
-    link.download = `${transactionData.transactionNo}-receipt.png`
-    link.href = canvas.toDataURL('image/png')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
 
     notification.showSuccess({
       title: 'Receipt Downloaded',
