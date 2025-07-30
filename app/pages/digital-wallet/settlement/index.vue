@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <template>
   <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
@@ -199,7 +200,7 @@
     </div>
 
     <!-- Table -->
-    <UTable
+    <!-- <UTable
       ref="table"
       :column-visibility="columnVisibility"
       :sorting="sortingState"
@@ -217,10 +218,17 @@
       <template #empty>
         <TableEmptyState />
       </template>
-    </UTable>
+    </UTable> -->
+    <TablesExTable
+      :columns="columns"
+      :table-id="TABLE_ID"
+      :fetch-data-fn="fetchSettlementForTable"
+      show-row-number
+      @row-click="handleViewDetails"
+    />
 
     <!-- Table Footer -->
-    <div
+    <!-- <div
       class="flex items-center px-1 py-1 text-sm text-muted"
       :class="{
         'justify-between': (table?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
@@ -235,12 +243,6 @@
         </span>
       </div>
       <div class="flex items-center gap-4">
-        <!-- <USelect
-          v-model="pageSize"
-          :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
-          class="w-24"
-          @change="onPageSizeChange"
-        /> -->
         <USelectMenu
           v-model="pageSize"
           :items="DEFAULT_PAGE_SIZE_OPTIONS"
@@ -261,7 +263,7 @@
           @update:page="page = $event"
         />
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -269,22 +271,21 @@
 import { computed, h, nextTick, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import type { TableColumn, TableRow } from '@nuxt/ui'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { useI18n } from 'vue-i18n'
-import TableEmptyState from '~/components/TableEmptyState.vue'
+// import TableEmptyState from '~/components/TableEmptyState.vue'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { UButton } from '#components'
-import appConfig from '~~/app.config'
 import ExportButton from '~/components/buttons/ExportButton.vue'
 import ExSearch from '~/components/ExSearch.vue'
-import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
+import { DEFAULT_PAGE_SIZE } from '~/utils/constants'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { SettlementHistoryStatus } from '~/utils/enumModel'
+import type { BaseTableColumn } from '~/components/tables/table'
 
 definePageMeta({
   auth: false,
@@ -293,7 +294,7 @@ definePageMeta({
 
 const { t } = useI18n()
 const { getSettlementHistory } = useSupplierApi()
-const { createSortableHeader, createRowNumberCell } = useTable()
+const { createSortableHeader } = useTable()
 const errorHandler = useErrorHandler()
 const { statusCellBuilder } = useStatusBadge()
 const pref = useUserPreferences().getPreferences()
@@ -468,16 +469,6 @@ const initializeTableSortingState = () => {
   }
 }
 
-// Listen to sorting state changes from the table and save them
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const onSortingChange = (updater: any) => {
-  if (table?.value?.tableApi) {
-    const currentSorting = table.value.tableApi.getState().sorting
-    const newSorting = typeof updater === 'function' ? updater(currentSorting) : updater
-    sortingState.value = newSorting
-  }
-}
-
 // Watch for table API changes to initialize column visibility and sorting
 watch(
   () => table?.value?.tableApi,
@@ -557,7 +548,10 @@ watch([page, pageSize, selectedStatuses], () => {
 })
 
 // Fetch settlement data from API
-const fetchSettlementHistory = async (refreshAction: boolean = false) => {
+const fetchSettlementHistory = async (
+  refreshAction: boolean = false,
+  params?: { page?: number; pageSize?: number }
+) => {
   loading.value = true
   if (refreshAction) {
     isRefreshing.value = true
@@ -565,8 +559,8 @@ const fetchSettlementHistory = async (refreshAction: boolean = false) => {
   try {
     const payload: SettlementHistoryQuery = {
       search: search.value || undefined,
-      page_size: pageSize.value.value,
-      page: page.value,
+      page_size: params?.pageSize || pageSize.value.value,
+      page: params?.page || page.value,
       start_date: startDate.value,
       end_date: endDate.value,
       status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
@@ -577,6 +571,7 @@ const fetchSettlementHistory = async (refreshAction: boolean = false) => {
     settlements.value = data?.records ?? []
     total.value = data?.total_record ?? 0
     totalPage.value = data?.total_page ?? 0
+    return data?.records
   } catch (error: unknown) {
     errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
     // Show error notification to user
@@ -590,9 +585,40 @@ const fetchSettlementHistory = async (refreshAction: boolean = false) => {
   }
 }
 
-const onPageSizeChange = () => {
-  page.value = 1
-  // fetchSettlementHistory()
+// Wrapper function for BaseTableV2
+const fetchSettlementForTable = async (params?: {
+  page?: number
+  pageSize?: number
+  search?: string
+  startDate?: string
+  endDate?: string
+}) => {
+  loading.value = true
+  try {
+    const payload: SettlementHistoryQuery = {
+      search: params?.search || undefined,
+      page_size: params?.pageSize || pageSize.value.value,
+      page: params?.page || page.value,
+      start_date: params?.startDate || startDate.value,
+      end_date: params?.endDate || endDate.value,
+      status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
+      supplier_id: currentProfile.value?.id || '', // Use current supplier ID
+    }
+
+    const data = await getSettlementHistory(payload)
+    return {
+      records: data?.records ?? [],
+      total_record: data?.total_record ?? 0,
+      total_page: data?.total_page ?? 0,
+    }
+  } catch (error: unknown) {
+    errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
+    // Show error notification to user
+    errorHandler.handleApiError(error)
+    return null
+  } finally {
+    loading.value = false
+  }
 }
 
 // Handle search input
@@ -652,18 +678,18 @@ const exportHeaders = [
   // { key: "status", label: t("status") },
 ]
 
-const handleViewDetails = (row: TableRow<SettlementHistoryRecord>) => {
-  // if (row.original.success === 0 && row.original.fail === 0) {
+const handleViewDetails = (rowData: SettlementHistoryRecord) => {
+  // if (rowData.success === 0 && rowData.fail === 0) {
   //   notification.showWarning({
   //     title: t('no_transactions_found'),
   //     description: t('no_transactions_found_desc'),
   //   })
   //   return
   // }
-  navigateToDetails(row.original.id)
+  navigateToDetails(rowData.id)
 }
 
-const columns: TableColumn<SettlementHistoryRecord>[] = [
+const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -701,26 +727,20 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
       },
     },
   },
-  {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row, table }) => createRowNumberCell(row, table, page.value, pageSize.value.value),
-    size: 30,
-    maxSize: 30,
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   id: 'row_number',
+  //   header: () => '#',
+  //   cell: ({ row, table }) => createRowNumberCell(row, table, page.value, pageSize.value.value),
+  //   size: 30,
+  //   maxSize: 30,
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   // { accessorKey: "id", header: t("Settlement ID") },
   {
+    id: 'created_date',
     accessorKey: 'created_date',
-    header: ({ column }) =>
-      createSortableHeader(
-        column,
-        t('settlement.settlement_date'),
-        'created_date',
-        'left',
-        (order) => {}
-      ),
+    header: ({ column }) => createSortableHeader(column, t('settlement.settlement_date'), 'left'),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
@@ -729,32 +749,16 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     maxSize: 150,
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
+  
   {
-    accessorKey: 'total_amount',
-    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        formatAmount(row.original.total_amount, row.original.currency_id)
-      ),
-    enableMultiSort: true,
-    enableSorting: true,
-    size: 50,
-    maxSize: 150,
-  },
-  {
-    accessorKey: 'currency_id',
-    header: () => t('settlement.currency'),
-    cell: ({ row }) => row.original.currency_id || '-',
-  },
-  {
+    id: 'created_by',
     accessorKey: 'created_by',
     header: () => t('settled_by'),
     cell: ({ row }) => row.original.created_by || '-',
   },
 
   {
+    id: 'total_settled',
     accessorKey: 'total_settled',
     header: ({ column }) => createSortableHeader(column, t('settlement.transaction')),
     cell: ({ row }) => {
@@ -818,21 +822,32 @@ const columns: TableColumn<SettlementHistoryRecord>[] = [
     //   return h('span', { class: `text-xs font-medium ${statusClass}` }, t(`status.${status}`))
     // },
   },
-  // Add an action column for viewing details
-  // {
-  //   id: 'actions',
-  //   header: () => t('actions'),
-  //   cell: ({ row }) =>
-  //     h('div', { class: 'flex items-center gap-2' }, [
-  //       h(resolveComponent('UButton'), {
-  //         color: 'primary',
-  //         variant: 'ghost',
-  //         icon: 'i-lucide-eye',
-  //         size: 'sm',
-  //         onClick: handleViewDetails,
-  //         // title: translations.view_details
-  //       }),
-  //     ]),
-  // },
+  {
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    header: () => t('settlement.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+  },
+  {
+    id: 'total_amount',
+    accessorKey: 'total_amount',
+    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-right' },
+        formatAmount(row.original.total_amount, row.original.currency_id)
+      ),
+    enableMultiSort: true,
+    enableSorting: true,
+    size: 50,
+    maxSize: 150,
+  },
+  
 ]
 </script>

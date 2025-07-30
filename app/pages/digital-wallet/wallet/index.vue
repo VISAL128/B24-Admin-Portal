@@ -22,25 +22,7 @@
               :disabled="isLoadingWalletTypes || walletTypes.length === 0"
               :placeholder="t('wallet_page.select_wallet_type')"
               size="md"
-            >
-              <!-- <template #leading>
-                <div
-                  v-if="selectedWalletTypeData"
-                  class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center"
-                >
-                  <UIcon
-                    :name="selectedWalletTypeData.icon"
-                    class="w-4 h-4 text-gray-600 dark:text-gray-400"
-                  />
-                </div>
-                <div
-                  v-else
-                  class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center"
-                >
-                  <UIcon name="i-heroicons-wallet" class="w-4 h-4 text-gray-400" />
-                </div>
-              </template> -->
-            </USelectMenu>
+            />
 
             <!-- Auto Refresh Toggle -->
             <div class="flex items-center gap-1">
@@ -207,7 +189,7 @@
       </div>
 
       <!-- Loading State for Main Wallet -->
-      <div v-else-if="isWalletLoading" class="mb-6">
+      <div v-else-if="isWalletLoading || isLoadingWalletTypes" class="mb-6">
         <div
           class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-xl animate-pulse"
         >
@@ -274,13 +256,16 @@
         <p class="text-gray-500 dark:text-gray-400">{{ t('wallet_page.no_wallets_for_type') }}</p>
       </div>
       <!-- Transaction Summary -->
-      <div v-if="walletTypes.length > 0">
+      <div v-if="walletTypes.length > 0 || isLoadingWalletTypes">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Today -->
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
+            <div
+              v-if="!isLoadingSummary && !isLoadingWalletTypes"
+              class="flex items-center justify-between mb-4"
+            >
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.today') }}
               </h3>
@@ -291,7 +276,7 @@
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary" class="space-y-3">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
               <div>
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
                   {{ currentSummaryData.today.totalTransactions }}
@@ -369,7 +354,7 @@
               >
                 <UIcon
                   name="i-heroicons-calendar-date-range"
-                  class="w-4 h-4 text-blue-600 dark:text-blue-400"
+                  class="w-4 h-4 text-green-600 dark:text-green-400"
                 />
               </div>
             </div>
@@ -452,7 +437,7 @@
               >
                 <UIcon
                   name="i-heroicons-calendar-days"
-                  class="w-4 h-4 text-green-600 dark:text-green-400"
+                  class="w-4 h-4 text-purple-600 dark:text-purple-400"
                 />
               </div>
             </div>
@@ -524,8 +509,8 @@
         </div>
       </div>
 
-      <!-- No Wallet Types Available -->
-      <div v-else class="text-center py-12">
+      <!-- No Wallet Types Available (only after loading is complete) -->
+      <div v-else-if="!isLoadingWalletTypes && walletTypes.length === 0" class="text-center py-12">
         <UIcon
           name="i-heroicons-exclamation-triangle"
           class="w-12 h-12 text-gray-400 mx-auto mb-4"
@@ -546,6 +531,45 @@
           {{ t('wallet_page.retry') }}
         </UButton>
       </div>
+
+      <!-- Transaction List Section -->
+      <div v-if="walletTypes.length > 0 && selectedWalletType && !isWalletLoading" class="mt-8">
+        <BaseTable
+          :data="transactions"
+          :columns="transactionColumns"
+          table-id="wallet-transactions"
+          border-class="border-gray-200 dark:border-gray-700"
+          :page="currentPage"
+          :page-size="pageSize"
+          :total="totalTransactions"
+          :total-page="Math.ceil(totalTransactions / pageSize)"
+          @filter-change="handleTransactionFilterChange"
+          @row-click="openTransactionDetail"
+          @search-change="
+            (val: string) => {
+              transactionFilters.search = val
+              debouncedSearch()
+            }
+          "
+          @update:page="
+            (val: number) => {
+              currentPage = val
+              loadTransactions(false)
+            }
+          "
+          @update:page-size="
+            (val: number) => {
+              pageSize = val
+              currentPage = 1
+              loadTransactions(true)
+            }
+          "
+        >
+          <template #empty>
+            <TableEmptyState />
+          </template>
+        </BaseTable>
+      </div>
     </div>
   </div>
 </template>
@@ -556,8 +580,12 @@ import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import { useWalletStore } from '~/stores/wallet'
+import { useDebounceFn } from '@vueuse/core'
+import type { BaseTableColumn } from '~/components/tables/table'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
 import type { WalletSummaryData } from '~~/server/model/pgw_module_api/transactionSummary'
+import type { WalletTransaction } from '~~/server/model/pgw_module_api/walletTransactions'
+import BaseTable from '~/components/tables/BaseTable.vue'
 
 // Define page meta
 definePageMeta({
@@ -569,7 +597,8 @@ definePageMeta({
 const { formatCurrency } = useCurrency()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
-const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary } = usePgwModuleApi()
+const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getWalletTransactions } =
+  usePgwModuleApi()
 const { t } = useI18n()
 
 // Wallet store
@@ -613,6 +642,24 @@ const walletTypes = ref<
 
 // Selected wallet type (single source of truth)
 const selectedWalletType = ref('')
+
+// Transaction list state
+const transactions = ref<WalletTransaction[]>([])
+const isLoadingTransactions = ref(false)
+const isLoadingMore = ref(false)
+const hasMoreTransactions = ref(true)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalTransactions = ref(0)
+
+// Transaction filters
+const transactionFilters = ref({
+  type: '',
+  status: '',
+  search: '',
+})
+
+// Transaction list ref for infinite scroll
 
 // API methods
 const loadWalletTypes = async () => {
@@ -749,6 +796,208 @@ const getWalletTypeIcon = (type: string) => {
     default:
       return 'i-heroicons-wallet'
   }
+}
+
+// Transaction helper methods
+const getTransactionTypeIcon = (type: string) => {
+  switch (type) {
+    case 'top_up':
+      return 'i-heroicons-arrow-down-circle'
+    case 'settlement':
+      return 'i-heroicons-banknotes'
+    case 'transfer':
+      return 'i-heroicons-arrow-right-circle'
+    case 'payment':
+      return 'i-heroicons-credit-card'
+    default:
+      return 'i-heroicons-document-text'
+  }
+}
+
+const getTransactionTypeColor = (type: string) => {
+  switch (type) {
+    case 'top_up':
+      return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+    case 'settlement':
+      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+    case 'transfer':
+      return 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+    case 'payment':
+      return 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+    default:
+      return 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400'
+  }
+}
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'completed':
+      return 'success'
+    case 'pending':
+      return 'warning'
+    case 'failed':
+      return 'error'
+    case 'cancelled':
+      return 'neutral'
+    default:
+      return 'neutral'
+  }
+}
+
+const getAmountColor = (type: string, amount: number) => {
+  if (type === 'top_up' && amount > 0) {
+    return 'text-green-600 dark:text-green-400'
+  } else if (type === 'payment' || type === 'transfer') {
+    return 'text-red-600 dark:text-red-400'
+  }
+  return 'text-gray-900 dark:text-white'
+}
+
+const formatTransactionAmount = (amount: number, currency: string, type: string) => {
+  const prefix = type === 'top_up' ? '+' : type === 'payment' || type === 'transfer' ? '-' : ''
+  return `${prefix}${formatCurrency(amount, currency)}`
+}
+
+const formatTransactionDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date)
+}
+
+// Transaction Table Columns
+const transactionColumns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
+  {
+    id: 'type',
+    accessorKey: 'transaction_type',
+    header: t('wallet_page.transaction_type'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('wallet_page.transaction_types.all'), value: '' },
+      { label: t('wallet_page.transaction_types.top_up'), value: 'top_up' },
+      { label: t('wallet_page.transaction_types.settlement'), value: 'settlement' },
+      { label: t('wallet_page.transaction_types.transfer'), value: 'transfer' },
+      { label: t('wallet_page.transaction_types.payment'), value: 'payment' },
+    ],
+    cell: ({ row }) => {
+      const transaction = row.original
+      return h('div', { class: 'flex items-center space-x-3' }, [
+        h(
+          'div',
+          {
+            class: `w-8 h-8 rounded-lg flex items-center justify-center ${getTransactionTypeColor(transaction.transaction_type)}`,
+          },
+          [
+            h('UIcon', {
+              name: getTransactionTypeIcon(transaction.transaction_type),
+              class: 'w-4 h-4',
+            }),
+          ]
+        ),
+        h(
+          'span',
+          { class: 'font-medium' },
+          t(`wallet_page.transaction_types.${transaction.transaction_type}`)
+        ),
+      ])
+    },
+  },
+  {
+    id: 'details',
+    header: t('wallet_page.transaction_details'),
+    cell: ({ row }) => {
+      const transaction = row.original
+      return h('div', { class: 'space-y-1' }, [
+        h(
+          'div',
+          { class: 'font-medium text-sm' },
+          transaction.description || transaction.transaction_no
+        ),
+        h('div', { class: 'text-xs text-gray-500 space-x-2' }, [
+          h('span', {}, transaction.transaction_no),
+          transaction.counterparty_name && h('span', {}, ` • ${transaction.counterparty_name}`),
+        ]),
+      ])
+    },
+  },
+  {
+    id: 'status',
+    accessorKey: 'status',
+    header: t('wallet_page.status'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('wallet_page.transaction_statuses.all'), value: '' },
+      { label: t('wallet_page.transaction_statuses.pending'), value: 'pending' },
+      { label: t('wallet_page.transaction_statuses.completed'), value: 'completed' },
+      { label: t('wallet_page.transaction_statuses.failed'), value: 'failed' },
+      { label: t('wallet_page.transaction_statuses.cancelled'), value: 'cancelled' },
+    ],
+    cell: ({ row }) => {
+      const transaction = row.original
+      return h('UBadge', {
+        label: t(`wallet_page.transaction_statuses.${transaction.status}`),
+        color: getStatusColor(transaction.status),
+        variant: 'subtle',
+        size: 'xs',
+      })
+    },
+  },
+  {
+    id: 'amount',
+    accessorKey: 'amount',
+    header: t('wallet_page.amount'),
+    cell: ({ row }) => {
+      const transaction = row.original
+      return h('div', { class: 'text-right' }, [
+        h(
+          'div',
+          {
+            class: `font-semibold ${getAmountColor(transaction.transaction_type, transaction.amount)}`,
+          },
+          formatTransactionAmount(
+            transaction.amount,
+            transaction.currency,
+            transaction.transaction_type
+          )
+        ),
+        transaction.fee_amount &&
+          h(
+            'div',
+            {
+              class: 'text-xs text-gray-500',
+            },
+            `${t('wallet_page.fee_amount')}: ${formatCurrency(transaction.fee_amount, transaction.currency)}`
+          ),
+      ])
+    },
+  },
+  {
+    id: 'date',
+    accessorKey: 'created_date',
+    header: t('wallet_page.date'),
+    cell: ({ row }) => {
+      const transaction = row.original
+      return h(
+        'div',
+        { class: 'text-sm text-gray-600' },
+        formatTransactionDate(transaction.created_date)
+      )
+    },
+  },
+])
+
+// Transaction filter handler
+const handleTransactionFilterChange = (columnId: string, value: string) => {
+  if (columnId === 'type') {
+    transactionFilters.value.type = value
+  } else if (columnId === 'status') {
+    transactionFilters.value.status = value
+  }
+  loadTransactions(true)
 }
 
 // Computed wallet type data
@@ -963,17 +1212,42 @@ watch(selectedWalletType, async (newType, oldType) => {
     // Sync with store
     walletStore.setSelectedWalletType(newType, selectedWalletTypeAPI.value)
 
-    await Promise.all([loadWalletBalance(), loadTransactionSummary()])
+    // Load data sequentially: wallet balance -> summary -> transactions
+    await loadWalletBalance()
+    await loadTransactionSummary()
+    await loadTransactions(true)
   }
 })
 
+// Watch transaction filters
+watch(
+  () => transactionFilters.value.type,
+  () => {
+    loadTransactions(true)
+  }
+)
+
+watch(
+  () => transactionFilters.value.status,
+  () => {
+    loadTransactions(true)
+  }
+)
+
 // Initialize data on component mount
 onMounted(async () => {
+  // Step 1: Load wallet types first
   await loadWalletTypes()
-  await loadWalletBalance()
-  // Load transaction summary for the first time
+
+  // Step 2: Load wallet balance after wallet types are loaded
   if (selectedWalletType.value) {
+    await loadWalletBalance()
+
+    // Step 3: Load transaction summary after wallet balance is loaded
     await loadTransactionSummary()
+
+    // Step 4: Finally load transactions
+    await loadTransactions(true)
   }
 })
 
@@ -989,7 +1263,10 @@ const refreshBalances = async () => {
   }
 
   try {
-    await Promise.all([loadWalletBalance(), loadTransactionSummary()])
+    // Load data sequentially: wallet balance -> summary -> transactions
+    await loadWalletBalance()
+    await loadTransactionSummary()
+    await loadTransactions(true)
   } catch (error) {
     console.error('Failed to refresh balances:', error)
   } finally {
@@ -1032,6 +1309,76 @@ const copyToClipboard = async (text: string) => {
     console.error('Failed to copy to clipboard:', error)
   }
 }
+
+// Transaction methods
+const loadTransactions = async (reset = false) => {
+  if (!selectedWalletType.value) return
+
+  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  if (!selectedWallet) return
+
+  try {
+    if (reset) {
+      isLoadingTransactions.value = true
+      currentPage.value = 1
+      transactions.value = []
+    } else {
+      isLoadingMore.value = true
+    }
+
+    const response = await getWalletTransactions({
+      wallet_id: selectedWallet.walletId,
+      page: currentPage.value,
+      page_size: pageSize.value,
+      transaction_type: (transactionFilters.value.type || undefined) as
+        | 'top_up'
+        | 'settlement'
+        | 'transfer'
+        | 'payment'
+        | undefined,
+      status: (transactionFilters.value.status || undefined) as
+        | 'completed'
+        | 'pending'
+        | 'failed'
+        | 'cancelled'
+        | undefined,
+      search: transactionFilters.value.search || undefined,
+    })
+
+    if (response.data?.transactions) {
+      if (reset) {
+        transactions.value = response.data.transactions
+      } else {
+        transactions.value.push(...response.data.transactions)
+      }
+
+      totalTransactions.value = response.data.total_count
+      hasMoreTransactions.value = response.data.has_more
+
+      if (response.data.has_more) {
+        currentPage.value++
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load transactions:', error)
+    if (reset) {
+      transactions.value = []
+    }
+  } finally {
+    isLoadingTransactions.value = false
+    isLoadingMore.value = false
+  }
+}
+
+const openTransactionDetail = (transaction: WalletTransaction) => {
+  // TODO: Implement transaction detail modal or navigation
+  console.log('Open transaction detail:', transaction)
+}
+
+// Debounced search function
+const debouncedSearch = useDebounceFn(() => {
+  loadTransactions(true)
+}, 500)
 
 // Auto refresh functionality
 const startCountdown = () => {

@@ -1,91 +1,86 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-4">
+  <div class="flex flex-col h-full w-full space-y-3">
     <!-- Summary Cards -->
-    <!-- Summary Card Section with Date Filter -->
-    <div
-      class="flex flex-col rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4"
-    >
-      <div class="flex justify-between items-center">
-        <h2 class="text-lg font-semibold dark:text-white">
-          {{ t('transaction_summary') }}
-        </h2>
-        <USelectMenu
-          v-model="selectedDateFilter"
-          :items="dateOptions"
-          class="w-auto min-w-[200px]"
-          :search-input="false"
-          @update:model-value="onDateFilterChange"
-        >
-          <template #item="{ item }">
-            <span v-html="item.label" />
-          </template>
-          <template #default="{ modelValue }">
-            <span v-if="modelValue" v-html="modelValue.label" />
-          </template>
-        </USelectMenu>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      <!-- Total Transaction -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Transaction</h3>
+        <p class="text-xl font-bold">100</p>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-stretch">
-        <!-- Your existing 4 cards as-is -->
-        <div class="bg-white dark:bg-gray-900 rounded-md p-4 h-full">
-          <h2 class="text-sm text-primary dark:text-white">{{ t('number_of_transaction') }}</h2>
-          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ 100 }}</p>
-        </div>
-        <div class="bg-white dark:bg-gray-900 rounded-md p-4 h-full">
-          <h2 class="text-sm text-primary dark:text-white">{{ t('total_amount') }}</h2>
-          <p
-            class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white inline-flex items-baseline gap-1"
-          >
-            <span class="text-sm">KHR</span><span>1,000,000</span>
-          </p>
-        </div>
-        <div class="bg-white dark:bg-gray-900 rounded-md p-4 h-full">
-          <h2 class="text-sm text-primary dark:text-white">{{ t('total_settlement_amount') }}</h2>
-          <p
-            class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white inline-flex items-baseline gap-1"
-          >
-            <span class="text-sm">KHR</span><span>1,000,000</span>
-          </p>
-        </div>
-        <div class="bg-white dark:bg-gray-900 rounded-md p-4 h-full">
-          <h2 class="text-sm text-primary dark:text-white">{{ t('failed_transactions') }}</h2>
-          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ 100 }}</p>
-        </div>
+      
+      <!-- Failed Transactions -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Failed Transactions</h3>
+        <p class="text-xl font-bold">5</p>
+      </div>
+      
+      <!-- Total Amount KHR -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
+        <p class="text-lg font-bold">
+          <span class="text-xs font-medium">KHR</span> 4,000,000
+        </p>
+      </div>
+      
+      <!-- Total Amount USD -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
+        <p class="text-lg font-bold">
+          <span class="text-xs font-medium">USD</span> 50
+        </p>
+      </div>
+      
+      <!-- Total Settlement -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
+        <p class="text-lg font-bold">
+          <span class="text-xs font-medium">KHR</span> 3,900
+        </p>
+      </div>
+      
+      <!-- Total Split USD -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
+        <p class="text-lg font-bold">
+          <span class="text-xs font-medium">USD</span> 10
+        </p>
       </div>
     </div>
 
     <!-- Table -->
-    <BaseTable
-      :data="filteredData"
-      :columns="columns"
-      table-id="transaction-history-table"
-      border-class="border-gray-200 dark:border-gray-700"
-      @filter-change="handleFilterChange"
-      @row-click="(row) => navigateToDetails(row.id)"
-      @search-change="(val) => (search = val)"
-      @date-range-change="
-        ({ start, end }) => {
-          startDate = start
-          endDate = end
-          fetchTransactionHistory()
-        }
-      "
-      :page="page"
-      :page-size="pageSize.value"
-      :total="total"
-      :total-page="totalPage"
-      @update:page="(val) => (page = val)"
-      @update:pageSize="
-        (val) => {
-          pageSize.value = val
-          page = 1
-        }
-      "
-    >
-      <template #empty>
-        <TableEmptyState />
-      </template>
-    </BaseTable>
+    <div class="overflow-x-auto">
+      <BaseTable
+        :data="filteredData"
+        :columns="columns"
+        table-id="transaction-history-table"
+        border-class="border-gray-200 dark:border-gray-700"
+        @filter-change="handleFilterChange"
+        @row-click="(row) => navigateToDetails(row.id)"
+        @search-change="(val) => (search = val)"
+        @date-range-change="
+          ({ start, end }) => {
+            startDate = start
+            endDate = end
+            fetchTransactionHistory()
+          }
+        "
+        :page="page"
+        :page-size="pageSize.value"
+        :total="total"
+        :total-page="totalPage"
+        @update:page="(val) => (page = val)"
+        @update:pageSize="
+          (val) => {
+            pageSize.value = val
+            page = 1
+          }
+        "
+      >
+        <template #empty>
+          <TableEmptyState />
+        </template>
+      </BaseTable>
+    </div>
   </div>
 </template>
 
@@ -107,7 +102,6 @@ import StatusBadge from '~/components/StatusBadge.vue'
 import TableEmptyState from '~/components/TableEmptyState.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -117,10 +111,10 @@ import {
 import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
+import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import { useTable } from '~/composables/utils/useTable'
 
 const dateOptions = computed(() => {
   const todayDate = df.format(today)
@@ -576,15 +570,16 @@ const columns: BaseTableColumn<any>[] = [
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    header: ({ column }) =>
-      createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
-        // Call your API with the new sorting order
-        console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
-        // Trigger your own fetch with the column and direction
-        sortBy.value = 'created_date'
-        sortDirection.value = order
-        fetchTransactionHistory()
-      }),
+    // header: ({ column }) =>
+    //   createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
+    //     // Call your API with the new sorting order
+    //     console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
+    //     // Trigger your own fetch with the column and direction
+    //     sortBy.value = 'created_date'
+    //     sortDirection.value = order
+    //     fetchTransactionHistory()
+    //   }),
+    header: t('date'),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
