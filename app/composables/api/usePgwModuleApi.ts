@@ -9,6 +9,10 @@ import type {
   TopUpSummaryResponse,
   FeeSummaryResponse,
 } from '~~/server/model/pgw_module_api/transactionSummary'
+import type {
+  WalletTransactionRequest,
+  WalletTransactionResponse,
+} from '~~/server/model/pgw_module_api/walletTransactions'
 
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
@@ -82,11 +86,25 @@ export const usePgwModuleApi = () => {
     )
   }
 
+  /**
+   * Get wallet transactions with pagination from PGW Module API
+   */
+  const getWalletTransactions = async (request: WalletTransactionRequest) => {
+    return await executeV2(() =>
+      $fetch<WalletTransactionResponse>(`/api/pgw-module/walletmgnt/get-wallet-transactions`, {
+        method: 'POST',
+        body: request,
+        onResponseError() {},
+      })
+    )
+  }
+
   return {
     getProfile,
     getWalletTypes,
     getWalletBalance,
     getTopUpSummary,
     getFeeSummary,
+    getWalletTransactions,
   }
 }
