@@ -3,7 +3,7 @@ import type { FeeModel, FeeModelRequest, SharingSupplier } from '~/models/settle
 import { useApiExecutor } from './useApiExecutor'
 
 export const useFeeConfigApi = () => {
-  const { execute } = useApiExecutor()
+  const { execute,executeV2 } = useApiExecutor()
   // 1. Get settlement history with pagination
   // const getListFeeConfig = (search: string) =>
   //   useFetch(`${baseUrl}/api/get-fee-config`, {
@@ -25,17 +25,17 @@ export const useFeeConfigApi = () => {
   //   })
 
   const createFeeConfig = async (payload: FeeModelRequest): Promise<FeeModel> => {
-    const rep = await execute(() =>
+    const rep = await executeV2(() =>
       $fetch<ApiResponse<FeeModel>>(`/api/fee/create-fee-config`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch fee config:', rep.message)
+      // console.error('Failed to fetch fee config:', rep.message)
       return null as any
     }
     return rep.data as FeeModel
   }
   const updateFeeConfig = async (payload: FeeModelRequest): Promise<FeeModel> => {
-    const rep = await execute(() =>
+    const rep = await executeV2(() =>
       $fetch<ApiResponse<FeeModel>>(`/api/fee/update-fee-config`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
@@ -46,7 +46,7 @@ export const useFeeConfigApi = () => {
   }
 
   const getListFeeConfig = async (payload: { search: string }): Promise<FeeModel[]> => {
-    const rep = await execute(() =>
+    const rep = await executeV2(() =>
       $fetch<ApiResponse<FeeModel[]>>(`/api/fee/get-fee-config`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
@@ -57,7 +57,7 @@ export const useFeeConfigApi = () => {
   }
 
   const findFeeConfigById = async (payload: { id: string }): Promise<FeeModel> => {
-    const rep = await execute(() =>
+    const rep = await executeV2(() =>
       $fetch<ApiResponse<FeeModel>>(`/api/fee/find-fee-config`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
@@ -68,7 +68,7 @@ export const useFeeConfigApi = () => {
   }
 
   const getAllSharingSupplier = async (): Promise<SharingSupplier[]> => {
-    const rep = await execute(() =>
+    const rep = await executeV2(() =>
       $fetch<ApiResponse<SharingSupplier[]>>(`/api/fee/get_sharing_supplier`, { method: 'GET' })
     )
     if (rep.code !== 'SUCCESS') {

@@ -76,7 +76,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
     },
     // {
     //   label: t('navigation.organization'),
-    //   icon: 'i-material-symbols-light-home-work',
+    //   icon: 'i-material-symbols-home-work-outline',
     //   size: 'lg',
     //   active: activeStates.value.organization,
     //   children: [
@@ -87,20 +87,20 @@ const items = computed<NavigationMenuItem[][]>(() => [
     //       to: '/organization/banks',
     //       active: activeStates.value.banks,
     //     },
-    //     {
-    //       label: t('navigation.sub_billers'),
-    //       // icon: 'i-material-symbols-light:article-person',
-    //       size: 'lg',
-    //       to: '/organization/sub-billers',
-    //       active: activeStates.value.subBillers,
-    //     },
-    //     {
-    //       label: t('navigation.users'),
-    //       // icon: 'i-material-symbols-light-group',
-    //       size: 'lg',
-    //       to: '/organization/users',
-    //       active: activeStates.value.users,
-    //     },
+    //     // {
+    //     //   label: t('navigation.sub_billers'),
+    //     //   // icon: 'i-material-symbols-light:article-person',
+    //     //   size: 'lg',
+    //     //   to: '/organization/sub-billers',
+    //     //   active: activeStates.value.subBillers,
+    //     // },
+    //     // {
+    //     //   label: t('navigation.users'),
+    //     //   // icon: 'i-material-symbols-light-group',
+    //     //   size: 'lg',
+    //     //   to: '/organization/users',
+    //     //   active: activeStates.value.users,
+    //     // },
     //   ],
     // },
     // {
@@ -262,7 +262,7 @@ const props = defineProps<{
       class="w-full flex-1 transition-all duration-200"
       :ui="{
         linkLeadingIcon: 'shrink-0 size-4.5',
-        linkLabel: 'text-sm font-medium truncate',
+        linkLabel: 'text-xs font-medium truncate',
         link: 'p-2 cursor-pointer transition-colors duration-200',
         linkTrailingIcon: 'shrink-0 size-4',
       }"

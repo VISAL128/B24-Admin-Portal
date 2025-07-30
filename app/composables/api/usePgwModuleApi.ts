@@ -9,6 +9,7 @@ import type {
   TopUpSummaryResponse,
   FeeSummaryResponse,
 } from '~~/server/model/pgw_module_api/transactionSummary'
+import type { SubBillerQuery, SubBillerResponse } from '~/models/subBiller'
 import type {
   WalletTransactionRequest,
   WalletTransactionResponse,
@@ -86,6 +87,25 @@ export const usePgwModuleApi = () => {
     )
   }
 
+  const getSubBillers = async (payload: SubBillerQuery) => {
+    const query = new URLSearchParams(
+      Object.entries(payload).reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined && value !== null) acc[key] = String(value)
+          return acc
+        },
+        {} as Record<string, string>
+      )
+    ).toString()
+    console.log('Fetching sub billers with query:', query)
+    const rep = await executeV2(() =>
+      $fetch<SubBillerResponse>(`/api/pgw-module/sub-biller/get-sub-biller?${query}`, {
+        method: 'GET',
+      })
+    )
+    return rep
+  }
+
   /**
    * Get wallet transactions with pagination from PGW Module API
    */
@@ -106,5 +126,6 @@ export const usePgwModuleApi = () => {
     getTopUpSummary,
     getFeeSummary,
     getWalletTransactions,
+    getSubBillers,
   }
 }

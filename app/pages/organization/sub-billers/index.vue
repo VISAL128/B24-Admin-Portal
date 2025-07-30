@@ -1,21 +1,10 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-4">
     <!-- Table -->
-    <!-- <UTable
-        ref="table"
-        :data="filteredData"
-        :columns="columns"
-        sticky
-        class="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-      >
-        <template #empty>
-          <TableEmptyState />
-        </template>
-      </UTable> -->
     <BaseTable
-      :data="filteredData"
+      :data="suppliers"
       :columns="columns"
-      table-id="transaction-history-table"
+      table-id="sub-billers-table"
       border-class="border-gray-200 dark:border-gray-700"
       @filter-change="handleFilterChange"
       @row-click="(row) => navigateToDetails(row.id)"
@@ -24,93 +13,77 @@
         ({ start, end }) => {
           startDate = start
           endDate = end
-          fetchTransactionHistory()
+          fetchSubBiller()
         }
       "
+      :page="page"
+      :page-size="pageSize.value"
+      :total="total"
+      :total-page="totalPage"
+      @update:page="
+        (val) => {
+          page = val
+        }
+      "
+      @update:pageSize="
+        (val) => {
+          pageSize.value = val
+          page = 1
+        }
+      "
+      :show-date-filter="false"
     >
       <template #empty>
         <TableEmptyState />
       </template>
     </BaseTable>
-
-    <!-- Table Footer -->
-    <div class="flex items-center justify-between px-1 py-1 text-sm text-muted">
-      <span>
-        {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }}
-        {{ t('row_selected') }}
-      </span>
-      <div class="flex items-center gap-4">
-        <!-- <USelect
-            v-model="pageSize"
-            :options="[{label: '10', value: 10}, {label: '25', value: 25}, {label: '50', value: 50}, {label: '100', value: 100}]"
-            class="w-24"
-            @change="onPageSizeChange"
-          /> -->
-        <USelectMenu
-          v-model="pageSize"
-          :items="DEFAULT_PAGE_SIZE_OPTIONS"
-          class="w-24"
-          :search-input="false"
-          @change="onPageSizeChange"
-        />
-        <UPagination
-          v-model="page"
-          :page-size-options="[10, 25, 50, 100]"
-          :page-count="totalPage"
-          :items-per-page="pageSize.value"
-          :total="total"
-          v-on:update:page="page = $event"
-        />
-      </div>
-    </div>
-    <TransactionDetailDrawer
-      :model-value="showTransactionDrawer"
-      :transaction-id="selectedTransactionId ?? ''"
-      @update:modelValue="(val) => (showTransactionDrawer = val)"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 const showSidebar = ref(false)
 const selectedRecord = ref<SettlementHistoryRecord | null>(null)
+const filters = ref<{ field: string; operator: string; value: string; manualFilter?: boolean }[]>(
+  []
+)
 
 definePageMeta({
   auth: false,
-  breadcrumbs: [{ label: 'Sub Billers', active: true }],
+  breadcrumbs: [{ label: 'sub_biller', to: '/transactions' }],
 })
-import { h, ref, computed, onMounted, shallowRef, watch, resolveComponent } from 'vue'
-import { useRouter } from 'vue-router'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import type { SettlementHistoryRecord, SettlementHistoryQuery, Supplier } from '~/models/settlement'
+import type { DropdownMenuItem } from '@nuxt/ui'
+import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import StatusBadge from '~/components/StatusBadge.vue'
+import TableEmptyState from '~/components/TableEmptyState.vue'
+import BaseTable from '~/components/tables/BaseTable.vue'
+import type { BaseTableColumn } from '~/components/tables/table'
+import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
   exportToPDFStyled,
   exportToPDFWithUnicodeSupport,
 } from '~/composables/utils/exportUtils'
-import { useI18n } from 'vue-i18n'
-import TableEmptyState from '~/components/TableEmptyState.vue'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
-import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn } from '~/components/tables/table'
-import { getPDFHeaders } from '~/composables/utils/pdfFonts'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import TransactionDetailDrawer from '~/components/TransactionDetailDrawer.vue'
-import StatusBadge from '~/components/StatusBadge.vue'
-import { DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
+import type { SubBillerQuery } from '~/models/subBiller'
+import type { Supplier } from '~/models/supplier'
+import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useTable } from '~/composables/utils/useTable'
+// const { createSortableHeader, createRowNumberCell } = useTable<Supplier>()
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-const showTransactionDrawer = ref(false)
-const selectedTransactionId = ref<string | null>(null)
 const { t, locale } = useI18n()
-const { getSettlementHistory } = useSupplierApi()
+const { getSubBillers } = usePgwModuleApi()
 const errorHandler = useErrorHandler()
 const table = ref<InstanceType<typeof BaseTable> | null>(null)
 
@@ -119,19 +92,18 @@ const allRows = computed(() => table.value?.getAllRows() ?? [])
 const router = useRouter()
 const toast = useToast()
 const notification = useNotification()
-const pref = useUserPreferences().getPreferences()
 
 const page = ref(1)
 const pageSize = ref<{ label: string; value: number }>({
-  label: pref?.defaultPageSize.toString() || DEFAULT_PAGE_SIZE.label,
-  value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
+  label: '10',
+  value: 10,
 })
 const total = ref(0)
 const totalPage = ref(0)
 const search = ref('')
 const startDate = ref('')
 const endDate = ref('')
-const transactions = ref<TransactionHistoryRecord[]>([])
+const suppliers = ref<Supplier[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
 
@@ -147,6 +119,8 @@ const selectedDateFilter = ref({
   label: t('this_month'),
   value: 'this_month',
 })
+
+// ...existing code for watchers, functions, etc...
 // Watch and convert modelValue to string ISO
 watch(modelValue, (val) => {
   startDate.value =
@@ -155,17 +129,29 @@ watch(modelValue, (val) => {
   endDate.value =
     val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) ||
     new CalendarDate(today.getFullYear(), today.getMonth(), 30).toString()
-  fetchTransactionHistory()
+  fetchSubBiller()
 })
 
 // Watch pagination
-watch([page, pageSize], () => {
-  fetchTransactionHistory()
+watch([page, pageSize.value], () => {
+  fetchSubBiller()
 })
 
 watch(search, () => {
-  page.value = 1 // Reset to first page on search
-  fetchTransactionHistory()
+  page.value = 1
+
+  // Apply search filter
+  filters.value = [
+    ...filters.value.filter((f) => f.field !== 'search'),
+    {
+      field: 'search',
+      operator: 'contains',
+      value: search.value,
+      manualFilter: false,
+    },
+  ]
+
+  fetchSubBiller()
 })
 
 const onDateFilterChange = (payload: { label: string; value: string }) => {
@@ -181,57 +167,23 @@ const onDateFilterChange = (payload: { label: string; value: string }) => {
   }
 }
 
-// Fetch settlement data from API
-const fetchTransactionHistory = async () => {
-  loading.value = true
+async function fetchSubBiller() {
   try {
-    const banks = ['ABA', 'Acleda', 'AMK'] as const
-    const subBillers = [
-      'Cambodia Electric Co.',
-      'Smart Axiata',
-      'Cellcard',
-      'Ezecom',
-      'Metfone',
-      'Sabay Digital',
-      'Foodpanda Cambodia',
-      'Nham24',
-      'Kerry Express',
-      'J&T Express',
-      'B-Hub Technology',
-      'Phnom Penh Water Supply',
-      'City Gas Cambodia',
-      'Total Energies Cambodia',
-      'ISPP International School',
-    ]
-    const fullData: TransactionHistoryRecord[] = Array.from({ length: 100 }, (_, i) => ({
-      id: `txn-${i + 1}`,
-      created_date: new Date(Date.now() - i * 86400000),
-      bank_ref: `BANKREF-${i + 1000}`,
-      collection_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_type: i % 2 === 0 ? 'Auto' : 'Manual',
-      total_amount: 1000000 + i * 5000,
-      currency_id: i % 2 === 0 ? 'USD' : 'KHR',
-      status: ['completed', 'pending', 'failed'][i % 3] as string,
-      settled_by: `User ${i + 1}`,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4],
-      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)],
-    }))
+    const payload: SubBillerQuery & { Filter?: string } = {
+      PageIndex: page.value,
+      PageSize: pageSize.value.value,
+    }
 
-    // ✅ Paging
-    const pageStart = (page.value - 1) * pageSize.value.value
-    const pageEnd = pageStart + pageSize.value.value
-    const pagedData = fullData.slice(pageStart, pageEnd)
+    if (filters.value.length > 0) {
+      payload.Filter = JSON.stringify(filters.value) // ✅ use raw JSON string
+    }
 
-    transactions.value = pagedData
-    total.value = fullData.length
-    totalPage.value = Math.ceil(fullData.length / pageSize.value.value)
-  } catch (error: any) {
-    console.error('Error loading dummy data:', error.message)
-    errorMsg.value = error.message || 'Failed to load transaction history.'
-    errorHandler.handleApiError(error)
-  } finally {
-    loading.value = false
+    const data = await getSubBillers(payload)
+    suppliers.value = data.result
+    total.value = data?.param.rowCount ?? 0
+    totalPage.value = data?.param.pageCount
+  } catch (error) {
+    console.error('fetchSubBiller error:', error)
   }
 }
 
@@ -239,13 +191,6 @@ const onPageSizeChange = () => {
   page.value = 1
   // fetchSettlementHistory()
 }
-
-// Filtered rows for table
-const filteredData = computed(() =>
-  transactions.value.filter((item) =>
-    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
-  )
-)
 
 onBeforeMount(() => {
   // Get last day of current month
@@ -255,7 +200,7 @@ onBeforeMount(() => {
   endDate.value = new CalendarDate(
     today.getFullYear(),
     today.getMonth() + 1,
-    lastDayOfMonth // Use last day of month
+    lastDayOfMonth
   ).toString()
   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
@@ -263,7 +208,7 @@ onBeforeMount(() => {
 
 // Initial load
 onMounted(() => {
-  fetchTransactionHistory()
+  fetchSubBiller()
 })
 
 const onGenerateSettlement = () => {
@@ -272,8 +217,7 @@ const onGenerateSettlement = () => {
 
 // Handle navigation to details page
 const navigateToDetails = (rowId: string) => {
-  selectedTransactionId.value = rowId
-  showTransactionDrawer.value = true
+  router.push(`/transactions/detail/${rowId}`)
 }
 
 const exportHeaders = [
@@ -289,12 +233,13 @@ const exportHeaders = [
 const pdfExportHeaders = computed(() => getPDFHeaders(t))
 
 const exportToExcelHandler = async () => {
+  // ...existing export logic...
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
       selectedRows.length > 0
         ? selectedRows.map((row: { original: any }) => row.original)
-        : filteredData.value
+        : suppliers.value
 
     if (dataToExport.length === 0) {
       toast.add({
@@ -369,12 +314,13 @@ const exportToExcelHandler = async () => {
 }
 
 const exportToPDFHandler = async () => {
+  // ...existing export logic...
   try {
     const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
     const dataToExport =
       selectedRows.length > 0
         ? selectedRows.map((row: { original: any }) => row.original)
-        : filteredData.value
+        : suppliers.value
     if (dataToExport.length === 0) {
       toast.add({
         title: t('no_data_to_export'),
@@ -450,6 +396,7 @@ const exportToPDFHandler = async () => {
     })
   }
 }
+
 const exportItems = ref<DropdownMenuItem[]>([
   {
     label: t('pdf'),
@@ -526,147 +473,150 @@ const columns: BaseTableColumn<any>[] = [
     maxSize: 30,
     enableSorting: false,
   },
-  // { accessorKey: "id", header: t("Settlement ID") },
   {
-    id: 'created_date',
-    accessorKey: 'created_date',
-    header: t('date'),
-    cell: ({ row }) =>
-      // Format date to DD/MM/YYYY
-      useFormat().formatDateTime(row.original.created_date),
-  },
-  {
-    id: 'bank_ref',
-    accessorKey: 'bank_ref',
-    header: t('bank_ref'),
-  },
-  {
-    id: 'collection_bank',
-    accessorKey: 'collection_bank',
-    header: t('collection_bank'),
-  },
-  {
-    id: 'settlement_bank',
-    accessorKey: 'settlement_bank',
-    header: t('settlement_bank'),
-  },
-  {
-    id: 'settlement_type',
-    accessorKey: 'settlement_type',
-    header: t('settlement_type'),
-  },
-  // { accessorKey: 'total_supplier', header: t('Total Supplier') },
-  {
-    id: 'total_amount',
-    accessorKey: 'total_amount',
-    header: () => h('div', { class: 'text-right' }, t('total_amount')),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
-      ),
-  },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: t('settlement.currency'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'USD', value: 'USD' },
-      { label: 'KHR', value: 'KHR' },
-    ],
-    enableSorting: true,
-  },
-  {
-    id: 'transaction_type',
-    accessorKey: 'transaction_type',
-    header: t('transaction_type'),
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'Wallet Top up', value: 'Wallet Top up' },
-      { label: 'Deeplink / Checkout', value: 'Deeplink / Checkout' },
-      { label: 'Wallet Payment', value: 'Wallet Payment' },
-      { label: 'QR Pay', value: 'QR Pay' },
-    ],
-  },
-  {
-    id: 'sub_biller',
-    accessorKey: 'sub_biller',
-    header: t('sub_biller'),
-    enableSorting: true,
-  },
+    id: 'syncCode',
+    accessorKey: 'syncCode',
+    header: t('code'),
 
-  // { id: 'created_by', accessorKey: 'created_by', header: t('settled_by') },
-  {
-    id: 'status',
-    accessorKey: 'status', // optional if you need sorting/filtering
-    header: t('status.header'),
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('completed'), value: 'completed' },
-      { label: t('pending'), value: 'pending' },
-      { label: t('failed'), value: 'failed' },
-    ],
-    cell: ({ row }: any) =>
-      h(StatusBadge, {
-        status: row.original.status,
-        variant: 'table',
-        size: 'sm',
-      }),
-    // cell: ({ row }) => {
-    //   // return h('span', {
-    //   //   class: `text-sm font-medium`
-    //   // }, `Total: ${row.original.total_Settled}`)
-
-    //   const success = row.original.success
-    //   const fail = row.original.fail
-    //   const total = row.original.total_settled
-
-    //   const UBadge = resolveComponent('UBadge')
-    //   const Icon = resolveComponent('UIcon')
-
-    //   return h('div', { class: 'flex gap-2 items-center' }, [
-    //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-    //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-    //     //   h('span', {}, total)
-    //     // ]),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'primary',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [
-    //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-    //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
-    //       ]
-    //     ),
-    //     // Success and Fail badges
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'success',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-    //     ),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'error',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
-    //     ),
-    //   ])
-    // },
+    // header: ({ column }) => createSortableHeader(column, t('code')),
+    // cell: ({ row }) =>
+    //   // Format date to DD/MM/YYYY
+    //   useFormat().formatDateTime(row.original.created_date),
   },
+  {
+    id: 'name',
+    accessorKey: 'name',
+    header: t('name'),
+  },
+  {
+    id: 'address',
+    accessorKey: 'address',
+    header: t('settlement.generate.form.address'),
+  },
+  // {
+  //   id: 'collection_bank',
+  //   accessorKey: 'collection_bank',
+  //   header: t('collection_bank'),
+  // },
+  // {
+  //   id: 'settlement_bank',
+  //   accessorKey: 'settlement_bank',
+  //   header: t('settlement_bank'),
+  // },
+  // {
+  //   id: 'settlement_type',
+  //   accessorKey: 'settlement_type',
+  //   header: t('settlement_type'),
+  // },
+  // {
+  //   id: 'total_amount',
+  //   accessorKey: 'total_amount',
+  //   header: () => h('div', { class: 'text-right' }, t('total_amount')),
+  //   cell: ({ row }) =>
+  //     h(
+  //       'div',
+  //       { class: 'text-right' },
+  //       useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
+  //     ),
+  // },
+  // {
+  //   id: 'currency_id',
+  //   accessorKey: 'currency_id',
+  //   header: t('settlement.currency'),
+  //   enableColumnFilter: true,
+  //   filterOptions: [
+  //     { label: 'USD', value: 'USD' },
+  //     { label: 'KHR', value: 'KHR' },
+  //   ],
+  //   enableSorting: true,
+  // },
+  // {
+  //   id: 'transaction_type',
+  //   accessorKey: 'transaction_type',
+  //   header: t('transaction_type'),
+  //   enableSorting: true,
+  //   enableColumnFilter: true,
+  //   filterOptions: [
+  //     { label: 'Wallet Top up', value: 'Wallet Top up' },
+  //     { label: 'Deeplink / Checkout', value: 'Deeplink / Checkout' },
+  //     { label: 'Wallet Payment', value: 'Wallet Payment' },
+  //     { label: 'QR Pay', value: 'QR Pay' },
+  //   ],
+  // },
+  // {
+  //   id: 'sub_biller',
+  //   accessorKey: 'sub_biller',
+  //   header: t('sub_biller'),
+  //   enableSorting: true,
+  // },
+  // {
+  //   id: 'status',
+  //   accessorKey: 'status',
+  //   header: t('status.header'),
+  //   enableSorting: true,
+  //   enableColumnFilter: true,
+  //   filterOptions: [
+  //     { label: t('completed'), value: 'completed' },
+  //     { label: t('pending'), value: 'pending' },
+  //     { label: t('failed'), value: 'failed' },
+  //   ],
+  //   cell: ({ row }: any) =>
+  //     h(StatusBadge, {
+  //       status: row.original.status,
+  //       variant: 'subtle',
+  //       size: 'sm',
+  //     }),
+  // cell: ({ row }) => {
+  //   // return h('span', {
+  //   //   class: `text-sm font-medium`
+  //   // }, `Total: ${row.original.total_Settled}`)
+
+  //   const success = row.original.success
+  //   const fail = row.original.fail
+  //   const total = row.original.total_settled
+
+  //   const UBadge = resolveComponent('UBadge')
+  //   const Icon = resolveComponent('UIcon')
+
+  //   return h('div', { class: 'flex gap-2 items-center' }, [
+  //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
+  //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
+  //     //   h('span', {}, total)
+  //     // ]),
+  //     h(
+  //       UBadge,
+  //       {
+  //         color: 'primary',
+  //         variant: 'subtle',
+  //         class: 'flex items-center gap-1',
+  //       },
+  //       () => [
+  //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
+  //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
+  //       ]
+  //     ),
+  //     // Success and Fail badges
+  //     h(
+  //       UBadge,
+  //       {
+  //         color: 'success',
+  //         variant: 'subtle',
+  //         class: 'flex items-center gap-1',
+  //       },
+  //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
+  //     ),
+  //     h(
+  //       UBadge,
+  //       {
+  //         color: 'error',
+  //         variant: 'subtle',
+  //         class: 'flex items-center gap-1',
+  //       },
+  //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
+  //     ),
+  //   ])
+  // },
+  // },
   // Add an action column for viewing details
   // {
   //   id: 'actions',

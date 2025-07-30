@@ -7,6 +7,7 @@ export const useTable = <_T>() => {
   const pageSize = ref(10)
   const total = ref(0)
   const totalPage = ref(0)
+  const sortState = ref<{ [columnId: string]: 'asc' | 'desc' | null }>({})
 
   const pagination = computed(() => ({
     page: page.value,
@@ -26,10 +27,9 @@ export const useTable = <_T>() => {
   const createSortableHeader = (
     column: any,
     label: string,
-    alignment: 'left' | 'center' | 'right' = 'left'
+    alignment: 'left' | 'center' | 'right' = 'left',
+    onSortChange?: (order: 'asc' | 'desc' | null) => void
   ) => {
-    const isSorted = column.getIsSorted()
-
     const alignmentClasses = {
       left: 'justify-start text-left',
       center: 'justify-center text-center',
@@ -37,17 +37,27 @@ export const useTable = <_T>() => {
     }
 
     const handleSort = () => {
-      const currentSort = column.getIsSorted()
-      if (currentSort === false) {
-        // None -> Asc
+      const columnId = column.id
+      const current = sortState.value[columnId] || null
+      if (current === null) {
+        sortState.value[columnId] = 'asc'
         column.toggleSorting(false)
-      } else if (currentSort === 'asc') {
-        // Asc -> Desc
+      } else if (current === 'asc') {
+        sortState.value[columnId] = 'desc'
         column.toggleSorting(true)
       } else {
-        // Desc -> None
+        sortState.value[columnId] = null
         column.clearSorting()
       }
+
+      onSortChange?.(sortState.value[columnId])
+    }
+
+    const getIcon = () => {
+      const columnId = column.id
+      if (sortState.value[columnId] === 'asc') return 'i-solar:sort-from-top-to-bottom-bold'
+      if (sortState.value[columnId] === 'desc') return 'i-solar:sort-from-bottom-to-top-outline'
+      return 'i-lucide-arrow-up-down'
     }
 
     return h('div', { class: `w-full ${alignmentClasses[alignment]}` }, [
@@ -55,11 +65,7 @@ export const useTable = <_T>() => {
         color: 'neutral',
         variant: 'ghost',
         label,
-        icon: isSorted
-          ? isSorted === 'asc'
-            ? 'i-solar:sort-from-top-to-bottom-bold'
-            : 'i-solar:sort-from-bottom-to-top-outline'
-          : 'i-solar:sort-vertical-outline',
+        icon: getIcon(),
         class: `w-auto tb-h-text gap-1.5 font-bold`,
         size: 'xs',
         onClick: handleSort,

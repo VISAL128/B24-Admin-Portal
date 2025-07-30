@@ -12,6 +12,7 @@
   "fee_name": "Fee Name",
   "name": "Name",
   "fee_type": "Fee Type",
+  "fee_already_exists": "This fee already exists",
   "allocate_details": "Allocate Details",
   "welcome": "Welcome to Bill24 Management Portal",
   "add_fee": "Add Fee",
@@ -69,7 +70,23 @@
     "empty_state_message": "No data available.",
     "loading": "Loading...",
     "no_records_found": "No records found",
-    "search_placeholder": "Search..."
+    "search_placeholder": "Search...",
+    "column_config": {
+      "tooltip": "Hide/Show Columns",
+      "reset": "Reset",
+      "reset_description": "Reset columns and sorting to defaults",
+      "columns": "Columns"
+      },
+    "settlement-history": {
+      "columns": {
+        "created_date": "Settlement Date",
+        "total_amount": "Total Amount",
+        "currency_id": "Currency",
+        "total_settled": "Transaction",
+        "status": "Status",
+        "created_by": "Settled By"
+      }
+    }
   },
   "status": {
     "all": "All status",
@@ -372,14 +389,16 @@
     "settings": "Settings",
     "developer_tools": "Developer Tools"
   },
-  "settlement_history": {
+  "fee_configs": {
     "columns": {
-      "created_date": "Settlement Date",
-      "total_amount": "Total Amount",
-      "currency_id": "Currency",
-      "total_settled": "Transaction",
-      "status": "Status",
-      "created_by": "Settled By"
+      "row_number": "Row Number",
+      "name": "Name",
+      "actions": "Actions",
+      "code": "Code",
+      "fee_name": "Fee Name",
+      "currency": "Currency",
+      "fee_type": "Fee Type",
+      "sharing": "Sharing Fee"
     },
     "column_config": {
       "tooltip": "Hide/Show Columns",
@@ -699,6 +718,8 @@
   "settlement_type": "Settlement Type",
   "date": "Date",
   "sort_by": "Sort by",
+  "ascending": "Ascending",
+  "descending": "Descending",
   "clear": "Clear",
   "all": "All",
   "transaction_summary": "Transaction Summary",
@@ -707,6 +728,7 @@
   "this_month": "This Month",
   "this_year": "This Year",
   "sub_biller": "Sub Biller",
+  "overview": "Overview",
   "lottie": {
     "library_not_found": "Lottie animation library not available",
     "install_instruction": "Run: npm install lottie-web"
@@ -715,5 +737,69 @@
     "transaction": {
       "title": "Transaction"
     }
-  }
+  },
+  "banks": {
+    "title": "Banks",
+    "subtitle": "Manage bank information and configurations",
+    "search_placeholder": "Search by bank code, name, or SWIFT code...",
+    "add_bank": "Add Bank",
+    "edit_bank": "Edit Bank",
+    "view_bank": "View Bank",
+    "delete_bank": "Delete Bank",
+    "bank_code": "Bank Code",
+    "bank_name": "Bank Name",
+    "bank_short_name": "Short Name",
+    "swift_code": "SWIFT Code",
+    "description": "Description",
+    "country_code": "Country",
+    "currency_code": "Currency",
+    "is_settlement_bank": "Settlement Bank",
+    "is_collection_bank": "Collection Bank",
+    "account_number": "Account Number",
+    "account_name": "Account Name",
+    "branch_name": "Branch Name",
+    "branch_code": "Branch Code",
+    "contact_person": "Contact Person",
+    "contact_phone": "Contact Phone",
+    "contact_email": "Contact Email",
+    "address": "Address",
+    "logo_url": "Logo URL",
+    "website_url": "Website URL",
+    "is_active": "Active",
+    "created_at": "Created At",
+    "updated_at": "Updated At",
+    "created_by": "Created By",
+    "updated_by": "Updated By",
+    "settlement_banks": "Settlement Banks",
+    "collection_banks": "Collection Banks",
+    "bank_details": "Bank Details",
+    "contact_information": "Contact Information",
+    "account_information": "Account Information",
+    "general_information": "General Information",
+    "toggle_status": "Toggle Status",
+    "activate_bank": "Activate Bank",
+    "deactivate_bank": "Deactivate Bank",
+    "confirm_delete": "Are you sure you want to delete this bank?",
+    "confirm_activate": "Are you sure you want to activate this bank?",
+    "confirm_deactivate": "Are you sure you want to deactivate this bank?",
+    "bank_created": "Bank created successfully",
+    "bank_updated": "Bank updated successfully",
+    "bank_deleted": "Bank deleted successfully",
+    "bank_activated": "Bank activated successfully",
+    "bank_deactivated": "Bank deactivated successfully",
+    "no_banks_found": "No banks found",
+    "loading_banks": "Loading banks...",
+    "filter_settlement": "Settlement Banks Only",
+    "filter_collection": "Collection Banks Only",
+    "filter_active": "Active Banks Only",
+    "filter_country": "Filter by Country",
+    "filter_currency": "Filter by Currency",
+    "all_banks": "All Banks",
+    "total_banks": "Total Banks",
+    "bank_not_found_desc": "The requested bank could not be found.",
+    "bank_created_desc": "Bank {name} has been created successfully."
+  },
+  "additional_information": "Additional Information",
+  "metadata": "Metadata",
+  "back": "Back"
 }

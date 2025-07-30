@@ -72,11 +72,16 @@ interface KeycloakJwtPayload extends JwtPayload {
  * Extract Authorization token from request headers
  */
 async function extractToken(event: H3Event): Promise<string | null> {
-  const session = await getUserSession(event)
+  try {
+    const session = await getUserSession(event)
 
-  if (!session?.accessToken) return null
+    if (!session?.accessToken) return null
 
-  return session.accessToken
+    return session.accessToken
+  }catch (error) {
+    console.error('❌ Error extracting token:', error)
+    return null
+  }
 }
 
 /**

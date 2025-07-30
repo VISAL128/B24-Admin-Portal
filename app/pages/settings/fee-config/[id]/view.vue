@@ -19,7 +19,7 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const feeConfigApi = useFeeConfigApi()
-const {  formatAmount } = useHelper()
+const { formatAmount } = useHelper()
 
 const feeModel = ref<FeeModel>({
   code: '',
@@ -112,7 +112,7 @@ onMounted(() => {
                   <h2 class="text-lg text-primary font-semibold dark:text-white flex items-center">
                     {{ t('view_fee_detail') }}
                   </h2>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {{ t('view_fee_detail_description') }}
                   </p>
                 </div>
@@ -123,48 +123,48 @@ onMounted(() => {
           <!-- Basic Information -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('code') }}
               </label>
               <div
                 class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-sm text-gray-900 dark:text-gray-100">{{ feeModel.code }}</span>
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{ feeModel.code }}</span>
               </div>
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('fee_name') }}
               </label>
               <div
                 class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-sm text-gray-900 dark:text-gray-100">{{ feeModel.name }}</span>
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{ feeModel.name }}</span>
               </div>
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('fee_type') }}
               </label>
               <div
                 class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-sm text-gray-900 dark:text-gray-100">{{
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{
                   getFeeTypeLabel(feeModel.fee_type)
                 }}</span>
               </div>
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {{ t('currency') }}
               </label>
               <div
                 class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"
               >
-                <span class="text-sm text-gray-900 dark:text-gray-100">{{
+                <span class="text-xs text-gray-900 dark:text-gray-100">{{
                   feeModel.currency
                 }}</span>
               </div>
@@ -190,17 +190,17 @@ onMounted(() => {
                   <thead class="bg-gray-100 dark:bg-gray-800">
                     <tr>
                       <th
-                        class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider"
+                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider"
                       >
                         {{ t('start_amount') }}
                       </th>
                       <th
-                        class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider"
+                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider"
                       >
                         {{ t('end_amount') }}
                       </th>
                       <th
-                        class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider"
+                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider"
                       >
                         {{ t('fee_amount') }}
                       </th>
@@ -214,21 +214,21 @@ onMounted(() => {
                       :key="index"
                       class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
-                      <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
                             ? `${formatAmount(feeDetail.start_amount, feeModel.currency, { showSymbol: false })}`
                             : formatCurrency(feeDetail.start_amount, feeModel.currency)
                         }}
                       </td>
-                      <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
                             ? `${formatAmount(feeDetail.end_amount, feeModel.currency, { showSymbol: false })}`
                             : formatCurrency(feeDetail.end_amount, feeModel.currency)
                         }}
                       </td>
-                      <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
                           // formatAmount(
                           //   feeDetail.fee_amount,
@@ -283,12 +283,12 @@ onMounted(() => {
                   <thead class="bg-gray-100 dark:bg-gray-800">
                     <tr>
                       <th
-                        class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider"
+                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider"
                       >
                         {{ t('name') }}
                       </th>
                       <th
-                        class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider"
+                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider"
                       >
                         {{ t('fee_amount') }}
                       </th>
@@ -302,10 +302,10 @@ onMounted(() => {
                       :key="index"
                       class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
-                      <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{ sharing.name }}
                       </td>
-                      <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td class="px-4 py-3 text-xs text-gray-900 dark:text-gray-100">
                         {{
                           feeModel.fee_type === 'percentage'
                             ? `${sharing.value}%`
@@ -328,10 +328,10 @@ onMounted(() => {
         <div
           class="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-gray-200 dark:border-gray-700"
         >
-          <UButton color="primary" variant="outline" @click="router.back()">
+          <UButton color="primary" size="xs" variant="outline" @click="router.back()">
             {{ t('back') }}
           </UButton>
-          <UButton color="primary" icon="i-lucide-edit" @click="editFeeConfig">
+          <UButton color="primary" size="xs" icon="i-lucide-edit" @click="editFeeConfig">
             {{ t('edit') }}
           </UButton>
         </div>

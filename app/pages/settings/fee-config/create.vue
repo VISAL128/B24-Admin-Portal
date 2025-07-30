@@ -184,7 +184,7 @@ const saveFee = async () => {
     } else {
       toast.add({
         title: t('error'),
-        description: t('failed_to_create_fee'),
+        description: t('fee_already_exists'),
         color: 'error',
       })
       return
@@ -322,14 +322,6 @@ onMounted(async () => {
 
   // Add additional allocate details from sharing suppliers
   feeModel.value.allocate_details.push(...getAllocateList)
-
-  feeModel.value.allocate_details.push({
-    editable: true,
-    party_id: 'default',
-    name: t('default_sharing'),
-    party_type: 2,
-    value: 50,
-  })
 
   // Initialize based on default fee type
   if (feeModel.value.fee_type === 'fixed') {
@@ -476,25 +468,25 @@ const handleFeeAmountInput = (event: Event, index: number) => {
 }
 
 // Add validation for end amount changes
-const handleEndAmountInput = (event: Event, index: number) => {
-  const target = event.target as HTMLInputElement
-  const numValue = parseFloat(target.value)
-  const feeDetail = feeModel.value.fee_details[index]
+// const handleEndAmountInput = (event: Event, index: number) => {
+//   const target = event.target as HTMLInputElement
+//   const numValue = parseFloat(target.value)
+//   const feeDetail = feeModel.value.fee_details[index]
 
-  if (!isNaN(numValue) && feeDetail) {
-    feeDetail.end_amount = numValue
+//   if (!isNaN(numValue) && feeDetail) {
+//     feeDetail.end_amount = numValue
 
-    // Check if fee amount is now >= end amount for fixed type
-    if (feeModel.value.fee_type === 'fixed' && feeDetail.fee_amount >= numValue) {
-      toast.add({
-        title: t('validation_error'),
-        description: t('fee_amount_adjusted_due_to_end_amount_change'),
-        color: 'warning',
-      })
-      feeDetail.fee_amount = Math.max(0, numValue - 1)
-    }
-  }
-}
+//     // Check if fee amount is now >= end amount for fixed type
+//     if (feeModel.value.fee_type === 'fixed' && feeDetail.fee_amount >= numValue) {
+//       toast.add({
+//         title: t('validation_error'),
+//         description: t('fee_amount_adjusted_due_to_end_amount_change'),
+//         color: 'warning',
+//       })
+//       feeDetail.fee_amount = Math.max(0, numValue - 1)
+//     }
+//   }
+// }
 
 // Handle fee detail type change (fixed/percentage)
 const handleFeeDetailTypeChange = (index: number, value: string) => {
@@ -544,7 +536,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                     >
                       {{ t('title_create_fee') }}
                     </h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p class="text-xxs text-gray-500 dark:text-gray-400 mt-1">
                       {{ t('description_create_fee') }}
                     </p>
                   </div>
@@ -556,7 +548,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
               <!-- Code Field -->
               <div class="space-y-2">
                 <label
-                  class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300"
+                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
                 >
                   {{ t('code') }}
                   <span class="text-red-500 ml-1">*</span>
@@ -566,6 +558,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                   :placeholder="t('enter_fee_code')"
                   :error="!!errors.code"
                   required
+                  size="sm"
                   class="transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent w-full"
                 />
               </div>
@@ -573,7 +566,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
               <!-- Name Field -->
               <div class="space-y-2">
                 <label
-                  class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300"
+                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
                 >
                   {{ t('fee_name') }}
                   <span class="text-red-500 ml-1">*</span>
@@ -583,11 +576,12 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                   :placeholder="t('enter_fee_name')"
                   :error="!!errors.name"
                   required
+                  size="sm"
                   class="transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent w-full"
                 />
                 <p
                   v-if="errors.name"
-                  class="text-sm text-red-600 dark:text-red-400 flex items-center"
+                  class="text-xxs text-red-600 dark:text-red-400 flex items-center"
                 >
                   <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path
@@ -605,7 +599,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
               <!-- Fee Type -->
               <div class="space-y-2">
                 <label
-                  class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300"
+                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
                 >
                   {{ t('fee_type') }}
                   <!-- <span class="text-red-500 ml-1">*</span> -->
@@ -614,13 +608,15 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                   v-model="feeTypeSelection"
                   :items="feeTypeOptions"
                   :placeholder="t('select_fee_type')"
+                  :search-input="false"
                   option-attribute="label"
                   value-attribute="value"
+                  size="sm"
                   class="transition-all duration-200 w-full"
                 />
                 <p
                   v-if="errors.fee_type"
-                  class="text-sm text-red-600 dark:text-red-400 flex items-center"
+                  class="text-xxs text-red-600 dark:text-red-400 flex items-center"
                 >
                   <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path
@@ -635,7 +631,9 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
 
               <!-- Currency -->
               <div class="space-y-2">
-                <label class="flex items-center font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
+                >
                   {{ t('currency') }}
                   <!-- <span class="text-red-500 ml-1">*</span> -->
                 </label>
@@ -643,13 +641,15 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                   v-model="currencySelection"
                   :items="currencyOptions"
                   :placeholder="t('select_currency')"
+                  :search-input="false"
                   option-attribute="label"
                   value-attribute="value"
+                  size="sm"
                   class="transition-all duration-200 w-full"
                 />
                 <p
                   v-if="errors.currency"
-                  class="text-sm text-red-600 dark:text-red-400 flex items-center"
+                  class="text-xxs text-red-600 dark:text-red-400 flex items-center"
                 >
                   <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path
@@ -694,23 +694,23 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('start_amount') }}
                         </th>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('end_amount') }}
                         </th>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('fee_amount') }}
                         </th>
                         <th
                           v-if="feeModel.fee_type === 'percentage'"
-                          class="px-4 py-3 text-center text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider w-16"
+                          class="px-4 py-3 text-center text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider w-16"
                         >
                           {{ t('actions') }}
                         </th>
@@ -734,6 +734,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                             type="text"
                             :readonly="feeModel.fee_type === 'fixed' && index === 0"
                             class="w-full"
+                            size="sm"
                             @input="handleAmountInput($event, index, 'start_amount')"
                             @keypress="!readonly && handleNumericKeyPress($event)"
                           />
@@ -748,6 +749,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                             "
                             type="text"
                             class="w-full"
+                            size="sm"
                             @input="handleAmountInput($event, index, 'end_amount')"
                             @keypress="handleNumericKeyPress($event)"
                           />
@@ -772,6 +774,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                                   : formatAmount(1093, feeModel.currency, { showSymbol: false })
                               "
                               class="flex-1"
+                              size="sm"
                               @input="handleFeeAmountInput($event, index)"
                             />
                             <USelectMenu
@@ -794,6 +797,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                               value-attribute="value"
                               :search-input="false"
                               class="w-24"
+                              size="sm"
                               @update:model-value="handleFeeDetailTypeChange(index, $event.value)"
                             />
                           </div>
@@ -847,12 +851,12 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('name') }}
                         </th>
                         <th
-                          class="px-4 py-3 text-left text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+                          class="px-4 py-3 text-left text-xxs font-bold text-gray-500 dark:text-gray-400 tracking-wider"
                         >
                           {{ t('fee_amount') }}
                         </th>
@@ -868,7 +872,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                       >
                         <td class="px-4 py-3">
                           <div
-                            class="px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
+                            class="px-3 py-1.5 text-xxs bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
                           >
                             <span v-if="sharing.name.includes('(')">
                               {{ sharing.name.split('(')[0] }}
@@ -880,6 +884,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                         <td class="px-4 py-3">
                           <UInput
                             v-model="sharing.value"
+                            size="sm"
                             type="number"
                             :step="feeModel.fee_type === 'percentage' ? '0.01' : '0.01'"
                             :max="feeModel.fee_type === 'percentage' ? 100 : undefined"
@@ -887,7 +892,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                             :trailing-icon="
                               feeModel.fee_type === 'percentage' ? 'i-lucide-percent' : undefined
                             "
-                            class="w-full text-sm"
+                            class="w-full text-xxs"
                             @input="handleSharingValueInput($event, index)"
                             @keypress="handleNumericKeyPress"
                           />
@@ -903,7 +908,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                 </div>
               </div>
               <!-- Note about Set value fee of Charge fees -->
-              <!-- <div class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              <!-- <div class="text-xxs text-gray-500 dark:text-gray-400 mt-2">
                 <p><strong>Note:</strong> The fee value is set to match the charge fees.</p>
               </div> -->
             </div>
@@ -916,6 +921,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
             <UButton
               color="primary"
               variant="outline"
+              size="xs"
               class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
               @click="router.back()"
             >
@@ -926,6 +932,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
               type="submit"
               :loading="saving"
               :disabled="!isFormValid"
+              size="xs"
               class="hover:scale-105 transition-transform duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <template v-if="!saving" #leading>

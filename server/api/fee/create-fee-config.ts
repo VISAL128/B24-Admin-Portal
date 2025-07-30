@@ -21,6 +21,14 @@ export default defineEventHandler(async (event): Promise<ApiResponse<FeeModel | 
         data: null,
       }
     }
+    if (response.code !== 'SUCCESS') {
+      return {
+        code: response.code,
+        message: response.message || 'Failed to create fee config',
+        data: null,
+      }
+    }
+
     return {
       code: 'SUCCESS',
       message: 'Success',
