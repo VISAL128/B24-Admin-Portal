@@ -132,7 +132,7 @@
         <UPopover>
           <UTooltip
             key="column-config-tooltip"
-            :text="t('settlement_history.column_config.tooltip')"
+            :text="t('table.column_config.tooltip')"
             :delay-duration="200"
             placement="top"
             ><UButton variant="ghost" class="p-2">
