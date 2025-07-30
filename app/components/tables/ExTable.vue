@@ -2,8 +2,7 @@
 <template>
   <!-- Unified Card Container -->
   <div
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow p-0 flex flex-col h-full overflow-auto"
-  >
+    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow p-0 flex flex-col h-full overflow-auto">
     <!-- Filter / Sort / Column Configuration -->
     <div class="flex justify-between flex-wrap items-start gap-4 flex-shrink-0 mb-2 pt-2 px-3">
       <!-- 🔍 Filter Buttons -->
@@ -11,19 +10,13 @@
         <div class="flex flex-wrap items-center gap-2">
           <!-- <UInput v-model="search" :placeholder="t('table.search_placeholder')" class="w-64" /> -->
           <ExSearch
-            v-model="search"
-            :placeholder="t('table.search_placeholder')"
-            class="w-64"
-            @search="debouncedFetchData"
-          />
+v-model="search" :placeholder="t('table.search_placeholder')" class="w-64"
+            @clear="debouncedFetchData" @keyup.enter="debouncedFetchData" />
           <template v-if="showDateFilter">
             <UPopover>
               <UButton
-                color="neutral"
-                variant="subtle"
-                icon="i-lucide-calendar"
-                class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700"
-              >
+color="neutral" variant="subtle" size="sm" icon="material-symbols:calendar-month-outline-rounded"
+                class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700">
                 <template v-if="modelValue.start">
                   <template v-if="modelValue.end">
                     {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
@@ -37,7 +30,6 @@
                   {{ t('pick_a_date') }}
                 </template>
               </UButton>
-
               <template #content>
                 <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
               </template>
@@ -45,76 +37,56 @@
           </template>
 
           <UPopover v-if="showFilterButton" v-model:open="showAdvancedOptions">
-            <UButton variant="ghost" class="p-2 relative">
-              <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
-              <span
-                v-if="activeFilterCount > 0"
-                class="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center"
-              >
-                {{ activeFilterCount }}
-              </span>
-            </UButton>
+            <UTooltip :text="t('table.filters')" :delay-duration="200">
+              <UButton variant="ghost" class="p-2 relative">
+                <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
+                <span
+  v-if="activeFilterCount > 0"
+                  class="absolute -top-0.5 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {{ activeFilterCount }}
+                </span>
+              </UButton>
+            </UTooltip>
             <template #content>
               <div
-                class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-4 min-w-[200px] space-y-4"
-              >
+                class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-2 min-w-[200px] space-y-4 min-h-48">
                 <!-- Column Filters -->
                 <div class="space-y-2">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Filters</h4>
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ t('table.filters') }}</h4>
                   <div class="space-y-2">
                     <template v-for="col in filteredColumns" :key="col.id">
                       <template v-if="col.enableColumnFilter">
-                        <USelectMenu
-                          :model-value="{
-                            label: columnFilters[col.id] || getColumnLabel(col),
+                        <template v-if="'filterType' in col && col.filterType === 'status'">
+                          <StatusSelection
+                            :model-value="selectedStatuses"
+                            :multiple="true"
+                            :available-statuses="col.filterValues || []"
+                            :include-all-statuses="false"
+                            :placeholder="t('settlement.select_status')"
+                            :searchable="false"
+                          />
+                        </template>
+                        <template v-else>
+                          <USelectMenu
+:model-value="{
+                            label: columnFilters[col.id] ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`) : t(`table.${props.tableId}.columns.${col.id}`) || getColumnLabel(col),
                             value: columnFilters[col.id] || '',
-                          }"
-                          :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
-                          option-attribute="label"
-                          value-attribute="value"
-                          class="w-full"
-                          :search-input="false"
-                          @update:model-value="
-                            (val) => {
-                              columnFilters[col.id] = val?.value || ''
-                              emit('filter-change', col.id, columnFilters[col.id] || '')
-                            }
-                          "
-                        />
+                          }" :default-value="{ label: t('all'), value: '' }"
+                            :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
+                            option-attribute="label" value-attribute="value" size="sm" class="w-full"
+                            :search-input="false" 
+                            @update:model-value="
+                              (val) => {
+                                columnFilters[col.id] = val?.value || ''
+                                emit('filter-change', col.id, columnFilters[col.id] || '')
+                              }
+                            " />
+                        </template>
+
                       </template>
                     </template>
                   </div>
                 </div>
-                <!-- Sort Select Menu -->
-                <!-- <div class="space-y-2">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Sort By</h4>
-                  <USelectMenu
-                    :model-value="{
-                      label: selectedSortLabel || t('sort_by'),
-                      value: selectedSortField
-                        ? `${selectedSortField}:${selectedSortDirection}`
-                        : '',
-                      icon: selectedSortField
-                        ? selectedSortDirection === 'asc'
-                          ? 'i-lucide-arrow-up'
-                          : 'i-lucide-arrow-down'
-                        : '',
-                    }"
-                    :items="sortMenuItems"
-                    option-attribute="label"
-                    value-attribute="value"
-                    class="w-full"
-                    :search-input="false"
-                    @update:modelValue="handleSortMenuChange"
-                  >
-                    <template #item="{ item }">
-                      <div class="flex items-center justify-between w-full">
-                        <span>{{ item.label }}</span>
-                        <UIcon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
-                      </div>
-                    </template>
-                  </USelectMenu>
-                </div> -->
               </div>
             </template>
           </UPopover>
@@ -123,100 +95,51 @@
 
       <!-- ⚙️ Column Configuration -->
       <div class="flex justify-end items-center gap-2">
-        <ExportButton
-          :data="filteredData"
-          :headers="exportHeaders"
-          :export-options="resolvedExportOptions"
-        />
+        <ExportButton :data="filteredData" :headers="exportHeaders" :export-options="resolvedExportOptions" />
 
         <UPopover>
-          <UTooltip
-            key="column-config-tooltip"
-            :text="t('table.column_config.tooltip')"
-            :delay-duration="200"
-            placement="top"
-            ><UButton variant="ghost" class="p-2">
-              <UIcon
-                name="icon-park-outline:setting-config"
-                size="sm"
-                class="text-gray-900 dark:text-white"
-              /> </UButton
-          ></UTooltip>
+          <template #default>
+            <UTooltip
+key="column-config-tooltip" :text="t('table.column_config.tooltip')" :delay-duration="200"
+              placement="top">
+              <UButton variant="ghost" class="p-2">
+                <UIcon name="icon-park-outline:setting-config" size="sm" class="text-gray-900 dark:text-white" />
+              </UButton>
+            </UTooltip>
+          </template>
 
           <template #content>
-            <!-- <div
-              class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-4 min-w-[200px] space-y-2"
-            >
-              <div
-                v-for="option in columnOptions"
-                :key="option.value"
-                class="flex items-center gap-2"
-              >
-                <input
-                  :id="`col-${option.value}`"
-                  v-model="visibleColumnIds"
-                  type="checkbox"
-                  :value="option.value"
-                />
-                <label :for="`col-${option.value}`">{{ option.label }}</label>
-              </div>
-              <button
-                class="mt-2 text-xs text-blue-600 underline"
-                type="button"
-                @click="resetColumns"
-              >
-                Reset Columns
-              </button>
-            </div> -->
-            <div class="p-2 space-y-1 min-w-50">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-medium text-muted">{{
+            <div class="space-y-1 min-w-50">
+              <div class="flex items-center justify-between px-2 pt-2">
+                <span class="text-sm font-medium">{{
                   t('table.column_config.columns')
-                }}</span>
-                <!-- <UButton variant="solid" class="text-muted" size="xs" @click="onResetColumnConfig">
-                  {{ t('settlement_history.column_config.reset') }}
-                </UButton> -->
-                <UTooltip
-                  :text="t('table.column_config.reset')"
-                  :delay-duration="500"
-                  :open-delay="500"
-                  :close-delay="200"
-                  placement="top"
-                  :default-open="false"
-                >
-                  <UButton
-                    variant="ghost"
-                    class="text-muted hover:text-primary"
-                    size="sm"
-                    @click="resetColumns"
-                  >
-                    <UIcon
-                      name="material-symbols:replay-rounded"
-                      size="sm"
-                      class="text-muted hover:text-primary"
-                    />
-                  </UButton>
-                </UTooltip>
+                  }}</span>
               </div>
               <Divider />
-              <UCheckbox
-                v-for="col in columnConfig"
-                :id="col.id"
-                :key="col.id"
-                :label="getTranslationHeaderById(col.id)"
-                :model-value="col.getIsVisible()"
-                class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                size="sm"
-                @update:model-value="
+              <div class="flex flex-col gap-1 px-2">
+                <UCheckbox
+v-for="col in columnConfig" :id="col.id" :key="col.id"
+                  :label="getTranslationHeaderById(col.id)" :model-value="col.getIsVisible()"
+                  :ui="appConfig.ui.checkbox.slots" variant="list"
+                  class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700" size="sm"
+                  @update:model-value="
                   (value) => {
                     col.toggleVisibility(value as boolean)
-                    // columnVisibility[col.id] = value as boolean
-                    // saveColumnVisibility()
+                    columnVisibility[col.id] = value as boolean
                   }
-                "
-              />
+                " />
               </div>
-            
+              <Divider />
+              <div class="flex justify-end px-2 pb-2">
+                <UButton
+variant="outline" class="text-muted" size="xs" color="neutral"
+                  @click="onResetColumnVisibility">
+                  <template #default>
+                    {{ t('table.column_config.reset') }}
+                  </template>
+                </UButton>
+              </div>
+            </div>
           </template>
         </UPopover>
       </div>
@@ -226,18 +149,11 @@
     <div class="flex-1 min-h-0 flex flex-col">
       <div class="flex-1 overflow-hidden">
         <UTable
-          :key="filteredColumns.length + '-' + visibleColumnIds.join(',')"
-          ref="tableRef"
-          :data="filteredData"
-          :columns="filteredColumns"
-          :sort="sortState"
-          sticky
+:key="props.tableId" ref="tableRef" :data="filteredData" :columns="filteredColumns"
+          :column-visibility="columnVisibility" :sort="sortState" sticky
           class="single-line-headers w-full h-full bg-white dark:bg-gray-800"
           :class="borderClass ? borderClass : 'border border-gray-200 dark:border-gray-700'"
-          :ui="appConfig.ui.table.slots"
-          @update:sort="handleSortChange"
-          @select="onSelect"
-        >
+          :ui="appConfig.ui.table.slots" @update:sort="handleSortChange" @select="onSelect">
           <template #cell="{ row, column }">
             <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
               <span class="block">
@@ -259,13 +175,11 @@
 
     <!-- 📄 Pagination and Page Size -->
     <div
-      class="flex items-center justify-between py-1 text-sm text-muted flex-shrink-0 mt-2 pb-2 px-3"
-      :class="{
+class="flex items-center justify-between py-1 text-sm text-muted flex-shrink-0 mt-2 pb-2 px-3" :class="{
         'justify-between':
           (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
         'justify-end': (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length <= 0,
-      }"
-    >
+      }">
       <div v-if="(tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0">
         <span>
           {{ tableRef?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
@@ -275,22 +189,11 @@
 
       <div class="flex items-center gap-4">
         <USelectMenu
-          v-model="pageSize"
-          :items="DEFAULT_PAGE_SIZE_OPTIONS"
-          size="sm"
-          class="w-24"
-          :search-input="false"
-          @update:model-value="(val) => (pageSize = val)"
-        />
+v-model="pageSize" :items="DEFAULT_PAGE_SIZE_OPTIONS" size="sm" class="w-24" :search-input="false"
+          @update:model-value="(val) => (pageSize = val)" />
         <UPagination
-          :model-value="internalPage"
-          :page-count="internalTotalPage"
-          :items-per-page="pageSize.value"
-          :total="internalTotal"
-          size="sm"
-          :ui="appConfig.ui.pagination.slots"
-          @update:page="handlePageChange"
-        />
+:model-value="internalPage" :page-count="internalTotalPage" :items-per-page="pageSize.value"
+          :total="internalTotal" size="sm" :ui="appConfig.ui.pagination.slots" @update:page="handlePageChange" />
       </div>
     </div>
   </div>
@@ -306,6 +209,7 @@ import ExportButton from '../buttons/ExportButton.vue'
 import appConfig from '~~/app.config'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import { useTableConfig } from '~/composables/utils/useTableConfig'
 
 export interface ExportOptions {
   fileName?: string
@@ -317,18 +221,37 @@ export interface ExportOptions {
   totalAmount?: number
 }
 
-// const selectedSortFieldLabel = computed(() => {
-//   return (
-//     sortableColumnOptions.value.find((opt) => opt.value === selectedSortField.value)?.label ?? ''
-//   )
-// })
+// Use table configuration composable
+const tableConfig = useTableConfig()
 
-// const sortDirectionLabel = computed(() => {
-//   return (
-//     sortDirectionOptions.find((opt) => opt.value === selectedSortDirection.value)?.label ??
-//     t('ascending')
-//   )
-// })
+const defaultColumnVisibility = ref<Record<string, boolean>>({})
+
+// Initialize column visibility from localStorage or defaults
+const initializeColumnVisibility = (): Record<string, boolean> => {
+  const savedConfig = tableConfig.getColumnConfig(props.tableId)
+  return savedConfig || defaultColumnVisibility.value
+}
+
+// Initialize column filters from localStorage or defaults
+const initializeColumnFilters = (): Record<string, string> => {
+  const savedFilters = tableConfig.getColumnFilters(props.tableId)
+  return savedFilters || {}
+}
+
+const columnVisibility = ref<Record<string, boolean>>({})
+const columnFilters = ref<Record<string, string>>({})
+
+const saveColumnVisibility = () => {
+  tableConfig.saveColumnConfig(props.tableId, columnVisibility.value)
+}
+
+const saveColumnFilters = () => {
+  tableConfig.saveColumnFilters(props.tableId, columnFilters.value)
+  if (import.meta.env.DEV) console.log(`💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
+}
+
+watch(columnVisibility, saveColumnVisibility, { deep: true })
+watch(columnFilters, saveColumnFilters, { deep: true })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columnConfig = computed((): any[] => {
@@ -360,6 +283,10 @@ const pageSize = ref<{ label: string; value: number }>({
   label: pref?.defaultPageSize ? pref?.defaultPageSize.toString() : DEFAULT_PAGE_SIZE.label,
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
+
+const selectedStatuses = ref<{label: string; value: string}[]>([
+  { label: 'all', value: '' },
+])
 
 // const selectedSortLabel = computed(() => {
 //   const col = sortableColumnOptions.value.find((c) => c.value === selectedSortField.value)
@@ -472,22 +399,10 @@ const resolvedExportOptions = computed(() => ({
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tableRef = ref<any>(null)
-const storageKey = computed(() => `base-table-columns:${props.tableId}`)
+const tableRef = useTemplateRef<any>('tableRef')
 const allColumnIds = computed(() =>
   columnsWithRowNumber.value.map((col) => col.id).filter((id): id is string => !!id)
 )
-
-const visibleColumnIds = ref<string[]>([])
-
-// const columnOptions = computed(() =>
-//   columnsWithRowNumber.value
-//     .filter((col) => !!col.id)
-//     .map((col) => ({
-//       label: getColumnLabel(col),
-//       value: col.id!,
-//     }))
-// )
 
 const debouncedFetchData = debounce(() => {
   if (props.fetchDataFn) {
@@ -533,7 +448,7 @@ function onSelect(row: TableRow<T>, _e?: Event) {
 }
 
 function getColumnFilterOptions(col: BaseTableColumn<T>) {
-  if (col.filterOptions) return col.filterOptions
+  if (col.filterOptions) return col.filterOptions.filter((opt) => opt.value.trim() !== '' && opt.value.trim() !== 'all')
 
   const key = col.accessorKey ?? col.id
   if (!key) return []
@@ -571,6 +486,12 @@ const handlePageChange = async (val: number) => {
 
 const filteredColumns = computed(() => {
   const columns = columnsWithRowNumber.value
+  const visibleColumnIds = computed(() =>
+    columnConfig.value
+      .filter((col) => col.getIsVisible())
+      .map((col) => col.id)
+      .filter((id): id is string => !!id)
+  )
 
   // If no visible ids are selected, fallback to showing all
   if (visibleColumnIds.value.length === 0 && allColumnIds.value.length > 0) {
@@ -582,8 +503,6 @@ const filteredColumns = computed(() => {
     return visibleColumnIds.value.includes(col.id)
   })
 })
-
-const columnFilters = ref<Record<string, string>>({})
 
 // Add this computed property to detect if there's a selection column
 const hasSelectionColumn = computed(() => {
@@ -622,33 +541,37 @@ const columnsWithRowNumber = computed(() => {
   }
 })
 
-onMounted(() => {
-  const saved = localStorage.getItem(storageKey.value)
+onBeforeMount(() => {
+  // Get last day of current month
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+  // Set default date range to current month
+  startDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1).toString()
+  endDate.value = new CalendarDate(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    lastDayOfMonth
+  ).toString()
+  modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
+  modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
+})
 
-  if (saved) {
-    // ✅ Use only the user's saved config
-    visibleColumnIds.value = JSON.parse(saved)
-  } else {
-    // ✅ First time only — show all columns
-    visibleColumnIds.value = [...allColumnIds.value]
-  }
+onMounted(() => {
+  defaultColumnVisibility.value = props.columns.reduce((acc, col) => {
+    if (col.id) {
+      acc[col.id] = true // Default to visible
+    }
+    return acc
+  }, {} as Record<string, boolean>)
+
+  columnVisibility.value = initializeColumnVisibility()
+  columnFilters.value = initializeColumnFilters()
+  
+  console.log(`🔄 Initialized table ${props.tableId} with saved filters:`, columnFilters.value)
 
   // Fetch initial data if fetchDataFn is provided
   if (props.fetchDataFn) {
     fetchData()
   }
-})
-
-watch(
-  visibleColumnIds,
-  (val) => {
-    localStorage.setItem(storageKey.value, JSON.stringify(val))
-  },
-  { deep: true }
-)
-
-watch(search, () => {
-  debouncedFetchData()
 })
 
 watch(modelValue, (val) => {
@@ -661,9 +584,12 @@ watch(modelValue, (val) => {
   }
 })
 
-const resetColumns = () => {
-  tableRef.value?.tableApi?.resetColumnVisibility?.()
-  visibleColumnIds.value = [...allColumnIds.value]
+const onResetColumnVisibility = () => {
+  // Reset table API columns
+  tableRef?.value?.tableApi?.resetColumnVisibility()
+  columnVisibility.value = { ...defaultColumnVisibility.value }
+  // Reset column filters as well
+  columnFilters.value = {}
 }
 
 defineExpose({

@@ -159,7 +159,7 @@ onMounted(() => {
 
             <div class="space-y-2">
               <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                {{ t('currency') }}
+                {{ t('currency.label') }}
               </label>
               <div
                 class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 h-8 flex items-center"

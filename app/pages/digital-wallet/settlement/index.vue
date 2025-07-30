@@ -220,10 +220,12 @@
       </template>
     </UTable> -->
     <TablesExTable
+    ref="table"
       :columns="columns"
       :table-id="TABLE_ID"
       :fetch-data-fn="fetchSettlementForTable"
       show-row-number
+      show-date-filter
       @row-click="handleViewDetails"
     />
 
@@ -718,6 +720,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
         ]
       ),
     enableSorting: false,
+    enableColumnFilter: false,
     enableHiding: false,
     meta: {
       class: {
@@ -821,6 +824,12 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     //   const statusClass = status === 'completed' ? 'text-green-500' : 'text-red-500'
     //   return h('span', { class: `text-xs font-medium ${statusClass}` }, t(`status.${status}`))
     // },
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: availableStatuses.value.map((status) => ({
+      label: getTranslatedStatusLabel(status),
+      value: status,
+    })),
   },
   {
     id: 'currency_id',

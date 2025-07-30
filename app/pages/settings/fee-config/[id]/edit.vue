@@ -518,7 +518,7 @@ onMounted(() => {
               <label
                 class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
               >
-                {{ t('currency') }}
+                {{ t('currency.label') }}
               </label>
               <USelectMenu
                 v-model="currencySelection"

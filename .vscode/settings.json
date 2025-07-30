@@ -9,5 +9,8 @@
   },
   "vue.enable": true,
   "volar.takeOverMode.enabled": false,
-  "git.ignoreLimitWarning": true
+  "git.ignoreLimitWarning": true,
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  }
 }
