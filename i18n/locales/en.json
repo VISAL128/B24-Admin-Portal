@@ -70,7 +70,23 @@
     "empty_state_message": "No data available.",
     "loading": "Loading...",
     "no_records_found": "No records found",
-    "search_placeholder": "Search..."
+    "search_placeholder": "Search...",
+    "column_config": {
+      "tooltip": "Hide/Show Columns",
+      "reset": "Reset",
+      "reset_description": "Reset columns and sorting to defaults",
+      "columns": "Columns"
+      },
+    "settlement-history": {
+      "columns": {
+        "created_date": "Settlement Date",
+        "total_amount": "Total Amount",
+        "currency_id": "Currency",
+        "total_settled": "Transaction",
+        "status": "Status",
+        "created_by": "Settled By"
+      }
+    }
   },
   "status": {
     "all": "All status",
@@ -339,22 +355,6 @@
       "currency": "Currency",
       "fee_type": "Fee Type",
       "sharing": "Sharing Fee"
-    },
-    "column_config": {
-      "tooltip": "Hide/Show Columns",
-      "reset": "Reset",
-      "reset_description": "Reset columns and sorting to defaults",
-      "columns": "Columns"
-    }
-  },
-  "settlement_history": {
-    "columns": {
-      "created_date": "Settlement Date",
-      "total_amount": "Total Amount",
-      "currency_id": "Currency",
-      "total_settled": "Transaction",
-      "status": "Status",
-      "created_by": "Settled By"
     },
     "column_config": {
       "tooltip": "Hide/Show Columns",
@@ -674,6 +674,8 @@
   "settlement_type": "Settlement Type",
   "date": "Date",
   "sort_by": "Sort by",
+  "ascending": "Ascending",
+  "descending": "Descending",
   "clear": "Clear",
   "all": "All",
   "transaction_summary": "Transaction Summary",

@@ -342,22 +342,7 @@
     "profile": "ប្រវត្តិរូប",
     "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
   },
-  "settlement_history": {
-    "columns": {
-      "created_date": "កាលបរិច្ឆេទទូទាត់",
-      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-      "currency_id": "រូបិយប័ណ្ណ",
-      "total_settled": "ប្រតិបត្តិការ",
-      "status": "ស្ថានភាព",
-      "created_by": "ទូទាត់ដោយ"
-    },
-    "column_config": {
-      "tooltip": "លាក់/បង្ហាញជួរឈរ",
-      "reset": "កំណត់ឡើងវិញ",
-      "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
-      "columns": "ជួរឈរ"
-    }
-  },
+  
   "settlement": {
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
@@ -527,9 +512,24 @@
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
-    "search_placeholder": "ស្វែងរក..."
+    "search_placeholder": "ស្វែងរក...",
+    "column_config": {
+        "tooltip": "លាក់/បង្ហាញជួរឈរ",
+        "reset": "កំណត់ឡើងវិញ",
+        "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
+        "columns": "ជួរឈរ"
+      },
+    "settlement-history": {
+      "columns": {
+        "created_date": "កាលបរិច្ឆេទទូទាត់",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "total_settled": "ប្រតិបត្តិការ",
+        "status": "ស្ថានភាព",
+        "created_by": "ទូទាត់ដោយ"
+      }
+    }
   },
-
   "no_permission": {
     "title": "ការចូលត្រូវបានកំណត់",
     "access_denied": "បដិសេធការចូល",
@@ -759,5 +759,8 @@
   },
   "additional_information": "ព័ត៌មានបន្ថែម",
   "metadata": "ទិន្នន័យមេតា",
-  "back": "ត្រលប់"
+  "back": "ត្រលប់",
+  "ascending": "តាមលំដាប់ឡើង",
+  "descending": " តាមលំដាប់ចុះ",
+  "clear": "សម្អាត"
 }
