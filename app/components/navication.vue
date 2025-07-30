@@ -87,13 +87,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
           to: '/organization/banks',
           active: activeStates.value.banks,
         },
-        // {
-        //   label: t('navigation.sub_billers'),
-        //   // icon: 'i-material-symbols-light:article-person',
-        //   size: 'lg',
-        //   to: '/organization/sub-billers',
-        //   active: activeStates.value.subBillers,
-        // },
+        {
+          label: t('navigation.sub_billers'),
+          // icon: 'i-material-symbols-light:article-person',
+          size: 'lg',
+          to: '/organization/sub-billers',
+          active: activeStates.value.subBillers,
+        },
         // {
         //   label: t('navigation.users'),
         //   // icon: 'i-material-symbols-light-group',
