@@ -79,8 +79,8 @@
       "processing": "Processing"
     },
     "currency_id": {
-      "usd": "USD - US Dollar",
-      "khr": "KHR - Cambodian Riel"
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
     }
   },
   "table": {

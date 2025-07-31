@@ -79,8 +79,7 @@
                 </UTooltip>
                 <!-- Language Switcher -->
                 <UTooltip :text="t('navbar.language')" :delay-duration="500">
-                  <div>
-                    <UPopover placement="bottom-end" :offset="[0, 10]">
+                  <UPopover v-model:open="isLanguagePopoverOpen" placement="bottom-end" :offset="[0, 10]">
                       <UButton
                         icon="material-symbols:language"
                         variant="ghost"
@@ -100,6 +99,7 @@
                             @click="
                               () => {
                                 setLanguage('en')
+                                isLanguagePopoverOpen = false
                               }
                             "
                             >🇬🇧
@@ -121,6 +121,7 @@
                             @click="
                               () => {
                                 setLanguage('km')
+                                isLanguagePopoverOpen = false
                               }
                             "
                             >🇰🇭
@@ -134,7 +135,6 @@
                         </div>
                       </template>
                     </UPopover>
-                  </div>
                 </UTooltip>
 
                 <!-- Setting -->
@@ -323,6 +323,7 @@ const isNavExpanded = ref(true)
 // Permission checking state
 const isCheckingPermissions = ref(false)
 const isShowLogoutConfirmModal = ref(false)
+const isLanguagePopoverOpen = ref(false)
 
 const auth = useAuth()
 const user = auth.user

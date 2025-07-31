@@ -10,6 +10,7 @@ export default defineAppConfig({
       slots: {
         td: 'text-xxs py-3 cursor-pointer',
         th: 'tb-h-text py-2',
+        tbody: 'bg-default',
         thead: 'bg-default',
         tr: 'border-b border-default data-[selected=true]:bg-elevated/50',
       },

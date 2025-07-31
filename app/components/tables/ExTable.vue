@@ -2,7 +2,7 @@
 <template>
   <!-- Unified Card Container -->
   <div
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow p-0 flex flex-col h-full overflow-auto">
+    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto">
     <!-- Filter / Sort / Column Configuration -->
     <div class="flex justify-between flex-wrap items-start gap-4 flex-shrink-0 mb-2 pt-2 px-3">
       <!-- 🔍 Filter Buttons -->
@@ -41,7 +41,7 @@ color="neutral" variant="subtle" size="sm" icon="material-symbols:calendar-month
               <UButton variant="ghost" class="p-2 relative">
                 <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
                 <span
-  v-if="activeFilterCount > 0"
+v-if="activeFilterCount > 0"
                   class="absolute -top-0.5 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                   {{ activeFilterCount }}
                 </span>
@@ -49,42 +49,58 @@ color="neutral" variant="subtle" size="sm" icon="material-symbols:calendar-month
             </UTooltip>
             <template #content>
               <div
-                class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md overflow-hidden p-2 min-w-[200px] space-y-4 min-h-48">
+                class="rounded-lg shadow-md overflow-hidden py-2 min-w-[200px] space-y-4 min-h-48 max-h-96">
                 <!-- Column Filters -->
-                <div class="space-y-2">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ t('table.filters') }}</h4>
-                  <div class="space-y-2">
-                    <template v-for="col in filteredColumns" :key="col.id">
-                      <template v-if="col.enableColumnFilter">
-                        <template v-if="'filterType' in col && col.filterType === 'status'">
-                          <StatusSelection
-                            :model-value="selectedStatuses"
-                            :multiple="true"
-                            :available-statuses="col.filterValues || []"
-                            :include-all-statuses="false"
-                            :placeholder="t('settlement.select_status')"
-                            :searchable="false"
-                          />
-                        </template>
-                        <template v-else>
-                          <USelectMenu
+                <div class="space-y-2 flex flex-col min-h-48 h-full">
+                  <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">{{
+                    t('table.filters') }}</h4>
+                  <div class="flex flex-col flex-1 gap-2">
+                    <Divider />
+                    <div class="space-y-2 px-2 flex flex-col flex-1 min-h-0">
+                      <template v-for="col in filteredColumns" :key="col.id">
+                        <template v-if="col.enableColumnFilter">
+                          <template v-if="'filterType' in col && col.filterType === 'status'">
+                            <StatusSelection
+:model-value="selectedStatuses" :multiple="true"
+                              :available-statuses="col.filterValues || []" :include-all-statuses="false"
+                              :placeholder="t('settlement.select_status')" :searchable="false" />
+                          </template>
+                          <template v-else>
+                            <USelectMenu
 :model-value="{
-                            label: columnFilters[col.id] ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`) : t(`table.${props.tableId}.columns.${col.id}`) || getColumnLabel(col),
-                            value: columnFilters[col.id] || '',
-                          }" :default-value="{ label: t('all'), value: '' }"
-                            :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
-                            option-attribute="label" value-attribute="value" size="sm" class="w-full"
-                            :search-input="false" 
-                            @update:model-value="
-                              (val) => {
-                                columnFilters[col.id] = val?.value || ''
-                                emit('filter-change', col.id, columnFilters[col.id] || '')
-                              }
-                            " />
-                        </template>
+                              label: columnFilters[col.id] ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`) : t(`table.${props.tableId}.columns.${col.id}`) || getColumnLabel(col),
+                              value: columnFilters[col.id] || '',
+                            }" :default-value="{ label: t('all'), value: '' }"
+                              :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
+                              option-attribute="label" value-attribute="value" size="sm" class="w-full"
+                              :search-input="false" @update:model-value="
+                                (val) => {
+                                  columnFilters[col.id] = val?.value || ''
+                                  emit('filter-change', col.id, columnFilters[col.id] || '')
+                                }
+                              " />
+                          </template>
 
+                        </template>
                       </template>
-                    </template>
+                    </div>
+                    <Divider />
+                  </div>
+                  <div class="flex flex-wrap justify-end px-2">
+                    <UButton
+variant="link" size="xs" color="primary" class="underline" :ui="{
+                      ...appConfig.ui.button.slots,
+                      leadingIcon: 'shrink-0 size-3 text-muted',
+                    }" @click="() => {
+                      columnFilters = {}
+                      emit('filter-change', '', '')
+                      // showAdvancedOptions = false
+                    }">
+
+                      <template #default>
+                        {{ t('table.column_config.reset') }}
+                      </template>
+                    </UButton>
                   </div>
                 </div>
               </div>
@@ -123,17 +139,19 @@ v-for="col in columnConfig" :id="col.id" :key="col.id"
                   :ui="appConfig.ui.checkbox.slots" variant="list"
                   class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700" size="sm"
                   @update:model-value="
-                  (value) => {
-                    col.toggleVisibility(value as boolean)
-                    columnVisibility[col.id] = value as boolean
-                  }
-                " />
+                    (value) => {
+                      col.toggleVisibility(value as boolean)
+                      columnVisibility[col.id] = value as boolean
+                    }
+                  " />
               </div>
               <Divider />
               <div class="flex justify-end px-2 pb-2">
                 <UButton
-variant="outline" class="text-muted" size="xs" color="neutral"
-                  @click="onResetColumnVisibility">
+variant="link" size="xs" color="primary" class="underline" :ui="{
+                  ...appConfig.ui.button.slots,
+                  leadingIcon: 'shrink-0 size-3 text-muted',
+                }" @click="onResetColumnVisibility">
                   <template #default>
                     {{ t('table.column_config.reset') }}
                   </template>
@@ -149,11 +167,20 @@ variant="outline" class="text-muted" size="xs" color="neutral"
     <div class="flex-1 min-h-0 flex flex-col">
       <div class="flex-1 overflow-hidden">
         <UTable
-:key="props.tableId" ref="tableRef" :data="filteredData" :columns="filteredColumns"
-          :column-visibility="columnVisibility" :sort="sortState" sticky
-          class="single-line-headers w-full h-full bg-white dark:bg-gray-800"
-          :class="borderClass ? borderClass : 'border border-gray-200 dark:border-gray-700'"
-          :ui="appConfig.ui.table.slots" @update:sort="handleSortChange" @select="onSelect">
+          :key="props.tableId" 
+          ref="tableRef" 
+          :data="filteredData" 
+          :columns="filteredColumns"
+          :column-visibility="columnVisibility"
+          :sort="sortState"
+          :loading="loading"
+          :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+          :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
+          sticky
+          class="single-line-headers w-full h-full bg-default border-y border-gray-200 dark:border-gray-700"
+          :ui="{ ...appConfig.ui.table.slots, tbody: 'bg-default' }"
+          @update:sort="handleSortChange" 
+          @select="onSelect">
           <template #cell="{ row, column }">
             <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
               <span class="block">
@@ -165,10 +192,6 @@ variant="outline" class="text-muted" size="xs" color="neutral"
           <template #empty>
             <TableEmptyState />
           </template>
-
-          <template #footer />
-
-          <slot />
         </UTable>
       </div>
     </div>
@@ -176,10 +199,10 @@ variant="outline" class="text-muted" size="xs" color="neutral"
     <!-- 📄 Pagination and Page Size -->
     <div
 class="flex items-center justify-between py-1 text-sm text-muted flex-shrink-0 mt-2 pb-2 px-3" :class="{
-        'justify-between':
-          (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
-        'justify-end': (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length <= 0,
-      }">
+      'justify-between':
+        (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
+      'justify-end': (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length <= 0,
+    }">
       <div v-if="(tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0">
         <span>
           {{ tableRef?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
@@ -284,7 +307,7 @@ const pageSize = ref<{ label: string; value: number }>({
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
 
-const selectedStatuses = ref<{label: string; value: string}[]>([
+const selectedStatuses = ref<{ label: string; value: string }[]>([
   { label: 'all', value: '' },
 ])
 
@@ -365,7 +388,6 @@ const showFilterButton = computed(() => {
 const props = defineProps<{
   data?: T[]
   columns: BaseTableColumn<T>[]
-  borderClass?: string
   tableId: string
   exportOptions?: ExportOptions
   showDateFilter?: boolean
@@ -426,8 +448,8 @@ const exportHeaders = computed(() =>
       typeof col.header === 'string'
         ? col.header
         : (col.id ? String(col.id) : '')
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, (l) => l.toUpperCase()),
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, (l) => l.toUpperCase()),
   }))
 )
 
@@ -565,7 +587,7 @@ onMounted(() => {
 
   columnVisibility.value = initializeColumnVisibility()
   columnFilters.value = initializeColumnFilters()
-  
+
   console.log(`🔄 Initialized table ${props.tableId} with saved filters:`, columnFilters.value)
 
   // Fetch initial data if fetchDataFn is provided
