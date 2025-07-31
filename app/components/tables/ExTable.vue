@@ -107,19 +107,18 @@ variant="link" size="xs" color="primary" class="underline" :ui="{
             </template>
           </UPopover>
           <!-- Auto Refresh -->
-           <div v-if="props.enabledAutoRefresh" class="flex items-center gap-1">
-          <USwitch
-            v-model="autoRefresh"
-            :label="t('settlement.auto_refresh')"
-            checked-icon="material-symbols:sync"
-            unchecked-icon="material-symbols:sync-disabled"
-            size="sm"
-            class="ml-2"
-          />
-          <UTooltip :text="t('settlement.auto_refresh_desc')" :delay-duration="200" placement="top">
-            <UIcon name="material-symbols:info-outline" class="size-3.5" />
-          </UTooltip>
-        </div>
+          <div v-if="props.enabledAutoRefresh" class="flex items-center gap-1">
+            <USwitch
+              v-model="autoRefresh"
+              :label="t('settlement.auto_refresh')"
+              checked-icon="material-symbols:sync"
+              unchecked-icon="material-symbols:sync-disabled"
+              size="sm"
+            />
+            <UTooltip :text="t('settlement.auto_refresh_desc')" :delay-duration="200" placement="top">
+              <UIcon name="material-symbols:info-outline" class="size-3.5" />
+            </UTooltip>
+          </div>
         <UTooltip v-if="props.enabledAutoRefresh && !autoRefresh" :text="t('settlement.refresh')">
           <UIcon
             name="material-symbols:sync"
