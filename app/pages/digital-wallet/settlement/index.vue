@@ -220,10 +220,13 @@
       </template>
     </UTable> -->
     <TablesExTable
+    ref="table"
       :columns="columns"
       :table-id="TABLE_ID"
       :fetch-data-fn="fetchSettlementForTable"
       show-row-number
+      show-date-filter
+      enabled-auto-refresh
       @row-click="handleViewDetails"
     />
 
@@ -280,10 +283,10 @@ import { useTable } from '~/composables/utils/useTable'
 import { UButton } from '#components'
 import ExportButton from '~/components/buttons/ExportButton.vue'
 import ExSearch from '~/components/ExSearch.vue'
-import { DEFAULT_PAGE_SIZE } from '~/utils/constants'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
 import { SettlementHistoryStatus } from '~/utils/enumModel'
 import type { BaseTableColumn } from '~/components/tables/table'
 
@@ -657,7 +660,7 @@ onMounted(() => {
   }
 
   initializeStatusFilter()
-  fetchSettlementHistory()
+  // fetchSettlementHistory()
 })
 
 const onGenerateSettlement = () => {
@@ -718,6 +721,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
         ]
       ),
     enableSorting: false,
+    enableColumnFilter: false,
     enableHiding: false,
     meta: {
       class: {
@@ -821,6 +825,12 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     //   const statusClass = status === 'completed' ? 'text-green-500' : 'text-red-500'
     //   return h('span', { class: `text-xs font-medium ${statusClass}` }, t(`status.${status}`))
     // },
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: availableStatuses.value.map((status) => ({
+      label: getTranslatedStatusLabel(status),
+      value: status,
+    })),
   },
   {
     id: 'currency_id',

@@ -11,7 +11,7 @@ export const LOCAL_STORAGE_KEYS = {
   USER_PREFERENCES: 'user-preferences',
   SESSION_DATA: 'session-data',
   CACHE: 'cache',
-  TABLE_COLUMN_CONFIG: 'table-column-config',
+  TABLE_COLUMN_CONFIG: 'table-config',
 }
 
 export const DEFAULT_PAGE_SIZE = { label: '25', value: 25 }

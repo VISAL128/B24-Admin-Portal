@@ -4,7 +4,7 @@ import type {
   TableConfigStorage,
   TableConfigComposable,
 } from '~/types/table'
-import { LOCAL_STORAGE_KEYS } from '~/utils/constants'
+import { LOCAL_STORAGE_KEYS, DEFAULT_PAGE_SIZE } from '~/utils/constants'
 
 /**
  * Composable for managing table configuration (column visibility, page size, sorting, etc.)
@@ -59,6 +59,47 @@ export const useTableConfig = (): TableConfigComposable => {
       return allConfigs[tableId]?.columnVisibility || null
     } catch (error) {
       console.error(`❌ Failed to get column config for table ${tableId}:`, error)
+      return null
+    }
+  }
+
+  /**
+   * Save column filters configuration for a specific table
+   * @param tableId - Unique identifier for the table
+   * @param columnFilters - Object mapping column IDs to filter values
+   */
+  const saveColumnFilters = (tableId: string, columnFilters: Record<string, string>): boolean => {
+    try {
+      const allConfigs = getAllConfigs()
+
+      if (!allConfigs[tableId]) {
+        allConfigs[tableId] = { 
+          columnVisibility: {},
+          columnFilters 
+        }
+      } else {
+        allConfigs[tableId].columnFilters = columnFilters
+      }
+
+      const success = storage.setItem(getStorageKey(), allConfigs)
+
+      return success
+    } catch (error) {
+      console.error(`❌ Failed to save column filters for table ${tableId}:`, error)
+      return false
+    }
+  }
+
+  /**
+   * Get column filters configuration for a specific table
+   * @param tableId - Unique identifier for the table
+   */
+  const getColumnFilters = (tableId: string): Record<string, string> | null => {
+    try {
+      const allConfigs = getAllConfigs()
+      return allConfigs[tableId]?.columnFilters || null
+    } catch (error) {
+      console.error(`❌ Failed to get column filters for table ${tableId}:`, error)
       return null
     }
   }
@@ -276,6 +317,8 @@ export const useTableConfig = (): TableConfigComposable => {
   return {
     saveColumnConfig,
     getColumnConfig,
+    saveColumnFilters,
+    getColumnFilters,
     saveTableConfig,
     getTableConfig,
     resetTableConfig,

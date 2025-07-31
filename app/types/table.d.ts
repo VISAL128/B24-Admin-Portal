@@ -7,6 +7,7 @@ export interface TableColumnConfig {
 
 export interface TableConfiguration {
   columnVisibility: TableColumnConfig
+  columnFilters?: Record<string, string>
   pageSize?: number
   sortingState?: Array<{
     id: string
@@ -23,6 +24,8 @@ export interface TableConfigStorage {
 export interface TableConfigComposable {
   saveColumnConfig: (tableId: string, columnVisibility: TableColumnConfig) => boolean
   getColumnConfig: (tableId: string) => TableColumnConfig | null
+  saveColumnFilters: (tableId: string, columnFilters: Record<string, string>) => boolean
+  getColumnFilters: (tableId: string) => Record<string, string> | null
   saveTableConfig: (tableId: string, config: TableConfiguration) => boolean
   getTableConfig: (tableId: string) => TableConfiguration | null
   resetTableConfig: (tableId: string) => boolean

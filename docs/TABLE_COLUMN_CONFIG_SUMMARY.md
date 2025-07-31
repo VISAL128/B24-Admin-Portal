@@ -8,7 +8,7 @@ This implementation provides a **scalable and maintainable** solution for persis
 
 ### 1. **New Storage Key**
 
-- Added `TABLE_COLUMN_CONFIG: 'table-column-config'` to `LOCAL_STORAGE_KEYS`
+- Added `TABLE_COLUMN_CONFIG: 'table-config'` to `LOCAL_STORAGE_KEYS`
 - Centralized storage key management for consistency
 
 ### 2. **Type Definitions** (`types/table.d.ts`)
@@ -101,7 +101,7 @@ const resetColumns = () => {
 
 ```json
 {
-  "table-column-config": {
+  "table-config": {
     "settlement-history": {
       "columnVisibility": {
         "id": false,
@@ -121,7 +121,7 @@ const resetColumns = () => {
 ## 📚 Documentation
 
 - **📖 Complete Guide**: `docs/TABLE_COLUMN_CONFIGURATION.md`
-- **🎯 Implementation Example**: `docs/examples/table-column-config-example.vue`
+- **🎯 Implementation Example**: `docs/examples/table-config-example.vue`
 - **⚙️ Working Implementation**: `pages/digital-wallet/settlement/index.vue`
 
 ## 🔧 Maintenance Benefits

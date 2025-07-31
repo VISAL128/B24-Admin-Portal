@@ -66,7 +66,25 @@
     "english": "English",
     "khmer": "Khmer"
   },
+  "dynamic_filter": {
+    "status": {
+      "all": "All Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "completed": "Completed",
+      "failed": "Failed",
+      "success": "Success",
+      "error": "Error",
+      "processing": "Processing"
+    },
+    "currency_id": {
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
+    }
+  },
   "table": {
+    "filters": "Filters",
     "empty_state_message": "No data available.",
     "loading": "Loading...",
     "no_records_found": "No records found",
@@ -104,7 +122,11 @@
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
   "settled_by": "Settled By",
   "total_amount": "Total Amount",
-  "currency": "Currency",
+  "currency": {
+    "label": "Currency",
+    "usd": "USD - US Dollar",
+    "khr": "KHR - Cambodian Riel"
+  },
   "12h": "12 Hour",
   "24h": "24 Hour",
   "actions": "Actions",

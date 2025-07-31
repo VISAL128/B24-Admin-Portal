@@ -101,7 +101,11 @@
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
-  "currency": "រូបិយប័ណ្ណ",
+  "currency": {
+    "label": "រូបិយប័ណ្ណ",
+    "usd": "USD - ដុល្លារអាមេរិក",
+    "khr": "KHR - រៀលកម្ពុជា"
+  },
   "12h": "12 ម៉ោង",
   "24h": "24 ម៉ោង",
   "dashboard": "ទំព័រដើម",
@@ -510,7 +514,25 @@
     "status_success": "ជោគជ័យ",
     "status_failed": "បរាជ័យ"
   },
+  "dynamic_filter": {
+    "status": {
+      "all": "គ្រប់ស្ថានភាព",
+      "active": "សកម្ម",
+      "inactive": "អសកម្ម",
+      "pending": "រង់ចាំ",
+      "completed": "បានបញ្ចប់",
+      "failed": "បរាជ័យ",
+      "success": "ជោគជ័យ",
+      "error": "កំហុស",
+      "processing": "កំពុងដំណើរការ"
+    },
+    "currency_id": {
+      "USD": "USD - ដុល្លារអាមេរិក",
+      "KHR": "KHR - រៀលកម្ពុជា"
+    }
+  },
   "table": {
+    "filters": "តម្រង",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
