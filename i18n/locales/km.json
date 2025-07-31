@@ -177,7 +177,9 @@
       "telecom": "ទូរគមនាគមន៍",
       "internet": "អ៊ីនធឺណិត",
       "insurance": "ការធានារ៉ាប់រង"
-    }
+    },
+        "wallet_number": "លេខកូដកាបូប",
+    "bank_account_number": "លេខគណនី"
   },
   "wallet": "កាបូប",
   "settlement_menu": "ការទូទាត់",

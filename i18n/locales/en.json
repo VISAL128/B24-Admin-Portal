@@ -232,7 +232,10 @@
       "telecom": "Telecom",
       "internet": "Internet",
       "insurance": "Insurance"
-    }
+    },
+    "wallet_number": "Wallet Number",
+    "bank_account_number": "Bank Account Number",
+     "more_wallets_coming": "More wallets will appear here"
   },
   "wallet": "Wallet",
   "transaction": {
