@@ -10,7 +10,7 @@
         <div class="flex flex-wrap items-center gap-2">
           <!-- <UInput v-model="search" :placeholder="t('table.search_placeholder')" class="w-64" /> -->
           <ExSearch
-v-model="search" :placeholder="t('table.search_placeholder')" class="w-64"
+v-model="search" :search-tooltip="props.searchTooltip" size="sm" class="w-64"
             @clear="debouncedFetchData" @keyup.enter="debouncedFetchData" />
           <template v-if="showDateFilter">
             <UPopover>
@@ -88,7 +88,7 @@ v-if="activeFilterCount > 0"
                   </div>
                   <div class="flex flex-wrap justify-end px-2">
                     <UButton
-variant="link" size="xs" color="primary" class="underline" :ui="{
+variant="link" size="xs" color="neutral" class="underline" :ui="{
                       ...appConfig.ui.button.slots,
                       leadingIcon: 'shrink-0 size-3 text-muted',
                     }" @click="() => {
@@ -134,6 +134,7 @@ variant="link" size="xs" color="primary" class="underline" :ui="{
 
       <!-- ⚙️ Column Configuration -->
       <div class="flex justify-end items-center gap-2">
+        <slot name="trailingHeader"/>
         <ExportButton :data="filteredData" :headers="exportHeaders" :export-options="resolvedExportOptions" />
 
         <UPopover>
@@ -171,7 +172,7 @@ v-for="col in columnConfig" :id="col.id" :key="col.id"
               <Divider />
               <div class="flex justify-end px-2 pb-2">
                 <UButton
-variant="link" size="xs" color="primary" class="underline" :ui="{
+variant="link" size="xs" color="neutral" class="underline" :ui="{
                   ...appConfig.ui.button.slots,
                   leadingIcon: 'shrink-0 size-3 text-muted',
                 }" @click="onResetColumnVisibility">
@@ -256,6 +257,8 @@ import appConfig from '~~/app.config'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
+import { useTable } from '~/composables/utils/useTable'
+import { useFormat } from '~/composables/utils/useFormat'
 
 export interface ExportOptions {
   fileName?: string
@@ -269,6 +272,7 @@ export interface ExportOptions {
 
 // Use table configuration composable
 const tableConfig = useTableConfig()
+const { createRowNumberCell } = useTable()
 
 const defaultColumnVisibility = ref<Record<string, boolean>>({})
 
@@ -335,13 +339,6 @@ const selectedStatuses = ref<{ label: string; value: string }[]>([
 ])
 const autoRefresh = ref(false)
 const isRefreshing = ref(false)
-
-// const selectedSortLabel = computed(() => {
-//   const col = sortableColumnOptions.value.find((c) => c.value === selectedSortField.value)
-//   if (!col) return ''
-//   const dir = selectedSortDirection.value === 'asc' ? t('ascending') : t('descending')
-//   return `${col.label} (${dir})`
-// })
 
 const showAdvancedOptions = ref(false)
 
@@ -432,6 +429,7 @@ const props = defineProps<{
     endDate?: string
   }) => Promise<{ records: T[]; total_record: number; total_page: number } | null | undefined>
   enabledAutoRefresh?: boolean
+  searchTooltip?: string
 }>()
 
 watch(pageSize, async (_newSize) => {
@@ -453,8 +451,8 @@ const resolvedExportOptions = computed(() => ({
     filteredData.value.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0),
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tableRef = useTemplateRef<any>('tableRef')
+ 
+const tableRef = useTemplateRef('tableRef')
 const allColumnIds = computed(() =>
   columnsWithRowNumber.value.map((col) => col.id).filter((id): id is string => !!id)
 )
@@ -541,6 +539,19 @@ const handlePageChange = async (val: number) => {
 
 const filteredColumns = computed(() => {
   const columns = columnsWithRowNumber.value
+
+  // Implement sorting headers
+  // columns.forEach((col) => {
+  //   if (col.enableSorting) {
+  //     col.header = ({ column }) => createSortableHeader(column, column.id)
+  //   }
+  // })
+  // re-build cells
+  columns.forEach((col) => {
+    if (col.type === ColumnType.DateTime && !col.cell) {
+      col.cell = ({ row }) => useFormat().formatDateTime(row.getValue(col.id as string))
+    }
+  })
   const visibleColumnIds = computed(() =>
     columnConfig.value
       .filter((col) => col.getIsVisible())
@@ -571,18 +582,19 @@ const columnsWithRowNumber = computed(() => {
     return props.columns
   }
 
-  const rowNumberColumn = {
+  const rowNumberColumn: BaseTableColumn<T> = {
     id: 'row_number',
     header: '#',
     accessorKey: 'row_number',
     enableColumnFilter: false,
     enableSorting: false,
     enableHiding: false,
-    cell: ({ row }: { row: { index: number } }) => {
-      const currentPage = internalPage.value
-      const currentPageSize = pageSize.value.value
-      return (currentPage - 1) * currentPageSize + row.index + 1
-    },
+    cell: ({ row, table }) => createRowNumberCell(row, table, internalPage.value, pageSize.value.value),
+    // cell: ({ row }: { row: { index: number } }) => {
+    //   const currentPage = internalPage.value
+    //   const currentPageSize = pageSize.value.value
+    //   return (currentPage - 1) * currentPageSize + row.index + 1
+    // },
   }
 
   if (hasSelectionColumn.value) {

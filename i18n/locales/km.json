@@ -97,7 +97,9 @@
     "failed": "បរាជ័យ",
     "success": "ជោគជ័យ",
     "error": "កំហុស",
-    "processing": "កំពុងដំណើរការ"
+    "processing": "កំពុងដំណើរការ",
+    "yes": "បាទ",
+    "no": "ទេ"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
@@ -550,6 +552,16 @@
         "status": "ស្ថានភាព",
         "created_by": "ទូទាត់ដោយ"
       }
+    },
+    "banks-list": {
+      "columns": {
+        "bank_name": "ឈ្មោះធនាគារ",
+        "currency": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "activated_date": "កាលបរិច្ឆេទដំណើរការ",
+        "is_settlement_bank": "ធនាគារទូទាត់",
+        "is_collection_bank": "ធនាគារប្រមូលប្រាក់"
+      }
     }
   },
   "no_permission": {
@@ -721,7 +733,7 @@
   "banks": {
     "title": "ធនាគារ",
     "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់រចនាសម្ព័ន្ធធនាគារ",
-    "search_placeholder": "ស្វែងរកតាមលេខកូដធនាគារ ឈ្មោះ ឬលេខកូដ SWIFT...",
+    "search_placeholder": "ស្វែងរកតាមឈ្មោះធនាគារ",
     "add_bank": "បន្ថែមធនាគារ",
     "edit_bank": "កែប្រែធនាគារ",
     "view_bank": "មើលធនាគារ",

@@ -104,6 +104,16 @@
         "status": "Status",
         "created_by": "Settled By"
       }
+    },
+    "banks-list": {
+      "columns": {
+        "bank_name": "Bank Name",
+        "currency": "Currency",
+        "status": "Status",
+        "activated_date": "Activated Date",
+        "is_settlement_bank": "Settlement Bank",
+        "is_collection_bank": "Collection Bank"
+      }
     }
   },
   "status": {
@@ -116,7 +126,9 @@
     "failed": "Failed",
     "success": "Success",
     "error": "Error",
-    "processing": "Processing"
+    "processing": "Processing",
+    "yes": "Yes",
+    "no": "No"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -763,7 +775,7 @@
   "banks": {
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
-    "search_placeholder": "Search by bank code, name, or SWIFT code...",
+    "search_placeholder": "Search by bank name",
     "add_bank": "Add Bank",
     "edit_bank": "Edit Bank",
     "view_bank": "View Bank",

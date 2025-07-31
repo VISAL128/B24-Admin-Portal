@@ -111,7 +111,7 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.currency_code') }}
                 </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.currency_code }}</p>
+                <p class="text-sm text-gray-900 dark:text-white">{{ bank.currency }}</p>
               </div>
             </div>
 
@@ -238,13 +238,13 @@
                   {{ bank.website_url }}
                 </a>
               </div>
-              <div v-if="bank.logo_url">
+              <div v-if="bank.logo">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.logo_url') }}
                 </label>
                 <div class="flex items-center gap-2">
                   <img
-                    :src="bank.logo_url"
+                    :src="bank.logo"
                     :alt="bank.bank_name"
                     class="w-8 h-8 object-contain"
                     @error="
@@ -253,7 +253,7 @@
                       }
                     "
                   />
-                  <span class="text-xs text-gray-500">{{ bank.logo_url }}</span>
+                  <span class="text-xs text-gray-500">{{ bank.logo }}</span>
                 </div>
               </div>
             </div>
