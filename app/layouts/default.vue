@@ -303,6 +303,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { UserPreferences } from '~/models/userPreference'
+import { useMediaQuery } from '@vueuse/core'
 
 definePageMeta({
   middleware: [
@@ -319,6 +320,9 @@ const logoutEmit = defineEmits<{ close: [boolean] }>()
 const runtimeCon = useRuntimeConfig()
 
 const isNavExpanded = ref(true)
+const isSmallScreen = useMediaQuery('(max-width: 768px)')
+
+
 
 // Permission checking state
 const isCheckingPermissions = ref(false)
@@ -414,5 +418,9 @@ onMounted(async () => {
   //     isCheckingPermissions.value = false
   //   }
   // }, 5000)
+})
+
+watchEffect(() => {
+  isNavExpanded.value = !isSmallScreen.value
 })
 </script>
