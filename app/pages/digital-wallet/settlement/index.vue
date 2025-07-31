@@ -226,6 +226,7 @@
       :fetch-data-fn="fetchSettlementForTable"
       show-row-number
       show-date-filter
+      enabled-auto-refresh
       @row-click="handleViewDetails"
     />
 
@@ -659,7 +660,7 @@ onMounted(() => {
   }
 
   initializeStatusFilter()
-  fetchSettlementHistory()
+  // fetchSettlementHistory()
 })
 
 const onGenerateSettlement = () => {

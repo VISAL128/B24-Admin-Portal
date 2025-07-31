@@ -106,6 +106,30 @@ variant="link" size="xs" color="primary" class="underline" :ui="{
               </div>
             </template>
           </UPopover>
+          <!-- Auto Refresh -->
+           <div v-if="props.enabledAutoRefresh" class="flex items-center gap-1">
+          <USwitch
+            v-model="autoRefresh"
+            :label="t('settlement.auto_refresh')"
+            checked-icon="material-symbols:sync"
+            unchecked-icon="material-symbols:sync-disabled"
+            size="sm"
+            class="ml-2"
+          />
+          <UTooltip :text="t('settlement.auto_refresh_desc')" :delay-duration="200" placement="top">
+            <UIcon name="material-symbols:info-outline" class="size-3.5" />
+          </UTooltip>
+        </div>
+        <UTooltip v-if="props.enabledAutoRefresh && !autoRefresh" :text="t('settlement.refresh')">
+          <UIcon
+            name="material-symbols:sync"
+            :class="[
+              'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+              { 'animate-spin': isRefreshing },
+            ]"
+            @click="fetchData(true)"
+          />
+        </UTooltip>
         </div>
       </div>
 
@@ -310,6 +334,8 @@ const pageSize = ref<{ label: string; value: number }>({
 const selectedStatuses = ref<{ label: string; value: string }[]>([
   { label: 'all', value: '' },
 ])
+const autoRefresh = ref(false)
+const isRefreshing = ref(false)
 
 // const selectedSortLabel = computed(() => {
 //   const col = sortableColumnOptions.value.find((c) => c.value === selectedSortField.value)
@@ -337,10 +363,13 @@ const loading = ref(false)
 const tableData = computed(() => props.data || internalData.value)
 
 // Fetch data function
-const fetchData = async () => {
+const fetchData = async (refresh = false) => {
   if (!props.fetchDataFn) return
 
   loading.value = true
+  if (refresh) {
+    isRefreshing.value = true
+  }
   try {
     const result = await props.fetchDataFn({
       page: internalPage.value,
@@ -359,6 +388,10 @@ const fetchData = async () => {
     console.error('Error fetching data:', error)
   } finally {
     loading.value = false
+    // Add a small delay to ensure the animation completes
+    setTimeout(() => {
+      isRefreshing.value = false
+    }, 200)
   }
 }
 
@@ -399,6 +432,7 @@ const props = defineProps<{
     startDate?: string
     endDate?: string
   }) => Promise<{ records: T[]; total_record: number; total_page: number } | null | undefined>
+  enabledAutoRefresh?: boolean
 }>()
 
 watch(pageSize, async (_newSize) => {
@@ -577,6 +611,9 @@ onBeforeMount(() => {
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
 })
 
+
+let autoRefreshInterval: ReturnType<typeof setInterval> | null = null
+
 onMounted(() => {
   defaultColumnVisibility.value = props.columns.reduce((acc, col) => {
     if (col.id) {
@@ -584,15 +621,54 @@ onMounted(() => {
     }
     return acc
   }, {} as Record<string, boolean>)
+  // Initialize auto-refresh state from table config
+  const isAutoRefresh = tableConfig.getIsAutoRefresh(props.tableId)
+  if (isAutoRefresh !== null) {
+    autoRefresh.value = isAutoRefresh
+  }
 
   columnVisibility.value = initializeColumnVisibility()
   columnFilters.value = initializeColumnFilters()
 
-  console.log(`🔄 Initialized table ${props.tableId} with saved filters:`, columnFilters.value)
+  if (import.meta.env.DEV) {
+    console.log(`📊 Initialized column visibility for table ${props.tableId}:`, columnVisibility.value)
+  }
 
   // Fetch initial data if fetchDataFn is provided
   if (props.fetchDataFn) {
     fetchData()
+  }
+
+  // Auto-refresh logic
+  if (autoRefresh.value) {
+    autoRefreshInterval = setInterval(() => {
+      if (props.fetchDataFn) fetchData()
+    }, 5000)
+  }
+})
+
+watch(autoRefresh,
+  (val) => {
+    if (val) {
+      if (!autoRefreshInterval) {
+        autoRefreshInterval = setInterval(() => {
+          if (props.fetchDataFn) fetchData()
+        }, 5000)
+      }
+    } else {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval)
+        autoRefreshInterval = null
+      }
+    }
+    tableConfig.saveAutoRefresh(props.tableId, autoRefresh.value)
+  }
+)
+
+onBeforeUnmount(() => {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval)
+    autoRefreshInterval = null
   }
 })
 
