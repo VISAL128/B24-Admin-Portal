@@ -5,45 +5,81 @@
       <!-- Total Transaction -->
       <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Transaction</h3>
-        <p class="text-xl font-bold">100</p>
+        <p class="text-md font-bold">100</p>
       </div>
       
       <!-- Failed Transactions -->
       <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Failed Transactions</h3>
-        <p class="text-xl font-bold">5</p>
+        <p class="text-md font-bold">5</p>
       </div>
       
       <!-- Total Amount KHR -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
         <p class="text-lg font-bold">
           <span class="text-xs font-medium">KHR</span> 4,000,000
         </p>
-      </div>
+      </div> -->
       
       <!-- Total Amount USD -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
         <p class="text-lg font-bold">
           <span class="text-xs font-medium">USD</span> 50
         </p>
-      </div>
+      </div> -->
       
       <!-- Total Settlement -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
         <p class="text-lg font-bold">
           <span class="text-xs font-medium">KHR</span> 3,900
         </p>
-      </div>
+      </div> -->
       
       <!-- Total Split USD -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
         <p class="text-lg font-bold">
           <span class="text-xs font-medium">USD</span> 10
         </p>
+      </div> -->
+
+      <!-- Total Amount (Multi-currency in 2 cols) -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
+        <div class="grid grid-cols-2 gap-x-4">
+          <!-- KHR Block First -->
+          <div>
+            <p class="text-xs text-gray-600 dark:text-gray-400">KHR</p>
+            <p class="text-md font-bold">4,000,000</p>
+          </div>
+
+          <!-- USD Block Second -->
+          <div class="text-right ml-auto">
+            <p class="text-xs text-gray-600 dark:text-gray-400 ">USD</p>
+            <p class="text-md font-bold">50</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Settlement (Multi-currency in 2 cols) -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
+        <div class="grid grid-cols-2 gap-x-4">
+          <!-- KHR Block First -->
+          <div>
+            <p class="text-xs text-gray-600 dark:text-gray-400">KHR</p>
+            <p class="text-md font-bold">4,000,000</p>
+          </div>
+
+          <!-- USD Block Second -->
+          <div class="text-right ml-auto">
+            <p class="text-xs text-gray-600 dark:text-gray-400 ">USD</p>
+            <p class="text-md font-bold">50</p>
+          </div>
+        </div>
       </div>
     </div>
 
