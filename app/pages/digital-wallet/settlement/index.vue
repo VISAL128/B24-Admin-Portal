@@ -41,6 +41,7 @@
       show-row-number
       show-date-filter
       enabled-auto-refresh
+      @data-changed="handleDataChanged"
       @row-click="handleViewDetails"
     >
     <template #trailingHeader>
@@ -56,7 +57,7 @@
 import { h, nextTick, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
+import { CalendarDate } from '@internationalized/date'
 import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { useI18n } from 'vue-i18n'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -67,7 +68,7 @@ import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { DEFAULT_PAGE_SIZE } from '~/utils/constants'
 import { SettlementHistoryStatus } from '~/utils/enumModel'
-import type { BaseTableColumn } from '~/components/tables/table'
+import type { BaseTableColumn, SettlementHistoryTableFetchResult } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
 
 definePageMeta({
@@ -93,16 +94,16 @@ const pageSize = ref<{ label: string; value: number }>({
   label: pref?.defaultPageSize ? pref?.defaultPageSize.toString() : DEFAULT_PAGE_SIZE.label,
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
-const total = ref(0)
-const totalPage = ref(0)
-const search = ref('')
-const startDate = ref('')
-const endDate = ref('')
-const settlements = ref<SettlementHistoryRecord[]>([])
-const loading = ref(false)
+// const total = ref(0)
+// const totalPage = ref(0)
+// const search = ref('')
+// const startDate = ref('')
+// const endDate = ref('')
+// const settlements = ref<SettlementHistoryRecord[]>([])
+// const loading = ref(false)
 const errorMsg = ref('')
-const isRefreshing = ref(false)
-const autoRefresh = ref(false)
+// const isRefreshing = ref(false)
+// const autoRefresh = ref(false)
 
 const summary = ref({
   total_amount_khr: 0,
@@ -275,23 +276,6 @@ watch(
 
 let interval: ReturnType<typeof setInterval> | null = null
 
-watch(autoRefresh, (val) => {
-  if (val) {
-    // Start auto-refresh every 30 seconds
-    interval = setInterval(() => {
-      fetchSettlementHistory(true)
-    }, 30000)
-  } else {
-    // Clear interval when auto-refresh is turned off
-    if (interval) {
-      clearInterval(interval)
-      interval = null
-    }
-  }
-  // Save auto-refresh state to table config
-  tableConfig.saveAutoRefresh(TABLE_ID, val)
-})
-
 onBeforeUnmount(() => {
   // Clear interval on component unmount
   if (interval) {
@@ -300,67 +284,6 @@ onBeforeUnmount(() => {
   }
 })
 
-// Watch and convert modelValue to string ISO
-watch(modelValue, (val) => {
-  startDate.value =
-    val.start?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) ||
-    new CalendarDate(today.getFullYear(), today.getMonth(), 1).toString()
-  endDate.value =
-    val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) ||
-    new CalendarDate(today.getFullYear(), today.getMonth(), 30).toString()
-  fetchSettlementHistory()
-})
-
-// Watch pagination and status changes
-watch([page, pageSize, selectedStatuses], () => {
-  fetchSettlementHistory()
-})
-
-// Fetch settlement data from API
-const fetchSettlementHistory = async (
-  refreshAction: boolean = false,
-  params?: { page?: number; pageSize?: number }
-) => {
-  loading.value = true
-  if (refreshAction) {
-    isRefreshing.value = true
-  }
-  try {
-    const payload: SettlementHistoryQuery = {
-      search: search.value || undefined,
-      page_size: params?.pageSize || pageSize.value.value,
-      page: params?.page || page.value,
-      start_date: startDate.value,
-      end_date: endDate.value,
-      status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
-      supplier_id: currentProfile.value?.id || '', // Use current supplier ID
-    }
-
-    const data = await getSettlementHistory(payload)
-    settlements.value = data?.records ?? []
-    total.value = data?.total_record ?? 0
-    totalPage.value = data?.total_page ?? 0
-    summary.value = {
-      total_amount_khr: data?.sum_total_amount_khr || 0,
-      total_amount_usd: data?.sum_total_amount_usd || 0,
-      total_settled: data?.sum_total_settled || 0,
-      success: data?.sum_success || 0,
-      failed: data?.sum_failed || 0,
-    }
-    return data?.records
-  } catch (error: unknown) {
-    errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
-    // Show error notification to user
-    errorHandler.handleApiError(error)
-  } finally {
-    loading.value = false
-    // Add a small delay to ensure the animation completes
-    setTimeout(() => {
-      isRefreshing.value = false
-    }, 200)
-  }
-}
-
 // Wrapper function for BaseTableV2
 const fetchSettlementForTable = async (params?: {
   page?: number
@@ -368,32 +291,33 @@ const fetchSettlementForTable = async (params?: {
   search?: string
   startDate?: string
   endDate?: string
-}) => {
-  loading.value = true
+}): Promise<SettlementHistoryTableFetchResult | null> => {
   try {
     const payload: SettlementHistoryQuery = {
       search: params?.search || undefined,
       page_size: params?.pageSize || pageSize.value.value,
       page: params?.page || page.value,
-      start_date: params?.startDate || startDate.value,
-      end_date: params?.endDate || endDate.value,
+      start_date: params?.startDate,
+      end_date: params?.endDate,
       status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
     }
 
     const data = await getSettlementHistory(payload)
     return {
-      records: data?.records ?? [],
-      total_record: data?.total_record ?? 0,
-      total_page: data?.total_page ?? 0,
+      data: data?.records || [],
+      total_record: data?.total_record || 0,
+      total_page: data?.total_page || 0,
+      sum_total_amount_khr: data?.sum_total_amount_khr || 0,
+      sum_total_amount_usd: data?.sum_total_amount_usd || 0,
+      sum_total_settled: data?.sum_total_settled || 0,
+      sum_success: data?.sum_success || 0,
     }
   } catch (error: unknown) {
     errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
     // Show error notification to user
     errorHandler.handleApiError(error)
     return null
-  } finally {
-    loading.value = false
   }
 }
 
@@ -405,23 +329,12 @@ onBeforeMount(() => {
   // Get last day of current month
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
   // Set default date range to current month
-  startDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1).toString()
-  endDate.value = new CalendarDate(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    lastDayOfMonth
-  ).toString()
   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
 })
 
 // Initial load
 onMounted(() => {
-  // Initialize auto-refresh state from table config
-  const isAutoRefresh = tableConfig.getIsAutoRefresh(TABLE_ID)
-  if (isAutoRefresh !== null) {
-    autoRefresh.value = isAutoRefresh
-  }
 
   initializeStatusFilter()
   // fetchSettlementHistory()
@@ -436,6 +349,16 @@ const navigateToDetails = (settlementId: string) => {
   router.push(`/digital-wallet/settlement/details/${settlementId}`)
 }
 
+const handleDataChanged = (result: SettlementHistoryTableFetchResult) => {
+  // Update summary with the result data
+  summary.value = {
+    total_amount_khr: result.sum_total_amount_khr || 0,
+    total_amount_usd: result.sum_total_amount_usd || 0,
+    total_settled: result.sum_total_settled || 0,
+    success: result.sum_success || 0,
+    failed: result.sum_failed || 0
+  }
+}
 
 const handleViewDetails = (rowData: SettlementHistoryRecord) => {
   navigateToDetails(rowData.id)

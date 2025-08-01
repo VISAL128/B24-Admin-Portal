@@ -243,7 +243,7 @@ v-model="pageSize" :items="DEFAULT_PAGE_SIZE_OPTIONS" size="sm" class="w-24" :se
 
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { ref, computed, onMounted, watch } from 'vue'
-import type { BaseTableColumn } from '~/components/tables/table'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
@@ -254,6 +254,7 @@ import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useTable } from '~/composables/utils/useTable'
 import { useFormat } from '~/composables/utils/useFormat'
+// import type { ApiResponseDynamic } from '~/types/api'
 
 export interface ExportOptions {
   fileName?: string
@@ -366,6 +367,7 @@ const emit = defineEmits<{
   (e: 'filter-change', columnId: string, value: string): void
   (e: 'sort-change', columnId: string, direction: 'asc' | 'desc' | null): void
   (e: 'row-click', rowData: T): void
+  (e: 'data-changed', result: TableFetchResult<T[]> & Record<string, unknown>): void
 }>()
 
 // Internal state management
@@ -376,7 +378,7 @@ const internalTotalPage = ref(0)
 const loading = ref(false)
 
 // Use internal data if no data prop is provided
-const tableData = computed(() => props.data || internalData.value)
+const tableData = computed(() => internalData.value)
 
 // Fetch data function
 const fetchData = async (refresh = false) => {
@@ -396,9 +398,15 @@ const fetchData = async (refresh = false) => {
     })
 
     if (result) {
-      internalData.value = result.records
+      // Use helper function to extract data in a standardized way
+      // const { data, total, totalPages } = extractApiResponseData(result)
+
+      internalData.value = result.data as T[]
       internalTotal.value = result.total_record
       internalTotalPage.value = result.total_page
+
+      // Emit data-changed event with the current data
+      emit('data-changed', result)
     }
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -447,7 +455,7 @@ const props = defineProps<{
     search?: string
     startDate?: string
     endDate?: string
-  }) => Promise<{ records: T[]; total_record: number; total_page: number } | null | undefined>
+  }) => Promise<TableFetchResult<T[]> & Record<string, unknown> | null | undefined>
   enabledAutoRefresh?: boolean
   searchTooltip?: string
 }>()
@@ -778,6 +786,8 @@ defineExpose({
   getSelectedRows: () => tableRef.value?.tableApi?.getFilteredSelectedRowModel().rows || [],
   getAllRows: () => tableRef.value?.tableApi?.getFilteredRowModel().rows || [],
   clearSelection: () => tableRef.value?.tableApi?.resetRowSelection?.(),
+  getCurrentData: () => tableData.value as T[],
+  getFilteredData: () => filteredData.value,
 })
 </script>
 
