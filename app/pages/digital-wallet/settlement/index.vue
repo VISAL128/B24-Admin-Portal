@@ -94,16 +94,6 @@ const pageSize = ref<{ label: string; value: number }>({
   label: pref?.defaultPageSize ? pref?.defaultPageSize.toString() : DEFAULT_PAGE_SIZE.label,
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
-// const total = ref(0)
-// const totalPage = ref(0)
-// const search = ref('')
-// const startDate = ref('')
-// const endDate = ref('')
-// const settlements = ref<SettlementHistoryRecord[]>([])
-// const loading = ref(false)
-const errorMsg = ref('')
-// const isRefreshing = ref(false)
-// const autoRefresh = ref(false)
 
 const summary = ref({
   total_amount_khr: 0,
@@ -118,8 +108,6 @@ const initializeStatusFilter = () => {
   const savedStatusValues = tableConfig.getStatusFilter(TABLE_ID)
 
   if (savedStatusValues && savedStatusValues.length > 0) {
-    // Create the status objects with current language translation
-    // Filter out empty string if there are specific statuses to avoid "All" + specific status conflict
     const filteredValues = savedStatusValues.filter((value) => {
       // If we have specific statuses, remove the "All" (empty string) option
       const hasSpecificStatuses = savedStatusValues.some((v) => v !== '')
@@ -314,7 +302,6 @@ const fetchSettlementForTable = async (params?: {
       sum_success: data?.sum_success || 0,
     }
   } catch (error: unknown) {
-    errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
     // Show error notification to user
     errorHandler.handleApiError(error)
     return null

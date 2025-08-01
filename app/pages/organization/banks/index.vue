@@ -22,7 +22,7 @@ import type { BankQuery, Bank } from '~/models/bank'
 import { useI18n } from 'vue-i18n'
 import { useTable } from '~/composables/utils/useTable'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
-import type { BaseTableColumn } from '~/components/tables/table'
+import type { BankListTableFetchResult, BaseTableColumn } from '~/components/tables/table'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import ExTable from '~/components/tables/ExTable.vue'
 
@@ -144,7 +144,7 @@ const fetchBanks = async (params?: {
     search?: string
     startDate?: string
     endDate?: string
-  }) => {
+  }): Promise<BankListTableFetchResult | undefined> => {
   try {
     const payload: BankQuery = {
       search: params?.search || '',
@@ -160,18 +160,17 @@ const fetchBanks = async (params?: {
     }
 
     const data = await getBanks(payload)
-    return data
+    return {
+      data: data.records,
+      total_page: data.total_page,
+      total_record: data.total_record
+    }
   } catch (error: unknown) {
     // Show error notification to user
     errorHandler.handleApiError(error)
   }
 }
 
-// Handle search input
-
-// Filtered rows for table
-
-// Initial load
 onMounted(() => {
   // fetchBanks()
 })

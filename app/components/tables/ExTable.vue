@@ -91,11 +91,7 @@ v-if="activeFilterCount > 0"
 variant="link" size="xs" color="neutral" class="underline" :ui="{
                       ...appConfig.ui.button.slots,
                       leadingIcon: 'shrink-0 size-3 text-muted',
-                    }" @click="() => {
-                      columnFilters = {}
-                      emit('filter-change', '', '')
-                      // showAdvancedOptions = false
-                    }">
+                    }" @click="() => resetColumnFilters()">
 
                       <template #default>
                         {{ t('table.column_config.reset') }}
@@ -120,14 +116,15 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
             </UTooltip>
           </div>
         <UTooltip v-if="props.enabledAutoRefresh && !autoRefresh" :text="t('settlement.refresh')">
-          <UIcon
-            name="material-symbols:sync"
-            :class="[
-              'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
-              { 'animate-spin': isRefreshing },
-            ]"
-            @click="fetchData(true)"
-          />
+          <UButton variant="ghost" class="p-2 relative" @click="fetchData(true)">
+            <UIcon
+              name="material-symbols:sync"
+              :class="[
+                'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+                { 'animate-spin': isRefreshing },
+              ]"
+            />
+          </UButton>
         </UTooltip>
         </div>
       </div>
@@ -368,6 +365,7 @@ const emit = defineEmits<{
   (e: 'sort-change', columnId: string, direction: 'asc' | 'desc' | null): void
   (e: 'row-click', rowData: T): void
   (e: 'data-changed', result: TableFetchResult<T[]> & Record<string, unknown>): void
+  (e: 'daterange-change', dateRange: { start: string; end: string }): void
 }>()
 
 // Internal state management
@@ -762,9 +760,14 @@ const onResetColumnVisibility = () => {
   // Reset table API columns
   tableRef?.value?.tableApi?.resetColumnVisibility()
   columnVisibility.value = { ...defaultColumnVisibility.value }
-  // Reset column filters as well
+}
+
+const resetColumnFilters = () => {
   columnFilters.value = {}
-  // Reset date range to current month
+  emit('filter-change', '', '')
+}
+
+const _resetDateRange = () => {
   const today = new Date()
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
   const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
@@ -778,6 +781,7 @@ const onResetColumnVisibility = () => {
   endDate.value = defaultEnd
   modelValue.value.start = firstDayCalendar
   modelValue.value.end = lastDayCalendar
+  emit('daterange-change', dateRange.value)
 }
 
 defineExpose({

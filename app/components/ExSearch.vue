@@ -27,8 +27,8 @@
       />
     </template>
 
-    <template v-if="searchTooltip" #leading>
-      <UTooltip :text="searchTooltip" :delay-duration="300">
+    <template #leading>
+      <UTooltip :text="searchTooltip || placeholder" :delay-duration="300">
         <UIcon :size="size" name="material-symbols:search-rounded" class="text-gray-400" />
       </UTooltip>
     </template>

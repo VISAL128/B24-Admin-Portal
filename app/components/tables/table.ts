@@ -1,5 +1,6 @@
 // ~/types/table.ts
 import type { TableColumn } from '@nuxt/ui'
+import type { Bank } from '~/models/bank'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 
 export type BaseTableColumn<T> = TableColumn<T> & {
@@ -34,3 +35,5 @@ export interface SettlementHistoryTableFetchResult extends TableFetchResult<Sett
   sum_success?: number
   sum_failed?: number
 }
+
+export type BankListTableFetchResult = TableFetchResult<Bank[]>
