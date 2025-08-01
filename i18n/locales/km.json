@@ -580,9 +580,7 @@
     }
   }
   },
-    "search_placeholder": "ស្វែងរក..."
-  },
-
+    "search_placeholder": "ស្វែងរក...",
   "no_permission": {
     "title": "ការចូលត្រូវបានកំណត់",
     "access_denied": "បដិសេធការចូល",
@@ -822,5 +820,5 @@
   "ascending": "តាមលំដាប់ឡើង",
   "descending": " តាមលំដាប់ចុះ",
   "clear": "សម្អាត"
-  }
+  
 }

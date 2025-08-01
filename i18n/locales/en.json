@@ -126,7 +126,7 @@
         "total_amount": "Total Amount",
         "total_customer": "Total Customer"
       }
-    }
+    },
     "search_placeholder": "Search..."
   },
   "status": {
@@ -858,4 +858,4 @@
   "metadata": "Metadata",
   "back": "Back"
   }
-}
+
