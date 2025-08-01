@@ -567,8 +567,22 @@
         "activated_date": "កាលបរិច្ឆេទដំណើរការ",
         "is_settlement_bank": "ធនាគារទូទាត់",
         "is_collection_bank": "ធនាគារប្រមូលប្រាក់"
-      }
+      }},
+    "transactions-history-table": {
+    "columns": {
+      "collection_bank": "ធនាគារប្រមូលប្រាក់",
+      "settlement_bank": "ធនាគារទូទាត់",
+      "settlement_type": "ប្រភេទទូទាត់",
+      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "status": "ស្ថានភាព",
+      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "bank_ref": "លេខយោងធនាគារ",
+      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "total_customer": "ចំនួនអតិថិជន"
     }
+  }
   },
   "no_permission": {
     "title": "ការចូលត្រូវបានកំណត់",
@@ -733,7 +747,14 @@
   },
   "pages": {
     "transaction": {
-      "title": "ប្រតិបត្តិការ"
+      "title": "ប្រតិបត្តិការ",
+      "created_date":"កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "total_customer": "ចំនួនអតិថិជន",
+      "bank_ref": "លេខយោងធនាគារ",
+      "repush": "បញ្ជូនម្តងទៀត",
+      "repush_description": "បញ្ជូនប្រតិបត្តិការទៅកាន់ម្ចាស់អាជីវកម្ម",
+      "info": "បញ្ជាក់",
+      "info_des": "សូមជ្រើសរើសប្រតិបត្តិការដែលលោកអ្នកចង់បញ្ជូន"
     }
   },
   "banks": {

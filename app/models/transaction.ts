@@ -20,5 +20,8 @@ export interface TransactionHistoryRecord {
   total_amount: number
   currency_id: string
   status: string
-  settled_by: string
+  total_customer: number
+  transaction_type: string
+  sub_biller: string
+  
 }
