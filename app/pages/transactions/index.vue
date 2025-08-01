@@ -4,8 +4,8 @@
     <div v-if="showInfoBanner"
       class="flex items-center justify-between bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 rounded-lg px-4 py-2">
       <div class="flex items-center space-x-2">
-        <UIcon name="i-heroicons-light-bulb" class="text-primary w-4 h-4" />
-        <span class="font-semibold text-xs">Recommendation</span>
+        <UIcon name="i-heroicons-light-bulb" class="text-warning w-4 h-4" />
+        <span class="font-semibold text-xs">Tip</span>
         <span class="text-xs"> Apply filters to reflect changes in both the <strong>Transaction Summary</strong> and the <strong>Transaction</strong>.</span>
       </div>
       <div class="flex items-center gap-2">
@@ -43,7 +43,7 @@
           <span v-if="'currency' in val" class="text-xs font-medium">
             {{ val.currency }}
           </span>
-          {{ val.value }}
+          {{ useCurrency().formatAmount(val.value) }}
         </div>
       </div>
 
@@ -65,7 +65,22 @@
       enabled-auto-refresh
       enabled-repush
       @row-click="handleViewDetails"
-    />
+    >
+    <template #trailingHeader>
+      <UTooltip :text="t('pages.transaction.repush_description')">
+          <UButton 
+            variant="outline"
+            size="sm"
+            @click="handleRepush()"> 
+            {{ t('pages.transaction.repush') }}
+            <template #trailing>
+              <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
+            </template>
+            
+          </UButton>
+        </UTooltip>
+    </template>
+    </TablesExTable>
   </div>
 </template>
 
@@ -82,7 +97,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import StatusBadge from '~/components/StatusBadge.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn } from '~/components/tables/table'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -127,6 +142,14 @@ const dateOptions = computed(() => {
   ]
 })
 
+// Handle Repush Transaction
+const handleRepush = () => {
+    notification.showWarning({
+      title: t('pages.transaction.info'),
+      description: t('pages.transaction.info_des'),
+    })
+}
+
 const summarys = [
   {
     title: 'Total Transaction',
@@ -143,8 +166,8 @@ const summarys = [
   {
     title: 'Total Amount',
     values: [
-      { currency: 'KHR', value: '4,000,000' },
-      { currency: 'USD', value: '500000000' },
+      { currency: 'KHR', value: 4000000 },
+      { currency: 'USD', value: 157.75 },
     ],
     filterLabel: 'This month',
     dateRange: '01/08/2025 - 30/08/2025',
@@ -152,8 +175,8 @@ const summarys = [
   {
     title: 'Total Settlement',
     values: [
-      { currency: 'KHR', value: '3,900' },
-      { currency: 'USD', value: '10' },
+      { currency: 'KHR', value: 3900 },
+      { currency: 'USD', value: 10 },
     ],
     filterLabel: 'This month',
     dateRange: '01/08/2025 - 30/08/2025',
@@ -168,7 +191,7 @@ const fetchTransactionForTable = async (params?: {
   search?: string
   startDate?: string
   endDate?: string
-}) => {
+}) : Promise<TableFetchResult<TransactionHistoryRecord[]> | null>  => {
   loading.value = true
   try {
     const banks = ['ABA', 'ACLEDA', 'AMK'] as const
@@ -242,7 +265,7 @@ const fetchTransactionForTable = async (params?: {
     const paginatedData = filteredData.slice(startIndex, endIndex)
 
     return {
-      records: paginatedData,
+      data: paginatedData,
       total_record: totalRecords,
       total_page: totalPages,
     }
@@ -251,7 +274,7 @@ const fetchTransactionForTable = async (params?: {
     errorMsg.value = (error as Error).message || 'Failed to load transaction history.'
     errorHandler.handleApiError(error)
     return {
-      records: [],
+      data: [],
       total_record: 0,
       total_page: 0,
     }
