@@ -161,7 +161,7 @@
             Settlement Bank
           </h4>
           <!-- Horizontal line below header -->
-          <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3" />
+          <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3 py-1" />
           <div class="space-y-3">
             <!-- Bank Name -->
             <div class="flex justify-between items-center">
