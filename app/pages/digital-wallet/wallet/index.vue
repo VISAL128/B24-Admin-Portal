@@ -76,11 +76,13 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-3 rounded">
-      <!-- Selected Wallet Display -->
-      <div v-if="walletTypes.length > 0 && walletBalanceItems.length > 0" class="mb-6">
-        <!-- Main Wallet Card -->
+
+    <div class="mx-auto px-0 sm:px-0 lg:px-0 py-3 rounded">
+      <!-- Main Wallet Display -->
+      <div v-if="walletTypes.length > 0 || isLoadingWalletTypes" class="mb-6">
+        <!-- Wallet Data Loaded -->
         <div
+          v-if="walletBalanceItems.length > 0 && !isWalletLoading"
           class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
         >
           <!-- Header Section -->
@@ -186,11 +188,10 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Loading State for Main Wallet -->
-      <div v-else-if="isWalletLoading || isLoadingWalletTypes" class="mb-6">
+        <!-- Loading State for Main Wallet -->
         <div
+          v-else
           class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-xl animate-pulse"
         >
           <!-- Header Section -->
@@ -262,10 +263,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div
-              v-if="!isLoadingSummary && !isLoadingWalletTypes"
-              class="flex items-center justify-between mb-4"
-            >
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.today') }}
               </h3>
@@ -345,7 +343,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_week') }}
               </h3>
@@ -359,7 +357,7 @@
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary" class="space-y-3">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
               <div>
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
                   {{ currentSummaryData.week.totalTransactions }}
@@ -428,7 +426,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_month') }}
               </h3>
@@ -442,7 +440,7 @@
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary" class="space-y-3">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
               <div>
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
                   {{ currentSummaryData.month.totalTransactions }}
@@ -533,8 +531,10 @@
       </div>
 
       <!-- Transaction List Section -->
-      <div v-if="walletTypes.length > 0 && selectedWalletType && !isWalletLoading" class="mt-8">
+      <div v-if="walletTypes.length > 0 || isLoadingWalletTypes" class="mt-8">
+        <!-- Transaction List -->
         <BaseTable
+          :loading="isLoadingTransactions"
           :data="transactions"
           :columns="transactionColumns"
           table-id="wallet-transactions"
@@ -991,11 +991,14 @@ const transactionColumns = computed<BaseTableColumn<WalletTransaction>[]>(() => 
 ])
 
 // Transaction filter handler
-const handleTransactionFilterChange = (columnId: string, value: string) => {
-  if (columnId === 'type') {
-    transactionFilters.value.type = value
-  } else if (columnId === 'status') {
-    transactionFilters.value.status = value
+const handleTransactionFilterChange = (filters: Record<string, string>) => {
+
+  console.log('Transaction filter change:', filters)
+  if (filters.type !== undefined) {
+    transactionFilters.value.type = filters.type
+  }
+  if (filters.status !== undefined) {
+    transactionFilters.value.status = filters.status
   }
   loadTransactions(true)
 }
@@ -1212,10 +1215,23 @@ watch(selectedWalletType, async (newType, oldType) => {
     // Sync with store
     walletStore.setSelectedWalletType(newType, selectedWalletTypeAPI.value)
 
-    // Load data sequentially: wallet balance -> summary -> transactions
-    await loadWalletBalance()
-    await loadTransactionSummary()
-    await loadTransactions(true)
+    // Load data in parallel when wallet type changes.
+    isWalletLoading.value = true
+    isLoadingSummary.value = true
+    isLoadingTransactions.value = true
+    try {
+      await Promise.all([
+        loadWalletBalance(),
+        loadTransactionSummary(),
+        loadTransactions(true),
+      ])
+    } finally {
+      // The individual loading states are managed within their respective functions,
+      // but we can set them to false here as a fallback.
+      isWalletLoading.value = false
+      isLoadingSummary.value = false
+      isLoadingTransactions.value = false
+    }
   }
 })
 
@@ -1236,18 +1252,27 @@ watch(
 
 // Initialize data on component mount
 onMounted(async () => {
-  // Step 1: Load wallet types first
+  // Set loading states to true for a unified initial shimmer experience.
+  isWalletLoading.value = true
+  isLoadingSummary.value = true
+  isLoadingTransactions.value = true
+
+  // Load wallet types first. This function manages `isLoadingWalletTypes` internally.
   await loadWalletTypes()
 
-  // Step 2: Load wallet balance after wallet types are loaded
+  // If wallet types were found, the other data will be loaded in parallel.
+  // The `load...` functions will manage their own loading states, turning them off on completion.
   if (selectedWalletType.value) {
-    await loadWalletBalance()
-
-    // Step 3: Load transaction summary after wallet balance is loaded
-    await loadTransactionSummary()
-
-    // Step 4: Finally load transactions
-    await loadTransactions(true)
+    await Promise.all([
+      loadWalletBalance(),
+      loadTransactionSummary(),
+      loadTransactions(true),
+    ])
+  } else {
+    // If no wallets are found, ensure all shimmers are turned off.
+    isWalletLoading.value = false
+    isLoadingSummary.value = false
+    isLoadingTransactions.value = false
   }
 })
 
@@ -1255,6 +1280,8 @@ onMounted(async () => {
 const refreshBalances = async () => {
   isRefreshing.value = true
   isWalletLoading.value = true
+  isLoadingSummary.value = true
+  isLoadingTransactions.value = true
 
   // Temporarily pause auto-refresh during manual refresh
   const wasAutoRefreshEnabled = isAutoRefreshEnabled.value
@@ -1263,15 +1290,15 @@ const refreshBalances = async () => {
   }
 
   try {
-    // Load data sequentially: wallet balance -> summary -> transactions
-    await loadWalletBalance()
-    await loadTransactionSummary()
-    await loadTransactions(true)
+    // All data is refreshed in parallel
+    await Promise.all([loadWalletBalance(), loadTransactionSummary(), loadTransactions(true)])
   } catch (error) {
     console.error('Failed to refresh balances:', error)
   } finally {
     isRefreshing.value = false
     isWalletLoading.value = false
+    isLoadingSummary.value = false
+    isLoadingTransactions.value = false
 
     // Resume auto-refresh if it was enabled
     if (wasAutoRefreshEnabled) {

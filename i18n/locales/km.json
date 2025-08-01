@@ -9,7 +9,6 @@
   "logout_confirmation": "តើអ្នកប្រាកដជាចង់ចាកចេញទេ?",
   "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24 Payment Portal",
   "code": "Code",
-  "fee_already_exists": "ថ្លៃសេវានេះមានរួចហើយ",
   "add_fee": "បន្ថែមថ្លៃសេវា",
   "create_new": "បង្កើតថ្មី",
   "create_new_fee": "បង្កើតថ្លៃសេវាថ្មី",
@@ -55,24 +54,6 @@
     "copied": "បានចម្លង",
     "copy_failed": "បរាជ័យក្នុងការចម្លង",
     "copy_to_clipboard": "ចម្លងទៅក្ដារឈូស"
-  },
-  "fee_configs": {
-    "columns": {
-      "row_number": "លេខជួរដេក",
-      "name": "ឈ្មោះ",
-      "code": "លេខកូដ",
-      "fee_name": "ឈ្មោះថ្លៃសេវា",
-      "currency": "រូបិយប័ណ្ណ",
-      "fee_type": "ប្រភេទថ្លៃសេវា",
-      "sharing": "ថ្លៃសេវាចែករំលែក",
-      "actions": "សកម្មភាព"
-    },
-    "column_config": {
-      "tooltip": "Hide/Show Columns",
-      "reset": "Reset",
-      "reset_description": "Reset columns and sorting to defaults",
-      "columns": "Columns"
-    }
   },
   "profile_popup": {
     "title": "អាជីវកម្មអ្នកប្រើប្រាស់",
@@ -342,7 +323,22 @@
     "profile": "ប្រវត្តិរូប",
     "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
   },
-  
+  "settlement_history": {
+    "columns": {
+      "created_date": "កាលបរិច្ឆេទទូទាត់",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "total_settled": "ប្រតិបត្តិការ",
+      "status": "ស្ថានភាព",
+      "created_by": "ទូទាត់ដោយ"
+    },
+    "column_config": {
+      "tooltip": "លាក់/បង្ហាញជួរឈរ",
+      "reset": "កំណត់ឡើងវិញ",
+      "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
+      "columns": "ជួរឈរ"
+    }
+  },
   "settlement": {
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
@@ -512,24 +508,9 @@
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
-    "search_placeholder": "ស្វែងរក...",
-    "column_config": {
-        "tooltip": "លាក់/បង្ហាញជួរឈរ",
-        "reset": "កំណត់ឡើងវិញ",
-        "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
-        "columns": "ជួរឈរ"
-      },
-    "settlement-history": {
-      "columns": {
-        "created_date": "កាលបរិច្ឆេទទូទាត់",
-        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-        "currency_id": "រូបិយប័ណ្ណ",
-        "total_settled": "ប្រតិបត្តិការ",
-        "status": "ស្ថានភាព",
-        "created_by": "ទូទាត់ដោយ"
-      }
-    }
+    "search_placeholder": "ស្វែងរក..."
   },
+
   "no_permission": {
     "title": "ការចូលត្រូវបានកំណត់",
     "access_denied": "បដិសេធការចូល",
@@ -686,7 +667,6 @@
   "this_month": "ខែនេះ",
   "this_year": "ឆ្នាំនេះ",
   "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-  "overview": "ទូទៅ",
   "lottie": {
     "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
     "install_instruction": "ដំណើរការ: npm install lottie-web"
@@ -695,72 +675,5 @@
     "transaction": {
       "title": "ប្រតិបត្តិការ"
     }
-  },
-  "banks": {
-    "title": "ធនាគារ",
-    "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់រចនាសម្ព័ន្ធធនាគារ",
-    "search_placeholder": "ស្វែងរកតាមលេខកូដធនាគារ ឈ្មោះ ឬលេខកូដ SWIFT...",
-    "add_bank": "បន្ថែមធនាគារ",
-    "edit_bank": "កែប្រែធនាគារ",
-    "view_bank": "មើលធនាគារ",
-    "delete_bank": "លុបធនាគារ",
-    "bank_code": "លេខកូដធនាគារ",
-    "bank_name": "ឈ្មោះធនាគារ",
-    "bank_short_name": "ឈ្មោះខ្លី",
-    "swift_code": "លេខកូដ SWIFT",
-    "description": "ការពិពណ៌នា",
-    "country_code": "ប្រទេស",
-    "currency_code": "រូបិយប័ណ្ណ",
-    "is_settlement_bank": "ធនាគារទូទាត់",
-    "is_collection_bank": "ធនាគារប្រមូលប្រាក់",
-    "account_number": "លេខគណនី",
-    "account_name": "ឈ្មោះគណនី",
-    "branch_name": "ឈ្មោះសាខា",
-    "branch_code": "លេខកូដសាខា",
-    "contact_person": "អ្នកទំនាក់ទំនង",
-    "contact_phone": "លេខទូរស័ព្ទទំនាក់ទំនង",
-    "contact_email": "អ៊ីមែលទំនាក់ទំនង",
-    "address": "អាសយដ្ឋាន",
-    "logo_url": "URL ឡូហ្គោ",
-    "website_url": "URL គេហទំព័រ",
-    "is_active": "សកម្ម",
-    "created_at": "បានបង្កើតនៅ",
-    "updated_at": "បានអាប់ដេតនៅ",
-    "created_by": "បង្កើតដោយ",
-    "updated_by": "អាប់ដេតដោយ",
-    "settlement_banks": "ធនាគារទូទាត់",
-    "collection_banks": "ធនាគារប្រមូលប្រាក់",
-    "bank_details": "ព័ត៌មានលម្អិតធនាគារ",
-    "contact_information": "ព័ត៌មានទំនាក់ទំនង",
-    "account_information": "ព័ត៌មានគណនី",
-    "general_information": "ព័ត៌មានទូទៅ",
-    "toggle_status": "ប្តូរស្ថានភាព",
-    "activate_bank": "ធ្វើឱ្យធនាគារសកម្ម",
-    "deactivate_bank": "ធ្វើឱ្យធនាគារអសកម្ម",
-    "confirm_delete": "តើអ្នកប្រាកដជាចង់លុបធនាគារនេះទេ?",
-    "confirm_activate": "តើអ្នកប្រាកដជាចង់ធ្វើឱ្យធនាគារនេះសកម្មទេ?",
-    "confirm_deactivate": "តើអ្នកប្រាកដជាចង់ធ្វើឱ្យធនាគារនេះអសកម្មទេ?",
-    "bank_created": "បានបង្កើតធនាគារដោយជោគជ័យ",
-    "bank_updated": "បានអាប់ដេតធនាគារដោយជោគជ័យ",
-    "bank_deleted": "បានលុបធនាគារដោយជោគជ័យ",
-    "bank_activated": "បានធ្វើឱ្យធនាគារសកម្មដោយជោគជ័យ",
-    "bank_deactivated": "បានធ្វើឱ្យធនាគារអសកម្មដោយជោគជ័យ",
-    "no_banks_found": "រកមិនឃើញធនាគារ",
-    "loading_banks": "កំពុងទាញយកធនាគារ...",
-    "filter_settlement": "ធនាគារទូទាត់ប៉ុណ្ណោះ",
-    "filter_collection": "ធនាគារប្រមូលប្រាក់ប៉ុណ្ណោះ",
-    "filter_active": "ធនាគារសកម្មប៉ុណ្ណោះ",
-    "filter_country": "ច្រោះតាមប្រទេស",
-    "filter_currency": "ច្រោះតាមរូបិយប័ណ្ណ",
-    "all_banks": "ធនាគារទាំងអស់",
-    "total_banks": "ធនាគារសរុប",
-    "bank_not_found_desc": "រកមិនឃើញធនាគារដែលបានស្នើសុំ។",
-    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។"
-  },
-  "additional_information": "ព័ត៌មានបន្ថែម",
-  "metadata": "ទិន្នន័យមេតា",
-  "back": "ត្រលប់",
-  "ascending": "តាមលំដាប់ឡើង",
-  "descending": " តាមលំដាប់ចុះ",
-  "clear": "សម្អាត"
+  }
 }
