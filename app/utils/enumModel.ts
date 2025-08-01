@@ -55,10 +55,10 @@ enum Currency {
 }
 
 enum SettlementHistoryStatus {
-  All = 'all',
+  // All = 'all',
   Pending = 'pending',
   Processing = 'processing',
   Completed = 'completed'
 }
 
-export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus,FeeType ,Currency};
+export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus, FeeType, Currency };

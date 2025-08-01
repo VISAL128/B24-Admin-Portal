@@ -10,7 +10,7 @@ This system provides a scalable and maintainable way to save and restore table c
 
 ```typescript
 export const LOCAL_STORAGE_KEYS = {
-  TABLE_COLUMN_CONFIG: 'table-column-config',
+  TABLE_COLUMN_CONFIG: 'table-config',
   // ... other keys
 }
 ```
@@ -152,7 +152,7 @@ The localStorage stores configurations in this format:
 
 ```json
 {
-  "table-column-config": {
+  "table-config": {
     "settlement-history": {
       "columnVisibility": {
         "id": false,

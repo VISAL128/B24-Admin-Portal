@@ -79,8 +79,7 @@
                 </UTooltip>
                 <!-- Language Switcher -->
                 <UTooltip :text="t('navbar.language')" :delay-duration="500">
-                  <div>
-                    <UPopover placement="bottom-end" :offset="[0, 10]">
+                  <UPopover v-model:open="isLanguagePopoverOpen" placement="bottom-end" :offset="[0, 10]">
                       <UButton
                         icon="material-symbols:language"
                         variant="ghost"
@@ -100,6 +99,7 @@
                             @click="
                               () => {
                                 setLanguage('en')
+                                isLanguagePopoverOpen = false
                               }
                             "
                             >🇬🇧
@@ -121,6 +121,7 @@
                             @click="
                               () => {
                                 setLanguage('km')
+                                isLanguagePopoverOpen = false
                               }
                             "
                             >🇰🇭
@@ -134,7 +135,6 @@
                         </div>
                       </template>
                     </UPopover>
-                  </div>
                 </UTooltip>
 
                 <!-- Setting -->
@@ -303,6 +303,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { UserPreferences } from '~/models/userPreference'
+import { useMediaQuery } from '@vueuse/core'
 
 definePageMeta({
   middleware: [
@@ -319,10 +320,14 @@ const logoutEmit = defineEmits<{ close: [boolean] }>()
 const runtimeCon = useRuntimeConfig()
 
 const isNavExpanded = ref(true)
+const isSmallScreen = useMediaQuery('(max-width: 768px)')
+
+
 
 // Permission checking state
 const isCheckingPermissions = ref(false)
 const isShowLogoutConfirmModal = ref(false)
+const isLanguagePopoverOpen = ref(false)
 
 const auth = useAuth()
 const user = auth.user
@@ -413,5 +418,9 @@ onMounted(async () => {
   //     isCheckingPermissions.value = false
   //   }
   // }, 5000)
+})
+
+watchEffect(() => {
+  isNavExpanded.value = !isSmallScreen.value
 })
 </script>

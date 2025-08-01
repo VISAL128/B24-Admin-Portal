@@ -634,7 +634,7 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
                 <label
                   class="flex items-center text-xxs font-medium text-gray-700 dark:text-gray-300"
                 >
-                  {{ t('currency') }}
+                  {{ t('currency.label') }}
                   <!-- <span class="text-red-500 ml-1">*</span> -->
                 </label>
                 <USelectMenu

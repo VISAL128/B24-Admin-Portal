@@ -7,6 +7,7 @@ export interface TableColumnConfig {
 
 export interface TableConfiguration {
   columnVisibility: TableColumnConfig
+  columnFilters?: Record<string, string>
   pageSize?: number
   sortingState?: Array<{
     id: string
@@ -14,6 +15,10 @@ export interface TableConfiguration {
   }>
   autoRefresh?: boolean
   statusFilter?: string[]
+  dateRange?: {
+    start: string
+    end: string
+  }
 }
 
 export interface TableConfigStorage {
@@ -23,6 +28,8 @@ export interface TableConfigStorage {
 export interface TableConfigComposable {
   saveColumnConfig: (tableId: string, columnVisibility: TableColumnConfig) => boolean
   getColumnConfig: (tableId: string) => TableColumnConfig | null
+  saveColumnFilters: (tableId: string, columnFilters: Record<string, string>) => boolean
+  getColumnFilters: (tableId: string) => Record<string, string> | null
   saveTableConfig: (tableId: string, config: TableConfiguration) => boolean
   getTableConfig: (tableId: string) => TableConfiguration | null
   resetTableConfig: (tableId: string) => boolean
@@ -32,6 +39,8 @@ export interface TableConfigComposable {
   saveAutoRefresh: (tableId: string, isEnabled: boolean) => boolean
   saveSortingState: (tableId: string, sortingState: Array<{ id: string; desc: boolean }>) => boolean
   getSortingState: (tableId: string) => Array<{ id: string; desc: boolean }> | null
-  getStatusFilter: (tableId: string) => string[] | null
   saveStatusFilter: (tableId: string, statusFilterValue: string[]) => boolean
+  getStatusFilter: (tableId: string) => string[] | null
+  saveDateRange: (tableId: string, dateRange: { start: string; end: string }) => boolean
+  getDateRange: (tableId: string) => { start: string; end: string } | null
 }

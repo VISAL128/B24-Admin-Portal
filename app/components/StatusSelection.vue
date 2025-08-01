@@ -11,7 +11,7 @@
       option-attribute="label"
       size="sm"
       trailing-icon=""
-      class="min-w-36 max-w-96"
+      class="min-w-36 w-full max-w-96"
     >
       <!-- Custom display for multiple selection only -->
       <template v-if="props.multiple" #default="{ open }">

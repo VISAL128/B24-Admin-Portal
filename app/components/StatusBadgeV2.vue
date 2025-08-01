@@ -1,5 +1,5 @@
 <template>
-  <UBadge :label="displayText" :color="statusColor" :variant="variant" :size="props.size" class="justify-center" />
+  <UBadge :label="displayText" :color="statusColor" :variant="variant" :size="props.size" class="justify-center min-w-12" />
 </template>
 
 <script setup lang="ts">
@@ -27,6 +27,7 @@ const statusColor = computed(() => {
   switch (statusValue) {
     // Settlement Status - Success states
     case 'success':
+    case 'yes':
     case 'completed':
       return 'success'
 
@@ -46,6 +47,7 @@ const statusColor = computed(() => {
     case 'active':
       return 'success'
     case 'inactive':
+    case 'no':
       return 'neutral'
 
     // Other states
@@ -86,6 +88,10 @@ const displayText = computed(() => {
         return t('status.active')
       case 'inactive':
         return t('status.inactive')
+      case 'yes':
+        return t('status.yes')
+      case 'no':
+        return t('status.no')
       default:
         return props.status
     }

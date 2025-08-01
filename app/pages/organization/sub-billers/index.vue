@@ -217,7 +217,7 @@ const onGenerateSettlement = () => {
 
 // Handle navigation to details page
 const navigateToDetails = (rowId: string) => {
-  router.push(`/transactions/detail/${rowId}`)
+  router.push(`/organization/sub-billers/detail/${rowId}`)
 }
 
 const exportHeaders = [

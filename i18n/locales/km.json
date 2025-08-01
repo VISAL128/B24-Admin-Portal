@@ -78,11 +78,17 @@
     "failed": "បរាជ័យ",
     "success": "ជោគជ័យ",
     "error": "កំហុស",
-    "processing": "កំពុងដំណើរការ"
+    "processing": "កំពុងដំណើរការ",
+    "yes": "បាទ",
+    "no": "ទេ"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
-  "currency": "រូបិយប័ណ្ណ",
+  "currency": {
+    "label": "រូបិយប័ណ្ណ",
+    "usd": "USD - ដុល្លារអាមេរិក",
+    "khr": "KHR - រៀលកម្ពុជា"
+  },
   "12h": "12 ម៉ោង",
   "24h": "24 ម៉ោង",
   "dashboard": "ទំព័រដើម",
@@ -158,7 +164,9 @@
       "telecom": "ទូរគមនាគមន៍",
       "internet": "អ៊ីនធឺណិត",
       "insurance": "ការធានារ៉ាប់រង"
-    }
+    },
+        "wallet_number": "លេខកូដកាបូប",
+    "bank_account_number": "លេខគណនី"
   },
   "wallet": "កាបូប",
   "settlement_menu": "ការទូទាត់",
@@ -350,6 +358,10 @@
     "search_placeholder": "ស្វែងរក",
     "select_status": "ជ្រើសរើសស្ថានភាព",
     "settle_amount": "ចំនួនទឹកប្រាក់សម្រាប់ទូទាត់",
+    "total_amount_khr": "ចំនួនទឹកប្រាក់សរុប (KHR)",
+    "total_amount_usd": "ចំនួនទឹកប្រាក់សរុប (USD)",
+    "total_settled": "ចំនួនទូទាត់សរុប",
+    "success": "ជោគជ័យ",
     "amount": "ចំនួនទឹកប្រាក់",
     "settlement_bank": "ធនាគារទូទាត់",
     "status": "ស្ថានភាព",
@@ -504,10 +516,70 @@
     "status_success": "ជោគជ័យ",
     "status_failed": "បរាជ័យ"
   },
+  "dynamic_filter": {
+    "status": {
+      "all": "គ្រប់ស្ថានភាព",
+      "active": "សកម្ម",
+      "inactive": "អសកម្ម",
+      "pending": "រង់ចាំ",
+      "completed": "បានបញ្ចប់",
+      "failed": "បរាជ័យ",
+      "success": "ជោគជ័យ",
+      "error": "កំហុស",
+      "processing": "កំពុងដំណើរការ"
+    },
+    "currency_id": {
+      "USD": "USD - ដុល្លារអាមេរិក",
+      "KHR": "KHR - រៀលកម្ពុជា"
+    }
+  },
   "table": {
+    "filters": "តម្រង",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
+    "search_placeholder": "ស្វែងរក...",
+    "column_config": {
+        "tooltip": "លាក់/បង្ហាញជួរឈរ",
+        "reset": "កំណត់ឡើងវិញ",
+        "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
+        "columns": "ជួរឈរ"
+      },
+    "settlement-history": {
+      "columns": {
+        "created_date": "កាលបរិច្ឆេទទូទាត់",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "total_settled": "ប្រតិបត្តិការ",
+        "status": "ស្ថានភាព",
+        "created_by": "ទូទាត់ដោយ"
+      }
+    },
+    "banks-list": {
+      "columns": {
+        "bank_name": "ឈ្មោះធនាគារ",
+        "currency": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "activated_date": "កាលបរិច្ឆេទដំណើរការ",
+        "is_settlement_bank": "ធនាគារទូទាត់",
+        "is_collection_bank": "ធនាគារប្រមូលប្រាក់"
+      }},
+    "transactions-history-table": {
+    "columns": {
+      "collection_bank": "ធនាគារប្រមូលប្រាក់",
+      "settlement_bank": "ធនាគារទូទាត់",
+      "settlement_type": "ប្រភេទទូទាត់",
+      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "status": "ស្ថានភាព",
+      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "bank_ref": "លេខយោងធនាគារ",
+      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "total_customer": "ចំនួនអតិថិជន"
+    }
+  }
+  },
     "search_placeholder": "ស្វែងរក..."
   },
 
@@ -673,7 +745,82 @@
   },
   "pages": {
     "transaction": {
-      "title": "ប្រតិបត្តិការ"
+      "title": "ប្រតិបត្តិការ",
+      "created_date":"កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "total_customer": "ចំនួនអតិថិជន",
+      "bank_ref": "លេខយោងធនាគារ",
+      "repush": "បញ្ជូនម្តងទៀត",
+      "repush_description": "បញ្ជូនប្រតិបត្តិការទៅកាន់ម្ចាស់អាជីវកម្ម",
+      "info": "បញ្ជាក់",
+      "info_des": "សូមជ្រើសរើសប្រតិបត្តិការដែលលោកអ្នកចង់បញ្ជូន"
     }
+  },
+  "banks": {
+    "title": "ធនាគារ",
+    "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់រចនាសម្ព័ន្ធធនាគារ",
+    "search_placeholder": "ស្វែងរកតាមឈ្មោះធនាគារ",
+    "add_bank": "បន្ថែមធនាគារ",
+    "edit_bank": "កែប្រែធនាគារ",
+    "view_bank": "មើលធនាគារ",
+    "delete_bank": "លុបធនាគារ",
+    "bank_code": "លេខកូដធនាគារ",
+    "bank_name": "ឈ្មោះធនាគារ",
+    "bank_short_name": "ឈ្មោះខ្លី",
+    "swift_code": "លេខកូដ SWIFT",
+    "description": "ការពិពណ៌នា",
+    "country_code": "ប្រទេស",
+    "currency_code": "រូបិយប័ណ្ណ",
+    "is_settlement_bank": "ធនាគារទូទាត់",
+    "is_collection_bank": "ធនាគារប្រមូលប្រាក់",
+    "account_number": "លេខគណនី",
+    "account_name": "ឈ្មោះគណនី",
+    "branch_name": "ឈ្មោះសាខា",
+    "branch_code": "លេខកូដសាខា",
+    "contact_person": "អ្នកទំនាក់ទំនង",
+    "contact_phone": "លេខទូរស័ព្ទទំនាក់ទំនង",
+    "contact_email": "អ៊ីមែលទំនាក់ទំនង",
+    "address": "អាសយដ្ឋាន",
+    "logo_url": "URL ឡូហ្គោ",
+    "website_url": "URL គេហទំព័រ",
+    "is_active": "សកម្ម",
+    "created_at": "បានបង្កើតនៅ",
+    "updated_at": "បានអាប់ដេតនៅ",
+    "created_by": "បង្កើតដោយ",
+    "updated_by": "អាប់ដេតដោយ",
+    "settlement_banks": "ធនាគារទូទាត់",
+    "collection_banks": "ធនាគារប្រមូលប្រាក់",
+    "bank_details": "ព័ត៌មានលម្អិតធនាគារ",
+    "contact_information": "ព័ត៌មានទំនាក់ទំនង",
+    "account_information": "ព័ត៌មានគណនី",
+    "general_information": "ព័ត៌មានទូទៅ",
+    "toggle_status": "ប្តូរស្ថានភាព",
+    "activate_bank": "ធ្វើឱ្យធនាគារសកម្ម",
+    "deactivate_bank": "ធ្វើឱ្យធនាគារអសកម្ម",
+    "confirm_delete": "តើអ្នកប្រាកដជាចង់លុបធនាគារនេះទេ?",
+    "confirm_activate": "តើអ្នកប្រាកដជាចង់ធ្វើឱ្យធនាគារនេះសកម្មទេ?",
+    "confirm_deactivate": "តើអ្នកប្រាកដជាចង់ធ្វើឱ្យធនាគារនេះអសកម្មទេ?",
+    "bank_created": "បានបង្កើតធនាគារដោយជោគជ័យ",
+    "bank_updated": "បានអាប់ដេតធនាគារដោយជោគជ័យ",
+    "bank_deleted": "បានលុបធនាគារដោយជោគជ័យ",
+    "bank_activated": "បានធ្វើឱ្យធនាគារសកម្មដោយជោគជ័យ",
+    "bank_deactivated": "បានធ្វើឱ្យធនាគារអសកម្មដោយជោគជ័យ",
+    "no_banks_found": "រកមិនឃើញធនាគារ",
+    "loading_banks": "កំពុងទាញយកធនាគារ...",
+    "filter_settlement": "ធនាគារទូទាត់ប៉ុណ្ណោះ",
+    "filter_collection": "ធនាគារប្រមូលប្រាក់ប៉ុណ្ណោះ",
+    "filter_active": "ធនាគារសកម្មប៉ុណ្ណោះ",
+    "filter_country": "ច្រោះតាមប្រទេស",
+    "filter_currency": "ច្រោះតាមរូបិយប័ណ្ណ",
+    "all_banks": "ធនាគារទាំងអស់",
+    "total_banks": "ធនាគារសរុប",
+    "bank_not_found_desc": "រកមិនឃើញធនាគារដែលបានស្នើសុំ។",
+    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។"
+  },
+  "additional_information": "ព័ត៌មានបន្ថែម",
+  "metadata": "ទិន្នន័យមេតា",
+  "back": "ត្រលប់",
+  "ascending": "តាមលំដាប់ឡើង",
+  "descending": " តាមលំដាប់ចុះ",
+  "clear": "សម្អាត"
   }
 }

@@ -4,133 +4,164 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <!-- Left Section: Transaction Detail (50% width) -->
       <div class="lg:col-span-1">
-        <div
-          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-        >
-          <!-- Transaction Detail Header -->
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-3">
-              <div class="flex items-center">
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+          <!-- Tab Header -->
+          <div class="flex justify-between items-center mb-3">
+            <!-- Tabs -->
+            <div class="flex gap-2">
+              <div
+                v-for="tab in tabs"
+                :key="tab.value"
+                @click="activeTab = tab.value"
+                class="relative flex flex-col items-center"
+              >
+                <!-- Tab Wrapper -->
                 <div
-                  class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
+                  class="flex items-center gap-2 px-4 py-2 cursor-pointer transition-all duration-200 ease-in-out rounded-t-xl"
+                  :class="activeTab === tab.value
+                    ? 'bg-primary/5 text-primary'
+                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/50'"
                 >
-                  <UIcon name="material-symbols:receipt-long" class="w-4 h-4 text-primary" />
+                  <UIcon :name="tab.icon" class="w-4 h-4" />
+                  <span class="text-sm font-medium">{{ tab.label }}</span>
                 </div>
-                <h4 class="text-base font-medium text-gray-900 dark:text-white">Transaction</h4>
+
+                <!-- Underline -->
+                <div
+                  v-if="activeTab === tab.value"
+                  class="h-[2px] bg-primary rounded-full w-[65%]"
+                ></div>
               </div>
             </div>
-            <div class="flex items-center space-x-2">
+
+            <!-- Actions Right -->
+            <div class="flex items-center gap-2">
               <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
               <UButton
-                color="primary"
-                variant="outline"
-                icon="i-heroicons-eye"
-                size="sm"
+                class="text-gray-500"
+                variant="ghost"
+                icon="material-symbols:more-vert"
+                size="md"
                 @click="download"
-              >
-              </UButton>
+              />
             </div>
           </div>
-
-          <!-- Transaction Data Display Box -->
-          <div
-            class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4"
-          >
-            <!-- Single Column Layout for Transaction Fields -->
-            <div class="space-y-0">
-              <div
-                v-for="(field, index) in allFields"
-                :key="index"
-                :class="[
-                  'flex justify-between items-center py-3',
-                  index < allFields.length - 1
-                    ? 'border-b border-dotted border-gray-200 dark:border-gray-700'
-                    : '',
-                ]"
-              >
-                <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[100px]">
-                  {{ field.label }}
-                </span>
-
-                <!-- Badge Type -->
-                <TransactionTypeBadge
-                  v-if="field.type === 'badge'"
-                  :transaction-type="field.value"
-                  size="sm"
-                />
-
-                <!-- Amount Type -->
-                <span
-                  v-else-if="field.type === 'amount'"
-                  class="text-sm font-medium text-gray-900 dark:text-white"
-                >
-                  {{ field.value }}
-                </span>
-
-                <!-- Copyable Code Type -->
-                <!-- <ClipboacrdBadge
-                  v-else-if="field.type === 'code' && field.copyable"
-                  :text="field.rawValue || field.value"
-                  :copied-tooltip-text="$t('clipboard.copied')"
-                /> -->
-
-                <ClipboardBadge
-                  v-else-if="field.type === 'code' && field.copyable"
-                  :text="field.rawValue"
-                  :copied-tooltip-text="$t('clipboard.copied')"
-                  class="mt-1"
-                />
-
-                <!-- Regular Text -->
-                <span
-                  v-else
+          
+          <!-- Tab Content Wrapper -->
+          <div class="relative transition-all duration-300 ease-in-out">
+            <!-- Transaction Tab Content -->
+            <div
+              v-show="activeTab === 'transaction'"
+              ref="transactionRef"
+              class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4"
+            >
+              <div class="space-y-0">
+                <div
+                  v-for="(field, index) in allFields"
+                  :key="index"
                   :class="[
-                    'text-sm font-medium text-gray-900 dark:text-white',
-                    field.type === 'code' ? 'font-mono break-all' : '',
+                    'flex justify-between items-center py-3',
+                    index < allFields.length - 1 ? 'border-b border-dotted border-gray-200 dark:border-gray-700' : ''
                   ]"
                 >
-                  {{ field.value }}
-                </span>
-              </div>
+                  <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">{{ field.label }}</span>
 
-              <!-- Supplier Section at the end -->
-              <div
-                class="flex justify-between items-center py-3 border-t border-dotted border-gray-200 dark:border-gray-700"
-              >
-                <span class="text-sm text-gray-600 dark:text-gray-400">Biller Name</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                  transactionData.biller
-                }}</span>
+                  <TransactionTypeBadge
+                    v-if="field.type === 'badge'"
+                    :transaction-type="field.value"
+                    size="sm"
+                  />
+                  <span
+                    v-else-if="field.type === 'amount'"
+                    class="text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    {{ field.value }}
+                  </span>
+                  <ClipboardBadge
+                    v-else-if="field.type === 'code' && field.copyable"
+                    :text="field.rawValue"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                    class="mt-1"
+                  />
+                  <span
+                    v-else
+                    :class="[
+                      'text-sm font-medium text-gray-900 dark:text-white',
+                      field.type === 'code' ? 'font-mono break-all' : ''
+                    ]"
+                  >
+                    {{ field.value }}
+                  </span>
+                </div>
               </div>
+            </div>
+
+            <!-- Push Back Transaction Tab Content -->
+            <div
+              v-show="activeTab === 'repush'"
+              :style="{ height: transactionHeight + 'px' }"
+              class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col p-3">
+              <!-- <UTable
+                :data="webhookHistoryData"
+                :columns="webhookColumns"
+                class="w-full"
+                sortable
+                v-model:sort="webhookSorting"
+                :ui="{
+                  td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
+                  th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
+                  thead: 'whitespace-nowrap',
+                  tbody: 'whitespace-nowrap',
+                  tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
+                }"
+                @select="onRowSelect"
+              /> -->
+
+               <UTable
+                ref="table"
+                :data="webhookHistoryData"
+                :columns="webhookColumns"
+                sticky
+                sortable
+                v-model:sort="webhookSorting"
+                class="-mx-3"
+                :style="{ maxHeight: 'h-full'}"
+                :ui="{
+                  ...appConfig.ui.table.slots,
+                }"
+                @select="onRowSelect"
+              />
+
+              
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right Section: Settlement Bank & Push Back Transaction (50% width) -->
+      <!-- Right Section: Settlement Bank and Customer Information  -->
       <div class="space-y-3 flex flex-col h-full">
         <!-- Settlement Bank Section -->
-        <div
-          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-        >
-          <div class="flex items-center justify-between mb-2">
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <!-- <div class="flex items-center justify-between mb-2">
             <div class="flex items-center space-x-3">
               <div class="flex items-center">
                 <div
                   class="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-2"
                 >
-                  <UIcon name="i-heroicons-building-library" class="w-4 h-4 text-green-600" />
+                  <UIcon name="material-symbols:account-balance-outline"  class="w-4 h-4 text-green-600" />
                 </div>
                 <h4 class="text-base font-medium text-gray-900 dark:text-white">Settlement Bank</h4>
               </div>
             </div>
-            <!-- <div class="flex items-center space-x-2">
-              <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
-            </div> -->
-          </div>
+          </div> -->
+          <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
+            <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+              <UIcon name="material-symbols:account-balance-outline" class="w-4 h-4 text-primary" />
+            </div>
+            Settlement Bank
+          </h4>
           <!-- Horizontal line below header -->
-          <hr class="border-gray-200 dark:border-gray-700 mb-2 -mx-4" />
-
+          <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3 py-1" />
           <div class="space-y-3">
             <!-- Bank Name -->
             <div class="flex justify-between items-center">
@@ -160,7 +191,7 @@
             <!-- Settlement Amount -->
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Amount</span>
-              <span class="text-lg font-bold text-blue-600">
+              <span class="text-lg font-bold text-primary">
                 {{ useCurrency().formatAmount(transactionData.settlementAmount) }}
                 {{ transactionData.currency }}
               </span>
@@ -168,52 +199,42 @@
           </div>
         </div>
 
-        <!-- Push Back Transaction Section -->
-        <div
-          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex-1 flex flex-col"
-        >
-          <div class="flex items-center space-x-3">
-            <div
-              class="w-8 h-8 bg-orange-50 dark:bg-orange-900/20 rounded-lg flex items-center justify-center"
-            >
-              <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 text-orange-600" />
+        <!-- Customer Information Table -->
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col p-3">
+          <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
+            <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+              <UIcon name="material-symbols:receipt-outline" class="w-4 h-4 text-primary" />
             </div>
-            <h4 class="text-base font-medium text-gray-900 dark:text-white">
-              Push Back Transaction
-            </h4>
-          </div>
-
-          <!-- Push Back Transaction History Table -->
-          <div class="flex-1">
-            <UTable
-              :data="webhookHistoryData"
-              :columns="webhookColumns"
-              class="w-full"
-              sortable
-              v-model:sort="webhookSorting"
-              :ui="{
-                td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
-                th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
-                thead: 'whitespace-nowrap',
-                tbody: 'whitespace-nowrap',
-                tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
-              }"
-              @select="onRowSelect"
-            />
-          </div>
+            Transaction Detail
+          </h4>
+          <!-- Horizontal line below header -->
+          <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
+          <UTable
+            ref="table"
+            :data="customerDetails"
+            :columns="customerColumns"
+            sticky
+            sortable
+            class="-mx-3"
+            :style="{ maxHeight: 'h-full'}"
+            :ui="{
+              ...appConfig.ui.table.slots,
+            }"
+            @select="onRowSelect"
+          />
         </div>
       </div>
     </div>
 
     <!-- Customer Information Table -->
-    <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+    <!-- <div
+      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3"
     >
       <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
         <div
           class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
         >
-          <UIcon name="material-symbols:list-alt" class="w-4 h-4 text-primary" />
+          <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
         </div>
         Transaction Detail
       </h4>
@@ -230,21 +251,19 @@
           tbody: 'whitespace-nowrap',
         }"
       />
-    </div>
+    </div> -->
 
     <!-- Transaction Allocation Table -->
-    <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-    >
+    <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
       <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
-        <div
-          class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
-        >
-          <UIcon name="i-material-symbols-receipt-long" class="w-4 h-4 text-primary" />
+        <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+          <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
         </div>
         Transaction Allocation
       </h4>
-      <UTable
+      <!-- Horizontal line below header -->
+      <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
+      <!-- <UTable
         :data="transactionAllocateData"
         :columns="transactionAllocateColumns"
         class="w-full"
@@ -256,6 +275,19 @@
           thead: 'whitespace-nowrap',
           tbody: 'whitespace-nowrap',
           tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
+        }"
+        @select="onTransactionAllocationSelect"
+      /> -->
+      <UTable
+        ref="table"
+        :data="transactionAllocateData"
+        :columns="transactionAllocateColumns"
+        sticky
+        v-model:sort="transactionAllocationSorting"
+        class="-mx-3"
+        :style="{ maxHeight: 'h-full'}"
+        :ui="{
+          ...appConfig.ui.table.slots,
         }"
         @select="onTransactionAllocationSelect"
       />
@@ -329,7 +361,7 @@
     <USlideover
       v-model:open="showPushBackDetail"
       side="right"
-      :overlay="true"
+      :overlay="false"
       :title="'Push Back Transaction Detail'"
       @close="closeSlideover"
     >
@@ -455,7 +487,7 @@
     <USlideover
       v-model:open="showTransactionAllocationDetail"
       side="right"
-      :overlay="true"
+      :overlay="false"
       :title="'Transaction Allocation Detail'"
       @close="closeAllocationSlideover"
     >
@@ -590,7 +622,7 @@ import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
-
+import appConfig from '~~/app.config'
 definePageMeta({
   auth: false,
   breadcrumbs: [
@@ -617,6 +649,36 @@ const selectedPushBackTransaction = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
 
+const activeTab = ref('transaction')
+const transactionRef = ref<HTMLElement | null>(null)
+const transactionHeight = ref(0)
+
+const updateHeight = () => {
+  nextTick(() => {
+    if (transactionRef.value) {
+      transactionHeight.value = transactionRef.value.offsetHeight
+    }
+  })
+}
+
+onMounted(updateHeight)
+watch(activeTab, (val) => {
+  if (val === 'transaction') updateHeight()
+})
+
+const tabs = [
+  {
+    label: 'Transaction',
+    value: 'transaction',
+    icon: 'material-symbols:credit-card-clock-outline'
+  },
+  {
+    label: 'Repush',
+    value: 'repush',
+    icon: 'material-symbols:sync-outline'
+  }
+]
+
 // Sorting state for tables
 const customerSorting = ref([])
 const transactionAllocationSorting = ref([])
@@ -638,7 +700,15 @@ const customerDetails: CustomerDetail[] = [
     id: '1',
     customerName: 'So Sorphorn',
     customerCode: 'CUST-001',
-    billNumber: 'BILL-TX000001A',
+    billNumber: 'INV-000001A',
+    amount: 150,
+    currency: 'USD',
+  },
+   {
+    id: '2',
+    customerName: 'So Sorphorn',
+    customerCode: 'CUST-002',
+    billNumber: 'INV-000002B',
     amount: 150,
     currency: 'USD',
   },
@@ -658,8 +728,6 @@ const customerColumns = [
     header: ({ column }: any) => createSortableHeader(column, 'Name', 'left'),
     accessorKey: 'customerName',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerName),
-    size: 200,
-    minSize: 180,
     enableSorting: true,
   },
   {
@@ -667,17 +735,13 @@ const customerColumns = [
     header: ({ column }: any) => createSortableHeader(column, 'Code', 'left'),
     accessorKey: 'customerCode',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerCode),
-    size: 150,
-    minSize: 120,
     enableSorting: true,
   },
   {
     id: 'billNumber',
-    header: ({ column }: any) => createSortableHeader(column, 'Bill Number', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, 'Bill No', 'left'),
     accessorKey: 'billNumber',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
-    size: 180,
-    minSize: 160,
     enableSorting: true,
   },
   {
@@ -685,8 +749,6 @@ const customerColumns = [
     header: () => h('div', { class: 'text-left' }, 'Currency'),
     accessorKey: 'currency',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
-    size: 80,
-    minSize: 70,
     enableSorting: true,
   },
   {
@@ -695,8 +757,6 @@ const customerColumns = [
     accessorKey: 'amount',
     cell: ({ row }: any) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
-    size: 120,
-    minSize: 100,
     enableSorting: true,
   }
 ] as any[]
@@ -913,6 +973,52 @@ const webhookColumns = [
     enableSorting: false,
   },
   {
+    id: 'date',
+    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
+    accessorKey: 'date',
+    enableSorting: true,
+    cell: ({ row }: any) => {
+      return h('div', { class: 'text-sm text-left' }, [
+        format.formatDateTime(row.original.date, {
+          dateStyle: userPreferences?.dateFormat || 'medium',
+          timeStyle: userPreferences?.timeFormat || 'short',
+        }),
+      ])
+    },
+    size: 100,
+  },
+  //  {
+  //   id: 'total_repush',
+  //   header: () => h('div', { class: 'text-right' }, 'Total Repush'),
+  //   accessorKey: 'total_repush',
+  //   enableSorting: false,
+  //   cell:  ({ row }: any) =>
+  //     h('div', { class: 'text-right' },row.original.totalRepush),
+  // },
+  {
+    id: 'type',
+    header: () => h('div', { class: 'text-left' }, 'Type'),
+    accessorKey: 'type',
+    enableSorting: false,
+    cell:  ({ row }: any) =>
+      h('div', { class: 'text-left' },row.original.type),
+    size: 100,
+  },
+  {
+    id: 'status',
+    header: () => h('div', { class: 'text-left' }, 'Status'),
+    accessorKey: 'status',
+    enableSorting: false,
+    cell: ({ row }: any) =>
+      h(StatusBadge, {
+        class: 'text-left',
+        status: row.original.status,
+        variant: 'subtle',
+        size: 'sm',
+      }),
+    size: 100,
+  },
+  {
     id: 'actions',
     header: () => h('div', { class: 'text-left' }, 'Actions'),
     cell: ({ row }: any) =>
@@ -965,53 +1071,6 @@ const webhookColumns = [
     size: 80,
     enableSorting: false,
   },
-  {
-    id: 'date',
-    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
-    accessorKey: 'date',
-    enableSorting: true,
-    cell: ({ row }: any) => {
-      return h('div', { class: 'text-sm text-left' }, [
-        format.formatDateTime(row.original.date, {
-          dateStyle: userPreferences?.dateFormat || 'medium',
-          timeStyle: userPreferences?.timeFormat || 'short',
-        }),
-      ])
-    },
-    size: 100,
-  },
-   {
-    id: 'total_repush',
-    header: () => h('div', { class: 'text-right' }, 'Total Repush'),
-    accessorKey: 'total_repush',
-    enableSorting: false,
-    cell:  ({ row }: any) =>
-      h('div', { class: 'text-right' },row.original.totalRepush),
-    size: 50,
-  },
-  {
-    id: 'type',
-    header: () => h('div', { class: 'text-left' }, 'Type'),
-    accessorKey: 'type',
-    enableSorting: false,
-    cell:  ({ row }: any) =>
-      h('div', { class: 'text-left' },row.original.type),
-    size: 100,
-  },
-  {
-    id: 'status',
-    header: () => h('div', { class: 'text-left' }, 'Status'),
-    accessorKey: 'status',
-    enableSorting: false,
-    cell: ({ row }: any) =>
-      h(StatusBadge, {
-        class: 'text-left',
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
-    size: 100,
-  },
 ]
 
 // Transaction data
@@ -1026,6 +1085,7 @@ const transactionData = {
   customerFee: 0.0,
   supplierFee: 3.0,
   bankReference: 'AC0123243253',
+  collectionBank: 'ACLEDA',
   settlementBank: 'ACLEDA',
   accountNumber: 'BANK-12345678',
   biller: 'Charge Station A',
@@ -1079,12 +1139,22 @@ const transactionOverviewFields = computed(() => [
     type: 'amount',
   },
   {
+    label: 'Biller Name',
+    value: `${transactionData.biller}`,
+    type: 'text',
+  },
+  {
+    label: 'Bank Name',
+    value: `${transactionData.collectionBank}`,
+    type: 'text',
+  },
+  {
     label: 'Bank Reference',
     value: `${transactionData.transactionReference}`,
     type: 'code',
     copyable: true,
     rawValue: transactionData.transactionReference,
-  },
+  }
 ])
 
 // Show all fields in a single column

@@ -213,7 +213,7 @@ const columns: TableColumn<FeeModel>[] = [
     accessorKey: 'name',
     header: () => t('fee_name'),
   },
-  { accessorKey: 'currency', header: () => t('currency') },
+  { accessorKey: 'currency', header: () => t('currency.label') },
   {
     accessorKey: 'fee_type',
     header: () => t('fee_type'),

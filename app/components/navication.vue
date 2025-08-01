@@ -103,6 +103,36 @@ const items = computed<NavigationMenuItem[][]>(() => [
     //     // },
     //   ],
     // },
+    {
+      label: t('navigation.organization'),
+      icon: 'i-material-symbols-home-work-outline',
+      size: 'lg',
+      active: activeStates.value.organization,
+      defaultOpen: true,
+      children: [
+        {
+          label: t('navigation.banks'),
+          // icon: 'i-material-symbols-account-balance-rounded',
+          size: 'lg',
+          to: '/organization/banks',
+          active: activeStates.value.banks,
+        },
+        {
+          label: t('navigation.sub_billers'),
+          // icon: 'i-material-symbols-light:article-person',
+          size: 'lg',
+          to: '/organization/sub-billers',
+          active: activeStates.value.subBillers,
+        },
+        // {
+        //   label: t('navigation.users'),
+        //   // icon: 'i-material-symbols-light-group',
+        //   size: 'lg',
+        //   to: '/organization/users',
+        //   active: activeStates.value.users,
+        // },
+      ],
+    },
     // {
     //   label: t('navigation.reports'),
     //   icon: 'i-material-symbols-light-bar-chart',
