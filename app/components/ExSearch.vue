@@ -15,7 +15,7 @@
     @focus="onFocus"
     @blur="onBlur"
   >
-    <template v-if="searchValue && showClearButton || searchTooltip" #trailing>
+    <template v-if="searchValue && showClearButton" #trailing>
       <UButton
         v-if="searchValue && showClearButton"
         :icon="clearIcon"
@@ -25,10 +25,14 @@
         :ui="appConfig.ui.button.slots"
         @click="clearSearch"
       />
-      <UTooltip v-else :text="searchTooltip" :delay-duration="300">
-        <UIcon :size="size" name="material-symbols:info-outline" class="cursor-pointer text-muted" />
+    </template>
+
+    <template v-if="searchTooltip" #leading>
+      <UTooltip :text="searchTooltip" :delay-duration="300">
+        <UIcon :size="size" name="material-symbols:search-rounded" class="text-gray-400" />
       </UTooltip>
     </template>
+
   </UInput>
 </template>
 

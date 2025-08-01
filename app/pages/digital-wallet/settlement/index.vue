@@ -2,7 +2,7 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
-    <div
+    <!-- <div
       class="flex flex-wrap items-center justify-between gap-2 px-3 py-3 bg-white dark:bg-gray-900 rounded shadow"
     >
       <StatusSelection
@@ -13,9 +13,28 @@
           :placeholder="t('settlement.select_status')"
           :searchable="false"
         />
+    </div> -->
+    <div
+    class="flex flex-wrap items-center gap-2"
+    >
+      <div 
+      v-for="(value, key) in summary"
+      :key="key"
+      class="flex flex-col bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 min-w-48">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t(`settlement.${key}`) }}</h3>
+        <AmountWithCurrency
+          v-if="key === 'total_amount_khr' || key === 'total_amount_usd'"
+          :amount="value"
+          :currency="key === 'total_amount_khr' ? 'KHR' : 'USD'"
+          variant="primary"
+          />
+        <p
+        v-else
+        class="text-primary font-bold">{{ value }}</p>
+      </div>
     </div>
     <ExTable
-    ref="table"
+      ref="table"
       :columns="columns"
       :table-id="TABLE_ID"
       :fetch-data-fn="fetchSettlementForTable"
@@ -84,6 +103,14 @@ const loading = ref(false)
 const errorMsg = ref('')
 const isRefreshing = ref(false)
 const autoRefresh = ref(false)
+
+const summary = ref({
+  total_amount_khr: 0,
+  total_amount_usd: 0,
+  total_settled: 0,
+  success: 0,
+  failed: 0,
+})
 
 // Initialize status filter from localStorage or defaults
 const initializeStatusFilter = () => {
@@ -313,6 +340,13 @@ const fetchSettlementHistory = async (
     settlements.value = data?.records ?? []
     total.value = data?.total_record ?? 0
     totalPage.value = data?.total_page ?? 0
+    summary.value = {
+      total_amount_khr: data?.sum_total_amount_khr || 0,
+      total_amount_usd: data?.sum_total_amount_usd || 0,
+      total_settled: data?.sum_total_settled || 0,
+      success: data?.sum_success || 0,
+      failed: data?.sum_failed || 0,
+    }
     return data?.records
   } catch (error: unknown) {
     errorMsg.value = (error as Error).message || 'Failed to load settlement history.'

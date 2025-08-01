@@ -314,6 +314,51 @@ export const useTableConfig = (): TableConfigComposable => {
     }
   }
 
+  /**
+   * Save date range for a specific table
+   * @param tableId - Unique identifier for the table
+   * @param dateRange - Object containing start and end date strings
+   */
+  const saveDateRange = (tableId: string, dateRange: { start: string; end: string }): boolean => {
+    try {
+      const allConfigs = getAllConfigs()
+
+      if (!allConfigs[tableId]) {
+        allConfigs[tableId] = {
+          columnVisibility: {},
+          dateRange,
+        }
+      } else {
+        allConfigs[tableId].dateRange = dateRange
+      }
+
+      const success = storage.setItem(getStorageKey(), allConfigs)
+
+      if (import.meta.env.DEV) {
+        console.log(`💾 Saved date range for table ${tableId}:`, dateRange)
+      }
+
+      return success
+    } catch (error) {
+      console.error(`❌ Failed to save date range for table ${tableId}:`, error)
+      return false
+    }
+  }
+
+  /**
+   * Get date range for a specific table
+   * @param tableId - Unique identifier for the table
+   */
+  const getDateRange = (tableId: string): { start: string; end: string } | null => {
+    try {
+      const allConfigs = getAllConfigs()
+      return allConfigs[tableId]?.dateRange || null
+    } catch (error) {
+      console.error(`❌ Failed to get date range for table ${tableId}:`, error)
+      return null
+    }
+  }
+
   return {
     saveColumnConfig,
     getColumnConfig,
@@ -330,5 +375,7 @@ export const useTableConfig = (): TableConfigComposable => {
     getSortingState,
     saveStatusFilter,
     getStatusFilter,
+    saveDateRange,
+    getDateRange,
   }
 }

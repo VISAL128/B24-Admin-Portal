@@ -188,14 +188,11 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
     </div>
 
     <!-- 📋 Main Table -->
-    <div class="flex-1 min-h-0 flex flex-col">
-      <div class="flex-1 overflow-hidden">
-        <UTable
+    <UTable
           :key="props.tableId" 
           ref="tableRef" 
           :data="filteredData" 
           :columns="filteredColumns"
-          :column-visibility="columnVisibility"
           :sort="sortState"
           :loading="loading"
           :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
@@ -217,8 +214,6 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
             <TableEmptyState />
           </template>
         </UTable>
-      </div>
-    </div>
 
     <!-- 📄 Pagination and Page Size -->
     <div
@@ -288,8 +283,27 @@ const initializeColumnFilters = (): Record<string, string> => {
   return savedFilters || {}
 }
 
+// Initialize date range from localStorage or defaults
+const initializeDateRange = (): { start: string; end: string } => {
+  const savedDateRange = tableConfig.getDateRange(props.tableId)
+  if (savedDateRange) {
+    return savedDateRange
+  }
+  
+  // Default to current month
+  const today = new Date()
+  const firstDay = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
+  const lastDay = new CalendarDate(today.getFullYear(), today.getMonth() + 1, new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate())
+  
+  return {
+    start: `${firstDay.year}-${String(firstDay.month).padStart(2, '0')}-${String(firstDay.day).padStart(2, '0')}`,
+    end: `${lastDay.year}-${String(lastDay.month).padStart(2, '0')}-${String(lastDay.day).padStart(2, '0')}`
+  }
+}
+
 const columnVisibility = ref<Record<string, boolean>>({})
 const columnFilters = ref<Record<string, string>>({})
+const dateRange = ref<{ start: string; end: string }>({ start: '', end: '' })
 
 const saveColumnVisibility = () => {
   tableConfig.saveColumnConfig(props.tableId, columnVisibility.value)
@@ -300,8 +314,14 @@ const saveColumnFilters = () => {
   if (import.meta.env.DEV) console.log(`💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
 }
 
+const saveDateRange = () => {
+  tableConfig.saveDateRange(props.tableId, dateRange.value)
+  if (import.meta.env.DEV) console.log(`💾 Saved date range for table ${props.tableId}:`, dateRange.value)
+}
+
 watch(columnVisibility, saveColumnVisibility, { deep: true })
 watch(columnFilters, saveColumnFilters, { deep: true })
+watch(dateRange, saveDateRange, { deep: true })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columnConfig = computed((): any[] => {
@@ -609,17 +629,45 @@ const columnsWithRowNumber = computed(() => {
 })
 
 onBeforeMount(() => {
-  // Get last day of current month
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
-  // Set default date range to current month
-  startDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1).toString()
-  endDate.value = new CalendarDate(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    lastDayOfMonth
-  ).toString()
-  modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-  modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
+  // Initialize date range from localStorage or defaults
+  const initialDateRange = initializeDateRange()
+  dateRange.value = initialDateRange
+  
+  // Parse the date strings to set calendar values and internal date values
+  try {
+    const startParts = initialDateRange.start.split('-').map(Number)
+    const endParts = initialDateRange.end.split('-').map(Number)
+    
+    if (startParts.length === 3 && endParts.length === 3 && 
+        startParts.every(p => !isNaN(p)) && endParts.every(p => !isNaN(p))) {
+      startDate.value = initialDateRange.start
+      endDate.value = initialDateRange.end
+      
+      modelValue.value.start = new CalendarDate(startParts[0]!, startParts[1]!, startParts[2]!)
+      modelValue.value.end = new CalendarDate(endParts[0]!, endParts[1]!, endParts[2]!)
+    } else {
+      // Fallback to current month if parsing fails
+      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+      const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
+      const lastDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
+      
+      startDate.value = `${firstDayCalendar.year}-${String(firstDayCalendar.month).padStart(2, '0')}-${String(firstDayCalendar.day).padStart(2, '0')}`
+      endDate.value = `${lastDayCalendar.year}-${String(lastDayCalendar.month).padStart(2, '0')}-${String(lastDayCalendar.day).padStart(2, '0')}`
+      modelValue.value.start = firstDayCalendar
+      modelValue.value.end = lastDayCalendar
+    }
+  } catch (error) {
+    console.warn('Failed to parse saved date range, using defaults:', error)
+    // Fallback to current month
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+    const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
+    const lastDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
+    
+    startDate.value = `${firstDayCalendar.year}-${String(firstDayCalendar.month).padStart(2, '0')}-${String(firstDayCalendar.day).padStart(2, '0')}`
+    endDate.value = `${lastDayCalendar.year}-${String(lastDayCalendar.month).padStart(2, '0')}-${String(lastDayCalendar.day).padStart(2, '0')}`
+    modelValue.value.start = firstDayCalendar
+    modelValue.value.end = lastDayCalendar
+  }
 })
 
 
@@ -632,6 +680,7 @@ onMounted(() => {
     }
     return acc
   }, {} as Record<string, boolean>)
+  
   // Initialize auto-refresh state from table config
   const isAutoRefresh = tableConfig.getIsAutoRefresh(props.tableId)
   if (isAutoRefresh !== null) {
@@ -643,6 +692,8 @@ onMounted(() => {
 
   if (import.meta.env.DEV) {
     console.log(`📊 Initialized column visibility for table ${props.tableId}:`, columnVisibility.value)
+    console.log(`📊 Initialized column filters for table ${props.tableId}:`, columnFilters.value)
+    console.log(`📊 Initialized date range for table ${props.tableId}:`, dateRange.value)
   }
 
   // Fetch initial data if fetchDataFn is provided
@@ -684,10 +735,16 @@ onBeforeUnmount(() => {
 })
 
 watch(modelValue, (val) => {
-  const start = val.start?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || ''
-  const end = val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) || ''
+  // Convert CalendarDate directly to YYYY-MM-DD format without timezone conversion
+  const start = val.start ? `${val.start.year}-${String(val.start.month).padStart(2, '0')}-${String(val.start.day).padStart(2, '0')}` : ''
+  const end = val.end ? `${val.end.year}-${String(val.end.month).padStart(2, '0')}-${String(val.end.day).padStart(2, '0')}` : ''
+  
   startDate.value = start
   endDate.value = end
+  
+  // Update the dateRange ref which will trigger localStorage save
+  dateRange.value = { start, end }
+  
   if (props.fetchDataFn) {
     fetchData()
   }
@@ -699,6 +756,20 @@ const onResetColumnVisibility = () => {
   columnVisibility.value = { ...defaultColumnVisibility.value }
   // Reset column filters as well
   columnFilters.value = {}
+  // Reset date range to current month
+  const today = new Date()
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+  const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
+  const lastDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
+  
+  const defaultStart = `${firstDayCalendar.year}-${String(firstDayCalendar.month).padStart(2, '0')}-${String(firstDayCalendar.day).padStart(2, '0')}`
+  const defaultEnd = `${lastDayCalendar.year}-${String(lastDayCalendar.month).padStart(2, '0')}-${String(lastDayCalendar.day).padStart(2, '0')}`
+  
+  dateRange.value = { start: defaultStart, end: defaultEnd }
+  startDate.value = defaultStart
+  endDate.value = defaultEnd
+  modelValue.value.start = firstDayCalendar
+  modelValue.value.end = lastDayCalendar
 }
 
 defineExpose({

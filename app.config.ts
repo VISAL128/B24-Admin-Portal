@@ -242,7 +242,7 @@ export default defineAppConfig({
     input: {
       slots: {
         leading: 'ps-2',
-        leadingIcon: 'shrink-0 size-4 text-muted',
+        leadingIcon: 'shrink-0 size-4 text-gray-400',
         trailing: 'pe-2',
         trailingIcon: 'shrink-0 size-4 text-muted',
       },
