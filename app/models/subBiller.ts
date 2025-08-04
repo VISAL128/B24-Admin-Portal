@@ -6,7 +6,7 @@ export interface SubBillerQuery {
   PageSize?: number
 }
 
-export interface SubBillerResponse {
+export interface SubBillerListResponse {
   param: PaginationParam
   result: Supplier[]
 }

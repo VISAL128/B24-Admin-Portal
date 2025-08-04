@@ -9,12 +9,12 @@ import type {
   TopUpSummaryResponse,
   FeeSummaryResponse,
 } from '~~/server/model/pgw_module_api/transactionSummary'
-import type { SubBillerQuery, SubBillerResponse } from '~/models/subBiller'
+import type { SubBillerQuery, SubBillerListResponse } from '~/models/subBiller'
 import type {
   WalletTransactionRequest,
   WalletTransactionResponse,
 } from '~~/server/model/pgw_module_api/walletTransactions'
-
+import type { Supplier } from '~/models/supplier'
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
 
@@ -99,12 +99,25 @@ export const usePgwModuleApi = () => {
     ).toString()
     console.log('Fetching sub billers with query:', query)
     const rep = await executeV2(() =>
-      $fetch<SubBillerResponse>(`/api/pgw-module/sub-biller/get-sub-biller?${query}`, {
+      $fetch<SubBillerListResponse>(`/api/pgw-module/sub-biller/get-sub-biller?${query}`, {
         method: 'GET',
       })
     )
     return rep
   }
+
+  /**
+ * Get a specific sub biller by ID from PGW Module API
+ */
+const getSubBillerById = async (id: string) => {
+  return await executeV2(() =>
+    $fetch<Supplier>(`/api/pgw-module/sub-biller/${id}`, {
+      method: 'GET',
+      onResponseError() {},
+    })
+  )
+}
+
 
   /**
    * Get wallet transactions with pagination from PGW Module API
@@ -127,5 +140,6 @@ export const usePgwModuleApi = () => {
     getFeeSummary,
     getWalletTransactions,
     getSubBillers,
+      getSubBillerById,
   }
 }
