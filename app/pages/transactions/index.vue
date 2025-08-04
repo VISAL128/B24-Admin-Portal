@@ -1,129 +1,90 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-      <!-- Total Transaction -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Transaction</h3>
-        <p class="text-md font-bold">100</p>
+    <!-- Info Banner -->
+    <div v-if="showInfoBanner"
+      class="flex items-center justify-between bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 rounded-lg px-4 py-2">
+      <div class="flex items-center space-x-2">
+        <UIcon name="i-heroicons-light-bulb" class="text-warning w-4 h-4" />
+        <span class="font-semibold text-xs">Tip</span>
+        <span class="text-xs"> Apply filters to reflect changes in both the <strong>Transaction Summary</strong> and the <strong>Transaction</strong>.</span>
       </div>
-      
-      <!-- Failed Transactions -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Failed Transactions</h3>
-        <p class="text-md font-bold">5</p>
+      <div class="flex items-center gap-2">
+        <UButton
+          icon="i-heroicons-x-mark"
+          variant="ghost"
+          size="xs"
+          color="primary"
+          @click="showInfoBanner = false"
+        />
       </div>
-      
-      <!-- Total Amount KHR -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">KHR</span> 4,000,000
-        </p>
-      </div> -->
-      
-      <!-- Total Amount USD -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">USD</span> 50
-        </p>
-      </div> -->
-      
-      <!-- Total Settlement -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">KHR</span> 3,900
-        </p>
-      </div> -->
-      
-      <!-- Total Split USD -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">USD</span> 10
-        </p>
-      </div> -->
+    </div>
+    <!-- Responsive Summary Cards -->
+    <div class="grid gap-3 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+    <div
+      v-for="card in summarys"
+      :key="card.title"
+      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2"
+    >
+      <!-- Title and Filter Label -->
+      <div class="flex justify-between items-start">
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ card.title }}</h3>
+        <span class="text-xs font-medium text-primary whitespace-nowrap">
+          {{ card.filterLabel }}
+        </span>
+      </div>
 
-      <!-- Total Amount (Multi-currency in 2 cols) -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
-        <div class="grid grid-cols-2 gap-x-4">
-          <!-- KHR Block First -->
-          <div>
-            <p class="text-xs text-gray-600 dark:text-gray-400">KHR</p>
-            <p class="text-md font-bold">4,000,000</p>
-          </div>
-
-          <!-- USD Block Second -->
-          <div class="text-right ml-auto">
-            <p class="text-xs text-gray-600 dark:text-gray-400 ">USD</p>
-            <p class="text-md font-bold">50</p>
-          </div>
+       <!-- Values -->
+      <div class="flex flex-wrap justify-between gap-x-4">
+        <div
+          v-for="(val, idx) in card.values"
+          :key="idx"
+          class="text-md font-bold text-gray-900 dark:text-white flex items-baseline gap-1"
+        >
+          <span v-if="'currency' in val" class="text-xs font-medium">
+            {{ val.currency }}
+          </span>
+          {{ useCurrency().formatAmount(val.value) }}
         </div>
       </div>
 
-      <!-- Total Settlement (Multi-currency in 2 cols) -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
-        <div class="grid grid-cols-2 gap-x-4">
-          <!-- KHR Block First -->
-          <div>
-            <p class="text-xs text-gray-600 dark:text-gray-400">KHR</p>
-            <p class="text-md font-bold">4,000,000</p>
-          </div>
-
-          <!-- USD Block Second -->
-          <div class="text-right ml-auto">
-            <p class="text-xs text-gray-600 dark:text-gray-400 ">USD</p>
-            <p class="text-md font-bold">50</p>
-          </div>
-        </div>
+      <!-- Date Range -->
+      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-1">
+        <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-primary" />
+        <span class="whitespace-nowrap">{{ card.dateRange }}</span>
       </div>
     </div>
+  </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto">
-      <BaseTable
-        :data="filteredData"
-        :columns="columns"
-        table-id="transaction-history-table"
-        border-class="border-gray-200 dark:border-gray-700"
-        @filter-change="handleFilterChange"
-        @row-click="(row) => navigateToDetails(row.id)"
-        @search-change="(val) => (search = val)"
-        @date-range-change="
-          ({ start, end }) => {
-            startDate = start
-            endDate = end
-            fetchTransactionHistory()
-          }
-        "
-        :page="page"
-        :page-size="pageSize.value"
-        :total="total"
-        :total-page="totalPage"
-        @update:page="(val) => (page = val)"
-        @update:pageSize="
-          (val) => {
-            pageSize.value = val
-            page = 1
-          }
-        "
-      >
-        <template #empty>
-          <TableEmptyState />
-        </template>
-      </BaseTable>
-    </div>
+    <TablesExTable
+    ref="table"
+      :columns="columns"
+      :table-id="TABLE_ID"
+      :fetch-data-fn="fetchTransactionForTable"
+      show-row-number
+      show-date-filter
+      enabled-auto-refresh
+      enabled-repush
+      @row-click="handleViewDetails"
+    >
+    <template #trailingHeader>
+      <UTooltip :text="t('pages.transaction.repush_description')">
+          <UButton 
+            variant="outline"
+            size="sm"
+            @click="handleRepush()"> 
+            {{ t('pages.transaction.repush') }}
+            <template #trailing>
+              <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
+            </template>
+            
+          </UButton>
+        </UTooltip>
+    </template>
+    </TablesExTable>
   </div>
 </template>
 
 <script setup lang="ts">
-const showSidebar = ref(false)
-const selectedRecord = ref<SettlementHistoryRecord | null>(null)
-
 definePageMeta({
   auth: false,
   breadcrumbs: [{ label: 'transactions', to: '/transactions' }],
@@ -135,9 +96,8 @@ import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import StatusBadge from '~/components/StatusBadge.vue'
-import TableEmptyState from '~/components/TableEmptyState.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn } from '~/components/tables/table'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -149,9 +109,9 @@ import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
-import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 
+const showInfoBanner = ref(true)
 const dateOptions = computed(() => {
   const todayDate = df.format(today)
   const startOfWeek = new Date(today)
@@ -182,6 +142,147 @@ const dateOptions = computed(() => {
   ]
 })
 
+// Handle Repush Transaction
+const handleRepush = () => {
+    notification.showWarning({
+      title: t('pages.transaction.info'),
+      description: t('pages.transaction.info_des'),
+    })
+}
+
+const summarys = [
+  {
+    title: 'Total Transaction',
+    values: [{ value: 100 }],
+    filterLabel: 'This month',
+    dateRange: '01/08/2025 - 30/08/2025',
+  },
+  {
+    title: 'Failed Transactions',
+    values: [{ value: 5 }],
+    filterLabel: 'This month',
+    dateRange: '01/08/2025 - 30/08/2025',
+  },
+  {
+    title: 'Total Amount',
+    values: [
+      { currency: 'KHR', value: 4000000 },
+      { currency: 'USD', value: 157.75 },
+    ],
+    filterLabel: 'This month',
+    dateRange: '01/08/2025 - 30/08/2025',
+  },
+  {
+    title: 'Total Settlement',
+    values: [
+      { currency: 'KHR', value: 3900 },
+      { currency: 'USD', value: 10 },
+    ],
+    filterLabel: 'This month',
+    dateRange: '01/08/2025 - 30/08/2025',
+  },
+]
+
+
+// Wrapper function for TablesExTable
+const fetchTransactionForTable = async (params?: {
+  page?: number
+  pageSize?: number
+  search?: string
+  startDate?: string
+  endDate?: string
+}) : Promise<TableFetchResult<TransactionHistoryRecord[]> | null>  => {
+  loading.value = true
+  try {
+    const banks = ['ABA', 'ACLEDA', 'AMK'] as const
+    const subBillers = [
+      'Cambodia Electric Co.',
+      'Smart Axiata',
+      'Cellcard',
+      'Ezecom',
+      'Metfone',
+      'Sabay Digital',
+      'Foodpanda Cambodia',
+      'Nham24',
+      'Kerry Express',
+      'J&T Express',
+      'B-Hub Technology',
+      'Phnom Penh Water Supply',
+      'City Gas Cambodia',
+      'Total Energies Cambodia',
+      'ISPP International School',
+    ]
+
+    // Generate full dataset
+    const fullData: TransactionHistoryRecord[] = Array.from({ length: 100 }, (_, i) => ({
+      id: `txn-${i + 1}`,
+      created_date: new Date(Date.now() - i * 86400000),
+      bank_ref: `BANKREF-${i + 1000}`,
+      collection_bank: banks[Math.floor(Math.random() * banks.length)]!,
+      settlement_bank: banks[Math.floor(Math.random() * banks.length)]!,
+      settlement_type: i % 2 === 0 ? 'Auto' : 'Manual',
+      total_amount: 1000000 + i * 5000,
+      currency_id: i % 2 === 0 ? 'USD' : 'KHR',
+      status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
+      total_customer: i + 1,
+      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4]!,
+      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)]!,
+    }))
+
+    // Apply search filter if provided
+    let filteredData = fullData
+    if (params?.search) {
+      const searchLower = params.search.toLowerCase()
+      filteredData = fullData.filter(item => 
+        item.bank_ref.toLowerCase().includes(searchLower) ||
+        item.collection_bank.toLowerCase().includes(searchLower) ||
+        item.settlement_bank.toLowerCase().includes(searchLower) ||
+        item.transaction_type.toLowerCase().includes(searchLower) ||
+        item.sub_biller.toLowerCase().includes(searchLower) ||
+        item.total_customer.toString().toLowerCase().includes(searchLower)
+      )
+    }
+
+    // Apply date filter if provided
+    if (params?.startDate && params?.endDate) {
+      const startDate = new Date(params.startDate)
+      const endDate = new Date(params.endDate)
+      filteredData = filteredData.filter(item => {
+        const itemDate = new Date(item.created_date)
+        return itemDate >= startDate && itemDate <= endDate
+      })
+    }
+
+    // Calculate pagination
+    const currentPage = params?.page || 1
+    const currentPageSize = params?.pageSize || 10
+    const totalRecords = filteredData.length
+    const totalPages = Math.ceil(totalRecords / currentPageSize)
+    
+    // Apply pagination
+    const startIndex = (currentPage - 1) * currentPageSize
+    const endIndex = startIndex + currentPageSize
+    const paginatedData = filteredData.slice(startIndex, endIndex)
+
+    return {
+      data: paginatedData,
+      total_record: totalRecords,
+      total_page: totalPages,
+    }
+  } catch (error: unknown) {
+    console.error('Error loading transaction data:', error)
+    errorMsg.value = (error as Error).message || 'Failed to load transaction history.'
+    errorHandler.handleApiError(error)
+    return {
+      data: [],
+      total_record: 0,
+      total_page: 0,
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
 const { createSortableHeader, createRowNumberCell } = useTable()
 const { t, locale } = useI18n()
 const errorHandler = useErrorHandler()
@@ -193,6 +294,8 @@ const allRows = computed(() => table.value?.getAllRows() ?? [])
 const router = useRouter()
 const toast = useToast()
 const notification = useNotification()
+
+const TABLE_ID = 'transactions-history-table'
 
 const page = ref(1)
 const pageSize = ref<{ label: string; value: number }>({
@@ -288,9 +391,9 @@ const fetchTransactionHistory = async () => {
       total_amount: 1000000 + i * 5000,
       currency_id: i % 2 === 0 ? 'USD' : 'KHR',
       status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
-      settled_by: `User ${i + 1}`,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4],
-      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)],
+      total_customer: i + 1,
+      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4]!,
+      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)]!,
     }))
 
     // ✅ Paging
@@ -318,7 +421,7 @@ const onPageSizeChange = () => {
 // Filtered rows for table
 const filteredData = computed(() =>
   transactions.value.filter((item) =>
-    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
+    (item.total_customer.toString() ?? '').toLowerCase().includes(search.value.toLowerCase())
   )
 )
 
@@ -558,23 +661,16 @@ const handleExport = (item: { click: () => void }) => {
   }
 }
 
-const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
-  if (record.success === 0 && record.failed === 0) {
-    await notification.showWarning({
-      title: t('no_transactions_found'),
-      description: t('no_transactions_found_desc'),
-    })
-    return
-  }
-  selectedRecord.value = record
-  showSidebar.value = true
+const handleViewDetails = (record: TransactionHistoryRecord) => {
+  // Navigate to transaction details page
+  navigateToDetails(record.id)
 }
 const handleFilterChange = (columnId: string, value: string) => {
   console.log('Filter changed:', columnId, value)
   // Optional: trigger fetch or other logic
 }
 
-const columns: BaseTableColumn<any>[] = [
+const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -593,80 +689,66 @@ const columns: BaseTableColumn<any>[] = [
         'aria-label': 'Select row',
       }),
     enableSorting: false,
+    enableColumnFilter: false,
     enableHiding: false,
-  },
-  {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
-    size: 30,
-    maxSize: 30,
-    enableSorting: false,
   },
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    // header: ({ column }) =>
-    //   createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
-    //     // Call your API with the new sorting order
-    //     console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
-    //     // Trigger your own fetch with the column and direction
-    //     sortBy.value = 'created_date'
-    //     sortDirection.value = order
-    //     fetchTransactionHistory()
-    //   }),
-    header: t('date'),
+    header: ({ column }) => createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
     cell: ({ row }) =>
-      // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
+    size: 50,
+    maxSize: 150,
   },
   {
     id: 'bank_ref',
     accessorKey: 'bank_ref',
-    header: t('bank_ref'),
+    header: () => t('pages.transaction.bank_ref'),
+    cell: ({ row }) => row.original.bank_ref || '-',
+    enableSorting: true,
   },
   {
     id: 'collection_bank',
     accessorKey: 'collection_bank',
-    header: t('collection_bank'),
+    header: () => t('collection_bank'),
+    cell: ({ row }) => row.original.collection_bank || '-',
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: 'ABA', value: 'ABA' },
+      { label: 'ACLEDA', value: 'ACLEDA' },
+      { label: 'AMK', value: 'AMK' },
+    ],
   },
   {
     id: 'settlement_bank',
     accessorKey: 'settlement_bank',
-    header: t('settlement_bank'),
+    header: () => t('settlement_bank'),
+    cell: ({ row }) => row.original.settlement_bank || '-',
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: 'ABA', value: 'ABA' },
+      { label: 'ACLEDA', value: 'ACLEDA' },
+      { label: 'AMK', value: 'AMK' },
+    ],
   },
   {
     id: 'settlement_type',
     accessorKey: 'settlement_type',
-    header: t('settlement_type'),
-  },
-  {
-    id: 'total_amount',
-    accessorKey: 'total_amount',
-    header: () => h('div', { class: 'text-right' }, t('total_amount')),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
-      ),
-  },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: t('settlement.currency'),
+    header: () => t('settlement_type'),
+    cell: ({ row }) => row.original.settlement_type || '-',
     enableColumnFilter: true,
     filterOptions: [
-      { label: 'USD', value: 'USD' },
-      { label: 'KHR', value: 'KHR' },
+      { label: 'Auto', value: 'Auto' },
+      { label: 'Manual', value: 'Manual' },
     ],
-    enableSorting: true,
   },
   {
     id: 'transaction_type',
     accessorKey: 'transaction_type',
-    header: t('transaction_type'),
+    header: () => t('transaction_type'),
+    cell: ({ row }) => row.original.transaction_type || '-',
     enableSorting: true,
     enableColumnFilter: true,
     filterOptions: [
@@ -679,92 +761,63 @@ const columns: BaseTableColumn<any>[] = [
   {
     id: 'sub_biller',
     accessorKey: 'sub_biller',
-    header: t('sub_biller'),
+    header: () => t('sub_biller'),
+    cell: ({ row }) => row.original.sub_biller || '-',
     enableSorting: true,
   },
   {
+    id: 'total_customer',
+    accessorKey: 'total_customer',
+    header : ({ column }) => createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
+    cell: ({ row }) =>  h(
+        'div',
+        { class: 'text-right' },
+        row.original.total_customer || '-',
+      ),
+  },
+  {
     id: 'status',
-    accessorKey: 'status',
-    header: t('status.header'),
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('completed'), value: 'completed' },
-      { label: t('pending'), value: 'pending' },
-      { label: t('failed'), value: 'failed' },
-    ],
-    cell: ({ row }: any) =>
+    header: () => t('status.header'),
+    cell: ({ row }) =>
       h(StatusBadge, {
         status: row.original.status,
         variant: 'subtle',
         size: 'sm',
       }),
-    // cell: ({ row }) => {
-    //   // return h('span', {
-    //   //   class: `text-sm font-medium`
-    //   // }, `Total: ${row.original.total_Settled}`)
-
-    //   const success = row.original.success
-    //   const fail = row.original.fail
-    //   const total = row.original.total_settled
-
-    //   const UBadge = resolveComponent('UBadge')
-    //   const Icon = resolveComponent('UIcon')
-
-    //   return h('div', { class: 'flex gap-2 items-center' }, [
-    //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-    //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-    //     //   h('span', {}, total)
-    //     // ]),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'primary',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [
-    //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-    //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
-    //       ]
-    //     ),
-    //     // Success and Fail badges
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'success',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-    //     ),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'error',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
-    //     ),
-    //   ])
-    // },
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: t('completed'), value: t('completed') },
+      { label: t('pending'), value: t('pending') },
+      { label: t('failed'), value: t('failed') },
+    ],
   },
-  // Add an action column for viewing details
-  // {
-  //   id: 'actions',
-  //   header: t('actions'),
-  //   cell: ({ row }) =>
-  //     h('div', { class: 'flex items-center gap-2' }, [
-  //       h(resolveComponent('UButton'), {
-  //         color: 'primary',
-  //         variant: 'ghost',
-  //         icon: 'i-lucide-eye',
-  //         size: 'sm',
-  //         onClick: handleViewDetails(row.original),
-  //         // title: translations.view_details
-  //       }),
-  //     ]),
-  // },
+  {
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    header: () => t('settlement.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+  },
+  {
+    id: 'total_amount',
+    accessorKey: 'total_amount',
+    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-right' },
+        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
+      ),
+    enableMultiSort: true,
+    enableSorting: true,
+    size: 50,
+    maxSize: 150,
+  },
+ 
 ]
 </script>

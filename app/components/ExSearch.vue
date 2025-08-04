@@ -17,6 +17,7 @@
   >
     <template v-if="searchValue && showClearButton" #trailing>
       <UButton
+        v-if="searchValue && showClearButton"
         :icon="clearIcon"
         variant="link"
         :size="size"
@@ -25,6 +26,13 @@
         @click="clearSearch"
       />
     </template>
+
+    <template #leading>
+      <UTooltip :text="searchTooltip || placeholder" :delay-duration="300">
+        <UIcon :size="size" name="material-symbols:search-rounded" class="text-gray-400" />
+      </UTooltip>
+    </template>
+
   </UInput>
 </template>
 
@@ -44,6 +52,7 @@ interface Props {
   loading?: boolean
   showClearButton?: boolean
   debounceMs?: number
+  searchTooltip?: string
 }
 
 interface Emits {
@@ -63,6 +72,7 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   showClearButton: true,
   debounceMs: 0,
+  searchTooltip: undefined
 })
 
 const emit = defineEmits<Emits>()

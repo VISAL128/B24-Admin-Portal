@@ -185,6 +185,11 @@ export interface SettlementHistoryResponse {
   total_page: number
   page: number
   total_record: number
+  sum_total_amount_khr: number
+  sum_total_amount_usd: number
+  sum_total_settled: number
+  sum_success: number
+  sum_failed: number
   records: SettlementHistoryRecord[]
 }
 

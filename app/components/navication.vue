@@ -108,6 +108,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
       icon: 'i-material-symbols-home-work-outline',
       size: 'lg',
       active: activeStates.value.organization,
+      defaultOpen: true,
       children: [
         {
           label: t('navigation.banks'),

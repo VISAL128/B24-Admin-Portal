@@ -12,7 +12,6 @@
   "fee_name": "Fee Name",
   "name": "Name",
   "fee_type": "Fee Type",
-  "fee_already_exists": "This fee already exists",
   "allocate_details": "Allocate Details",
   "welcome": "Welcome to Bill24 Management Portal",
   "add_fee": "Add Fee",
@@ -104,7 +103,31 @@
         "status": "Status",
         "created_by": "Settled By"
       }
-    }
+    },
+    "banks-list": {
+      "columns": {
+        "bank_name": "Bank Name",
+        "currency": "Currency",
+        "status": "Status",
+        "activated_date": "Activated Date",
+        "is_settlement_bank": "Settlement Bank",
+        "is_collection_bank": "Collection Bank"}},
+    "transactions-history-table": {
+      "columns": {
+        "collection_bank": "Collection Bank",
+        "settlement_bank": "Settlement Bank",
+        "settlement_type": "Settlement Type",
+        "transaction_type": "Transaction Type",
+        "currency_id": "Currency",
+        "status": "Status",
+        "created_date": "Transaction Date",
+        "bank_ref": "Bank Reference",
+        "sub_biller": "Sub Biller",
+        "total_amount": "Total Amount",
+        "total_customer": "Total Customer"
+      }
+    },
+    "search_placeholder": "Search..."
   },
   "status": {
     "all": "All status",
@@ -116,7 +139,9 @@
     "failed": "Failed",
     "success": "Success",
     "error": "Error",
-    "processing": "Processing"
+    "processing": "Processing",
+    "yes": "Yes",
+    "no": "No"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -414,16 +439,14 @@
     "settings": "Settings",
     "developer_tools": "Developer Tools"
   },
-  "fee_configs": {
+  "settlement_history": {
     "columns": {
-      "row_number": "Row Number",
-      "name": "Name",
-      "actions": "Actions",
-      "code": "Code",
-      "fee_name": "Fee Name",
-      "currency": "Currency",
-      "fee_type": "Fee Type",
-      "sharing": "Sharing Fee"
+      "created_date": "Settlement Date",
+      "total_amount": "Total Amount",
+      "currency_id": "Currency",
+      "total_settled": "Transaction",
+      "status": "Status",
+      "created_by": "Settled By"
     },
     "column_config": {
       "tooltip": "Hide/Show Columns",
@@ -444,6 +467,10 @@
     "search_placeholder": "Search",
     "select_status": "Select Status",
     "settle_amount": "Settle Amount",
+    "total_amount_khr": "Total Amount (KHR)",
+    "total_amount_usd": "Total Amount (USD)",
+    "total_settled": "Total Settled",
+    "success": "Success",
     "amount": "Amount",
     "settlement_bank": "Settlement Bank",
     "status": "Status",
@@ -736,15 +763,12 @@
       "api_error": "API test '{api}' failed"
     }
   },
-
   "bank_ref": "Bank Ref",
   "settlement_bank": "Settlement Bank",
   "collection_bank": "Collection Bank",
   "settlement_type": "Settlement Type",
   "date": "Date",
   "sort_by": "Sort by",
-  "ascending": "Ascending",
-  "descending": "Descending",
   "clear": "Clear",
   "all": "All",
   "transaction_summary": "Transaction Summary",
@@ -753,20 +777,26 @@
   "this_month": "This Month",
   "this_year": "This Year",
   "sub_biller": "Sub Biller",
-  "overview": "Overview",
   "lottie": {
     "library_not_found": "Lottie animation library not available",
     "install_instruction": "Run: npm install lottie-web"
   },
   "pages": {
     "transaction": {
-      "title": "Transaction"
+      "title": "Transaction",
+      "created_date":"Transaction Date",
+      "total_customer": "Total Customer",
+      "bank_ref": "Bank Reference",
+      "repush": "Repush",
+      "repush_description": "Repush Transaction to Biller",
+      "info": "Confirmation",
+      "info_des": "Please select transaction before repush"
     }
   },
   "banks": {
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
-    "search_placeholder": "Search by bank code, name, or SWIFT code...",
+    "search_placeholder": "Search by bank name",
     "add_bank": "Add Bank",
     "edit_bank": "Edit Bank",
     "view_bank": "View Bank",
@@ -827,4 +857,5 @@
   "additional_information": "Additional Information",
   "metadata": "Metadata",
   "back": "Back"
-}
+  }
+
