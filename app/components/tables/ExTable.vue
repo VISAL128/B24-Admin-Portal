@@ -133,7 +133,8 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
       <div class="flex justify-end items-center gap-2">
         <slot name="trailingHeader"/>
         <UTooltip :text="t('pages.transaction.repush_description')">
-          <UButton v-if="enabledRepush"
+          <UButton
+v-if="enabledRepush"
             variant="outline"
             size="sm"
             @click="handleRepush()"> 
@@ -280,7 +281,6 @@ export interface ExportOptions {
 const tableConfig = useTableConfig()
 const { createRowNumberCell } = useTable()
 const notification = useNotification()
-const showRepushDialog = ref(false)
 
 const defaultColumnVisibility = ref<Record<string, boolean>>({})
 
@@ -496,8 +496,7 @@ const resolvedExportOptions = computed(() => ({
   startDate: props.exportOptions?.startDate ?? startDate.value,
   endDate: props.exportOptions?.endDate ?? endDate.value,
   totalAmount:
-    props.exportOptions?.totalAmount ??
-    filteredData.value.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0),
+    props.exportOptions?.totalAmount
 }))
 
  
