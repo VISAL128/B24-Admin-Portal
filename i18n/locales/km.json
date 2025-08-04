@@ -9,7 +9,6 @@
   "logout_confirmation": "តើអ្នកប្រាកដជាចង់ចាកចេញទេ?",
   "welcome": "សូមស្វាគមន៍មកកាន់គេហទំព័រគ្រប់គ្រង Bill24 Payment Portal",
   "code": "Code",
-  "fee_already_exists": "ថ្លៃសេវានេះមានរួចហើយ",
   "add_fee": "បន្ថែមថ្លៃសេវា",
   "create_new": "បង្កើតថ្មី",
   "create_new_fee": "បង្កើតថ្លៃសេវាថ្មី",
@@ -55,24 +54,6 @@
     "copied": "បានចម្លង",
     "copy_failed": "បរាជ័យក្នុងការចម្លង",
     "copy_to_clipboard": "ចម្លងទៅក្ដារឈូស"
-  },
-  "fee_configs": {
-    "columns": {
-      "row_number": "លេខជួរដេក",
-      "name": "ឈ្មោះ",
-      "code": "លេខកូដ",
-      "fee_name": "ឈ្មោះថ្លៃសេវា",
-      "currency": "រូបិយប័ណ្ណ",
-      "fee_type": "ប្រភេទថ្លៃសេវា",
-      "sharing": "ថ្លៃសេវាចែករំលែក",
-      "actions": "សកម្មភាព"
-    },
-    "column_config": {
-      "tooltip": "Hide/Show Columns",
-      "reset": "Reset",
-      "reset_description": "Reset columns and sorting to defaults",
-      "columns": "Columns"
-    }
   },
   "profile_popup": {
     "title": "អាជីវកម្មអ្នកប្រើប្រាស់",
@@ -350,7 +331,22 @@
     "profile": "ប្រវត្តិរូប",
     "developer_tools": "ឧបករណ៍អភិវឌ្ឍន៍"
   },
-  
+  "settlement_history": {
+    "columns": {
+      "created_date": "កាលបរិច្ឆេទទូទាត់",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "total_settled": "ប្រតិបត្តិការ",
+      "status": "ស្ថានភាព",
+      "created_by": "ទូទាត់ដោយ"
+    },
+    "column_config": {
+      "tooltip": "លាក់/បង្ហាញជួរឈរ",
+      "reset": "កំណត់ឡើងវិញ",
+      "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
+      "columns": "ជួរឈរ"
+    }
+  },
   "settlement": {
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
@@ -584,6 +580,7 @@
     }
   }
   },
+    "search_placeholder": "ស្វែងរក...",
   "no_permission": {
     "title": "ការចូលត្រូវបានកំណត់",
     "access_denied": "បដិសេធការចូល",
@@ -740,7 +737,6 @@
   "this_month": "ខែនេះ",
   "this_year": "ឆ្នាំនេះ",
   "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-  "overview": "ទូទៅ",
   "lottie": {
     "library_not_found": "មិនមានបណ្ណាល័យ Lottie animation",
     "install_instruction": "ដំណើរការ: npm install lottie-web"
@@ -824,4 +820,5 @@
   "ascending": "តាមលំដាប់ឡើង",
   "descending": " តាមលំដាប់ចុះ",
   "clear": "សម្អាត"
+  
 }

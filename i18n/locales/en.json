@@ -12,7 +12,6 @@
   "fee_name": "Fee Name",
   "name": "Name",
   "fee_type": "Fee Type",
-  "fee_already_exists": "This fee already exists",
   "allocate_details": "Allocate Details",
   "welcome": "Welcome to Bill24 Management Portal",
   "add_fee": "Add Fee",
@@ -127,7 +126,8 @@
         "total_amount": "Total Amount",
         "total_customer": "Total Customer"
       }
-    }
+    },
+    "search_placeholder": "Search..."
   },
   "status": {
     "all": "All status",
@@ -439,16 +439,14 @@
     "settings": "Settings",
     "developer_tools": "Developer Tools"
   },
-  "fee_configs": {
+  "settlement_history": {
     "columns": {
-      "row_number": "Row Number",
-      "name": "Name",
-      "actions": "Actions",
-      "code": "Code",
-      "fee_name": "Fee Name",
-      "currency": "Currency",
-      "fee_type": "Fee Type",
-      "sharing": "Sharing Fee"
+      "created_date": "Settlement Date",
+      "total_amount": "Total Amount",
+      "currency_id": "Currency",
+      "total_settled": "Transaction",
+      "status": "Status",
+      "created_by": "Settled By"
     },
     "column_config": {
       "tooltip": "Hide/Show Columns",
@@ -771,8 +769,6 @@
   "settlement_type": "Settlement Type",
   "date": "Date",
   "sort_by": "Sort by",
-  "ascending": "Ascending",
-  "descending": "Descending",
   "clear": "Clear",
   "all": "All",
   "transaction_summary": "Transaction Summary",
@@ -781,7 +777,6 @@
   "this_month": "This Month",
   "this_year": "This Year",
   "sub_biller": "Sub Biller",
-  "overview": "Overview",
   "lottie": {
     "library_not_found": "Lottie animation library not available",
     "install_instruction": "Run: npm install lottie-web"
@@ -862,4 +857,5 @@
   "additional_information": "Additional Information",
   "metadata": "Metadata",
   "back": "Back"
-}
+  }
+

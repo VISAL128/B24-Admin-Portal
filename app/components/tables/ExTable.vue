@@ -132,19 +132,6 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
       <!-- ⚙️ Column Configuration -->
       <div class="flex justify-end items-center gap-2">
         <slot name="trailingHeader"/>
-        <UTooltip :text="t('pages.transaction.repush_description')">
-          <UButton
-v-if="enabledRepush"
-            variant="outline"
-            size="sm"
-            @click="handleRepush()"> 
-            {{ t('pages.transaction.repush') }}
-            <template #trailing>
-              <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
-            </template>
-            
-          </UButton>
-        </UTooltip>
         <ExportButton :data="filteredData" :headers="exportHeaders" :export-options="resolvedExportOptions" />
 
         <UPopover>
@@ -257,7 +244,6 @@ import type { BaseTableColumn, TableFetchResult } from '~/components/tables/tabl
 import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import { useNotification } from '~/composables/useNotification'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useTable } from '~/composables/utils/useTable'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -280,7 +266,6 @@ export interface ExportOptions {
 // Use table configuration composable
 const tableConfig = useTableConfig()
 const { createRowNumberCell } = useTable()
-const notification = useNotification()
 
 const defaultColumnVisibility = ref<Record<string, boolean>>({})
 
@@ -393,13 +378,7 @@ const loading = ref(false)
 // Use internal data if no data prop is provided
 const tableData = computed(() => internalData.value)
 
-// Handle Repush Transaction
-const handleRepush = () => {
-    notification.showWarning({
-      title: t('pages.transaction.info'),
-      description: t('pages.transaction.info_des'),
-    })
-}
+
 // Fetch data function
 const fetchData = async (refresh = false) => {
   if (!props.fetchDataFn) return
@@ -478,7 +457,6 @@ const props = defineProps<{
   }) => Promise<TableFetchResult<T[]> & Record<string, unknown> | null | undefined>
   enabledAutoRefresh?: boolean
   searchTooltip?: string
-  enabledRepush?: boolean
 }>()
 
 watch(pageSize, async (_newSize) => {
