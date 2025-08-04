@@ -1,60 +1,9 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Info Banner -->
-    <div v-if="showInfoBanner"
-      class="flex items-center justify-between bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 rounded-lg px-4 py-2">
-      <div class="flex items-center space-x-2">
-        <UIcon name="i-heroicons-light-bulb" class="text-warning w-4 h-4" />
-        <span class="font-semibold text-xs">Tip</span>
-        <span class="text-xs"> Apply filters to reflect changes in both the <strong>Transaction Summary</strong> and the <strong>Transaction</strong>.</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <UButton
-          icon="i-heroicons-x-mark"
-          variant="ghost"
-          size="xs"
-          color="primary"
-          @click="showInfoBanner = false"
-        />
-      </div>
-    </div>
-    <!-- Responsive Summary Cards -->
-    <div class="grid gap-3 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
-    <div
-      v-for="card in summarys"
-      :key="card.title"
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2"
-    >
-      <!-- Title and Filter Label -->
-      <div class="flex justify-between items-start">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ card.title }}</h3>
-        <span class="text-xs font-medium text-primary whitespace-nowrap">
-          {{ card.filterLabel }}
-        </span>
-      </div>
-
-       <!-- Values -->
-      <div class="flex flex-wrap justify-between gap-x-4">
-        <div
-          v-for="(val, idx) in card.values"
-          :key="idx"
-          class="text-md font-bold text-gray-900 dark:text-white flex items-baseline gap-1"
-        >
-          <span v-if="'currency' in val" class="text-xs font-medium">
-            {{ val.currency }}
-          </span>
-          {{ useCurrency().formatAmount(val.value) }}
-        </div>
-      </div>
-
-      <!-- Date Range -->
-      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-1">
-        <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-primary" />
-        <span class="whitespace-nowrap">{{ card.dateRange }}</span>
-      </div>
-    </div>
-  </div>
-
+    <InfoBanner :title="t('pages.transaction.tip')" :message="t('pages.transaction.tip_message')" />
+    <!-- Transaction Summary Cards -->
+    <SummaryCards :cards="summarys" />
     <TablesExTable
     ref="table"
       :columns="columns"
@@ -95,6 +44,8 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import InfoBanner from '~/components/cards/InfoBanner.vue'
+import SummaryCards, { type SummaryCard } from '~/components/cards/SummaryCards.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
@@ -150,7 +101,7 @@ const handleRepush = () => {
     })
 }
 
-const summarys = [
+const summarys: SummaryCard[] = [
   {
     title: 'Total Transaction',
     values: [{ value: 100 }],
