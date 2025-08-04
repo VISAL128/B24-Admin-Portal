@@ -790,7 +790,9 @@
       "repush": "Repush",
       "repush_description": "Repush Transaction to Biller",
       "info": "Confirmation",
-      "info_des": "Please select transaction before repush"
+      "info_des": "Please select transaction before repush",
+      "tip": "Tip",
+      "tip_message": "Apply filters to reflect changes in both the Transaction Summary and the Transaction."
     }
   },
   "banks": {
