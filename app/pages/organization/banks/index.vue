@@ -161,9 +161,9 @@ const fetchBanks = async (params?: {
 
     const data = await getBanks(payload)
     return {
-      data: data.records,
-      total_page: data.total_page,
-      total_record: data.total_record
+      data: data.data,
+      total_page: data.total_pages || 0,
+      total_record: data.total_records || 0,
     }
   } catch (error: unknown) {
     // Show error notification to user
@@ -226,7 +226,7 @@ const columns: BaseTableColumn<Bank>[] = [
     id: 'bank_name',
     accessorKey: 'bank_name',
     header: ({ column }) => createSortableHeader(column, t('table.banks-list.columns.bank_name')),
-    cell: ({ row }) => h('div', { class: 'font-medium' }, row.original.bank_name),
+    cell: ({ row }) => h('div', { class: 'font-medium' }, row.original.name),
     enableSorting: true,
     size: 200,
   },

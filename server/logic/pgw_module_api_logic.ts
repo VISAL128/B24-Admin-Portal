@@ -1,11 +1,11 @@
 import type { H3Event } from 'h3'
 
-export async function requestToPgwModuleApi(
+export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
   method: string = 'POST',
   body: unknown | null = null
-): Promise<unknown> {
+): Promise<T> {
   try {
     const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
     const options: RequestInit = {
@@ -24,7 +24,7 @@ export async function requestToPgwModuleApi(
     }
 
     const response = await fetch(url, options)
-    return handlePgwModuleApiResponse(response)
+    return handlePgwModuleApiResponse<T>(response)
   } catch (error) {
     console.error('Error fetching fee config :', error)
     throw createError({
@@ -34,7 +34,7 @@ export async function requestToPgwModuleApi(
   }
 }
 
-function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
+function handlePgwModuleApiResponse<T>(response: Response): Promise<T> {
   console.log('PGW Module Api Response:', response)
   if (!response.ok) {
     throw createError({

@@ -1,6 +1,7 @@
 export interface Bank {
   id: string
-  bank_name: string
+  name: string
+  name_kh?: string
   currency: string
   is_settlement_bank: boolean
   is_collection_bank: boolean
