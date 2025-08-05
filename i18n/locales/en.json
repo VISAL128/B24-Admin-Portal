@@ -106,12 +106,14 @@
     },
     "banks-list": {
       "columns": {
-        "bank_name": "Bank Name",
+        "name": "Bank Name",
         "currency": "Currency",
         "status": "Status",
         "activated_date": "Activated Date",
         "is_settlement_bank": "Settlement Bank",
-        "is_collection_bank": "Collection Bank"}},
+        "is_collection_bank": "Collection Bank"
+      }
+    },
     "transactions-history-table": {
       "columns": {
         "collection_bank": "Collection Bank",
@@ -126,8 +128,7 @@
         "total_amount": "Total Amount",
         "total_customer": "Total Customer"
       }
-    },
-    "search_placeholder": "Search..."
+    }
   },
   "status": {
     "all": "All status",

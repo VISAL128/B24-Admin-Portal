@@ -39,6 +39,7 @@ export interface QueryParams {
     field: string
     direction: 'asc' | 'desc'
   }[]
+  sortAsString?: string // Optional for direct string sort
   filters?: {
     field: string
     operator: 'eq' | 'neq' | 'contains' | 'doesnotcontain' | 'gt' | 'gte' | 'lt' | 'lte' | 'startswith' | 'endswith'

@@ -2,60 +2,60 @@ import type { H3Event } from 'h3'
 import type { QueryParams } from '~/models/baseModel'
 import { mapQueryParamsToPgwModule, serializePgwModuleParams } from '../utils/queryParamsMapper'
 
-export async function requestToPgwModuleApi<T>(
-  event: H3Event,
-  endpoint: string,
-  method: string = 'POST',
-  body: unknown | null = null
-): Promise<T> {
-  try {
-    const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
-    const options: RequestInit = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${event.context.auth?.token || ''}`,
-      },
-      signal: AbortSignal.timeout(30000),
-    }
+// export async function requestToPgwModuleApi<T>(
+//   event: H3Event,
+//   endpoint: string,
+//   method: string = 'POST',
+//   body: unknown | null = null
+// ): Promise<T> {
+//   try {
+//     const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
+//     const options: RequestInit = {
+//       method,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         Authorization: `Bearer ${event.context.auth?.token || ''}`,
+//       },
+//       signal: AbortSignal.timeout(30000),
+//     }
 
-    console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: options.headers })
-    // Only add body for non-GET/HEAD
-    if (body && method !== 'GET' && method !== 'HEAD') {
-      options.body = JSON.stringify(body)
-    }
+//     console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: options.headers })
+//     // Only add body for non-GET/HEAD
+//     if (body && method !== 'GET' && method !== 'HEAD') {
+//       options.body = JSON.stringify(body)
+//     }
 
-    const response = await fetch(url, options)
-    return handlePgwModuleApiResponse<T>(response)
-  } catch (error) {
-    console.error('Error fetching fee config :', error)
-    const statusCode = error && typeof error === 'object' && 'statusCode' in error 
-      ? (error as { statusCode: number }).statusCode 
-      : 500
-    throw createError({
-      statusCode,
-      statusMessage: (error as Error).message ?? 'Internal Server Error',
-    })
-  }
-}
+//     const response = await fetch(url, options)
+//     return handlePgwModuleApiResponse<T>(response)
+//   } catch (error) {
+//     console.error('Error fetching fee config :', error)
+//     const statusCode = error && typeof error === 'object' && 'statusCode' in error 
+//       ? (error as { statusCode: number }).statusCode 
+//       : 500
+//     throw createError({
+//       statusCode,
+//       statusMessage: (error as Error).message ?? 'Internal Server Error',
+//     })
+//   }
+// }
 
 /**
  * Request to PGW Module API with QueryParams mapping
  * @param event - H3Event
  * @param endpoint - API endpoint
- * @param queryParams - Client QueryParams to be mapped to PGW format
  * @param method - HTTP method
  * @returns Promise with API response
  */
-export async function requestToPgwModuleApiWithQuery<T>(
+export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
-  queryParams: QueryParams,
   method: string = 'POST'
 ): Promise<T> {
   try {
+    // Extract query parameters
+    const query = getQuery<QueryParams>(event)
     // Map client QueryParams to PGW Module format
-    const pgwParams = mapQueryParamsToPgwModule(queryParams)
+    const pgwParams = mapQueryParamsToPgwModule(query)
     const serializedParams = serializePgwModuleParams(pgwParams)
     
     // Convert serialized params to URL query string

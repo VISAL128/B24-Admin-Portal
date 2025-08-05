@@ -450,6 +450,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
         ),
       ])
     },
+    enableSorting: true,
   },
   {
     id: 'status',

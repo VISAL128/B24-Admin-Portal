@@ -567,13 +567,14 @@
     },
     "banks-list": {
       "columns": {
-        "bank_name": "ឈ្មោះធនាគារ",
+        "name": "ឈ្មោះធនាគារ",
         "currency": "រូបិយប័ណ្ណ",
         "status": "ស្ថានភាព",
         "activated_date": "កាលបរិច្ឆេទដំណើរការ",
         "is_settlement_bank": "ធនាគារទូទាត់",
         "is_collection_bank": "ធនាគារប្រមូលប្រាក់"
-      }},
+      }
+    },
     "transactions-history-table": {
     "columns": {
       "collection_bank": "ធនាគារប្រមូលប្រាក់",

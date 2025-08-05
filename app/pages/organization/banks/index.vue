@@ -20,7 +20,6 @@ import { useRouter } from 'vue-router'
 import { useBankApi } from '~/composables/api/useBankApi'
 import type { Bank } from '~/models/bank'
 import { useI18n } from 'vue-i18n'
-import { useTable } from '~/composables/utils/useTable'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
 import type { BankListTableFetchResult, BaseTableColumn } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
@@ -38,7 +37,6 @@ definePageMeta({
 
 const { t } = useI18n()
 const { getBanks } = useBankApi()
-const { createSortableHeader } = useTable()
 const errorHandler = useErrorHandler()
 const { statusCellBuilder } = useStatusBadge()
 
@@ -198,9 +196,9 @@ const columns: BaseTableColumn<Bank>[] = [
     },
   },
   {
-    id: 'bank_name',
-    accessorKey: 'bank_name',
-    header: ({ column }) => createSortableHeader(column, t('table.banks-list.columns.bank_name')),
+    id: 'name',
+    accessorKey: 'name',
+    // header: ({ column }) => createSortableHeader(column, t('table.banks-list.columns.bank_name')),
     // cell: ({ row }) => h('div', { class: 'font-medium' }, row.original.name),
     cell: ({ row }) => {
       const UAvatar = resolveComponent('UAvatar')

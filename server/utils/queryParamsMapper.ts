@@ -15,13 +15,33 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   pgwParams.pageSize = clientParams.page_size || 10
   
   // Map sorting - convert to PGW format (field+ for asc, field- for desc, separated by ;)
-  if (clientParams.sorts && Array.isArray(clientParams.sorts) && clientParams.sorts.length > 0) {
-    pgwParams.sorts = clientParams.sorts
-      .map((sort: { field: string; direction: 'asc' | 'desc' }) => `${sort.field}${sort.direction === 'asc' ? '+' : '-'}`)
-      .join(';')
+  if (clientParams.sortAsString) {
+    // If sortAsString is provided, use it directly
+    pgwParams.sorts = clientParams.sortAsString
+    
+  }else{
+      // Otherwise, build sorts from array (THIS IS NOT YET WORKING)
+    const sortsArray = clientParams.sorts || []
+    if (sortsArray.length > 0) {
+      sortsArray.forEach((sort: { field: string; direction: 'asc' | 'desc' }) => {
+        pgwParams.sorts += `${sort.field}${sort.direction === 'asc' ? '+' : '-'};`
+      })
+    }
   }
 
-  pgwParams.sorts = 'activated_date-'
+  // Remove trailing semicolon if exists
+  if (pgwParams.sorts.endsWith(';')) {
+    pgwParams.sorts = pgwParams.sorts.slice(0, -1)
+  }
+  // pgwParams.sorts = 'name-' // Example hardcoded sort for testing, remove in production
+
+  console.log('QueryParams:', clientParams)
+  console.log('Is clientParams.sorts an array?', Array.isArray(clientParams.sorts))
+  console.log('Client sorts length:', clientParams?.sorts?.length)
+  console.log('Mapped sorts:', pgwParams.sorts)
+  console.log('clientParams.sorts:', clientParams.sorts)
+
+  // pgwParams.sorts = 'name-'
   
   // Initialize filters array
   const filters: ParamFilterPgwModuleApi[] = []
@@ -109,7 +129,7 @@ export function serializePgwModuleParams(pgwParams: QueryParamsPgwModuleApi): Re
     pageSize: pgwParams.pageSize,
     pageCount: pgwParams.pageCount,
     rowCount: pgwParams.rowCount,
-    Sorts: pgwParams.sorts,
+    sorts: pgwParams.sorts,
     Filters: pgwParams.filters
   }
 }
