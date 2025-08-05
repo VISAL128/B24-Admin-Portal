@@ -92,6 +92,8 @@
     "loading": "Loading...",
     "no_records_found": "No records found",
     "search_placeholder": "Search...",
+    "enter_fullscreen": "Enter Fullscreen",
+    "exit_fullscreen": "Exit Fullscreen",
     "column_config": {
       "tooltip": "Hide/Show Columns",
       "reset": "Reset",
