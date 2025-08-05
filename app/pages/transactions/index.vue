@@ -1,60 +1,9 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Info Banner -->
-    <div v-if="showInfoBanner"
-      class="flex items-center justify-between bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 rounded-lg px-4 py-2">
-      <div class="flex items-center space-x-2">
-        <UIcon name="i-heroicons-light-bulb" class="text-warning w-4 h-4" />
-        <span class="font-semibold text-xs">Tip</span>
-        <span class="text-xs"> Apply filters to reflect changes in both the <strong>Transaction Summary</strong> and the <strong>Transaction</strong>.</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <UButton
-          icon="i-heroicons-x-mark"
-          variant="ghost"
-          size="xs"
-          color="primary"
-          @click="showInfoBanner = false"
-        />
-      </div>
-    </div>
-    <!-- Responsive Summary Cards -->
-    <div class="grid gap-3 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
-    <div
-      v-for="card in summarys"
-      :key="card.title"
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2"
-    >
-      <!-- Title and Filter Label -->
-      <div class="flex justify-between items-start">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ card.title }}</h3>
-        <span class="text-xs font-medium text-primary whitespace-nowrap">
-          {{ card.filterLabel }}
-        </span>
-      </div>
-
-       <!-- Values -->
-      <div class="flex flex-wrap justify-between gap-x-4">
-        <div
-          v-for="(val, idx) in card.values"
-          :key="idx"
-          class="text-md font-bold text-gray-900 dark:text-white flex items-baseline gap-1"
-        >
-          <span v-if="'currency' in val" class="text-xs font-medium">
-            {{ val.currency }}
-          </span>
-          {{ useCurrency().formatAmount(val.value) }}
-        </div>
-      </div>
-
-      <!-- Date Range -->
-      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-1">
-        <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-primary" />
-        <span class="whitespace-nowrap">{{ card.dateRange }}</span>
-      </div>
-    </div>
-  </div>
-
+    <InfoBanner :title="t('pages.transaction.tip')" :message="t('pages.transaction.tip_message')" />
+    <!-- Transaction Summary Cards -->
+    <SummaryCards :cards="summarys" />
     <TablesExTable
     ref="table"
       :columns="columns"
@@ -79,6 +28,22 @@
             
           </UButton>
         </UTooltip>
+
+        <USelectMenu
+          v-model="selectedDateFilter"
+          :items="dateOptions"
+          class="w-auto min-w-[200px]"
+          :search-input="false"
+          @update:model-value="onDateFilterChange"
+        >
+          <template #item="{ item }">
+            <span v-html="item.label" />
+          </template>
+          <template #default="{ modelValue }">
+            <span v-if="modelValue" v-html="modelValue.label" />
+          </template>
+        </USelectMenu>
+
     </template>
     </TablesExTable>
   </div>
@@ -95,9 +60,12 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import InfoBanner from '~/components/cards/InfoBanner.vue'
+import SummaryCards from '~/components/cards/SummaryCards.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
+import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -110,6 +78,9 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { TransactionHistoryRecord } from '~/models/transaction'
+import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transactionSummary'
+
+const pgwModuleApi = usePgwModuleApi()
 
 const showInfoBanner = ref(true)
 const dateOptions = computed(() => {
@@ -150,38 +121,92 @@ const handleRepush = () => {
     })
 }
 
-const summarys = [
-  {
-    title: 'Total Transaction',
-    values: [{ value: 100 }],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-  {
-    title: 'Failed Transactions',
-    values: [{ value: 5 }],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-  {
-    title: 'Total Amount',
-    values: [
-      { currency: 'KHR', value: 4000000 },
-      { currency: 'USD', value: 157.75 },
-    ],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-  {
-    title: 'Total Settlement',
-    values: [
-      { currency: 'KHR', value: 3900 },
-      { currency: 'USD', value: 10 },
-    ],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-]
+const transactionSummary = ref<TransactionSummaryModel | null>(null)
+
+// Reactive computed property that updates when transactionSummary changes
+const summarys = computed(() => {
+  return transactionSummary.value?.summarys || []
+})
+const isLoading = ref(true)
+
+// Function to fetch transaction summary from API
+const fetchTransactionSummary = async () => {
+  try {
+    isLoading.value = true
+    const response = await pgwModuleApi.getTransactionSummary()
+    // Check if response has data (the API returns data directly, not wrapped in success/code)
+    if (response) {
+      console.log('✅ Frontend: Processing response data')
+    // transactionSummary.value = response
+    transactionSummary.value = {
+      period: {
+        type: 'month',
+        label: 'This Month',
+        dateFrom: '2025-08-01',
+        dateTo: '2025-08-31'
+      },
+      summarys: [
+        {
+          title: 'Total Transaction',
+          values: [{ value: 1245 }],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        },
+        {
+          title: 'Failed Transactions',
+          values: [{ value: 23 }],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        },
+        {
+          title: 'Total Amount',
+          values: [
+            { currency: 'KHR', value: 15680000 },
+            { currency: 'USD', value: 3920.50 }
+          ],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        },
+        {
+          title: 'Total Settlement',
+          values: [
+            { currency: 'KHR', value: 15456000 },
+            { currency: 'USD', value: 3864.25 }
+          ],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        }
+      ]
+    }
+    } else {
+      toast.add({
+        title: t('error'),
+        description: 'No transaction summary data available',
+        color: 'error',
+      })
+    }
+  } catch (error) {
+    console.error('❌ Frontend: Error fetching transaction summary:', error)
+    errorHandler.handleApiError(error)
+    toast.add({
+      title: t('error'),
+      description: t('failed_to_fetch_transaction_summary'),
+      color: 'error',
+    })
+  } finally {
+    isLoading.value = false
+    console.log('🏁 Frontend: Transaction summary fetch completed')
+  }
+}
+
+onMounted(async () => {
+  // Fetch transaction summary 
+  await fetchTransactionSummary()
+})
 
 
 // Wrapper function for TablesExTable
@@ -439,10 +464,7 @@ onBeforeMount(() => {
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
 })
 
-// Initial load
-onMounted(() => {
-  fetchTransactionHistory()
-})
+// Initial load handled in the main onMounted above
 
 const onGenerateSettlement = () => {
   router.push('/digital-wallet/settlement/generate')
