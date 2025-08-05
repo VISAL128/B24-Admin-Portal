@@ -77,7 +77,7 @@
                 {{ t('banks.bank_name') }}
               </label>
               <p class="text-sm text-gray-900 dark:text-white font-semibold">
-                {{ bank.bank_name }}
+                {{ bank.name }}
               </p>
             </div>
 
@@ -245,7 +245,7 @@
                 <div class="flex items-center gap-2">
                   <img
                     :src="bank.logo"
-                    :alt="bank.bank_name"
+                    :alt="bank.name"
                     class="w-8 h-8 object-contain"
                     @error="
                       (e) => {

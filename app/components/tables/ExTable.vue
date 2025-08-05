@@ -252,6 +252,7 @@ import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
 import appConfig from '~~/app.config'
 import ExportButton from '../buttons/ExportButton.vue'
+import type { QueryParams } from '~/models/baseModel'
 
 export interface ExportOptions {
   fileName?: string
@@ -390,10 +391,10 @@ const fetchData = async (refresh = false) => {
   try {
     const result = await props.fetchDataFn({
       page: internalPage.value,
-      pageSize: pageSize.value.value,
+      page_size: pageSize.value.value,
       search: search.value,
-      startDate: startDate.value,
-      endDate: endDate.value,
+      start_date: startDate.value,
+      end_date: endDate.value,
     })
 
     if (result) {
@@ -448,13 +449,7 @@ const props = defineProps<{
   exportOptions?: ExportOptions
   showDateFilter?: boolean
   showRowNumber?: boolean
-  fetchDataFn?: (params?: {
-    page?: number
-    pageSize?: number
-    search?: string
-    startDate?: string
-    endDate?: string
-  }) => Promise<TableFetchResult<T[]> & Record<string, unknown> | null | undefined>
+  fetchDataFn?: (params?: QueryParams) => Promise<TableFetchResult<T[]> & Record<string, unknown> | null | undefined>
   enabledAutoRefresh?: boolean
   searchTooltip?: string
 }>()

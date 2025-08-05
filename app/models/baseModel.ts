@@ -15,3 +15,33 @@ export interface PgwModuleResponse<T> {
   message_kh?: string // 'ជោគជ័យ'
   data?: T
 }
+
+export interface PgwModuleResponseList<T> {
+  param: {
+    pageIndex: number
+    pageSize: number
+    pageCount: number
+    rowCount: number
+    sorts: string
+    filter: string
+  },
+  result: T[]
+}
+
+export interface QueryParams {
+  page?: number
+  page_size?: number
+  search?: string
+  start_date?: string
+  end_date?: string
+  statuses?: string[]
+  sorts?: {
+    field: string
+    direction: 'asc' | 'desc'
+  }[]
+  filters?: {
+    field: string
+    operator: 'eq' | 'neq' | 'contains' | 'doesnotcontain' | 'gt' | 'gte' | 'lt' | 'lte' | 'startswith' | 'endswith'
+    value: string | number | boolean | Date
+  }[]
+}
