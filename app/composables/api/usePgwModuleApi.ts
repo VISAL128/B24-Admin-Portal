@@ -1,20 +1,21 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
+import type { SubBillerListResponse, SubBillerQuery } from '~/models/subBiller'
+import type { Supplier } from '~/models/supplier'
 import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
+import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transactionSummary'
 import type {
-  WalletTypeResponse,
-  WalletBalanceResponse,
-  WalletBalanceRequest,
-} from '~~/server/model/pgw_module_api/wallet'
-import type {
-  TopUpSummaryResponse,
   FeeSummaryResponse,
+  TopUpSummaryResponse,
 } from '~~/server/model/pgw_module_api/transactionSummary'
-import type { SubBillerQuery, SubBillerListResponse } from '~/models/subBiller'
+import type {
+  WalletBalanceRequest,
+  WalletBalanceResponse,
+  WalletTypeResponse,
+} from '~~/server/model/pgw_module_api/wallet'
 import type {
   WalletTransactionRequest,
   WalletTransactionResponse,
 } from '~~/server/model/pgw_module_api/walletTransactions'
-import type { Supplier } from '~/models/supplier'
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
 
@@ -132,6 +133,18 @@ const getSubBillerById = async (id: string) => {
     )
   }
 
+  /**
+   * Get transaction summary from PGW Module API
+   */
+  const getTransactionSummary = async () => {
+      return await executeV2(() =>
+        $fetch<TransactionSummaryModel>(`/api/pgw-module/transaction/summary`, {
+          method: 'GET',
+          onResponseError() {},
+        })
+      )
+  }
+
   return {
     getProfile,
     getWalletTypes,
@@ -140,6 +153,7 @@ const getSubBillerById = async (id: string) => {
     getFeeSummary,
     getWalletTransactions,
     getSubBillers,
-      getSubBillerById,
+    getSubBillerById,
+    getTransactionSummary
   }
 }

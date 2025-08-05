@@ -28,6 +28,22 @@
             
           </UButton>
         </UTooltip>
+
+        <USelectMenu
+          v-model="selectedDateFilter"
+          :items="dateOptions"
+          class="w-auto min-w-[200px]"
+          :search-input="false"
+          @update:model-value="onDateFilterChange"
+        >
+          <template #item="{ item }">
+            <span v-html="item.label" />
+          </template>
+          <template #default="{ modelValue }">
+            <span v-if="modelValue" v-html="modelValue.label" />
+          </template>
+        </USelectMenu>
+
     </template>
     </TablesExTable>
   </div>
@@ -45,10 +61,11 @@ import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import InfoBanner from '~/components/cards/InfoBanner.vue'
-import SummaryCards, { type SummaryCard } from '~/components/cards/SummaryCards.vue'
+import SummaryCards from '~/components/cards/SummaryCards.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
+import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -61,6 +78,9 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { TransactionHistoryRecord } from '~/models/transaction'
+import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transactionSummary'
+
+const pgwModuleApi = usePgwModuleApi()
 
 const showInfoBanner = ref(true)
 const dateOptions = computed(() => {
@@ -101,38 +121,92 @@ const handleRepush = () => {
     })
 }
 
-const summarys: SummaryCard[] = [
-  {
-    title: 'Total Transaction',
-    values: [{ value: 100 }],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-  {
-    title: 'Failed Transactions',
-    values: [{ value: 5 }],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-  {
-    title: 'Total Amount',
-    values: [
-      { currency: 'KHR', value: 4000000 },
-      { currency: 'USD', value: 157.75 },
-    ],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-  {
-    title: 'Total Settlement',
-    values: [
-      { currency: 'KHR', value: 3900 },
-      { currency: 'USD', value: 10 },
-    ],
-    filterLabel: 'This month',
-    dateRange: '01/08/2025 - 30/08/2025',
-  },
-]
+const transactionSummary = ref<TransactionSummaryModel | null>(null)
+
+// Reactive computed property that updates when transactionSummary changes
+const summarys = computed(() => {
+  return transactionSummary.value?.summarys || []
+})
+const isLoading = ref(true)
+
+// Function to fetch transaction summary from API
+const fetchTransactionSummary = async () => {
+  try {
+    isLoading.value = true
+    const response = await pgwModuleApi.getTransactionSummary()
+    // Check if response has data (the API returns data directly, not wrapped in success/code)
+    if (response) {
+      console.log('✅ Frontend: Processing response data')
+    // transactionSummary.value = response
+    transactionSummary.value = {
+      period: {
+        type: 'month',
+        label: 'This Month',
+        dateFrom: '2025-08-01',
+        dateTo: '2025-08-31'
+      },
+      summarys: [
+        {
+          title: 'Total Transaction',
+          values: [{ value: 1245 }],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        },
+        {
+          title: 'Failed Transactions',
+          values: [{ value: 23 }],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        },
+        {
+          title: 'Total Amount',
+          values: [
+            { currency: 'KHR', value: 15680000 },
+            { currency: 'USD', value: 3920.50 }
+          ],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        },
+        {
+          title: 'Total Settlement',
+          values: [
+            { currency: 'KHR', value: 15456000 },
+            { currency: 'USD', value: 3864.25 }
+          ],
+          filterLabel: 'This month',
+          dateRange: '01/08/2025 - 31/08/2025',
+          periodType: 'month'
+        }
+      ]
+    }
+    } else {
+      toast.add({
+        title: t('error'),
+        description: 'No transaction summary data available',
+        color: 'error',
+      })
+    }
+  } catch (error) {
+    console.error('❌ Frontend: Error fetching transaction summary:', error)
+    errorHandler.handleApiError(error)
+    toast.add({
+      title: t('error'),
+      description: t('failed_to_fetch_transaction_summary'),
+      color: 'error',
+    })
+  } finally {
+    isLoading.value = false
+    console.log('🏁 Frontend: Transaction summary fetch completed')
+  }
+}
+
+onMounted(async () => {
+  // Fetch transaction summary 
+  await fetchTransactionSummary()
+})
 
 
 // Wrapper function for TablesExTable
@@ -390,10 +464,7 @@ onBeforeMount(() => {
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
 })
 
-// Initial load
-onMounted(() => {
-  fetchTransactionHistory()
-})
+// Initial load handled in the main onMounted above
 
 const onGenerateSettlement = () => {
   router.push('/digital-wallet/settlement/generate')
