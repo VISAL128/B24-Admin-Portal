@@ -12,7 +12,7 @@
         <div
           class="rounded-t-2xl px-8 py-6 flex flex-col items-center justify-center text-center space-y-4 relative bg-cover bg-center w-full"
           :style="{
-            backgroundImage: `url('https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg')`,
+            backgroundImage: `url('${supplierBackgroundImage}')`,
           }"
         >
           <!-- Blur overlay covering entire header -->
@@ -21,12 +21,12 @@
           <!-- Content (Avatar and Supplier Name) -->
           <div class="relative z-10 flex flex-col items-center">
             <!-- Perfect Circular Avatar -->
-            <div class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center bg-primary dark:bg-blue-900/30">
+            <div class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center">
               <img
                 v-if="supplierProfileImage"
                 :src="supplierProfileImage"
                 alt="Supplier"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover "
               />
               <span v-else class="leading-none text-3xl text-white font-semibold">
                 {{ supplierInitials }}
@@ -105,8 +105,18 @@
   v-else-if="activeTab === 'wallet'"
   class="space-y-6"
 >
+
+  <div
+    v-if="wallets.length === 0"
+    class="w-full rounded-2xl border border-gray-300 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center h-52 text-gray-400 dark:text-gray-500"
+  >
+    <UIcon name="i-heroicons-banknotes" class="w-10 h-10 mb-2" />
+    <span class="text-base font-medium">
+      {{ t('wallet_page.no_wallets_found') }}
+    </span>
+  </div>
+
   <!-- Wallet Cards -->
-<!-- Wallet Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
   <!-- Actual Wallet Cards -->
   <div
@@ -187,7 +197,6 @@
     {{ t('wallet_page.more_wallets_coming') }}
   </span>
 </div>
-
 </div>
 
 
@@ -712,9 +721,18 @@ const supplierInitials = computed(() => {
 const supplierProfileImage = computed(() => {
   try {
     const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
-    return ext.profileImage || 'https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg'
+    return ext.cpo.cpo_logo || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png'
   } catch {
-    return 'https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg'
+    return 'https://static.vecteezy.com/system/resources/previews/026/630/551/non_2x/profile-icon-symbol-design-illustration-vector.jpg'
+  }
+})
+
+const supplierBackgroundImage = computed(() => {
+  try {
+    const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
+    return ext.cpo.cpo_logo || 'https://t3.ftcdn.net/jpg/09/27/94/24/360_F_927942465_j6MgO2enbUJ3IHfr2hn8ZxGfY1Dshi8p.jpghttps://wallpapers.com/images/hd/profile-picture-background-10tprnkqwqif4lyv.jpg'
+  } catch {
+    return 'https://i.pinimg.com/736x/3c/24/46/3c24462450c2a902bf7e18f3d9aada81.jpg'
   }
 })
 
