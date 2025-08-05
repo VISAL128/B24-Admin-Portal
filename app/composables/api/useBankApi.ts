@@ -13,18 +13,29 @@ export const useBankApi = () => {
    * Get list of banks with optional filtering and pagination (Legacy endpoint)
    * @deprecated Use getBanksByServiceId or getBanksFromPgwModule instead
    */
-  const getBanks = async (query?: BankQuery): Promise<BankListResponse> => {
-    const response = await execute<BankListResponse>(() =>
-      $fetch<ApiResponse<BankListResponse>>('/api/pgw-module/bank/list', {
+  const getBanks = async (query?: BankQuery): Promise<ApiResponse<Bank[]>> => {
+    const response = await execute<Bank[]>(() =>
+      $fetch<ApiResponse<Bank[]>>('/api/pgw-module/bank/list', {
         method: 'GET',
         query,
       })
     )
-
     if (response.code !== 'SUCCESS') {
       return {
-        records: [],
-        total_record: 0,
+        code: 'ERROR',
+        message: 'Failed to retrieve banks',
+        data: [],
+        total_records: 0,
+        total_pages: 0,
+        page: 1,
+        page_size: 25,
+      }
+    }
+    return response
+  }
+
+  /**
+   * Get banks by service ID from PGW Module API (Direct API call)
         total_page: 0,
         current_page: 1,
         page_size: 25,

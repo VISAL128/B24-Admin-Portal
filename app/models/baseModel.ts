@@ -15,3 +15,15 @@ export interface PgwModuleResponse<T> {
   message_kh?: string // 'ជោគជ័យ'
   data?: T
 }
+
+export interface PgwModuleResponseList<T> {
+  param: {
+    pageIndex: number
+    pageSize: number
+    pageCount: number
+    rowCount: number
+    sorts: string
+    filter: string
+  },
+  result: T[]
+}
