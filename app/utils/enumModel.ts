@@ -61,4 +61,8 @@ enum SettlementHistoryStatus {
   Completed = 'completed'
 }
 
-export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus, FeeType, Currency };
+enum BankServiceStatus {
+  Active = 1,
+  Inactive = 2
+}
+export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus, FeeType, Currency, BankServiceStatus  };

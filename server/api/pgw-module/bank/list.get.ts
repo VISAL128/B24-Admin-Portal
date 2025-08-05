@@ -1,5 +1,5 @@
 import { PGW_MODULE_API_ENDPOINTS } from '~~/server/utils/pgw-module-api-endpoints'
-import { requestToPgwModuleApi } from '../../../logic/pgw_module_api_logic'
+import { requestToPgwModuleApiWithQuery } from '../../../logic/pgw_module_api_logic'
 import type { Bank } from '~/models/bank'
 import type { ApiResponse, PgwModuleResponseList } from '~/models/baseModel'
 
@@ -7,17 +7,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<Bank[]>> =>
   try {
     // Extract query parameters
     const query = getQuery(event)
-    const {
-      _search = '',
-      _page = 1,
-      _page_size = 25,
-      _is_settlement_bank,
-      _is_collection_bank,
-      _currency,
-    } = query
 
     // Call the PGW Module API
-    const response = await requestToPgwModuleApi<PgwModuleResponseList<Bank>>(event, PGW_MODULE_API_ENDPOINTS.BANK.GET_BY_WALLET_SERVICE, 'GET')
+    const response = await requestToPgwModuleApiWithQuery<PgwModuleResponseList<Bank>>(event, PGW_MODULE_API_ENDPOINTS.BANK.GET_BY_WALLET_SERVICE, query, 'GET')
 
     console.log('Response from PGW Module API:', response)
     const banks = response.result || []

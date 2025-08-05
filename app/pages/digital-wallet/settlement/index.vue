@@ -70,6 +70,7 @@ import { DEFAULT_PAGE_SIZE } from '~/utils/constants'
 import { SettlementHistoryStatus } from '~/utils/enumModel'
 import type { BaseTableColumn, SettlementHistoryTableFetchResult } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
+import type { QueryParams } from '~/models/baseModel'
 
 definePageMeta({
   auth: false,
@@ -273,20 +274,14 @@ onBeforeUnmount(() => {
 })
 
 // Wrapper function for BaseTableV2
-const fetchSettlementForTable = async (params?: {
-  page?: number
-  pageSize?: number
-  search?: string
-  startDate?: string
-  endDate?: string
-}): Promise<SettlementHistoryTableFetchResult | null> => {
+const fetchSettlementForTable = async (params?: QueryParams): Promise<SettlementHistoryTableFetchResult | null> => {
   try {
     const payload: SettlementHistoryQuery = {
       search: params?.search || undefined,
-      page_size: params?.pageSize || pageSize.value.value,
+      page_size: params?.page_size || pageSize.value.value,
       page: params?.page || page.value,
-      start_date: params?.startDate,
-      end_date: params?.endDate,
+      start_date: params?.start_date,
+      end_date: params?.end_date,
       status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
     }

@@ -18,13 +18,13 @@
 import { h, nextTick, onMounted, ref, resolveComponent, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBankApi } from '~/composables/api/useBankApi'
-import type { BankQuery, Bank } from '~/models/bank'
+import type { Bank } from '~/models/bank'
 import { useI18n } from 'vue-i18n'
 import { useTable } from '~/composables/utils/useTable'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
 import type { BankListTableFetchResult, BaseTableColumn } from '~/components/tables/table'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import ExTable from '~/components/tables/ExTable.vue'
+import type { QueryParams } from '~/models/baseModel'
 
 definePageMeta({
   auth: true,
@@ -41,16 +41,10 @@ const { getBanks } = useBankApi()
 const { createSortableHeader } = useTable()
 const errorHandler = useErrorHandler()
 const { statusCellBuilder } = useStatusBadge()
-const pref = useUserPreferences().getPreferences()
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const table = useTemplateRef<any>('table')
 const router = useRouter()
-
-// Filter states
-const selectedStatuses = ref<{ label: string; value: string }[]>([])
-const selectedCountry = ref<{ label: string; value: string } | null>(null)
-const selectedCurrency = ref<{ label: string; value: string } | null>(null)
 
 // Define table ID and default column visibility
 const TABLE_ID = 'banks-list'
@@ -138,28 +132,9 @@ watch(
 )
 
 // Fetch banks data from API
-const fetchBanks = async (params?: {
-    page?: number
-    pageSize?: number
-    search?: string
-    startDate?: string
-    endDate?: string
-  }): Promise<BankListTableFetchResult | undefined> => {
+const fetchBanks = async (params?: QueryParams): Promise<BankListTableFetchResult | undefined> => {
   try {
-    const payload: BankQuery = {
-      search: params?.search || '',
-      page_size: params?.pageSize || pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
-      page: params?.page || 1,
-      is_active: selectedStatuses.value.some((s) => s.value === 'active')
-        ? true
-        : selectedStatuses.value.some((s) => s.value === 'inactive')
-          ? false
-          : undefined,
-      country_code: selectedCountry.value?.value || undefined,
-      currency_code: selectedCurrency.value?.value || undefined,
-    }
-
-    const data = await getBanks(payload)
+    const data = await getBanks(params)
     return {
       data: data.data,
       total_page: data.total_pages || 0,
@@ -226,16 +201,23 @@ const columns: BaseTableColumn<Bank>[] = [
     id: 'bank_name',
     accessorKey: 'bank_name',
     header: ({ column }) => createSortableHeader(column, t('table.banks-list.columns.bank_name')),
-    cell: ({ row }) => h('div', { class: 'font-medium' }, row.original.name),
+    // cell: ({ row }) => h('div', { class: 'font-medium' }, row.original.name),
+    cell: ({ row }) => {
+      const UAvatar = resolveComponent('UAvatar')
+      if (row.original.name) {
+        // If bank logo is available, display it
+        return h('div', { class: 'flex items-center gap-2' }, [
+          h(UAvatar, {
+            src: row.original.logo,
+            size: '3xs',
+          }),
+          h('div', { class: '' }, row.original.name || '-'),
+        ])
+      }
+      return h('div', { class: '' }, row.original.name || '-')
+    },
     enableSorting: true,
     size: 200,
-  },
-  {
-    id: 'currency',
-    accessorKey: 'currency',
-    header: () => t('table.banks-list.columns.currency'),
-    cell: ({ row }) => row.original.currency,
-    size: 80,
   },
   {
     id: 'activated_date',
@@ -257,6 +239,13 @@ const columns: BaseTableColumn<Bank>[] = [
     header: () => t('table.banks-list.columns.is_collection_bank'),
     cell: ({ row }) => statusCellBuilder(row.original.is_collection_bank ? 'yes' : 'no'),
     size: 120,
+  },
+  {
+    id: 'status',
+    accessorKey: 'status',
+    header: () => t('table.banks-list.columns.status'),
+    cell: ({ row }) => statusCellBuilder(row.original.active === BankServiceStatus.Active ? 'active' : 'inactive'),
+    size: 100,
   }
 ]
 </script>

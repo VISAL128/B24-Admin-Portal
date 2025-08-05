@@ -149,7 +149,7 @@
                 </UTooltip>
 
                 <!-- Developer Tools -->
-                <!-- <UTooltip :text="t('navbar.developer_tools')" :delay-duration="500">
+                <UTooltip v-if="false" :text="t('navbar.developer_tools')" :delay-duration="500">
                   <UButton
                     icon="material-symbols:terminal-rounded"
                     variant="ghost"
@@ -157,7 +157,7 @@
                     class="px-2"
                     @click="handleDeveloperTools"
                   />
-                </UTooltip> -->
+                </UTooltip>
               </div>
               <!-- User Menu -->
               <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
@@ -277,7 +277,7 @@
               />
               <UButton
                 :label="t('yes_logout')"
-                color="primary"
+                color="error"
                 size="sm"
                 :loading="loggingOut"
                 class="justify-center"
@@ -358,9 +358,9 @@ const handleSettings = () => {
   navigateTo('/settings/generate-details')
 }
 
-// const handleDeveloperTools = () => {
-//   navigateTo('/settings/developer-tool')
-// }
+const handleDeveloperTools = () => {
+  navigateTo('/settings/developer-tool')
+}
 
 const closeConfirmationModal = () => {
   isShowLogoutConfirmModal.value = false

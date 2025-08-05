@@ -1,10 +1,9 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
   Bank,
-  BankQuery,
   BankListResponse,
 } from '~/models/bank'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponse, QueryParams } from '~/models/baseModel'
 
 export const useBankApi = () => {
   const { execute } = useApiExecutor()
@@ -13,7 +12,7 @@ export const useBankApi = () => {
    * Get list of banks with optional filtering and pagination (Legacy endpoint)
    * @deprecated Use getBanksByServiceId or getBanksFromPgwModule instead
    */
-  const getBanks = async (query?: BankQuery): Promise<ApiResponse<Bank[]>> => {
+  const getBanks = async (query?: QueryParams): Promise<ApiResponse<Bank[]>> => {
     const response = await execute<Bank[]>(() =>
       $fetch<ApiResponse<Bank[]>>('/api/pgw-module/bank/list', {
         method: 'GET',
