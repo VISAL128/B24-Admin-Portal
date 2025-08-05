@@ -1,7 +1,24 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-4">
+
+      <TablesExTable
+      ref="table"
+      :columns="columns"
+      table-id="sub-billers-table"
+      :fetch-data-fn="fetchSubBiller"
+      show-row-number
+      enabled-auto-refresh
+      @data-changed=""
+      @row-click="handleViewDetails"
+    >
+    <template #trailingHeader>
+      <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
+          {{ t('generate_settlement') }}
+      </UButton>
+    </template>
+  </TablesExTable>
     <!-- Table -->
-    <BaseTable
+    <!-- <BaseTable
       :data="suppliers"
       :columns="columns"
       table-id="sub-billers-table"
@@ -36,7 +53,7 @@
       <template #empty>
         <TableEmptyState />
       </template>
-    </BaseTable>
+    </BaseTable> -->
   </div>
 </template>
 
@@ -167,25 +184,41 @@ const onDateFilterChange = (payload: { label: string; value: string }) => {
   }
 }
 
-async function fetchSubBiller() {
+const fetchSubBiller = async (params?: {
+  page?: number
+  pageSize?: number
+  search?: string
+  startDate?: string
+  endDate?: string
+}): Promise<{
+  data: Supplier[]
+  total_record: number
+  total_page: number
+} | null> => {
   try {
     const payload: SubBillerQuery & { Filter?: string } = {
-      PageIndex: page.value,
-      PageSize: pageSize.value.value,
+      PageIndex: params?.page || page.value,
+      PageSize: params?.pageSize || pageSize.value.value,
     }
 
+    // Optional: handle search or date filters
     if (filters.value.length > 0) {
-      payload.Filter = JSON.stringify(filters.value) // ✅ use raw JSON string
+      payload.Filter = JSON.stringify(filters.value)
     }
 
-    const data = await getSubBillers(payload)
-    suppliers.value = data.result
-    total.value = data?.param.rowCount ?? 0
-    totalPage.value = data?.param.pageCount
+    const response = await getSubBillers(payload)
+
+    return {
+      data: response.result || [],
+      total_record: response.param?.rowCount || 0,
+      total_page: response.param?.pageCount || 0,
+    }
   } catch (error) {
-    console.error('fetchSubBiller error:', error)
+    errorHandler.handleApiError(error)
+    return null
   }
 }
+
 
 const onPageSizeChange = () => {
   page.value = 1

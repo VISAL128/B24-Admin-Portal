@@ -111,7 +111,7 @@
   <!-- Actual Wallet Cards -->
   <div
     v-for="(wallet, index) in wallets"
-    :key="wallet.id"
+    :key="wallet.walletId"
     :class="[
       'rounded-2xl text-white p-6 relative overflow-hidden shadow-lg flex flex-col justify-between h-52',
       getCardGradientByIndex(index)
@@ -144,12 +144,12 @@
         </span>
         <div class="flex items-center gap-2 font-mono mt-1">
           <span class="truncate">
-            {{ wallet.accountNumber }}
+            {{ wallet.accountNo }}
           </span>
           <button
             class="hover:text-yellow-300 transition"
             :title="t('wallet_page.copy_account_number')"
-            @click="copyToClipboard(wallet.accountNumber)"
+            @click="copyToClipboard(wallet.accountNo ?? '')"
           >
             <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
           </button>
@@ -163,12 +163,12 @@
         </span>
         <div class="flex items-center gap-2 font-mono mt-1">
           <span class="truncate">
-            {{ wallet.walletNumber }}
+            {{ wallet.walletNo }}
           </span>
           <button
             class="hover:text-yellow-300 transition"
             :title="t('wallet_page.copy_wallet_number')"
-            @click="copyToClipboard(wallet.walletNumber)"
+            @click="copyToClipboard(wallet.walletNo ?? '')"
           >
             <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
           </button>
@@ -193,7 +193,33 @@
 
   <!-- Transaction Table Below Wallet Cards -->
     <div class="overflow-x-auto">
-      <BaseTable
+          <TablesExTable
+    ref="table"
+      :columns="columns"
+      table-id="sub-biller-transaction-table"
+      :fetch-data-fn="fetchTransactionHistory"
+      show-row-number
+      show-date-filter
+      enabled-auto-refresh
+      enabled-repush
+      @row-click="handleViewDetails"
+    >
+    <template #trailingHeader>
+      <UTooltip :text="t('pages.transaction.repush_description')">
+          <UButton 
+            variant="outline"
+            size="sm"
+            @click="handleRepush()"> 
+            {{ t('pages.transaction.repush') }}
+            <template #trailing>
+              <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
+            </template>
+            
+          </UButton>
+        </UTooltip>
+    </template>
+    </TablesExTable>
+      <!-- <BaseTable
         :data="transactions"
         :columns="columns"
         table-id="wallet-transaction-table"
@@ -223,7 +249,7 @@
         <template #empty>
           <TableEmptyState />
         </template>
-      </BaseTable>
+      </BaseTable> -->
     </div>
 </div>
 
@@ -243,11 +269,13 @@ import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import type { Supplier } from '~/models/supplier'
 import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn } from '~/components/tables/table'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import type { SubBillerWallet} from "~/models/subBiller"
+import { useTable } from '~/composables/utils/useTable'
 
 definePageMeta({
   auth: false,
@@ -286,6 +314,8 @@ const errorMsg = ref('')
 const router = useRouter()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
+const { createSortableHeader, createRowNumberCell } = useTable()
+
 const getCardGradientByIndex = (index: number): string | undefined => {
   const gradients: string[] = [
     'bg-gradient-to-r from-blue-500 to-blue-500',
@@ -303,16 +333,24 @@ const getCardGradientByIndex = (index: number): string | undefined => {
   return gradients[safeIndex]
 }
 
-const handleFilterChange = (columnId: string, value: string) => {
-  console.log('Filter changed:', columnId, value)
-  // Optional: trigger fetch or other logic
+const handleViewDetails = (record: TransactionHistoryRecord) => {
+  // Navigate to transaction details page
+  navigateToDetails(record.id)
+}
+
+// Handle Repush Transaction
+const handleRepush = () => {
+    notification.showWarning({
+      title: t('pages.transaction.info'),
+      description: t('pages.transaction.info_des'),
+    })
 }
 
 const navigateToDetails = (rowId: string) => {
   router.push(`/transactions/detail/${rowId}`)
 }
 
-const columns: BaseTableColumn<any>[] = [
+const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -331,80 +369,66 @@ const columns: BaseTableColumn<any>[] = [
         'aria-label': 'Select row',
       }),
     enableSorting: false,
+    enableColumnFilter: false,
     enableHiding: false,
-  },
-  {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
-    size: 30,
-    maxSize: 30,
-    enableSorting: false,
   },
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    // header: ({ column }) =>
-    //   createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
-    //     // Call your API with the new sorting order
-    //     console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
-    //     // Trigger your own fetch with the column and direction
-    //     sortBy.value = 'created_date'
-    //     sortDirection.value = order
-    //     fetchTransactionHistory()
-    //   }),
-    header: t('date'),
+    header: ({ column }) => createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
     cell: ({ row }) =>
-      // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
+    size: 50,
+    maxSize: 150,
   },
   {
     id: 'bank_ref',
     accessorKey: 'bank_ref',
-    header: t('bank_ref'),
+    header: () => t('pages.transaction.bank_ref'),
+    cell: ({ row }) => row.original.bank_ref || '-',
+    enableSorting: true,
   },
   {
     id: 'collection_bank',
     accessorKey: 'collection_bank',
-    header: t('collection_bank'),
+    header: () => t('collection_bank'),
+    cell: ({ row }) => row.original.collection_bank || '-',
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: 'ABA', value: 'ABA' },
+      { label: 'ACLEDA', value: 'ACLEDA' },
+      { label: 'AMK', value: 'AMK' },
+    ],
   },
   {
     id: 'settlement_bank',
     accessorKey: 'settlement_bank',
-    header: t('settlement_bank'),
+    header: () => t('settlement_bank'),
+    cell: ({ row }) => row.original.settlement_bank || '-',
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: 'ABA', value: 'ABA' },
+      { label: 'ACLEDA', value: 'ACLEDA' },
+      { label: 'AMK', value: 'AMK' },
+    ],
   },
   {
     id: 'settlement_type',
     accessorKey: 'settlement_type',
-    header: t('settlement_type'),
-  },
-  {
-    id: 'total_amount',
-    accessorKey: 'total_amount',
-    header: () => h('div', { class: 'text-right' }, t('total_amount')),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
-      ),
-  },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: t('settlement.currency'),
+    header: () => t('settlement_type'),
+    cell: ({ row }) => row.original.settlement_type || '-',
     enableColumnFilter: true,
     filterOptions: [
-      { label: 'USD', value: 'USD' },
-      { label: 'KHR', value: 'KHR' },
+      { label: 'Auto', value: 'Auto' },
+      { label: 'Manual', value: 'Manual' },
     ],
-    enableSorting: true,
   },
   {
     id: 'transaction_type',
     accessorKey: 'transaction_type',
-    header: t('transaction_type'),
+    header: () => t('transaction_type'),
+    cell: ({ row }) => row.original.transaction_type || '-',
     enableSorting: true,
     enableColumnFilter: true,
     filterOptions: [
@@ -417,98 +441,71 @@ const columns: BaseTableColumn<any>[] = [
   {
     id: 'sub_biller',
     accessorKey: 'sub_biller',
-    header: t('sub_biller'),
+    header: () => t('sub_biller'),
+    cell: ({ row }) => row.original.sub_biller || '-',
     enableSorting: true,
   },
   {
+    id: 'total_customer',
+    accessorKey: 'total_customer',
+    header : ({ column }) => createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
+    cell: ({ row }) =>  h(
+        'div',
+        { class: 'text-right' },
+        row.original.total_customer || '-',
+      ),
+  },
+  {
     id: 'status',
-    accessorKey: 'status',
-    header: t('status.header'),
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('completed'), value: 'completed' },
-      { label: t('pending'), value: 'pending' },
-      { label: t('failed'), value: 'failed' },
-    ],
-    cell: ({ row }: any) =>
+    header: () => t('status.header'),
+    cell: ({ row }) =>
       h(StatusBadge, {
         status: row.original.status,
         variant: 'subtle',
         size: 'sm',
       }),
-    // cell: ({ row }) => {
-    //   // return h('span', {
-    //   //   class: `text-sm font-medium`
-    //   // }, `Total: ${row.original.total_Settled}`)
-
-    //   const success = row.original.success
-    //   const fail = row.original.fail
-    //   const total = row.original.total_settled
-
-    //   const UBadge = resolveComponent('UBadge')
-    //   const Icon = resolveComponent('UIcon')
-
-    //   return h('div', { class: 'flex gap-2 items-center' }, [
-    //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-    //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-    //     //   h('span', {}, total)
-    //     // ]),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'primary',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [
-    //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-    //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
-    //       ]
-    //     ),
-    //     // Success and Fail badges
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'success',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-    //     ),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'error',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
-    //     ),
-    //   ])
-    // },
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: t('completed'), value: t('completed') },
+      { label: t('pending'), value: t('pending') },
+      { label: t('failed'), value: t('failed') },
+    ],
   },
-  // Add an action column for viewing details
-  // {
-  //   id: 'actions',
-  //   header: t('actions'),
-  //   cell: ({ row }) =>
-  //     h('div', { class: 'flex items-center gap-2' }, [
-  //       h(resolveComponent('UButton'), {
-  //         color: 'primary',
-  //         variant: 'ghost',
-  //         icon: 'i-lucide-eye',
-  //         size: 'sm',
-  //         onClick: handleViewDetails(row.original),
-  //         // title: translations.view_details
-  //       }),
-  //     ]),
-  // },
+  {
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    header: () => t('settlement.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+  },
+  {
+    id: 'total_amount',
+    accessorKey: 'total_amount',
+    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-right' },
+        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
+      ),
+    enableMultiSort: true,
+    enableSorting: true,
+    size: 50,
+    maxSize: 150,
+  },
+ 
 ]
 
 
 
 const { getSubBillerById } = usePgwModuleApi()
+const { getSubBillerWalletList } = usePgwModuleApi()
+
 const supplierData = ref<Supplier | null>(null)
 
 const fetchSubBillerById = async () => {
@@ -537,25 +534,40 @@ const copyToClipboard = async (text: string) => {
   }
 }
 
-const wallets = ref([
-  {
-    id: 'wallet-aba',
-    bankName: 'ABA Bank',
-    accountNumber: '000111222',
-    walletNumber: 'WLT-ABA-001',
-    currency: 'KHR',
-    balance: '1,000,000',
-  },
-  // {
-  //   id: 'wallet-acleda',
-  //   bankName: 'Acleda Bank',
-  //   accountNumber: '999888777',
-  //   walletNumber: 'WLT-ACL-002',
-  //   currency: 'USD',
-  //   balance: '5,000',
-  // },
-])
+const fetchWallets = async () => {
+  try {
+    const id = transactionId.value
+    if (!id) return
 
+    const response = await getSubBillerWalletList(id)
+    wallets.value = response.data ?? []
+  } catch (error) {
+    console.error('Error fetching wallets:', error)
+    errorMsg.value = t('failed_to_load_wallets')
+  }
+}
+
+
+// const wallets = ref([
+//   {
+//     id: 'wallet-aba',
+//     bankName: 'ABA Bank',
+//     accountNumber: '000111222',
+//     walletNumber: 'WLT-ABA-001',
+//     currency: 'KHR',
+//     balance: '1,000,000',
+//   },
+//   {
+//     id: 'wallet-acleda',
+//     bankName: 'Acleda Bank',
+//     accountNumber: '999888777',
+//     walletNumber: 'WLT-ACL-002',
+//     currency: 'USD',
+//     balance: '5,000',
+//   },
+// ])
+
+const wallets = ref<SubBillerWallet[]>([])
 
 
 // Push Back Transaction Data
@@ -707,7 +719,13 @@ const supplierProfileImage = computed(() => {
 })
 
 
-const fetchTransactionHistory = async () => {
+const fetchTransactionHistory = async (params?: {
+  page?: number
+  pageSize?: number
+  search?: string
+  startDate?: string
+  endDate?: string
+}) : Promise<TableFetchResult<TransactionHistoryRecord[]> | null>  => {
   loading.value = true
   try {
     const banks = ['ABA', 'ACLEDA', 'AMK'] as const
@@ -728,6 +746,8 @@ const fetchTransactionHistory = async () => {
       'Total Energies Cambodia',
       'ISPP International School',
     ]
+
+    // Generate full dataset
     const fullData: TransactionHistoryRecord[] = Array.from({ length: 100 }, (_, i) => ({
       id: `txn-${i + 1}`,
       created_date: new Date(Date.now() - i * 86400000),
@@ -738,23 +758,60 @@ const fetchTransactionHistory = async () => {
       total_amount: 1000000 + i * 5000,
       currency_id: i % 2 === 0 ? 'USD' : 'KHR',
       status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
-      settled_by: `User ${i + 1}`,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4],
-      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)],
+      total_customer: i + 1,
+      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4]!,
+      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)]!,
     }))
 
-    // ✅ Paging
-    const pageStart = (page.value - 1) * pageSize.value.value
-    const pageEnd = pageStart + pageSize.value.value
-    const pagedData = fullData.slice(pageStart, pageEnd)
+    // Apply search filter if provided
+    let filteredData = fullData
+    if (params?.search) {
+      const searchLower = params.search.toLowerCase()
+      filteredData = fullData.filter(item => 
+        item.bank_ref.toLowerCase().includes(searchLower) ||
+        item.collection_bank.toLowerCase().includes(searchLower) ||
+        item.settlement_bank.toLowerCase().includes(searchLower) ||
+        item.transaction_type.toLowerCase().includes(searchLower) ||
+        item.sub_biller.toLowerCase().includes(searchLower) ||
+        item.total_customer.toString().toLowerCase().includes(searchLower)
+      )
+    }
 
-    transactions.value = pagedData
-    total.value = fullData.length
-    totalPage.value = Math.ceil(fullData.length / pageSize.value.value)
-  } catch (error: any) {
-    console.error('Error loading dummy data:', error.message)
-    errorMsg.value = error.message || 'Failed to load transaction history.'
+    // Apply date filter if provided
+    if (params?.startDate && params?.endDate) {
+      const startDate = new Date(params.startDate)
+      const endDate = new Date(params.endDate)
+      filteredData = filteredData.filter(item => {
+        const itemDate = new Date(item.created_date)
+        return itemDate >= startDate && itemDate <= endDate
+      })
+    }
+
+    // Calculate pagination
+    const currentPage = params?.page || 1
+    const currentPageSize = params?.pageSize || 10
+    const totalRecords = filteredData.length
+    const totalPages = Math.ceil(totalRecords / currentPageSize)
+    
+    // Apply pagination
+    const startIndex = (currentPage - 1) * currentPageSize
+    const endIndex = startIndex + currentPageSize
+    const paginatedData = filteredData.slice(startIndex, endIndex)
+
+    return {
+      data: paginatedData,
+      total_record: totalRecords,
+      total_page: totalPages,
+    }
+  } catch (error: unknown) {
+    console.error('Error loading transaction data:', error)
+    errorMsg.value = (error as Error).message || 'Failed to load transaction history.'
     errorHandler.handleApiError(error)
+    return {
+      data: [],
+      total_record: 0,
+      total_page: 0,
+    }
   } finally {
     loading.value = false
   }
@@ -808,7 +865,8 @@ const download = async () => {
 
 onMounted(() => {
   fetchTransactionHistory()
-    fetchSubBillerById() // <-- Add this line
+  fetchSubBillerById()
+  fetchWallets()
 })
 </script>
 
