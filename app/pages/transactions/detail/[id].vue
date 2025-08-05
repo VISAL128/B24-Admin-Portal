@@ -101,22 +101,6 @@
               v-show="activeTab === 'repush'"
               :style="{ height: transactionHeight + 'px' }"
               class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col p-3">
-              <!-- <UTable
-                :data="webhookHistoryData"
-                :columns="webhookColumns"
-                class="w-full"
-                sortable
-                v-model:sort="webhookSorting"
-                :ui="{
-                  td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
-                  th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
-                  thead: 'whitespace-nowrap',
-                  tbody: 'whitespace-nowrap',
-                  tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
-                }"
-                @select="onRowSelect"
-              /> -->
-
                <UTable
                 ref="table"
                 :data="webhookHistoryData"
@@ -292,6 +276,65 @@
         @select="onTransactionAllocationSelect"
       />
     </div>
+
+    <!-- Repush Transaction Summary and Auto Direct Debit Summary Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <!-- Left Card: Repush Transaction Summary -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-64">
+        <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
+          <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+            <UIcon name="material-symbols:sync-outline" class="w-4 h-4 text-primary" />
+          </div>
+          Repush Transaction Summary
+        </h4>
+        <!-- Horizontal line below header -->
+        <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3" />
+        
+        <!-- Content area -->
+        <div class="mt-4 h-full">
+          <!-- Summary content will go here -->
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Total Repush Attempts</span>
+              <span class="text-lg font-bold text-gray-900 dark:text-white">3</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Success</span>
+              <span class="text-sm font-medium text-green-600">2</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Failed</span>
+              <span class="text-sm font-medium text-red-600">1</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Last Attempt</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">2025-07-22 10:30 AM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Card: Auto Direct Debit Summary -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-64">
+        <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
+          <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+            <UIcon name="material-symbols:account-balance-wallet-outline" class="w-4 h-4 text-primary" />
+          </div>
+          Auto Direct Debit Summary
+        </h4>
+        <!-- Horizontal line below header -->
+        <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3" />
+        
+        <!-- Content area (blank for now) -->
+        <div class="mt-4 h-full flex items-center justify-center">
+          <div class="text-center">
+            <UIcon name="material-symbols:account-balance-wallet-outline" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p class="text-sm text-gray-500 dark:text-gray-400">No direct debit data available</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Download Modal -->
     <UModal
       v-model:open="showDownloadModal"
