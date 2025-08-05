@@ -21,7 +21,7 @@
           <!-- Content (Avatar and Supplier Name) -->
           <div class="relative z-10 flex flex-col items-center">
             <!-- Perfect Circular Avatar -->
-            <div class="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-primary dark:bg-blue-900/30">
+            <div class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center bg-primary dark:bg-blue-900/30">
               <img
                 v-if="supplierProfileImage"
                 :src="supplierProfileImage"
@@ -35,7 +35,7 @@
 
             <!-- Supplier Name -->
             <h4 class="text-2xl font-medium text-white mt-4">
-              {{ supplierData.name }}
+              {{ supplierData?.name ?? '-' }}
             </h4>
           </div>
         </div>
@@ -247,6 +247,7 @@ import type { BaseTableColumn } from '~/components/tables/table'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
+import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 
 definePageMeta({
   auth: false,
@@ -507,6 +508,21 @@ const columns: BaseTableColumn<any>[] = [
 
 
 
+const { getSubBillerById } = usePgwModuleApi()
+const supplierData = ref<Supplier | null>(null)
+
+const fetchSubBillerById = async () => {
+  try {
+    const id = transactionId.value
+    if (!id) return
+
+    const response = await getSubBillerById(id)
+    supplierData.value = response
+  } catch (error) {
+    console.error('Error fetching sub biller detail:', error)
+    errorMsg.value = t('failed_to_load_data')
+  }
+}
 
 
 
@@ -670,38 +686,8 @@ const webhookColumns = [
   },
 ]
 
-const supplierData: Supplier = {
-  id: 'SUP-001',
-  code: 'SUP12345',
-  name: 'ACME Corporation',
-  nameKh: 'ក្រុមហ៊ុន អេសស៊ីអិមអ៊ី',
-  shortName: 'ACME',
-  phone: '+85512345678',
-  email: 'info@acme.com',
-  address: '123 Street, Phnom Penh',
-  addressKh: 'ផ្លូវ ១២៣ ភ្នំពេញ',
-  tinNumber: 'KHM123456789',
-  userId: 'user-001',
-  parentId: null,
-  supplierTypeId: 'type-01',
-  syncCode: null,
-  bgwCode: null,
-  scope: 'international',
-  isActive: true,
-  isValidUnicodeName: true,
-  createdBy: 'admin',
-  createdDate: '2025-07-02T09:25:24.893821',
-  updatedBy: null,
-  updatedDate: null,
-  paymentWidgetSetting: null,
-  paymentWidgetSettingPreview: null,
-  directDebitResponse: null,
-  checkoutPageConfig: null,
-  extData: null,
-}
-
 const supplierInitials = computed(() => {
-  const name = supplierData.name?.trim() || ''
+  const name = supplierData.value?.name?.trim() || ''
   if (!name) return 'SP'
   return name
     .split(' ')
@@ -713,7 +699,7 @@ const supplierInitials = computed(() => {
 
 const supplierProfileImage = computed(() => {
   try {
-    const ext = supplierData.extData ? JSON.parse(supplierData.extData) : {}
+    const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
     return ext.profileImage || 'https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg'
   } catch {
     return 'https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg'
@@ -777,39 +763,39 @@ const fetchTransactionHistory = async () => {
 const supplierOverviewFields = computed(() => [
   {
     label: 'Code',
-    value: supplierData.code,
+    value: supplierData.value?.syncCode ?? '-',
     type: 'code',
     copyable: true,
-    rawValue: supplierData.code,
+    rawValue: supplierData.value?.syncCode,
   },
   {
     label: 'Phone',
-    value: supplierData.phone || '-',
+    value: supplierData.value?.phone || '-',
     type: 'text',
   },
   {
     label: 'Email',
-    value: supplierData.email || '-',
+    value: supplierData.value?.email || '-',
     type: 'text',
   },
   {
     label: 'Address',
-    value: supplierData.address || '-',
+    value: supplierData.value?.address || '-',
     type: 'text',
   },
   {
     label: 'TIN',
-    value: supplierData.tinNumber || '-',
+    value: supplierData.value?.tinNumber || '-',
     type: 'text',
   },
   {
     label: 'Active',
-    value: supplierData.isActive ? 'Yes' : 'No',
+    value: supplierData.value?.isActive ? 'Yes' : 'No',
     type: 'badge',
   },
   {
     label: 'Created Date',
-    value: new Date(supplierData.createdDate).toLocaleString('en-GB'),
+    value: new Date(supplierData.value?.createdDate ?? '').toLocaleString('en-GB'),
     type: 'text',
   },
 ])
@@ -822,6 +808,7 @@ const download = async () => {
 
 onMounted(() => {
   fetchTransactionHistory()
+    fetchSubBillerById() // <-- Add this line
 })
 </script>
 

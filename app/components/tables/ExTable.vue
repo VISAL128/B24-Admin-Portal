@@ -244,7 +244,6 @@ import type { BaseTableColumn, TableFetchResult } from '~/components/tables/tabl
 import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import { useNotification } from '~/composables/useNotification'
 import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useTable } from '~/composables/utils/useTable'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -267,8 +266,6 @@ export interface ExportOptions {
 // Use table configuration composable
 const tableConfig = useTableConfig()
 const { createRowNumberCell } = useTable()
-const notification = useNotification()
-const showRepushDialog = ref(false)
 
 const defaultColumnVisibility = ref<Record<string, boolean>>({})
 
@@ -477,8 +474,7 @@ const resolvedExportOptions = computed(() => ({
   startDate: props.exportOptions?.startDate ?? startDate.value,
   endDate: props.exportOptions?.endDate ?? endDate.value,
   totalAmount:
-    props.exportOptions?.totalAmount ??
-    filteredData.value.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0),
+    props.exportOptions?.totalAmount
 }))
 
  
