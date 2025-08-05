@@ -134,6 +134,17 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
         <slot name="trailingHeader"/>
         <ExportButton :data="filteredData" :headers="exportHeaders" :export-options="resolvedExportOptions" />
 
+        <!-- Fullscreen Toggle Button -->
+        <UTooltip :text="isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen')" :delay-duration="200" placement="top">
+          <UButton variant="ghost" class="p-2" @click="toggleFullscreen">
+            <UIcon 
+              :name="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" 
+              size="sm" 
+              class="text-gray-900 dark:text-white" 
+            />
+          </UButton>
+        </UTooltip>
+
         <UPopover>
           <template #default>
             <UTooltip
@@ -239,21 +250,21 @@ v-model="pageSize" :items="DEFAULT_PAGE_SIZE_OPTIONS" size="sm" class="w-24" :se
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
-import { ref, computed, onMounted, watch } from 'vue'
-import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
-import type { TableRow } from '@nuxt/ui'
-import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import { useTableConfig } from '~/composables/utils/useTableConfig'
-import { useTable } from '~/composables/utils/useTable'
+import type { TableRow } from '@nuxt/ui'
+import { computed, onMounted, readonly, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'
+import { useTable } from '~/composables/utils/useTable'
+import { useTableConfig } from '~/composables/utils/useTableConfig'
 // import type { ApiResponseDynamic } from '~/types/api'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { QueryParams } from '~/models/baseModel'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
+import { ColumnType } from '~/utils/enumModel'
 import appConfig from '~~/app.config'
 import ExportButton from '../buttons/ExportButton.vue'
-import type { QueryParams } from '~/models/baseModel'
-import { ColumnType } from '~/utils/enumModel'
 
 export interface ExportOptions {
   fileName?: string
@@ -392,7 +403,11 @@ const emit = defineEmits<{
   (e: 'row-click', rowData: T): void
   (e: 'data-changed', result: TableFetchResult<T[]> & Record<string, unknown>): void
   (e: 'daterange-change', dateRange: { start: string; end: string }): void
+  (e: 'fullscreen-toggle', isFullscreen: boolean): void
 }>()
+
+// Fullscreen state
+const isFullscreen = ref(false)
 
 // Internal state management
 const internalData = ref<T[]>([])
@@ -886,6 +901,12 @@ const _resetDateRange = () => {
   emit('daterange-change', dateRange.value)
 }
 
+// Fullscreen toggle function
+const toggleFullscreen = () => {
+  isFullscreen.value = !isFullscreen.value
+  emit('fullscreen-toggle', isFullscreen.value)
+}
+
 defineExpose({
   tableRef,
   tableApi: computed(() => tableRef.value?.tableApi),
@@ -895,6 +916,8 @@ defineExpose({
   getCurrentData: () => tableData.value as T[],
   getFilteredData: () => filteredData.value,
   resetSorting,
+  isFullscreen: readonly(isFullscreen),
+  toggleFullscreen,
 })
 </script>
 

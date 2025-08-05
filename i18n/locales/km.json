@@ -549,6 +549,8 @@
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
     "search_placeholder": "ស្វែងរក...",
+    "enter_fullscreen": "បើកអេក្រង់ពេញ",
+    "exit_fullscreen": "បិទអេក្រង់ពេញ",
     "column_config": {
         "tooltip": "លាក់/បង្ហាញជួរឈរ",
         "reset": "កំណត់ឡើងវិញ",
