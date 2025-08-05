@@ -537,6 +537,8 @@
           :table-id="TABLE_ID"
           :fetch-data-fn="fetchSettlementForTable"
           show-row-number
+          show-date-filter
+          search-tooltip="Search transactions"
           @row-click="handleViewDetails"
         />
       </div>
@@ -545,21 +547,21 @@
 </template>
 
 <script setup lang="ts">
+import { h, resolveComponent, computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { format } from 'date-fns'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import { useWalletStore } from '~/stores/wallet'
+import { useWalletTransactionsApi } from '~/composables/api/useWalletTransactionsApi'
+import type { WalletTransactionParams } from '~/composables/api/useWalletTransactionsApi'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
-import type { WalletSummaryData } from '~~/server/model/pgw_module_api/transactionSummary'
-import type { WalletTransaction } from '~~/server/model/pgw_module_api/walletTransactions'
+import type { WalletSummaryData } from '~~/server/model/pgw_module_api/wallet_transaction_summary'
+import type { WalletTransaction, WalletApiResponse } from '~/models/wallet'
 import type { BaseTableColumn } from '~/components/tables/table'
-import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
-import { useTable } from '~/composables/utils/useTable'
 import { useFormat } from '~/composables/utils/useFormat'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
- 
+import { useStatusColor } from '~/composables/utils/useStatusColor'
 
 // Define page meta
 definePageMeta({
@@ -571,12 +573,12 @@ definePageMeta({
 const { formatCurrency } = useCurrency()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
-const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary } =
-  usePgwModuleApi()
+const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary } = usePgwModuleApi()
+const { getWalletTransactions } = useWalletTransactionsApi()
+const { formatDateTime } = useFormat()
 const { t } = useI18n()
-const { createSortableHeader } = useTable()
-const { getSettlementHistory } = useSupplierApi()
-const { statusCellBuilder } = useStatusBadge()
+const errorHandler = useErrorHandler()
+const { getVariantColorByStatus } = useStatusColor()
 
 // Wallet store
 const walletStore = useWalletStore()
@@ -588,7 +590,6 @@ const summaryDisplayCurrency = ref('KHR')
 const isLoadingWalletTypes = ref(false)
 const isLoadingSummary = ref(false)
 const isLoadingTransactions = ref(false)
-const loading = ref(false)
 
 // Auto refresh state
 const isAutoRefreshEnabled = ref(false)
@@ -611,11 +612,12 @@ const walletTypes = ref<
     id: string
     label: string
     name: string
-    walletType: string
-    currency: string
+    walletType: 'settlement_wallet' | 'top_up_wallet'
+    currency: 'KHR' | 'USD'
     nameKey: string
     icon: string
     walletId: string
+    supplierId?: string // For top-up wallets
   }>
 >([])
 
@@ -624,26 +626,6 @@ const selectedWalletType = ref('')
 
 // New Table state
 const TABLE_ID = 'wallet-transactions-table'
-
-
-const pref = useUserPreferences().getPreferences()
-
-const pageSize = ref<{ label: string; value: number }>({
-  label: pref?.defaultPageSize ? pref?.defaultPageSize.toString() : DEFAULT_PAGE_SIZE.label,
-  value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
-})
-const errorMsg = ref('')
-const errorHandler = useErrorHandler()
-const { currentProfile } = useAuth()
-const page = ref(1)
-const startDate = ref('')
-const endDate = ref('')
-const selectedStatuses = ref<{ label: string; value: string }[]>([
-  {
-    label: t('status.all'),
-    value: '',
-  },
-])
 
 // API methods
 const loadWalletTypes = async () => {
@@ -655,7 +637,12 @@ const loadWalletTypes = async () => {
       // Update wallet types from API - new format where keys are wallet IDs and values are objects
       const walletTypeData = response.data.wallet_type
       walletTypes.value = Object.entries(walletTypeData).map(([walletId, walletInfo]) => {
-        const info = walletInfo as unknown as { type: string; name: string; currency: string }
+        const info = walletInfo as unknown as {
+          type: 'settlement_wallet' | 'top_up_wallet'
+          name: string
+          currency: 'KHR' | 'USD'
+          supplier_id?: string
+        }
         const cleanType = info.name.split(' - ')[0] || info.name
         return {
           id: walletId, // Use the wallet ID as the identifier
@@ -666,6 +653,7 @@ const loadWalletTypes = async () => {
           nameKey: `wallet_page.${cleanType.toLowerCase().replace(/\s+/g, '_')}`,
           icon: getWalletTypeIcon(cleanType),
           walletId: walletId, // Store the wallet ID for API calls
+          supplierId: info.supplier_id,
         }
       })
 
@@ -782,179 +770,52 @@ const getWalletTypeIcon = (type: string) => {
   }
 }
 
-
-
-const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
+const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
   {
-    id: 'select',
-    header: ({ table }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all',
-      }),
-    cell: ({ row }) =>
-      h(
-        'div',
-        {
-          class: 'flex h-full w-full',
-          onClick: (e: Event) => e.stopPropagation(),
-        },
-        [
-          h(resolveComponent('UCheckbox'), {
-            modelValue: row.getIsSelected(),
-            'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-              row.toggleSelected(!!value),
-            'aria-label': 'Select row',
-          }),
-        ]
-      ),
-    enableSorting: false,
-    enableHiding: false,
-    meta: {
-      class: {
-        td() {
-          return 'text-center cursor-pointer'
-        },
-      },
-    },
-  },
-  // {
-  //   id: 'row_number',
-  //   header: () => '#',
-  //   cell: ({ row, table }) => createRowNumberCell(row, table, page.value, pageSize.value.value),
-  //   size: 30,
-  //   maxSize: 30,
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
-  // { accessorKey: "id", header: t("Settlement ID") },
-  {
-    id: 'created_date',
-    accessorKey: 'created_date',
-    header: ({ column }) => createSortableHeader(column, t('settlement.settlement_date'), 'left'),
-    cell: ({ row }) =>
-      // Format date to DD/MM/YYYY
-      useFormat().formatDateTime(row.original.created_date),
+    id: 'transaction_date',
+    accessorKey: 'transaction_date',
+    header: t('wallet_page.date'),
+    cell: ({ row }) => formatDateTime(row.original.transaction_date),
     enableSorting: true,
-    size: 50,
-    maxSize: 150,
   },
-  // { accessorKey: 'total_supplier', header: t('Total Supplier') },
-  
   {
-    id: 'created_by',
-    accessorKey: 'created_by',
-    header: () => t('settled_by'),
-    cell: ({ row }) => row.original.created_by || '-',
+    id: 'transaction_type',
+    accessorKey: 'transaction_type',
+    header: t('wallet_page.transaction_type'),
+    cell: ({ row }) => row.original.transaction_type || '-',
   },
-
   {
-    id: 'total_settled',
-    accessorKey: 'total_settled',
-    header: ({ column }) => createSortableHeader(column, t('settlement.transaction')),
+    id: 'customer_name',
+    accessorKey: 'customer_name',
+    header: t('wallet_page.customer_name'),
+    cell: ({ row }) => row.original.customer_name || '-',
+  },
+  {
+    id: 'amount',
+    accessorKey: 'amount',
+    header: () => h('div', { class: 'w-full flex justify-end' }, t('wallet_page.amount')),
+    cell: ({ row }) => h('div', { class: 'text-right' }, formatCurrency(row.original.amount, row.original.currency)),
     enableSorting: true,
-    filterOptions: [
-      { label: t('status.all'), value: '' },
-      { label: t('status.success'), value: 'success' },
-      { label: t('status.failed'), value: 'failed' },
-    ],  
-    cell: ({ row }) => {
-      // return h('span', {
-      //   class: `text-sm font-medium`
-      // }, `Total: ${row.original.total_Settled}`)
-
-      const success = row.original.success
-      const failed = row.original.failed
-      const total = row.original.total_settled
-
-      const UBadge = resolveComponent('UBadge')
-      const Icon = resolveComponent('UIcon')
-
-      return h('div', { class: 'flex gap-2 items-center' }, [
-        // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-        //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-        //   h('span', {}, total)
-        // ]),
-        h(
-          UBadge,
-          {
-            color: 'primary',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [
-            // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-            h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`),
-          ]
-        ),
-        // Success and Fail badges
-        h(
-          UBadge,
-          {
-            color: 'success',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-        ),
-        h(
-          UBadge,
-          {
-            color: 'error',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, failed)]
-        ),
-      ])
-    },
   },
   {
     id: 'status',
-    header: () => t('status.header'),
-    cell: ({ row }) => statusCellBuilder(row.original.status, true),
-    // cell: ({ row }) => {
-    //   const status = row.original.status
-    //   const statusClass = status === 'completed' ? 'text-green-500' : 'text-red-500'
-    //   return h('span', { class: `text-xs font-medium ${statusClass}` }, t(`status.${status}`))
-    // },
+    accessorKey: 'status',
+    header: t('wallet_page.status'),
+    cell: ({ row }) => {
+      const UBadge = resolveComponent('UBadge')
+      return h(
+        UBadge,
+        {
+          color: getVariantColorByStatus(row.original.status),
+          variant: 'subtle',
+        },
+        () => t(`status.${row.original.status.toLowerCase()}`)
+      )
+    },
   },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: () => t('settlement.currency'),
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('currency.usd'), value: 'USD' },
-      { label: t('currency.khr'), value: 'KHR' },
-    ],
-  },
-  {
-    id: 'total_amount',
-    accessorKey: 'total_amount',
-    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        formatAmount(row.original.total_amount, row.original.currency_id)
-      ),
-    enableMultiSort: true,
-    enableSorting: true,
-    size: 50,
-    maxSize: 150,
-  },
-  
-]
+])
 
-
-
-// Wrapper function for BaseTableV2
+// Wrapper function for TablesExTable
 const fetchSettlementForTable = async (params?: {
   page?: number
   pageSize?: number
@@ -962,38 +823,60 @@ const fetchSettlementForTable = async (params?: {
   startDate?: string
   endDate?: string
 }) => {
-  loading.value = true
+  isLoadingTransactions.value = true
+  const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
+
+  if (!selectedWallet) {
+    isLoadingTransactions.value = false
+    return { data: [], total_record: 0, total_page: 0 }
+  }
+
   try {
-    const payload: SettlementHistoryQuery = {
-      search: params?.search || undefined,
-      page_size: params?.pageSize || pageSize.value.value,
-      page: params?.page || page.value,
-      start_date: params?.startDate || startDate.value,
-      end_date: params?.endDate || endDate.value,
-      status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
-      supplier_id: currentProfile.value?.id || '', // Use current supplier ID
+    const apiParams: WalletTransactionParams = {
+      walletType: selectedWallet.walletType,
+      currency: selectedWallet.currency,
+      fromDate: params?.startDate ? format(new Date(params.startDate), 'dd/MM/yyyy') : format(new Date(), '01/MM/yyyy'),
+      toDate: params?.endDate ? format(new Date(params.endDate), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy'),
+      pageIndex: params?.page || 1,
+      pageSize: params?.pageSize,
+      search: params?.search,
+      supplierId: selectedWallet.supplierId,
     }
 
-    const data = await getSettlementHistory(payload)
+    const response: WalletApiResponse = await getWalletTransactions(apiParams)
+
+    let data: WalletTransaction[] = []
+    let total_record = 0
+
+    if ('result' in response && 'data' in response.result) {
+      // Top-up wallet response structure
+      data = response.result.data.result
+      total_record = response.result.data.param.rowCount || 0
+    } else if ('data' in response) {
+      // Settlement wallet response structure
+      data = response.data.result
+      total_record = response.data.param.rowCount || 0
+    }
+
+    const pageSize = params?.pageSize || 10
+    const total_page = Math.ceil(total_record / pageSize)
+
     return {
-      records: data?.records ?? [],
-      total_record: data?.total_record ?? 0,
-      total_page: data?.total_page ?? 0,
+      data,
+      total_record,
+      total_page,
     }
   } catch (error: unknown) {
-    errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
-    // Show error notification to user
     errorHandler.handleApiError(error)
-    return null
+    return { data: [], total_record: 0, total_page: 0 }
   } finally {
-    loading.value = false
+    isLoadingTransactions.value = false
   }
 }
+
 // New row click handler
-const handleViewDetails = (row: Record<string, any>) => {
-  const transaction = row as WalletTransaction
-  // TODO: Implement transaction detail modal or navigation
-  console.log('View details for:', transaction)
+const handleViewDetails = (row: WalletTransaction) => {
+  console.log('View details for:', row)
 }
 
 // Computed wallet type data
