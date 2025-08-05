@@ -538,6 +538,7 @@
           :fetch-data-fn="fetchSettlementForTable"
           show-row-number
           show-date-filter
+          search-tooltip="Search transactions"
           @row-click="handleViewDetails"
         />
       </div>
@@ -556,7 +557,7 @@ import { useWalletStore } from '~/stores/wallet'
 import { useWalletTransactionsApi } from '~/composables/api/useWalletTransactionsApi'
 import type { WalletTransactionParams } from '~/composables/api/useWalletTransactionsApi'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
-import type { WalletSummaryData } from '~~/server/model/pgw_module_api/transactionSummary'
+import type { WalletSummaryData } from '~~/server/model/pgw_module_api/wallet_transaction_summary'
 import type { WalletTransaction, WalletApiResponse } from '~/models/wallet'
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'

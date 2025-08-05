@@ -6,7 +6,7 @@ import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/tra
 import type {
   FeeSummaryResponse,
   TopUpSummaryResponse,
-} from '~~/server/model/pgw_module_api/transactionSummary'
+} from '~~/server/model/pgw_module_api/wallet_transaction_summary'
 
 import type {
   WalletBalanceRequest,
@@ -16,7 +16,7 @@ import type {
 import type {
   WalletTransactionRequest,
   WalletTransactionResponse,
-} from '~~/server/model/pgw_module_api/walletTransactions'
+} from '~~/server/model/pgw_module_api/wallet_transactions'
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
 

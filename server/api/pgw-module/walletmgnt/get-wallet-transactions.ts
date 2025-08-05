@@ -4,7 +4,7 @@ import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
 import type {
   WalletTransactionRequest,
   WalletTransaction,
-} from '~~/server/model/pgw_module_api/walletTransactions'
+} from '~~/server/model/pgw_module_api/wallet_transactions'
 
 // Mock data for development
 const generateMockTransactions = (
