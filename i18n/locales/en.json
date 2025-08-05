@@ -77,6 +77,10 @@
       "error": "Error",
       "processing": "Processing"
     },
+    "active":{
+      "1": "Active",
+      "2": "Inactive"
+    },
     "currency_id": {
       "USD": "USD - US Dollar",
       "KHR": "KHR - Cambodian Riel"
@@ -111,7 +115,8 @@
         "status": "Status",
         "activated_date": "Activated Date",
         "is_settlement_bank": "Settlement Bank",
-        "is_collection_bank": "Collection Bank"
+        "is_collection_bank": "Collection Bank",
+        "active": "Status"
       }
     },
     "transactions-history-table": {

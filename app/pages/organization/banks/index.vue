@@ -239,10 +239,16 @@ const columns: BaseTableColumn<Bank>[] = [
     size: 120,
   },
   {
-    id: 'status',
-    accessorKey: 'status',
+    id: 'active',
+    accessorKey: 'active',
     header: () => t('table.banks-list.columns.status'),
     cell: ({ row }) => statusCellBuilder(row.original.active === BankServiceStatus.Active ? 'active' : 'inactive'),
+    filterOptions: [
+      { label: getTranslatedStatusLabel('active'), value: BankServiceStatus.Active },
+      { label: getTranslatedStatusLabel('inactive'), value: BankServiceStatus.Inactive }
+    ],
+    filterType: 'select',
+    enableColumnFilter: true,
     size: 100,
   }
 ]

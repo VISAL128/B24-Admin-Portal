@@ -39,31 +39,21 @@ import { mapQueryParamsToPgwModule, serializePgwModuleParams } from '../utils/qu
 //   }
 // }
 
-/**
- * Request to PGW Module API with QueryParams mapping
- * @param event - H3Event
- * @param endpoint - API endpoint
- * @param method - HTTP method
- * @returns Promise with API response
- */
 export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
   method: string = 'POST'
 ): Promise<T> {
   try {
-    // Extract query parameters
     const query = getQuery<QueryParams>(event)
-    // Map client QueryParams to PGW Module format
     const pgwParams = mapQueryParamsToPgwModule(query)
     const serializedParams = serializePgwModuleParams(pgwParams)
     
     // Convert serialized params to URL query string
     const urlParams = new URLSearchParams()
     for (const [key, value] of Object.entries(serializedParams)) {
-      if (value !== undefined && value !== null) {
+      if (value !== undefined && value !== null && value !== '') {
         if (Array.isArray(value)) {
-          // Handle arrays (like filters) by stringifying them
           urlParams.append(key, JSON.stringify(value))
         } else {
           urlParams.append(key, String(value))

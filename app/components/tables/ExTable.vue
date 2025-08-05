@@ -75,7 +75,7 @@ v-if="activeFilterCount > 0"
                               option-attribute="label" value-attribute="value" size="sm" class="w-full"
                               :search-input="false" @update:model-value="
                                 (val) => {
-                                  columnFilters[col.id] = val?.value || ''
+                                  columnFilters[col.id] = String(val?.value || '')
                                   emit('filter-change', col.id, columnFilters[col.id] || '')
                                 }
                               " />
@@ -310,6 +310,7 @@ const columnVisibility = ref<Record<string, boolean>>({})
 const columnFilters = ref<Record<string, string>>({})
 const dateRange = ref<{ start: string; end: string }>({ start: '', end: '' })
 const sorting = ref<Array<{ id: string; desc: boolean }>>([])
+const mounted = ref(false)
 
 // Initialize useTable with sorting state for synchronized sort icons
 const { createRowNumberCell, createSortableHeader } = useTable<T>(sorting)
@@ -340,7 +341,7 @@ watch(sorting, saveSorting, { deep: true })
 
 // Watch column filters for data fetching when using fetchDataFn
 watch(columnFilters, async (_newFilters) => {
-  if (props.fetchDataFn) {
+  if (props.fetchDataFn && mounted.value) {
     // Reset to first page when filters change
     internalPage.value = 1
     await fetchData()
@@ -494,7 +495,7 @@ const sortState = computed(() => {
 
 // Watch sorting changes for data fetching when using fetchDataFn
 watch(sorting, async (_newSorting) => {
-  if (props.fetchDataFn) {
+  if (props.fetchDataFn && mounted.value) {
     // Reset to first page when sort changes
     internalPage.value = 1
     await fetchData()
@@ -534,7 +535,7 @@ const props = defineProps<{
 
 watch(pageSize, async (_newSize) => {
   internalPage.value = 1
-  if (props.fetchDataFn) {
+  if (props.fetchDataFn && mounted.value) {
     await fetchData()
   }
 })
@@ -594,7 +595,10 @@ function onSelect(row: TableRow<T>, _e?: Event) {
 }
 
 function getColumnFilterOptions(col: BaseTableColumn<T>) {
-  if (col.filterOptions) return col.filterOptions.filter((opt) => opt.value.trim() !== '' && opt.value.trim() !== 'all')
+  if (col.filterOptions) return col.filterOptions.filter((opt) => {
+    if (typeof opt.value === 'string') return opt.value.trim() !== '' && opt.value.trim() !== 'all'
+    if (typeof opt.value === 'number') return opt.value !== 0
+  })
 
   const key = col.accessorKey ?? col.id
   if (!key) return []
@@ -634,8 +638,7 @@ const handleSortChange = (newSorting: Array<{ id: string; desc: boolean }>) => {
   internalPage.value = 1
   
   // Trigger data fetch when sort changes and fetchDataFn is available
-  if (props.fetchDataFn) {
-    console.log('📊 Triggering fetchData due to sort change')
+  if (props.fetchDataFn && mounted.value) {
     fetchData()
   } else {
     console.log('⚠️ No fetchDataFn available, skipping server-side sort')
@@ -644,7 +647,7 @@ const handleSortChange = (newSorting: Array<{ id: string; desc: boolean }>) => {
 
 const handlePageChange = async (val: number) => {
   internalPage.value = val
-  if (props.fetchDataFn) {
+  if (props.fetchDataFn && mounted.value) {
     await fetchData()
   }
 }
@@ -733,6 +736,8 @@ onBeforeMount(() => {
   // Initialize date range from localStorage or defaults
   const initialDateRange = initializeDateRange()
   dateRange.value = initialDateRange
+  columnFilters.value = initializeColumnFilters()
+  sorting.value = initializeSorting()
   
   // Parse the date strings to set calendar values and internal date values
   try {
@@ -789,8 +794,8 @@ onMounted(() => {
   }
 
   columnVisibility.value = initializeColumnVisibility()
-  columnFilters.value = initializeColumnFilters()
-  sorting.value = initializeSorting()
+  // columnFilters.value = initializeColumnFilters()
+  // sorting.value = initializeSorting()
 
   if (import.meta.env.DEV) {
     console.log(`📊 Initialized column visibility for table ${props.tableId}:`, columnVisibility.value)
@@ -810,6 +815,8 @@ onMounted(() => {
       if (props.fetchDataFn) fetchData()
     }, 5000)
   }
+
+  mounted.value = true
 })
 
 watch(autoRefresh,
@@ -847,8 +854,8 @@ watch(modelValue, (val) => {
   
   // Update the dateRange ref which will trigger localStorage save
   dateRange.value = { start, end }
-  
-  if (props.fetchDataFn) {
+
+  if (props.fetchDataFn && mounted.value) {
     fetchData()
   }
 })

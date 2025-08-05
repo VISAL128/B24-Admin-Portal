@@ -142,7 +142,7 @@ export function formatAmountWithSymbolTest(
 
 export function formatColumnValue(
   type: ColumnType = ColumnType.Text,
-  row: Record<string, any>,
+  row: Record<string, unknown>,
   accessorKey: string,
   currencyKey?: string
 ): string {
@@ -186,5 +186,28 @@ export function formatColumnValue(
     case ColumnType.Text:
     default:
       return String(value)
+  }
+}
+
+export const getTranslatedStatusLabel = (statusValue: string): string => {
+  const { t } = useI18n()
+
+  if (statusValue === '') return t('status.all')
+
+  switch (statusValue.toLowerCase()) {
+    case 'pending':
+      return t('status.pending')
+    case 'processing':
+      return t('status.processing')
+    case 'completed':
+      return t('status.completed')
+    case 'failed':
+      return t('status.failed')
+    case 'active':
+      return t('status.active')
+    case 'inactive':
+      return t('status.inactive')
+    default:
+      return statusValue
   }
 }

@@ -130,22 +130,6 @@ const initializeStatusFilter = () => {
   }
 }
 
-// Helper function to get translated status label
-const getTranslatedStatusLabel = (statusValue: string): string => {
-  if (statusValue === '') return t('status.all')
-
-  switch (statusValue.toLowerCase()) {
-    case 'pending':
-      return t('status.pending')
-    case 'processing':
-      return t('status.processing')
-    case 'completed':
-      return t('status.completed')
-    default:
-      return statusValue
-  }
-}
-
 const selectedStatuses = ref<{ label: string; value: string }[]>([
   {
     label: t('status.all'),
