@@ -43,6 +43,7 @@ export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
   method: string = 'POST',
+  body?: unknown,
   isGetListRequest: boolean = false
 ): Promise<T> {
   try {
@@ -85,6 +86,10 @@ export async function requestToPgwModuleApi<T>(
         Authorization: `Bearer ${event.context.auth?.token || ''}`,
       },
       signal: AbortSignal.timeout(30000),
+    }
+
+    if (body && method !== 'GET' && method !== 'HEAD') {
+      options.body = JSON.stringify(body)
     }
     
     const response = await fetch(url, options)

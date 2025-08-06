@@ -6,7 +6,7 @@ import type { ApiResponse, PgwModuleResponseList } from '~/models/baseModel'
 export default defineEventHandler(async (event): Promise<ApiResponse<Bank[]>> => {
   try {
     // Call the PGW Module API
-    const response = await requestToPgwModuleApi<PgwModuleResponseList<Bank>>(event, PGW_MODULE_API_ENDPOINTS.BANK.GET_BY_WALLET_SERVICE, 'GET', true)
+    const response = await requestToPgwModuleApi<PgwModuleResponseList<Bank>>(event, PGW_MODULE_API_ENDPOINTS.BANK.GET_BY_WALLET_SERVICE, 'GET', null, true)
 
     console.log('Response from PGW Module API:', response)
     const banks = response.result || []
