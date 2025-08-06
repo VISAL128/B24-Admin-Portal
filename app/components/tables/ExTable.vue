@@ -2,7 +2,8 @@
 <template>
   <!-- Unified Card Container -->
   <div
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto">
+    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto"
+  >
     <!-- Filter / Sort / Column Configuration -->
     <div class="flex justify-between flex-wrap items-start gap-4 flex-shrink-0 mb-2 pt-2 px-3">
       <!-- 🔍 Filter Buttons -->
@@ -10,13 +11,22 @@
         <div class="flex flex-wrap items-center gap-2">
           <!-- <UInput v-model="search" :placeholder="t('table.search_placeholder')" class="w-64" /> -->
           <ExSearch
-v-model="search" :search-tooltip="props.searchTooltip" size="sm" class="w-64"
-            @clear="debouncedFetchData" @keyup.enter="debouncedFetchData" />
+            v-model="search"
+            :search-tooltip="props.searchTooltip"
+            size="sm"
+            class="w-64"
+            @clear="debouncedFetchData"
+            @keyup.enter="debouncedFetchData"
+          />
           <template v-if="showDateFilter">
             <UPopover>
               <UButton
-color="neutral" variant="subtle" size="sm" icon="material-symbols:calendar-month-outline-rounded"
-                class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700">
+                color="neutral"
+                variant="subtle"
+                size="sm"
+                icon="material-symbols:calendar-month-outline-rounded"
+                class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700"
+              >
                 <template v-if="modelValue.start">
                   <template v-if="modelValue.end">
                     {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
@@ -41,19 +51,22 @@ color="neutral" variant="subtle" size="sm" icon="material-symbols:calendar-month
               <UButton variant="ghost" class="p-2 relative">
                 <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
                 <span
-v-if="activeFilterCount > 0"
-                  class="absolute -top-0.5 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  v-if="activeFilterCount > 0"
+                  class="absolute -top-0.5 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
+                >
                   {{ activeFilterCount }}
                 </span>
               </UButton>
             </UTooltip>
             <template #content>
               <div
-                class="rounded-lg shadow-md overflow-hidden py-2 min-w-[200px] space-y-4 min-h-48 max-h-96">
+                class="rounded-lg shadow-md overflow-hidden py-2 min-w-[200px] space-y-4 min-h-48 max-h-96"
+              >
                 <!-- Column Filters -->
                 <div class="space-y-2 flex flex-col min-h-48 h-full">
-                  <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">{{
-                    t('table.filters') }}</h4>
+                  <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">
+                    {{ t('table.filters') }}
+                  </h4>
                   <div class="flex flex-col flex-1 gap-2">
                     <Divider />
                     <div class="space-y-2 px-2 flex flex-col flex-1 min-h-0">
@@ -61,26 +74,41 @@ v-if="activeFilterCount > 0"
                         <template v-if="col.enableColumnFilter">
                           <template v-if="'filterType' in col && col.filterType === 'status'">
                             <StatusSelection
-:model-value="selectedStatuses" :multiple="true"
-                              :available-statuses="col.filterValues || []" :include-all-statuses="false"
-                              :placeholder="t('settlement.select_status')" :searchable="false" />
+                              :model-value="selectedStatuses"
+                              :multiple="true"
+                              :available-statuses="col.filterValues || []"
+                              :include-all-statuses="false"
+                              :placeholder="t('settlement.select_status')"
+                              :searchable="false"
+                            />
                           </template>
                           <template v-else>
                             <USelectMenu
-:model-value="{
-                              label: columnFilters[col.id] ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`) : t(`table.${props.tableId}.columns.${col.id}`) || getColumnLabel(col),
-                              value: columnFilters[col.id] || '',
-                            }" :default-value="{ label: t('all'), value: '' }"
-                              :items="[{ label: t('all'), value: '' }, ...getColumnFilterOptions(col)]"
-                              option-attribute="label" value-attribute="value" size="sm" class="w-full"
-                              :search-input="false" @update:model-value="
+                              :model-value="{
+                                label: columnFilters[col.id]
+                                  ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
+                                  : t(`table.${props.tableId}.columns.${col.id}`) ||
+                                    getColumnLabel(col),
+                                value: columnFilters[col.id] || '',
+                              }"
+                              :default-value="{ label: t('all'), value: '' }"
+                              :items="[
+                                { label: t('all'), value: '' },
+                                ...getColumnFilterOptions(col),
+                              ]"
+                              option-attribute="label"
+                              value-attribute="value"
+                              size="sm"
+                              class="w-full"
+                              :search-input="false"
+                              @update:model-value="
                                 (val) => {
                                   columnFilters[col.id] = String(val?.value || '')
                                   emit('filter-change', col.id, columnFilters[col.id] || '')
                                 }
-                              " />
+                              "
+                            />
                           </template>
-
                         </template>
                       </template>
                     </div>
@@ -88,11 +116,16 @@ v-if="activeFilterCount > 0"
                   </div>
                   <div class="flex flex-wrap justify-end px-2">
                     <UButton
-variant="link" size="xs" color="neutral" class="underline" :ui="{
-                      ...appConfig.ui.button.slots,
-                      leadingIcon: 'shrink-0 size-3 text-muted',
-                    }" @click="() => resetColumnFilters()">
-
+                      variant="link"
+                      size="xs"
+                      color="neutral"
+                      class="underline"
+                      :ui="{
+                        ...appConfig.ui.button.slots,
+                        leadingIcon: 'shrink-0 size-3 text-muted',
+                      }"
+                      @click="() => resetColumnFilters()"
+                    >
                       <template #default>
                         {{ t('table.column_config.reset') }}
                       </template>
@@ -111,36 +144,50 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
               unchecked-icon="material-symbols:sync-disabled"
               size="sm"
             />
-            <UTooltip :text="t('settlement.auto_refresh_desc')" :delay-duration="200" placement="top">
+            <UTooltip
+              :text="t('settlement.auto_refresh_desc')"
+              :delay-duration="200"
+              placement="top"
+            >
               <UIcon name="material-symbols:info-outline" class="size-3.5" />
             </UTooltip>
           </div>
-        <UTooltip v-if="props.enabledAutoRefresh && !autoRefresh" :text="t('settlement.refresh')">
-          <UButton variant="ghost" class="p-2 relative" @click="fetchData(true)">
-            <UIcon
-              name="material-symbols:sync"
-              :class="[
-                'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
-                { 'animate-spin': isRefreshing },
-              ]"
-            />
-          </UButton>
-        </UTooltip>
+          <UTooltip v-if="props.enabledAutoRefresh && !autoRefresh" :text="t('settlement.refresh')">
+            <UButton variant="ghost" class="p-2 relative" @click="fetchData(true)">
+              <UIcon
+                name="material-symbols:sync"
+                :class="[
+                  'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
+                  { 'animate-spin': isRefreshing },
+                ]"
+              />
+            </UButton>
+          </UTooltip>
         </div>
       </div>
 
       <!-- ⚙️ Column Configuration -->
       <div class="flex justify-end items-center gap-2">
-        <slot name="trailingHeader"/>
-        <ExportButton :data="filteredData" :headers="exportHeaders" :export-options="resolvedExportOptions" />
+        <slot name="trailingHeader" />
+        <ExportButton
+          :data="filteredData"
+          :headers="exportHeaders"
+          :export-options="resolvedExportOptions"
+        />
 
         <!-- Fullscreen Toggle Button -->
-        <UTooltip :text="isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen')" :delay-duration="200" placement="top">
+        <UTooltip
+          :text="isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen')"
+          :delay-duration="200"
+          placement="top"
+        >
           <UButton variant="ghost" class="p-2" @click="toggleFullscreen">
-            <UIcon 
-              :name="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" 
-              size="sm" 
-              class="text-gray-900 dark:text-white" 
+            <UIcon
+              :name="
+                isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'
+              "
+              size="sm"
+              class="text-gray-900 dark:text-white"
             />
           </UButton>
         </UTooltip>
@@ -148,10 +195,17 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
         <UPopover>
           <template #default>
             <UTooltip
-key="column-config-tooltip" :text="t('table.column_config.tooltip')" :delay-duration="200"
-              placement="top">
+              key="column-config-tooltip"
+              :text="t('table.column_config.tooltip')"
+              :delay-duration="200"
+              placement="top"
+            >
               <UButton variant="ghost" class="p-2">
-                <UIcon name="icon-park-outline:setting-config" size="sm" class="text-gray-900 dark:text-white" />
+                <UIcon
+                  name="icon-park-outline:setting-config"
+                  size="sm"
+                  class="text-gray-900 dark:text-white"
+                />
               </UButton>
             </UTooltip>
           </template>
@@ -159,31 +213,41 @@ key="column-config-tooltip" :text="t('table.column_config.tooltip')" :delay-dura
           <template #content>
             <div class="space-y-1 min-w-50">
               <div class="flex items-center justify-between px-2 pt-2">
-                <span class="text-sm font-medium">{{
-                  t('table.column_config.columns')
-                  }}</span>
+                <span class="text-sm font-medium">{{ t('table.column_config.columns') }}</span>
               </div>
               <Divider />
               <div class="flex flex-col gap-1 px-2">
                 <UCheckbox
-v-for="col in columnConfig" :id="col.id" :key="col.id"
-                  :label="getTranslationHeaderById(col.id)" :model-value="col.getIsVisible()"
-                  :ui="appConfig.ui.checkbox.slots" variant="list"
-                  class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700" size="sm"
+                  v-for="col in columnConfig"
+                  :id="col.id"
+                  :key="col.id"
+                  :label="getTranslationHeaderById(col.id)"
+                  :model-value="col.getIsVisible()"
+                  :ui="appConfig.ui.checkbox.slots"
+                  variant="list"
+                  class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                  size="sm"
                   @update:model-value="
                     (value) => {
                       col.toggleVisibility(value as boolean)
                       columnVisibility[col.id] = value as boolean
                     }
-                  " />
+                  "
+                />
               </div>
               <Divider />
               <div class="flex justify-end px-2 pb-2">
                 <UButton
-variant="link" size="xs" color="neutral" class="underline" :ui="{
-                  ...appConfig.ui.button.slots,
-                  leadingIcon: 'shrink-0 size-3 text-muted',
-                }" @click="onResetColumnVisibility">
+                  variant="link"
+                  size="xs"
+                  color="neutral"
+                  class="underline"
+                  :ui="{
+                    ...appConfig.ui.button.slots,
+                    leadingIcon: 'shrink-0 size-3 text-muted',
+                  }"
+                  @click="onResetColumnVisibility"
+                >
                   <template #default>
                     {{ t('table.column_config.reset') }}
                   </template>
@@ -197,39 +261,42 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
 
     <!-- 📋 Main Table -->
     <UTable
-          :key="props.tableId" 
-          ref="tableRef" 
-          v-model:sorting="sorting"
-          :data="filteredData" 
-          :columns="filteredColumns"
-          :loading="loading"
-          :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
-          :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
-          sticky
-          class="single-line-headers w-full h-full bg-default border-y border-gray-200 dark:border-gray-700"
-          :ui="{ ...appConfig.ui.table.slots, tbody: 'bg-default' }"
-          @update:sorting="handleSortChange"
-          @select="onSelect">
-          <template #cell="{ row, column }">
-            <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
-              <span class="block">
-                {{ (row.original as T)[column.id as keyof T] }}
-              </span>
-            </div>
-          </template>
+      :key="props.tableId"
+      ref="tableRef"
+      v-model:sorting="sorting"
+      :data="filteredData"
+      :columns="filteredColumns"
+      :loading="loading"
+      :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+      :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
+      sticky
+      class="single-line-headers w-full h-full bg-default border-y border-gray-200 dark:border-gray-700"
+      :ui="{ ...appConfig.ui.table.slots, tbody: 'bg-default' }"
+      @update:sorting="handleSortChange"
+      @select="onSelect"
+    >
+      <template #cell="{ row, column }">
+        <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
+          <span class="block">
+            {{ (row.original as T)[column.id as keyof T] }}
+          </span>
+        </div>
+      </template>
 
-          <template #empty>
-            <TableEmptyState />
-          </template>
-        </UTable>
+      <template #empty>
+        <TableEmptyState />
+      </template>
+    </UTable>
 
     <!-- 📄 Pagination and Page Size -->
     <div
-class="flex items-center justify-between py-1 text-sm text-muted flex-shrink-0 mt-2 pb-2 px-3" :class="{
-      'justify-between':
-        (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
-      'justify-end': (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length <= 0,
-    }">
+      class="flex items-center justify-between py-1 text-sm text-muted flex-shrink-0 mt-2 pb-2 px-3"
+      :class="{
+        'justify-between':
+          (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
+        'justify-end': (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length <= 0,
+      }"
+    >
       <div v-if="(tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0">
         <span>
           {{ tableRef?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
@@ -239,11 +306,22 @@ class="flex items-center justify-between py-1 text-sm text-muted flex-shrink-0 m
 
       <div class="flex items-center gap-4">
         <USelectMenu
-v-model="pageSize" :items="DEFAULT_PAGE_SIZE_OPTIONS" size="sm" class="w-24" :search-input="false"
-          @update:model-value="(val) => (pageSize = val)" />
+          v-model="pageSize"
+          :items="DEFAULT_PAGE_SIZE_OPTIONS"
+          size="sm"
+          class="w-24"
+          :search-input="false"
+          @update:model-value="(val) => (pageSize = val)"
+        />
         <UPagination
-:model-value="internalPage" :page-count="internalTotalPage" :items-per-page="pageSize.value"
-          :total="internalTotal" size="sm" :ui="appConfig.ui.pagination.slots" @update:page="handlePageChange" />
+          :model-value="internalPage"
+          :page-count="internalTotalPage"
+          :items-per-page="pageSize.value"
+          :total="internalTotal"
+          size="sm"
+          :ui="appConfig.ui.pagination.slots"
+          @update:page="handlePageChange"
+        />
       </div>
     </div>
   </div>
@@ -299,15 +377,19 @@ const initializeDateRange = (): { start: string; end: string } => {
   if (savedDateRange) {
     return savedDateRange
   }
-  
+
   // Default to current month
   const today = new Date()
   const firstDay = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-  const lastDay = new CalendarDate(today.getFullYear(), today.getMonth() + 1, new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate())
-  
+  const lastDay = new CalendarDate(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+  )
+
   return {
     start: `${firstDay.year}-${String(firstDay.month).padStart(2, '0')}-${String(firstDay.day).padStart(2, '0')}`,
-    end: `${lastDay.year}-${String(lastDay.month).padStart(2, '0')}-${String(lastDay.day).padStart(2, '0')}`
+    end: `${lastDay.year}-${String(lastDay.month).padStart(2, '0')}-${String(lastDay.day).padStart(2, '0')}`,
   }
 }
 
@@ -332,17 +414,20 @@ const saveColumnVisibility = () => {
 
 const saveColumnFilters = () => {
   tableConfig.saveColumnFilters(props.tableId, columnFilters.value)
-  if (import.meta.env.DEV) console.log(`💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
+  if (import.meta.env.DEV)
+    console.log(`💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
 }
 
 const saveDateRange = () => {
   tableConfig.saveDateRange(props.tableId, dateRange.value)
-  if (import.meta.env.DEV) console.log(`💾 Saved date range for table ${props.tableId}:`, dateRange.value)
+  if (import.meta.env.DEV)
+    console.log(`💾 Saved date range for table ${props.tableId}:`, dateRange.value)
 }
 
 const saveSorting = () => {
   tableConfig.saveSortingState(props.tableId, sorting.value)
-  if (import.meta.env.DEV) console.log(`💾 Saved sorting for table ${props.tableId}:`, sorting.value)
+  if (import.meta.env.DEV)
+    console.log(`💾 Saved sorting for table ${props.tableId}:`, sorting.value)
 }
 
 watch(columnVisibility, saveColumnVisibility, { deep: true })
@@ -351,13 +436,17 @@ watch(dateRange, saveDateRange, { deep: true })
 watch(sorting, saveSorting, { deep: true })
 
 // Watch column filters for data fetching when using fetchDataFn
-watch(columnFilters, async (_newFilters) => {
-  if (props.fetchDataFn && mounted.value) {
-    // Reset to first page when filters change
-    internalPage.value = 1
-    await fetchData()
-  }
-}, { deep: true })
+watch(
+  columnFilters,
+  async (_newFilters) => {
+    if (props.fetchDataFn && mounted.value) {
+      // Reset to first page when filters change
+      internalPage.value = 1
+      await fetchData()
+    }
+  },
+  { deep: true }
+)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columnConfig = computed((): any[] => {
@@ -390,9 +479,7 @@ const pageSize = ref<{ label: string; value: number }>({
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
 
-const selectedStatuses = ref<{ label: string; value: string }[]>([
-  { label: 'all', value: '' },
-])
+const selectedStatuses = ref<{ label: string; value: string }[]>([{ label: 'all', value: '' }])
 const autoRefresh = ref(false)
 const isRefreshing = ref(false)
 
@@ -420,7 +507,6 @@ const loading = ref(false)
 // Use internal data if no data prop is provided
 const tableData = computed(() => internalData.value)
 
-
 // Fetch data function
 const fetchData = async (refresh = false) => {
   if (!props.fetchDataFn) return
@@ -431,10 +517,11 @@ const fetchData = async (refresh = false) => {
   }
   try {
     // Build sorts parameter from current sort state
-    const sorts = sortState.value?.value.map((sort) => ({
-      field: sort.id,
-      direction: sort.desc ? 'desc' : 'asc' as 'desc' | 'asc'
-    })) || []
+    const sorts =
+      sortState.value?.value.map((sort) => ({
+        field: sort.id,
+        direction: sort.desc ? 'desc' : ('asc' as 'desc' | 'asc'),
+      })) || []
 
     // sorts.push(
     //   {
@@ -460,15 +547,15 @@ const fetchData = async (refresh = false) => {
       .map(([field, value]) => ({
         field,
         operator: 'eq' as const,
-        value
+        value,
       }))
 
     const result = await props.fetchDataFn({
       page: internalPage.value,
       page_size: pageSize.value.value,
       search: search.value,
-      start_date: startDate.value,
-      end_date: endDate.value,
+      start_date: props.showDateFilter ? startDate.value : undefined,
+      end_date: props.showDateFilter ? endDate.value : undefined,
       sorts: Array.from(sorts),
       sortAsString: sortingStr,
       filters: filters.length > 0 ? filters : undefined,
@@ -509,13 +596,17 @@ const sortState = computed(() => {
 })
 
 // Watch sorting changes for data fetching when using fetchDataFn
-watch(sorting, async (_newSorting) => {
-  if (props.fetchDataFn && mounted.value) {
-    // Reset to first page when sort changes
-    internalPage.value = 1
-    await fetchData()
-  }
-}, { deep: true })
+watch(
+  sorting,
+  async (_newSorting) => {
+    if (props.fetchDataFn && mounted.value) {
+      // Reset to first page when sort changes
+      internalPage.value = 1
+      await fetchData()
+    }
+  },
+  { deep: true }
+)
 
 const { t } = useI18n()
 
@@ -543,7 +634,9 @@ const props = defineProps<{
   exportOptions?: ExportOptions
   showDateFilter?: boolean
   showRowNumber?: boolean
-  fetchDataFn?: (params?: QueryParams) => Promise<TableFetchResult<T[]> & Record<string, unknown> | null | undefined>
+  fetchDataFn?: (
+    params?: QueryParams
+  ) => Promise<(TableFetchResult<T[]> & Record<string, unknown>) | null | undefined>
   enabledAutoRefresh?: boolean
   searchTooltip?: string
 }>()
@@ -562,11 +655,9 @@ const resolvedExportOptions = computed(() => ({
   currency: props.exportOptions?.currency,
   startDate: props.exportOptions?.startDate ?? startDate.value,
   endDate: props.exportOptions?.endDate ?? endDate.value,
-  totalAmount:
-    props.exportOptions?.totalAmount
+  totalAmount: props.exportOptions?.totalAmount,
 }))
 
- 
 const tableRef = useTemplateRef('tableRef')
 const allColumnIds = computed(() =>
   columnsWithRowNumber.value.map((col) => col.id).filter((id): id is string => !!id)
@@ -588,8 +679,8 @@ const exportHeaders = computed(() =>
       typeof col.header === 'string'
         ? col.header
         : (col.id ? String(col.id) : '')
-          .replace(/_/g, ' ')
-          .replace(/\b\w/g, (l) => l.toUpperCase()),
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase()),
   }))
 )
 
@@ -610,10 +701,12 @@ function onSelect(row: TableRow<T>, _e?: Event) {
 }
 
 function getColumnFilterOptions(col: BaseTableColumn<T>) {
-  if (col.filterOptions) return col.filterOptions.filter((opt) => {
-    if (typeof opt.value === 'string') return opt.value.trim() !== '' && opt.value.trim() !== 'all'
-    if (typeof opt.value === 'number') return opt.value !== 0
-  })
+  if (col.filterOptions)
+    return col.filterOptions.filter((opt) => {
+      if (typeof opt.value === 'string')
+        return opt.value.trim() !== '' && opt.value.trim() !== 'all'
+      if (typeof opt.value === 'number') return opt.value !== 0
+    })
 
   const key = col.accessorKey ?? col.id
   if (!key) return []
@@ -640,7 +733,7 @@ function getColumnLabel(col: BaseTableColumn<T>): string {
 const handleSortChange = (newSorting: Array<{ id: string; desc: boolean }>) => {
   console.log('🔄 handleSortChange called with:', newSorting)
   sorting.value = newSorting
-  
+
   // Emit sort-change event for compatibility
   if (newSorting.length > 0) {
     const firstSort = newSorting[0]!
@@ -648,10 +741,10 @@ const handleSortChange = (newSorting: Array<{ id: string; desc: boolean }>) => {
   } else {
     emit('sort-change', '', null)
   }
-  
+
   // Reset to first page when sort changes
   internalPage.value = 1
-  
+
   // Trigger data fetch when sort changes and fetchDataFn is available
   if (props.fetchDataFn && mounted.value) {
     fetchData()
@@ -673,18 +766,21 @@ const filteredColumns = computed(() => {
   const columns = columnsWithRowNumber.value
 
   columns.forEach((col) => {
-    if(col.enableSorting) {
+    if (col.enableSorting) {
       col.header = ({ column }) => createSortableHeader(column, getTranslationHeaderById(col.id))
     }
   })
-  
+
   // Debug: Log which columns have sorting enabled
   if (import.meta.env.DEV) {
-    const sortableColumns = columns.filter(col => col.enableSorting)
-    console.log('🔧 Sortable columns:', sortableColumns.map(col => ({ id: col.id, enableSorting: col.enableSorting })))
+    const sortableColumns = columns.filter((col) => col.enableSorting)
+    console.log(
+      '🔧 Sortable columns:',
+      sortableColumns.map((col) => ({ id: col.id, enableSorting: col.enableSorting }))
+    )
     console.log('🔧 Current sorting state:', currentSorting)
   }
-  
+
   // re-build cells
   columns.forEach((col) => {
     if (col.type === ColumnType.DateTime && !col.cell) {
@@ -728,7 +824,8 @@ const columnsWithRowNumber = computed(() => {
     enableColumnFilter: false,
     enableSorting: false,
     enableHiding: false,
-    cell: ({ row, table }) => createRowNumberCell(row, table, internalPage.value, pageSize.value.value),
+    cell: ({ row, table }) =>
+      createRowNumberCell(row, table, internalPage.value, pageSize.value.value),
     // cell: ({ row }: { row: { index: number } }) => {
     //   const currentPage = internalPage.value
     //   const currentPageSize = pageSize.value.value
@@ -753,25 +850,33 @@ onBeforeMount(() => {
   dateRange.value = initialDateRange
   columnFilters.value = initializeColumnFilters()
   sorting.value = initializeSorting()
-  
+
   // Parse the date strings to set calendar values and internal date values
   try {
     const startParts = initialDateRange.start.split('-').map(Number)
     const endParts = initialDateRange.end.split('-').map(Number)
-    
-    if (startParts.length === 3 && endParts.length === 3 && 
-        startParts.every(p => !isNaN(p)) && endParts.every(p => !isNaN(p))) {
+
+    if (
+      startParts.length === 3 &&
+      endParts.length === 3 &&
+      startParts.every((p) => !isNaN(p)) &&
+      endParts.every((p) => !isNaN(p))
+    ) {
       startDate.value = initialDateRange.start
       endDate.value = initialDateRange.end
-      
+
       modelValue.value.start = new CalendarDate(startParts[0]!, startParts[1]!, startParts[2]!)
       modelValue.value.end = new CalendarDate(endParts[0]!, endParts[1]!, endParts[2]!)
     } else {
       // Fallback to current month if parsing fails
       const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
       const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-      const lastDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
-      
+      const lastDayCalendar = new CalendarDate(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        lastDayOfMonth
+      )
+
       startDate.value = `${firstDayCalendar.year}-${String(firstDayCalendar.month).padStart(2, '0')}-${String(firstDayCalendar.day).padStart(2, '0')}`
       endDate.value = `${lastDayCalendar.year}-${String(lastDayCalendar.month).padStart(2, '0')}-${String(lastDayCalendar.day).padStart(2, '0')}`
       modelValue.value.start = firstDayCalendar
@@ -782,8 +887,12 @@ onBeforeMount(() => {
     // Fallback to current month
     const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
     const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-    const lastDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
-    
+    const lastDayCalendar = new CalendarDate(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      lastDayOfMonth
+    )
+
     startDate.value = `${firstDayCalendar.year}-${String(firstDayCalendar.month).padStart(2, '0')}-${String(firstDayCalendar.day).padStart(2, '0')}`
     endDate.value = `${lastDayCalendar.year}-${String(lastDayCalendar.month).padStart(2, '0')}-${String(lastDayCalendar.day).padStart(2, '0')}`
     modelValue.value.start = firstDayCalendar
@@ -791,17 +900,19 @@ onBeforeMount(() => {
   }
 })
 
-
 let autoRefreshInterval: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
-  defaultColumnVisibility.value = props.columns.reduce((acc, col) => {
-    if (col.id) {
-      acc[col.id] = true // Default to visible
-    }
-    return acc
-  }, {} as Record<string, boolean>)
-  
+  defaultColumnVisibility.value = props.columns.reduce(
+    (acc, col) => {
+      if (col.id) {
+        acc[col.id] = true // Default to visible
+      }
+      return acc
+    },
+    {} as Record<string, boolean>
+  )
+
   // Initialize auto-refresh state from table config
   const isAutoRefresh = tableConfig.getIsAutoRefresh(props.tableId)
   if (isAutoRefresh !== null) {
@@ -813,7 +924,10 @@ onMounted(() => {
   // sorting.value = initializeSorting()
 
   if (import.meta.env.DEV) {
-    console.log(`📊 Initialized column visibility for table ${props.tableId}:`, columnVisibility.value)
+    console.log(
+      `📊 Initialized column visibility for table ${props.tableId}:`,
+      columnVisibility.value
+    )
     console.log(`📊 Initialized column filters for table ${props.tableId}:`, columnFilters.value)
     console.log(`📊 Initialized date range for table ${props.tableId}:`, dateRange.value)
     console.log(`📊 Initialized sorting for table ${props.tableId}:`, sorting.value)
@@ -834,23 +948,21 @@ onMounted(() => {
   mounted.value = true
 })
 
-watch(autoRefresh,
-  (val) => {
-    if (val) {
-      if (!autoRefreshInterval) {
-        autoRefreshInterval = setInterval(() => {
-          if (props.fetchDataFn) fetchData()
-        }, 5000)
-      }
-    } else {
-      if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval)
-        autoRefreshInterval = null
-      }
+watch(autoRefresh, (val) => {
+  if (val) {
+    if (!autoRefreshInterval) {
+      autoRefreshInterval = setInterval(() => {
+        if (props.fetchDataFn) fetchData()
+      }, 5000)
     }
-    tableConfig.saveAutoRefresh(props.tableId, autoRefresh.value)
+  } else {
+    if (autoRefreshInterval) {
+      clearInterval(autoRefreshInterval)
+      autoRefreshInterval = null
+    }
   }
-)
+  tableConfig.saveAutoRefresh(props.tableId, autoRefresh.value)
+})
 
 onBeforeUnmount(() => {
   if (autoRefreshInterval) {
@@ -861,12 +973,16 @@ onBeforeUnmount(() => {
 
 watch(modelValue, (val) => {
   // Convert CalendarDate directly to YYYY-MM-DD format without timezone conversion
-  const start = val.start ? `${val.start.year}-${String(val.start.month).padStart(2, '0')}-${String(val.start.day).padStart(2, '0')}` : ''
-  const end = val.end ? `${val.end.year}-${String(val.end.month).padStart(2, '0')}-${String(val.end.day).padStart(2, '0')}` : ''
-  
+  const start = val.start
+    ? `${val.start.year}-${String(val.start.month).padStart(2, '0')}-${String(val.start.day).padStart(2, '0')}`
+    : ''
+  const end = val.end
+    ? `${val.end.year}-${String(val.end.month).padStart(2, '0')}-${String(val.end.day).padStart(2, '0')}`
+    : ''
+
   startDate.value = start
   endDate.value = end
-  
+
   // Update the dateRange ref which will trigger localStorage save
   dateRange.value = { start, end }
 
@@ -895,11 +1011,15 @@ const _resetDateRange = () => {
   const today = new Date()
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
   const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-  const lastDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
-  
+  const lastDayCalendar = new CalendarDate(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    lastDayOfMonth
+  )
+
   const defaultStart = `${firstDayCalendar.year}-${String(firstDayCalendar.month).padStart(2, '0')}-${String(firstDayCalendar.day).padStart(2, '0')}`
   const defaultEnd = `${lastDayCalendar.year}-${String(lastDayCalendar.month).padStart(2, '0')}-${String(lastDayCalendar.day).padStart(2, '0')}`
-  
+
   dateRange.value = { start: defaultStart, end: defaultEnd }
   startDate.value = defaultStart
   endDate.value = defaultEnd

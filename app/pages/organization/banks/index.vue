@@ -8,7 +8,6 @@
       :search-tooltip="t('banks.search_placeholder')"
       :fetch-data-fn="fetchBanks"
       show-row-number
-      show-date-filter
       @row-click="handleViewDetails"
       />
   </div>
