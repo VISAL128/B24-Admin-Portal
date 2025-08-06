@@ -75,7 +75,7 @@ v-if="activeFilterCount > 0"
                               option-attribute="label" value-attribute="value" size="sm" class="w-full"
                               :search-input="false" @update:model-value="
                                 (val) => {
-                                  columnFilters[col.id] = val?.value || ''
+                                  columnFilters[col.id] = String(val?.value || '')
                                   emit('filter-change', col.id, columnFilters[col.id] || '')
                                 }
                               " />
@@ -134,6 +134,17 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
         <slot name="trailingHeader"/>
         <ExportButton :data="filteredData" :headers="exportHeaders" :export-options="resolvedExportOptions" />
 
+        <!-- Fullscreen Toggle Button -->
+        <UTooltip :text="isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen')" :delay-duration="200" placement="top">
+          <UButton variant="ghost" class="p-2" @click="toggleFullscreen">
+            <UIcon 
+              :name="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" 
+              size="sm" 
+              class="text-gray-900 dark:text-white" 
+            />
+          </UButton>
+        </UTooltip>
+
         <UPopover>
           <template #default>
             <UTooltip
@@ -188,16 +199,16 @@ variant="link" size="xs" color="neutral" class="underline" :ui="{
     <UTable
           :key="props.tableId" 
           ref="tableRef" 
+          v-model:sorting="sorting"
           :data="filteredData" 
           :columns="filteredColumns"
-          :sort="sortState"
           :loading="loading"
           :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
           :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
           sticky
           class="single-line-headers w-full h-full bg-default border-y border-gray-200 dark:border-gray-700"
           :ui="{ ...appConfig.ui.table.slots, tbody: 'bg-default' }"
-          @update:sort="handleSortChange" 
+          @update:sorting="handleSortChange"
           @select="onSelect">
           <template #cell="{ row, column }">
             <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
@@ -239,17 +250,19 @@ v-model="pageSize" :items="DEFAULT_PAGE_SIZE_OPTIONS" size="sm" class="w-24" :se
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
-import { ref, computed, onMounted, watch } from 'vue'
-import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
-import type { TableRow } from '@nuxt/ui'
-import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import { useTableConfig } from '~/composables/utils/useTableConfig'
-import { useTable } from '~/composables/utils/useTable'
+import type { TableRow } from '@nuxt/ui'
+import { computed, onMounted, readonly, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'
+import { useTable } from '~/composables/utils/useTable'
+import { useTableConfig } from '~/composables/utils/useTableConfig'
 // import type { ApiResponseDynamic } from '~/types/api'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
-import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS } from '~/utils/constants'
+import type { QueryParams } from '~/models/baseModel'
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
+import { ColumnType } from '~/utils/enumModel'
 import appConfig from '~~/app.config'
 import ExportButton from '../buttons/ExportButton.vue'
 
@@ -265,7 +278,6 @@ export interface ExportOptions {
 
 // Use table configuration composable
 const tableConfig = useTableConfig()
-const { createRowNumberCell } = useTable()
 
 const defaultColumnVisibility = ref<Record<string, boolean>>({})
 
@@ -299,9 +311,20 @@ const initializeDateRange = (): { start: string; end: string } => {
   }
 }
 
+// Initialize sorting from localStorage or defaults
+const initializeSorting = (): Array<{ id: string; desc: boolean }> => {
+  const savedSorting = tableConfig.getSortingState(props.tableId)
+  return savedSorting || []
+}
+
 const columnVisibility = ref<Record<string, boolean>>({})
 const columnFilters = ref<Record<string, string>>({})
 const dateRange = ref<{ start: string; end: string }>({ start: '', end: '' })
+const sorting = ref<Array<{ id: string; desc: boolean }>>([])
+const mounted = ref(false)
+
+// Initialize useTable with sorting state for synchronized sort icons
+const { createRowNumberCell, createSortableHeader } = useTable<T>(sorting)
 
 const saveColumnVisibility = () => {
   tableConfig.saveColumnConfig(props.tableId, columnVisibility.value)
@@ -317,9 +340,24 @@ const saveDateRange = () => {
   if (import.meta.env.DEV) console.log(`💾 Saved date range for table ${props.tableId}:`, dateRange.value)
 }
 
+const saveSorting = () => {
+  tableConfig.saveSortingState(props.tableId, sorting.value)
+  if (import.meta.env.DEV) console.log(`💾 Saved sorting for table ${props.tableId}:`, sorting.value)
+}
+
 watch(columnVisibility, saveColumnVisibility, { deep: true })
 watch(columnFilters, saveColumnFilters, { deep: true })
 watch(dateRange, saveDateRange, { deep: true })
+watch(sorting, saveSorting, { deep: true })
+
+// Watch column filters for data fetching when using fetchDataFn
+watch(columnFilters, async (_newFilters) => {
+  if (props.fetchDataFn && mounted.value) {
+    // Reset to first page when filters change
+    internalPage.value = 1
+    await fetchData()
+  }
+}, { deep: true })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columnConfig = computed((): any[] => {
@@ -366,7 +404,11 @@ const emit = defineEmits<{
   (e: 'row-click', rowData: T): void
   (e: 'data-changed', result: TableFetchResult<T[]> & Record<string, unknown>): void
   (e: 'daterange-change', dateRange: { start: string; end: string }): void
+  (e: 'fullscreen-toggle', isFullscreen: boolean): void
 }>()
+
+// Fullscreen state
+const isFullscreen = ref(false)
 
 // Internal state management
 const internalData = ref<T[]>([])
@@ -388,12 +430,48 @@ const fetchData = async (refresh = false) => {
     isRefreshing.value = true
   }
   try {
+    // Build sorts parameter from current sort state
+    const sorts = sortState.value?.value.map((sort) => ({
+      field: sort.id,
+      direction: sort.desc ? 'desc' : 'asc' as 'desc' | 'asc'
+    })) || []
+
+    // sorts.push(
+    //   {
+    //     field: 'created_at',
+    //     direction: 'desc' // Default sort by created_at
+    //   }
+    // )
+
+    // Convert to direct sorting string
+    let sortingStr = ''
+    if (sorts.length > 0) {
+      sorts.forEach((sort: { field: string; direction: 'asc' | 'desc' }) => {
+        sortingStr += `${sort.field}${sort.direction === 'asc' ? '+' : '-'};`
+      })
+      if (sortingStr.endsWith(';')) {
+        sortingStr = sortingStr.slice(0, -1) // Remove trailing semicolon
+      }
+    }
+
+    // Build filters parameter from current column filters
+    const filters = Object.entries(columnFilters.value)
+      .filter(([_, value]) => value && value.trim() !== '')
+      .map(([field, value]) => ({
+        field,
+        operator: 'eq' as const,
+        value
+      }))
+
     const result = await props.fetchDataFn({
       page: internalPage.value,
-      pageSize: pageSize.value.value,
+      page_size: pageSize.value.value,
       search: search.value,
-      startDate: startDate.value,
-      endDate: endDate.value,
+      start_date: startDate.value,
+      end_date: endDate.value,
+      sorts: Array.from(sorts),
+      sortAsString: sortingStr,
+      filters: filters.length > 0 ? filters : undefined,
     })
 
     if (result) {
@@ -418,11 +496,28 @@ const fetchData = async (refresh = false) => {
   }
 }
 
-const sortState = ref<{ column: string; direction: 'asc' | 'desc' | null } | null>(null)
+const debouncedFetchData = debounce(() => {
+  if (props.fetchDataFn) {
+    fetchData()
+  }
+})
+
+// Convert Nuxt UI sorting format to our internal format for compatibility
+const sortState = computed(() => {
+  if (sorting.value.length === 0) return null
+  return sorting
+})
+
+// Watch sorting changes for data fetching when using fetchDataFn
+watch(sorting, async (_newSorting) => {
+  if (props.fetchDataFn && mounted.value) {
+    // Reset to first page when sort changes
+    internalPage.value = 1
+    await fetchData()
+  }
+}, { deep: true })
 
 const { t } = useI18n()
-
-// const filterPopoverOpen = ref<Record<string, boolean>>({})
 
 const filteredData = computed(() => {
   const data = tableData.value as T[]
@@ -448,20 +543,14 @@ const props = defineProps<{
   exportOptions?: ExportOptions
   showDateFilter?: boolean
   showRowNumber?: boolean
-  fetchDataFn?: (params?: {
-    page?: number
-    pageSize?: number
-    search?: string
-    startDate?: string
-    endDate?: string
-  }) => Promise<TableFetchResult<T[]> & Record<string, unknown> | null | undefined>
+  fetchDataFn?: (params?: QueryParams) => Promise<TableFetchResult<T[]> & Record<string, unknown> | null | undefined>
   enabledAutoRefresh?: boolean
   searchTooltip?: string
 }>()
 
 watch(pageSize, async (_newSize) => {
   internalPage.value = 1
-  if (props.fetchDataFn) {
+  if (props.fetchDataFn && mounted.value) {
     await fetchData()
   }
 })
@@ -482,12 +571,6 @@ const tableRef = useTemplateRef('tableRef')
 const allColumnIds = computed(() =>
   columnsWithRowNumber.value.map((col) => col.id).filter((id): id is string => !!id)
 )
-
-const debouncedFetchData = debounce(() => {
-  if (props.fetchDataFn) {
-    fetchData()
-  }
-})
 
 // Computed property for sort menu items
 
@@ -527,7 +610,10 @@ function onSelect(row: TableRow<T>, _e?: Event) {
 }
 
 function getColumnFilterOptions(col: BaseTableColumn<T>) {
-  if (col.filterOptions) return col.filterOptions.filter((opt) => opt.value.trim() !== '' && opt.value.trim() !== 'all')
+  if (col.filterOptions) return col.filterOptions.filter((opt) => {
+    if (typeof opt.value === 'string') return opt.value.trim() !== '' && opt.value.trim() !== 'all'
+    if (typeof opt.value === 'number') return opt.value !== 0
+  })
 
   const key = col.accessorKey ?? col.id
   if (!key) return []
@@ -551,27 +637,54 @@ function getColumnLabel(col: BaseTableColumn<T>): string {
   return 'Unnamed'
 }
 
-const handleSortChange = (sort: { column: string; direction: 'asc' | 'desc' | null }) => {
-  sortState.value = sort
-  emit('sort-change', sort.column, sort.direction)
+const handleSortChange = (newSorting: Array<{ id: string; desc: boolean }>) => {
+  console.log('🔄 handleSortChange called with:', newSorting)
+  sorting.value = newSorting
+  
+  // Emit sort-change event for compatibility
+  if (newSorting.length > 0) {
+    const firstSort = newSorting[0]!
+    emit('sort-change', firstSort.id, firstSort.desc ? 'desc' : 'asc')
+  } else {
+    emit('sort-change', '', null)
+  }
+  
+  // Reset to first page when sort changes
+  internalPage.value = 1
+  
+  // Trigger data fetch when sort changes and fetchDataFn is available
+  if (props.fetchDataFn && mounted.value) {
+    fetchData()
+  } else {
+    console.log('⚠️ No fetchDataFn available, skipping server-side sort')
+  }
 }
 
 const handlePageChange = async (val: number) => {
   internalPage.value = val
-  if (props.fetchDataFn) {
+  if (props.fetchDataFn && mounted.value) {
     await fetchData()
   }
 }
 
 const filteredColumns = computed(() => {
+  // Force reactivity by accessing sorting state
+  const currentSorting = sorting.value
   const columns = columnsWithRowNumber.value
 
-  // Implement sorting headers
-  // columns.forEach((col) => {
-  //   if (col.enableSorting) {
-  //     col.header = ({ column }) => createSortableHeader(column, column.id)
-  //   }
-  // })
+  columns.forEach((col) => {
+    if(col.enableSorting) {
+      col.header = ({ column }) => createSortableHeader(column, getTranslationHeaderById(col.id))
+    }
+  })
+  
+  // Debug: Log which columns have sorting enabled
+  if (import.meta.env.DEV) {
+    const sortableColumns = columns.filter(col => col.enableSorting)
+    console.log('🔧 Sortable columns:', sortableColumns.map(col => ({ id: col.id, enableSorting: col.enableSorting })))
+    console.log('🔧 Current sorting state:', currentSorting)
+  }
+  
   // re-build cells
   columns.forEach((col) => {
     if (col.type === ColumnType.DateTime && !col.cell) {
@@ -638,6 +751,8 @@ onBeforeMount(() => {
   // Initialize date range from localStorage or defaults
   const initialDateRange = initializeDateRange()
   dateRange.value = initialDateRange
+  columnFilters.value = initializeColumnFilters()
+  sorting.value = initializeSorting()
   
   // Parse the date strings to set calendar values and internal date values
   try {
@@ -694,12 +809,14 @@ onMounted(() => {
   }
 
   columnVisibility.value = initializeColumnVisibility()
-  columnFilters.value = initializeColumnFilters()
+  // columnFilters.value = initializeColumnFilters()
+  // sorting.value = initializeSorting()
 
   if (import.meta.env.DEV) {
     console.log(`📊 Initialized column visibility for table ${props.tableId}:`, columnVisibility.value)
     console.log(`📊 Initialized column filters for table ${props.tableId}:`, columnFilters.value)
     console.log(`📊 Initialized date range for table ${props.tableId}:`, dateRange.value)
+    console.log(`📊 Initialized sorting for table ${props.tableId}:`, sorting.value)
   }
 
   // Fetch initial data if fetchDataFn is provided
@@ -713,6 +830,8 @@ onMounted(() => {
       if (props.fetchDataFn) fetchData()
     }, 5000)
   }
+
+  mounted.value = true
 })
 
 watch(autoRefresh,
@@ -750,8 +869,8 @@ watch(modelValue, (val) => {
   
   // Update the dateRange ref which will trigger localStorage save
   dateRange.value = { start, end }
-  
-  if (props.fetchDataFn) {
+
+  if (props.fetchDataFn && mounted.value) {
     fetchData()
   }
 })
@@ -765,6 +884,11 @@ const onResetColumnVisibility = () => {
 const resetColumnFilters = () => {
   columnFilters.value = {}
   emit('filter-change', '', '')
+}
+
+const resetSorting = () => {
+  sorting.value = []
+  emit('sort-change', '', null)
 }
 
 const _resetDateRange = () => {
@@ -784,6 +908,12 @@ const _resetDateRange = () => {
   emit('daterange-change', dateRange.value)
 }
 
+// Fullscreen toggle function
+const toggleFullscreen = () => {
+  isFullscreen.value = !isFullscreen.value
+  emit('fullscreen-toggle', isFullscreen.value)
+}
+
 defineExpose({
   tableRef,
   tableApi: computed(() => tableRef.value?.tableApi),
@@ -792,6 +922,9 @@ defineExpose({
   clearSelection: () => tableRef.value?.tableApi?.resetRowSelection?.(),
   getCurrentData: () => tableData.value as T[],
   getFilteredData: () => filteredData.value,
+  resetSorting,
+  isFullscreen: readonly(isFullscreen),
+  toggleFullscreen,
 })
 </script>
 

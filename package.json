@@ -24,6 +24,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@vueuse/core": "^13.4.0",
     "chart.js": "^4.5.0",
+    "class-transformer": "^0.5.1",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",

@@ -20,7 +20,9 @@ export const useStorage = <T>(): StorageComposable<T> => {
       }
 
       localStorage.setItem(key, JSON.stringify(dataToStore))
-      console.log(`💾 Data stored in localStorage with key: ${key}`)
+      if (import.meta.env.DEV) {
+        console.log(`DEV: ✅ Data stored in localStorage with key: ${key}`, dataToStore)
+      }
       return true
     } catch (error) {
       console.error(`❌ Failed to store data in localStorage with key ${key}:`, error)

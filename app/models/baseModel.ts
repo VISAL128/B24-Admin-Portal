@@ -27,3 +27,22 @@ export interface PgwModuleResponseList<T> {
   },
   result: T[]
 }
+
+export interface QueryParams {
+  page?: number
+  page_size?: number
+  search?: string
+  start_date?: string
+  end_date?: string
+  statuses?: string[]
+  sorts?: {
+    field: string
+    direction: 'asc' | 'desc'
+  }[]
+  sortAsString?: string // Optional for direct string sort
+  filters?: {
+    field: string
+    operator: 'eq' | 'neq' | 'contains' | 'doesnotcontain' | 'gt' | 'gte' | 'lt' | 'lte' | 'startswith' | 'endswith'
+    value: string | number | boolean | Date
+  }[]
+}

@@ -17,6 +17,8 @@ import type {
   WalletTransactionRequest,
   WalletTransactionResponse,
 } from '~~/server/model/pgw_module_api/wallet_transactions'
+import type {SubBillerWallet, WalletListResponse} from '~/models/subBiller'
+
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
 
@@ -120,6 +122,14 @@ const getSubBillerById = async (id: string) => {
   )
 }
 
+const getSubBillerWalletList = async (subBillerSupplierId: string) => {
+  return await executeV2(() =>
+    $fetch<WalletListResponse>(`/api/pgw-module/sub-biller/get-wallet-list?subBillerSupplierId=${subBillerSupplierId}`, {
+      method: 'GET',
+      onResponseError() {},
+    })
+  )
+}
 
   /**
    * Get wallet transactions with pagination from PGW Module API
@@ -155,6 +165,7 @@ const getSubBillerById = async (id: string) => {
     getWalletTransactions,
     getSubBillers,
     getSubBillerById,
-    getTransactionSummary
+    getTransactionSummary,
+    getSubBillerWalletList
   }
 }

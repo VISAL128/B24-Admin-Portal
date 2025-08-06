@@ -6,7 +6,7 @@ import type { SettlementHistoryRecord } from '~/models/settlement'
 export type BaseTableColumn<T> = TableColumn<T> & {
   id: string // ✅ Make `id` required
   enableColumnFilter?: boolean
-  filterOptions?: Array<{ label: string; value: string }>
+  filterOptions?: Array<{ label: string; value: string | number }>
   accessorKey?: keyof T | string
   // Optional properties for advanced filtering
   filterType?: 'select' | 'status'

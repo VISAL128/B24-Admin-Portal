@@ -1,9 +1,18 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Info Banner -->
-    <InfoBanner :title="t('pages.transaction.tip')" :message="t('pages.transaction.tip_message')" />
+    <InfoBanner 
+      v-show="!isTableFullscreen" 
+      :title="t('pages.transaction.tip')" 
+      :message="t('pages.transaction.tip_message')" 
+    />
     <!-- Transaction Summary Cards -->
-    <SummaryCards :cards="summarys" />
+    <SummaryCards 
+      v-show="!isTableFullscreen" 
+      :cards="summarys" 
+      :is-loading="isLoading" 
+      :skeleton-count="skeletonCount" 
+    />
     <TablesExTable
     ref="table"
       :columns="columns"
@@ -14,6 +23,7 @@
       enabled-auto-refresh
       enabled-repush
       @row-click="handleViewDetails"
+      @fullscreen-toggle="handleFullscreenToggle"
     >
     <template #trailingHeader>
       <UTooltip :text="t('pages.transaction.repush_description')">
@@ -64,6 +74,7 @@ import InfoBanner from '~/components/cards/InfoBanner.vue'
 import SummaryCards from '~/components/cards/SummaryCards.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import BaseTable from '~/components/tables/BaseTable.vue'
+import TablesExTable from '~/components/tables/ExTable.vue'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import {
@@ -127,7 +138,23 @@ const transactionSummary = ref<TransactionSummaryModel | null>(null)
 const summarys = computed(() => {
   return transactionSummary.value?.summarys || []
 })
+
+// Dynamic skeleton count based on expected number of summary cards
+const skeletonCount = computed(() => {
+  // If we have data, use the actual count
+  // If no data yet, use a default of 4 (which matches your mock data structure)
+  return transactionSummary.value?.summarys?.length || 4
+})
+
 const isLoading = ref(true)
+
+// Fullscreen state for table
+const isTableFullscreen = ref(false)
+
+// Handle fullscreen toggle from ExTable
+const handleFullscreenToggle = (fullscreen: boolean) => {
+  isTableFullscreen.value = fullscreen
+}
 
 // Function to fetch transaction summary from API
 const fetchTransactionSummary = async () => {

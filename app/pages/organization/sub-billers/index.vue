@@ -1,43 +1,17 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-4">
-    <!-- Table -->
-    <BaseTable
-      :data="suppliers"
+      <div class="overflow-x-auto">
+          <TablesExTable
+      ref="table"
       :columns="columns"
       table-id="sub-billers-table"
-      border-class="border-gray-200 dark:border-gray-700"
-      @filter-change="handleFilterChange"
-      @row-click="(row) => navigateToDetails(row.id)"
-      @search-change="(val) => (search = val)"
-      @date-range-change="
-        ({ start, end }) => {
-          startDate = start
-          endDate = end
-          fetchSubBiller()
-        }
-      "
-      :page="page"
-      :page-size="pageSize.value"
-      :total="total"
-      :total-page="totalPage"
-      @update:page="
-        (val) => {
-          page = val
-        }
-      "
-      @update:pageSize="
-        (val) => {
-          pageSize.value = val
-          page = 1
-        }
-      "
-      :show-date-filter="false"
+      :fetch-data-fn="fetchSubBiller"
+      show-row-number
+      enabled-auto-refresh
+      enabled-repush
+      @row-click="handleViewDetailss"
     >
-      <template #empty>
-        <TableEmptyState />
-      </template>
-    </BaseTable>
-  </div>
+    </TablesExTable>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -79,6 +53,7 @@ import type { Supplier } from '~/models/supplier'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import { useTable } from '~/composables/utils/useTable'
 // const { createSortableHeader, createRowNumberCell } = useTable<Supplier>()
+import type { QueryParams } from '~/models/baseModel'
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -167,25 +142,36 @@ const onDateFilterChange = (payload: { label: string; value: string }) => {
   }
 }
 
-async function fetchSubBiller() {
+const fetchSubBiller = async (params?: QueryParams): Promise<{
+  data: Supplier[]
+  total_record: number
+  total_page: number
+} | null> => {
   try {
     const payload: SubBillerQuery & { Filter?: string } = {
-      PageIndex: page.value,
-      PageSize: pageSize.value.value,
+      PageIndex: params?.page || page.value,
+      PageSize: params?.page_size || pageSize.value.value,
+      Search: params?.search || search.value,
     }
 
+    // Optional: handle search or date filters
     if (filters.value.length > 0) {
-      payload.Filter = JSON.stringify(filters.value) // ✅ use raw JSON string
+      payload.Filter = JSON.stringify(filters.value)
     }
 
-    const data = await getSubBillers(payload)
-    suppliers.value = data.result
-    total.value = data?.param.rowCount ?? 0
-    totalPage.value = data?.param.pageCount
+    const response = await getSubBillers(payload)
+
+    return {
+      data: response.result || [],
+      total_record: response.param?.rowCount || 0,
+      total_page: response.param?.pageCount || 0,
+    }
   } catch (error) {
-    console.error('fetchSubBiller error:', error)
+    errorHandler.handleApiError(error)
+    return null
   }
 }
+
 
 const onPageSizeChange = () => {
   page.value = 1
@@ -428,23 +414,15 @@ const handleExport = (item: { click: () => void }) => {
   }
 }
 
-const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
-  if (record.success === 0 && record.failed === 0) {
-    await notification.showWarning({
-      title: t('no_transactions_found'),
-      description: t('no_transactions_found_desc'),
-    })
-    return
-  }
-  selectedRecord.value = record
-  showSidebar.value = true
+const handleViewDetailss = (record: Supplier) => {
+    navigateToDetails(record.id)
 }
 const handleFilterChange = (columnId: string, value: string) => {
   console.log('Filter changed:', columnId, value)
   // Optional: trigger fetch or other logic
 }
 
-const columns: BaseTableColumn<any>[] = [
+const columns: BaseTableColumn<Supplier>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -464,14 +442,6 @@ const columns: BaseTableColumn<any>[] = [
       }),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
-    size: 30,
-    maxSize: 30,
-    enableSorting: false,
   },
   {
     id: 'syncCode',
