@@ -18,6 +18,7 @@ import type {
   WalletTransactionResponse,
 } from '~~/server/model/pgw_module_api/wallet_transactions'
 import type {SubBillerWallet, WalletListResponse} from '~/models/subBiller'
+import type { QueryParams } from '~/models/baseModel'
 
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
@@ -91,20 +92,13 @@ export const usePgwModuleApi = () => {
     )
   }
 
-  const getSubBillers = async (payload: SubBillerQuery) => {
-    const query = new URLSearchParams(
-      Object.entries(payload).reduce(
-        (acc, [key, value]) => {
-          if (value !== undefined && value !== null) acc[key] = String(value)
-          return acc
-        },
-        {} as Record<string, string>
-      )
-    ).toString()
+  const getSubBillers = async (query?: QueryParams) => {
+
     console.log('Fetching sub billers with query:', query)
     const rep = await executeV2(() =>
-      $fetch<SubBillerListResponse>(`/api/pgw-module/sub-biller/get-sub-biller?${query}`, {
+      $fetch<SubBillerListResponse>(`/api/pgw-module/sub-biller/get-sub-biller`, {
         method: 'GET',
+        query
       })
     )
     return rep
