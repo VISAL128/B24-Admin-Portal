@@ -47,21 +47,21 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   }
   
   // Map date range to filters
-  if (clientParams.start_date) {
-    filters.push({
-      field: 'fromDate',
-      operator: 'gte',
-      value: clientParams.start_date
-    })
-  }
+  // if (clientParams.start_date) {
+  //   filters.push({
+  //     field: 'fromDate',
+  //     operator: 'gte',
+  //     value: clientParams.start_date
+  //   })
+  // }
   
-  if (clientParams.end_date) {
-    filters.push({
-      field: 'toDate',
-      operator: 'lte',
-      value: clientParams.end_date
-    })
-  }
+  // if (clientParams.end_date) {
+  //   filters.push({
+  //     field: 'toDate',
+  //     operator: 'lte',
+  //     value: clientParams.end_date
+  //   })
+  // }
   
   // Map additional filters
   if (clientParams.filters && clientParams.filters.length > 0) {
