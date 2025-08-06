@@ -558,7 +558,7 @@ const fetchData = async (refresh = false) => {
       end_date: props.showDateFilter ? endDate.value : undefined,
       sorts: Array.from(sorts),
       sortAsString: sortingStr,
-      filters: filters.length > 0 ? filters : undefined,
+      filters: filters.length > 0 ? filters : [],
     })
 
     if (result) {

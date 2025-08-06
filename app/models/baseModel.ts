@@ -40,7 +40,7 @@ export interface QueryParams {
     direction: 'asc' | 'desc'
   }[]
   sortAsString?: string // Optional for direct string sort
-  filters?: {
+  filters: {
     field: string
     operator: 'eq' | 'neq' | 'contains' | 'doesnotcontain' | 'gt' | 'gte' | 'lt' | 'lte' | 'startswith' | 'endswith'
     value: string | number | boolean | Date

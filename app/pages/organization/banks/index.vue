@@ -215,6 +215,11 @@ const columns: BaseTableColumn<Bank>[] = [
     },
     enableSorting: true,
     size: 200,
+    // enableColumnFilter: true,
+    // filterOptions: [
+    //   { label: 'AC', value: 'ACLEDA' },
+    //   { label: 'ABA', value: 'ABA' }
+    // ]
   },
   {
     id: 'activated_date',
