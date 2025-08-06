@@ -64,12 +64,12 @@
             />
 
             <!-- History Icon -->
-            <UIcon
+            <!-- <UIcon
               name="material-symbols:history"
               class="w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200"
               :title="t('wallet_page.history')"
               @click="navigateToHistory"
-            />
+            /> -->
           </div>
         </div>
       </div>
@@ -531,16 +531,23 @@
       </div>
 
       <!-- Transaction List Section -->
-      <div v-if="walletTypes.length > 0 || isLoadingWalletTypes" class="mt-8">
+      <div v-if="walletTypes.length > 0 && selectedWalletType" class="mt-8">
         <TablesExTable
+          ref="tableRef"
           :columns="columns"
           :table-id="TABLE_ID"
-          :fetch-data-fn="fetchSettlementForTable"
+          :fetch-data-fn="fetchTransactionsForTable"
+          :loading="isLoadingTransactions"
           show-row-number
           show-date-filter
           search-tooltip="Search transactions"
           @row-click="handleViewDetails"
         />
+      </div>
+      
+      <!-- Transaction List Shimmer (when wallet types are loading) -->
+      <div v-else-if="isLoadingWalletTypes" class="mt-8">
+        <TableShimmer :rows="10" show-row-number />
       </div>
     </div>
   </div>
@@ -553,6 +560,8 @@ import { useCurrency } from '~/composables/utils/useCurrency'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import TableShimmer from '~/components/tables/TableShimmer.vue'
+
 import { useWalletStore } from '~/stores/wallet'
 import { useWalletTransactionsApi } from '~/composables/api/useWalletTransactionsApi'
 import type { WalletTransactionParams } from '~/composables/api/useWalletTransactionsApi'
@@ -582,6 +591,9 @@ const { getVariantColorByStatus } = useStatusColor()
 
 // Wallet store
 const walletStore = useWalletStore()
+
+// Component Refs
+const tableRef = ref()
 
 // Reactive data
 const isRefreshing = ref(false)
@@ -633,17 +645,22 @@ const loadWalletTypes = async () => {
     isLoadingWalletTypes.value = true
     const response = await getWalletTypes()
 
+    console.log("======= loadWalletTypes response ========:", response)
+
     if (response.data?.wallet_type) {
       // Update wallet types from API - new format where keys are wallet IDs and values are objects
       const walletTypeData = response.data.wallet_type
       walletTypes.value = Object.entries(walletTypeData).map(([walletId, walletInfo]) => {
+        
         const info = walletInfo as unknown as {
           type: 'settlement_wallet' | 'top_up_wallet'
           name: string
           currency: 'KHR' | 'USD'
           supplier_id?: string
         }
+
         const cleanType = info.name.split(' - ')[0] || info.name
+
         return {
           id: walletId, // Use the wallet ID as the identifier
           label: info.name, // Full name with ID (e.g., "Settlement Wallet - 000000229")
@@ -683,6 +700,7 @@ const loadWalletBalance = async () => {
 
   // Get the selected wallet data
   const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  
   if (!selectedWallet) return
 
   try {
@@ -787,20 +805,20 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
   {
     id: 'customer_name',
     accessorKey: 'customer_name',
-    header: t('wallet_page.customer_name'),
+    header: t('customer_name'),
     cell: ({ row }) => row.original.customer_name || '-',
   },
   {
     id: 'amount',
     accessorKey: 'amount',
-    header: () => h('div', { class: 'w-full flex justify-end' }, t('wallet_page.amount')),
+    header: () => h('div', { class: 'w-full flex justify-end' }, t('settlement.amount')),
     cell: ({ row }) => h('div', { class: 'text-right' }, formatCurrency(row.original.amount, row.original.currency)),
     enableSorting: true,
   },
   {
     id: 'status',
     accessorKey: 'status',
-    header: t('wallet_page.status'),
+    header: t('settlement_history.columns.status'),
     cell: ({ row }) => {
       const UBadge = resolveComponent('UBadge')
       return h(
@@ -816,7 +834,7 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
 ])
 
 // Wrapper function for TablesExTable
-const fetchSettlementForTable = async (params?: {
+const fetchTransactionsForTable = async (params?: {
   page?: number
   pageSize?: number
   search?: string
@@ -824,9 +842,13 @@ const fetchSettlementForTable = async (params?: {
   endDate?: string
 }) => {
   isLoadingTransactions.value = true
-  const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
 
+  const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
+  console.log("======= selectedWallet ========:", selectedWalletType
+  )
   if (!selectedWallet) {
+    // This can happen on initial load before a wallet is selected.
+    // The table should not attempt to fetch data in this case.
     isLoadingTransactions.value = false
     return { data: [], total_record: 0, total_page: 0 }
   }
@@ -843,7 +865,10 @@ const fetchSettlementForTable = async (params?: {
       supplierId: selectedWallet.supplierId,
     }
 
+        console.log("Check walletType")
     const response: WalletApiResponse = await getWalletTransactions(apiParams)
+
+    // 
 
     let data: WalletTransaction[] = []
     let total_record = 0
@@ -876,7 +901,7 @@ const fetchSettlementForTable = async (params?: {
 
 // New row click handler
 const handleViewDetails = (row: WalletTransaction) => {
-  console.log('View details for:', row)
+  console.log('View details for...:', row)
 }
 
 // Computed wallet type data
@@ -903,7 +928,7 @@ const summaryData = computed(() => {
   }
 
   // Log the data for debugging
-  console.log(`Loading ${isSettlementWallet ? 'Settlement' : 'Top-up'} data:`, sourceData)
+  
 
   return sourceData
 })
@@ -1122,7 +1147,6 @@ onMounted(async () => {
     await Promise.all([
       loadWalletBalance(),
       loadTransactionSummary(),
-      // The table will trigger its own fetch on mount, so no need to call here.
     ])
   } else {
     // If no wallets are found, ensure all shimmers are turned off.
@@ -1149,13 +1173,6 @@ const refreshBalances = async () => {
     await Promise.all([
       loadWalletBalance(),
       loadTransactionSummary(),
-      // We need a way to trigger the table refresh.
-      // The table is keyed to `selectedWalletType`, but a manual refresh needs to re-trigger.
-      // A simple way is to change the key, but that's not ideal.
-      // The best way is to have the table expose a refresh method.
-      // For now, we will rely on the fact that the table component will likely
-      // re-fetch if its `fetch-data-fn` is called again.
-      // A better approach would be to have a `ref` on the table and call a method.
     ])
   } catch (error) {
     console.error('Failed to refresh balances:', error)
@@ -1171,26 +1188,26 @@ const refreshBalances = async () => {
   }
 }
 
-const navigateToHistory = () => {
-  // Set the wallet type filter in the store
-  if (selectedWalletType.value && selectedWalletTypeAPI.value) {
-    walletStore.setupTransactionHistoryFilter({
-      walletType: selectedWalletTypeAPI.value,
-      period: 'this_month',
-    })
-  }
+// const navigateToHistory = () => {
+//   // Set the wallet type filter in the store
+//   if (selectedWalletType.value && selectedWalletTypeAPI.value) {
+//     walletStore.setupTransactionHistoryFilter({
+//       walletType: selectedWalletTypeAPI.value,
+//       period: 'this_month',
+//     })
+//   }
 
-  // Check if it's a settlement wallet type
-  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
-  const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
+//   // Check if it's a settlement wallet type
+//   const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+//   const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
 
-  // Navigate to appropriate page based on wallet type
-  if (isSettlementWallet) {
-    navigateTo('/digital-wallet/settlement')
-  } else {
-    navigateTo('/transactions')
-  }
-}
+//   // Navigate to appropriate page based on wallet type
+//   if (isSettlementWallet) {
+//     navigateTo('/digital-wallet/settlement')
+//   } else {
+//     navigateTo('/transactions')
+//   }
+// }
 
 const copyToClipboard = async (text: string) => {
   try {

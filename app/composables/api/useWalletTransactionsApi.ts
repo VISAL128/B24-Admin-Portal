@@ -45,6 +45,8 @@ export function useWalletTransactionsApi() {
       supplierId,
     } = validationResult.data
 
+    console.log("Check walletType", walletType);
+
     // Special validation for supplierId
     if (walletType === 'top_up_wallet' && !supplierId) {
       throw new Error('supplierId is required for top_up_wallet')
@@ -54,7 +56,9 @@ export function useWalletTransactionsApi() {
     const baseUrl = walletType === 'settlement_wallet'
       ? '/api/pgw-module/walletmgnt/settlement/transactions'
       : '/api/pgw-module/walletmgnt/top-up/transactions'
-    
+
+    console.log("Check baseUrl", baseUrl);
+
     const pageSize = params.pageSize ?? (walletType === 'settlement_wallet' ? 25 : 10)
 
     // 3. Build the Filter parameter
@@ -97,6 +101,10 @@ export function useWalletTransactionsApi() {
     queryParams.append('Filter', JSON.stringify(filters))
 
     // 5. Execute the API call
+
+    console.log("Check baseUrl", baseUrl);
+    console.log("Check queryParams", queryParams.toString());
+
     try {
       const response = await executeV2<WalletApiResponse>(() =>
         $fetch(`${baseUrl}?${queryParams.toString()}`, {
