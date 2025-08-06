@@ -148,18 +148,8 @@ const fetchSubBiller = async (params?: QueryParams): Promise<{
   total_page: number
 } | null> => {
   try {
-    const payload: SubBillerQuery & { Filter?: string } = {
-      PageIndex: params?.page || page.value,
-      PageSize: params?.page_size || pageSize.value.value,
-      Search: params?.search || search.value,
-    }
-
-    // Optional: handle search or date filters
-    if (filters.value.length > 0) {
-      payload.Filter = JSON.stringify(filters.value)
-    }
-
-    const response = await getSubBillers(payload)
+  
+    const response = await getSubBillers(params)
 
     return {
       data: response.result || [],
@@ -443,16 +433,23 @@ const columns: BaseTableColumn<Supplier>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  {
-    id: 'syncCode',
-    accessorKey: 'syncCode',
-    header: t('code'),
+{
+  id: 'syncCode',
+  accessorKey: 'syncCode',
+  header: t('code'),
+  cell: ({ row }) => {
+    const syncCode = row.original.syncCode
 
-    // header: ({ column }) => createSortableHeader(column, t('code')),
-    // cell: ({ row }) =>
-    //   // Format date to DD/MM/YYYY
-    //   useFormat().formatDateTime(row.original.created_date),
+    return h('div', { class: 'flex items-center gap-3' }, [
+      h('img', {
+        src: 'https://static.vecteezy.com/system/resources/previews/026/630/551/non_2x/profile-icon-symbol-design-illustration-vector.jpg',
+        alt: 'Profile',
+        class: 'w-6 h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700',
+      }),
+      h('span', {}, syncCode ?? ''), // ✅ Safe fallback
+    ])
   },
+},
   {
     id: 'name',
     accessorKey: 'name',
