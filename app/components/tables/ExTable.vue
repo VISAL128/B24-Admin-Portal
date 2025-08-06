@@ -766,8 +766,15 @@ const filteredColumns = computed(() => {
   const columns = columnsWithRowNumber.value
 
   columns.forEach((col) => {
+    if(col.id === 'select' || col.accessorKey === 'select' || col.id === 'row_number' || col.accessorKey === 'row_number') {
+      // Skip selection column
+      return
+    }
     if (col.enableSorting) {
-      col.header = ({ column }) => createSortableHeader(column, getTranslationHeaderById(col.id))
+      col.header = ({ column }) => createSortableHeader(column, col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id))
+    }
+    else {
+      col.header = col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id)
     }
   })
 
