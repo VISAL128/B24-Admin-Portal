@@ -14,7 +14,7 @@
           :searchable="false"
         />
     </div> -->
-    <div
+    <!-- <div
     class="flex flex-wrap items-center gap-2"
     >
       <div 
@@ -32,7 +32,13 @@
         v-else
         class="text-primary font-bold">{{ value }}</p>
       </div>
-    </div>
+    </div> -->
+    <CardsSummaryCards 
+      v-show="!isTableFullscreen" 
+      :cards="summarys" 
+      :is-loading="isLoading" 
+      :skeleton-count="summarys.length" 
+    />
     <ExTable
       ref="table"
       :columns="columns"
@@ -43,6 +49,7 @@
       enabled-auto-refresh
       @data-changed="handleDataChanged"
       @row-click="handleViewDetails"
+      @fullscreen-toggle="(isFullScreen) => isTableFullscreen = isFullScreen"
     >
     <template #trailingHeader>
       <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
@@ -71,6 +78,7 @@ import { SettlementHistoryStatus } from '~/utils/enumModel'
 import type { BaseTableColumn, SettlementHistoryTableFetchResult } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
 import type { QueryParams } from '~/models/baseModel'
+import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
 
 definePageMeta({
   auth: false,
@@ -96,13 +104,9 @@ const pageSize = ref<{ label: string; value: number }>({
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
 
-const summary = ref({
-  total_amount_khr: 0,
-  total_amount_usd: 0,
-  total_settled: 0,
-  success: 0,
-  failed: 0,
-})
+const isTableFullscreen = ref(false)
+const isLoading = ref(false)
+const dateRangeFilterDisplay = ref('')
 
 // Initialize status filter from localStorage or defaults
 const initializeStatusFilter = () => {
@@ -142,6 +146,33 @@ const modelValue = shallowRef({
   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
 })
+
+const summarys = ref<SummaryCard[]>([
+  {
+    title: t('settlement.total_amount'),
+    values: [{ value: 0, currency: 'KHR' }, { value: 0, currency: 'USD' }],
+    filterLabel: '',
+    dateRange: '',
+  },
+  {
+    title: t('settlement.total_settled'),
+    values: [{ value: 0 }],
+    filterLabel: '',
+    dateRange: '',
+  },
+  {
+    title: t('settlement.success'),
+    values: [{ value: 0 }],
+    filterLabel: '',
+    dateRange: '',
+  },
+  {
+    title: t('settlement.failed'),
+    values: [{ value: 0 }],
+    filterLabel: '',
+    dateRange: '',
+  }
+])
 
 // Define table ID and default column visibility
 const TABLE_ID = 'settlement-history'
@@ -260,6 +291,9 @@ onBeforeUnmount(() => {
 // Wrapper function for BaseTableV2
 const fetchSettlementForTable = async (params?: QueryParams): Promise<SettlementHistoryTableFetchResult | null> => {
   try {
+    isLoading.value = true
+    dateRangeFilterDisplay.value = `${params?.start_date} - ${params?.end_date}`
+
     const payload: SettlementHistoryQuery = {
       search: params?.search || undefined,
       page_size: params?.page_size || pageSize.value.value,
@@ -284,6 +318,8 @@ const fetchSettlementForTable = async (params?: QueryParams): Promise<Settlement
     // Show error notification to user
     errorHandler.handleApiError(error)
     return null
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -317,14 +353,26 @@ const navigateToDetails = (settlementId: string) => {
 
 const handleDataChanged = (result: SettlementHistoryTableFetchResult) => {
   // Update summary with the result data
-  summary.value = {
-    total_amount_khr: result.sum_total_amount_khr || 0,
-    total_amount_usd: result.sum_total_amount_usd || 0,
-    total_settled: result.sum_total_settled || 0,
-    success: result.sum_success || 0,
-    failed: result.sum_failed || 0
+      summarys.value = summarys.value.map((card) => {
+        card.dateRange = dateRangeFilterDisplay.value
+        if (card.title === t('settlement.total_amount')) {
+          return {
+            ...card,
+            values: [
+              { value: result.sum_total_amount_khr || 0, currency: 'KHR' },
+              { value: result.sum_total_amount_usd || 0, currency: 'USD' },
+            ],
+          }
+        } else if (card.title === t('settlement.total_settled')) {
+          return { ...card, values: [{ value: result.sum_total_settled || 0 }] }
+        } else if (card.title === t('settlement.success')) {
+          return { ...card, values: [{ value: result.sum_success || 0 }] }
+        } else if (card.title === t('settlement.failed')) {
+          return { ...card, values: [{ value: result.sum_failed || 0 }] }
+        }
+        return card
+      })
   }
-}
 
 const handleViewDetails = (rowData: SettlementHistoryRecord) => {
   navigateToDetails(rowData.id)
