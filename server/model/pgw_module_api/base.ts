@@ -4,7 +4,7 @@ export class QueryParamsPgwModuleApi {
   pageCount: number = 0;
   rowCount: number = 0;
   sorts: string = '';
-  filters: ParamFilterPgwModuleApi[] = [];
+  filter: ParamFilterPgwModuleApi[] = [];
 }
 
 export interface ParamFilterPgwModuleApi {

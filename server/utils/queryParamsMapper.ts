@@ -33,15 +33,6 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   if (pgwParams.sorts.endsWith(';')) {
     pgwParams.sorts = pgwParams.sorts.slice(0, -1)
   }
-  // pgwParams.sorts = 'name-' // Example hardcoded sort for testing, remove in production
-
-  console.log('QueryParams:', clientParams)
-  console.log('Is clientParams.sorts an array?', Array.isArray(clientParams.sorts))
-  console.log('Client sorts length:', clientParams?.sorts?.length)
-  console.log('Mapped sorts:', pgwParams.sorts)
-  console.log('clientParams.sorts:', clientParams.sorts)
-
-  // pgwParams.sorts = 'name-'
   
   // Initialize filters array
   const filters: ParamFilterPgwModuleApi[] = []
@@ -98,7 +89,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
 //     }
 //   }
   
-  pgwParams.filters = filters
+  pgwParams.filter = filters
   
   return pgwParams
 }
@@ -130,6 +121,6 @@ export function serializePgwModuleParams(pgwParams: QueryParamsPgwModuleApi): Re
     pageCount: pgwParams.pageCount,
     rowCount: pgwParams.rowCount,
     sorts: pgwParams.sorts,
-    Filters: pgwParams.filters
+    Filter: pgwParams.filter
   }
 }
