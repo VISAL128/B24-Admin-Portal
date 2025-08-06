@@ -42,27 +42,41 @@ import { mapQueryParamsToPgwModule, serializePgwModuleParams } from '../utils/qu
 export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
-  method: string = 'POST'
+  method: string = 'POST',
+  isGetListRequest: boolean = false
 ): Promise<T> {
   try {
-    const query = getQuery<QueryParams>(event)
-    const pgwParams = mapQueryParamsToPgwModule(query)
-    const serializedParams = serializePgwModuleParams(pgwParams)
+    let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
     
-    // Convert serialized params to URL query string
-    const urlParams = new URLSearchParams()
-    for (const [key, value] of Object.entries(serializedParams)) {
-      if (value !== undefined && value !== null && value !== '') {
-        if (Array.isArray(value)) {
-          urlParams.append(key, JSON.stringify(value))
-        } else {
-          urlParams.append(key, String(value))
+    // Only use QueryParams mapping for GET list requests
+    if (isGetListRequest) {
+      const query = getQuery<QueryParams>(event)
+      const pgwParams = mapQueryParamsToPgwModule(query)
+      const serializedParams = serializePgwModuleParams(pgwParams)
+      
+      // Convert serialized params to URL query string
+      const urlParams = new URLSearchParams()
+      for (const [key, value] of Object.entries(serializedParams)) {
+        if (value !== undefined && value !== null && value !== '') {
+          if (Array.isArray(value)) {
+            urlParams.append(key, JSON.stringify(value))
+          } else {
+            urlParams.append(key, String(value))
+          }
         }
       }
+      
+      const queryString = urlParams.toString()
+      url = `${url}${queryString ? `?${queryString}` : ''}`
+      
+      console.log(`Requesting PGW Module API with query params: ${url}`, { 
+        method,
+        pgwParams: serializedParams, 
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' }
+      })
+    } else {
+      console.log(`Requesting PGW Module API: ${url}`, { method })
     }
-    
-    const queryString = urlParams.toString()
-    const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}${queryString ? `?${queryString}` : ''}`
     
     const options: RequestInit = {
       method,
@@ -72,17 +86,11 @@ export async function requestToPgwModuleApi<T>(
       },
       signal: AbortSignal.timeout(30000),
     }
-
-    console.log(`Requesting PGW Module API with mapped params: ${url}`, { 
-      method,
-      pgwParams: serializedParams, 
-      headers: options.headers 
-    })
     
     const response = await fetch(url, options)
     return handlePgwModuleApiResponse<T>(response)
   } catch (error) {
-    console.error('Error in PGW Module API request with query:', error)
+    console.error('Error in PGW Module API request:', error)
     const statusCode = error && typeof error === 'object' && 'statusCode' in error 
       ? (error as { statusCode: number }).statusCode 
       : 500
