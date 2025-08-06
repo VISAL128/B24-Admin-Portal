@@ -42,9 +42,34 @@ import { mapQueryParamsToPgwModule, serializePgwModuleParams } from '../utils/qu
 export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
-  method: string = 'POST'
+  method: string = 'POST',
+  body?: unknown
 ): Promise<T> {
   try {
+    // If body is provided, use the body-based approach
+    if (body !== undefined) {
+      const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
+      const options: RequestInit = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${event.context.auth?.token || ''}`,
+        },
+        signal: AbortSignal.timeout(30000),
+      }
+
+      console.log(`Requesting PGW Module API with body: ${url}`, { method, body, headers: options.headers })
+      
+      // Only add body for non-GET/HEAD methods
+      if (body && method !== 'GET' && method !== 'HEAD') {
+        options.body = JSON.stringify(body)
+      }
+
+      const response = await fetch(url, options)
+      return handlePgwModuleApiResponse<T>(response)
+    }
+
+    // Otherwise, use the query parameter approach
     const query = getQuery<QueryParams>(event)
     const pgwParams = mapQueryParamsToPgwModule(query)
     const serializedParams = serializePgwModuleParams(pgwParams)
@@ -82,7 +107,7 @@ export async function requestToPgwModuleApi<T>(
     const response = await fetch(url, options)
     return handlePgwModuleApiResponse<T>(response)
   } catch (error) {
-    console.error('Error in PGW Module API request with query:', error)
+    console.error('Error in PGW Module API request:', error)
     const statusCode = error && typeof error === 'object' && 'statusCode' in error 
       ? (error as { statusCode: number }).statusCode 
       : 500
@@ -104,47 +129,47 @@ function handlePgwModuleApiResponse<T>(response: Response): Promise<T> {
   return response.json()
 }
 
-export const pgwModuleApiLogic = () => {
-  /**
-   * Logic to proxy wallet transaction requests to the PGW Module API.
-   * It constructs the correct endpoint and forwards the query parameters.
-   *
-   * @param event The H3 event object.
-   * @param walletType The type of wallet ('settlement' or 'top-up').
-   */
-  const getWalletTransactionsLogic = async (event: H3Event, walletType: 'settlement' | 'top-up') => {
-    const query = getQuery(event)
-    const endpoint = `/walletmgnt/${walletType}/transactions`
-    const queryString = new URLSearchParams(query as Record<string, string>).toString()
-    const fullEndpoint = `${endpoint}?${queryString}`
+// export const pgwModuleApiLogic = () => {
+//   /**
+//    * Logic to proxy wallet transaction requests to the PGW Module API.
+//    * It constructs the correct endpoint and forwards the query parameters.
+//    *
+//    * @param event The H3 event object.
+//    * @param walletType The type of wallet ('settlement' or 'top-up').
+//    */
+//   const getWalletTransactionsLogic = async (event: H3Event, walletType: 'settlement' | 'top-up') => {
+//     const query = getQuery(event)
+//     const endpoint = `/walletmgnt/${walletType}/transactions`
+//     const queryString = new URLSearchParams(query as Record<string, string>).toString()
+//     const fullEndpoint = `${endpoint}?${queryString}`
 
-    console.log(`Forwarding wallet transaction request to PGW Module API: ${fullEndpoint}`)
+//     console.log(`Forwarding wallet transaction request to PGW Module API: ${fullEndpoint}`)
 
-    // The existing `requestToPgwModuleApi` is primarily for POST requests.
-    // For GET requests with query parameters, it's cleaner to make a direct call.
-    try {
-      const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${fullEndpoint}`
-      const options: RequestInit = {
-        method: 'GET',
-        headers: {
-          'accept': 'text/plain',
-          'Authorization': `Bearer ${event.context.auth?.token || ''}`,
-        },
-        signal: AbortSignal.timeout(30000),
-      }
+//     // The existing `requestToPgwModuleApi` is primarily for POST requests.
+//     // For GET requests with query parameters, it's cleaner to make a direct call.
+//     try {
+//       const url = `${useRuntimeConfig(event).pgwModuleApiUrl}${fullEndpoint}`
+//       const options: RequestInit = {
+//         method: 'GET',
+//         headers: {
+//           'accept': 'text/plain',
+//           'Authorization': `Bearer ${event.context.auth?.token || ''}`,
+//         },
+//         signal: AbortSignal.timeout(30000),
+//       }
 
-      const response = await fetch(url, options)
-      return handlePgwModuleApiResponse(response)
-    } catch (error) {
-      console.error(`Error fetching wallet transactions for type '${walletType}':`, error)
-      throw createError({
-        statusCode: 500,
-        statusMessage: (error as Error).message ?? 'Internal Server Error while fetching transactions.',
-      })
-    }
-  }
+//       const response = await fetch(url, options)
+//       return handlePgwModuleApiResponse(response)
+//     } catch (error) {
+//       console.error(`Error fetching wallet transactions for type '${walletType}':`, error)
+//       throw createError({
+//         statusCode: 500,
+//         statusMessage: (error as Error).message ?? 'Internal Server Error while fetching transactions.',
+//       })
+//     }
+//   }
 
-  return {
-    getWalletTransactionsLogic,
-  }
-}
+//   return {
+//     getWalletTransactionsLogic,
+//   }
+// }

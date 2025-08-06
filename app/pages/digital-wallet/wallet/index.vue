@@ -555,7 +555,6 @@
 
 <script setup lang="ts">
 import { h, resolveComponent, computed, ref, watch, onMounted, onUnmounted } from 'vue'
-import { format } from 'date-fns'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
@@ -563,14 +562,13 @@ import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import TableShimmer from '~/components/tables/TableShimmer.vue'
 
 import { useWalletStore } from '~/stores/wallet'
-import { useWalletTransactionsApi } from '~/composables/api/useWalletTransactionsApi'
-import type { WalletTransactionParams } from '~/composables/api/useWalletTransactionsApi'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
 import type { WalletSummaryData } from '~~/server/model/pgw_module_api/wallet_transaction_summary'
-import type { WalletTransaction, WalletApiResponse } from '~/models/wallet'
+import type { WalletTransaction, SettlementWalletApiResponse, TopUpWalletApiResponse } from '~/models/wallet'
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useStatusColor } from '~/composables/utils/useStatusColor'
+import type { QueryParams } from '~/models/baseModel'
 
 // Define page meta
 definePageMeta({
@@ -582,8 +580,7 @@ definePageMeta({
 const { formatCurrency } = useCurrency()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
-const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary } = usePgwModuleApi()
-const { getWalletTransactions } = useWalletTransactionsApi()
+const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getSettlementWalletTransactions, getTopUpWalletTransactions } = usePgwModuleApi()
 const { formatDateTime } = useFormat()
 const { t } = useI18n()
 const errorHandler = useErrorHandler()
@@ -834,57 +831,74 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
 ])
 
 // Wrapper function for TablesExTable
-const fetchTransactionsForTable = async (params?: {
-  page?: number
-  pageSize?: number
-  search?: string
-  startDate?: string
-  endDate?: string
-}) => {
+const fetchTransactionsForTable = async (params?: QueryParams) => {
+  console.log("======= fetchTransactionsForTable params ========:", params)
   isLoadingTransactions.value = true
 
   const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
-  console.log("======= selectedWallet ========:", selectedWalletType
-  )
+  console.log("======= selectedWallet ========:", selectedWallet)
+  
   if (!selectedWallet) {
     // This can happen on initial load before a wallet is selected.
     // The table should not attempt to fetch data in this case.
     isLoadingTransactions.value = false
-    return { data: [], total_record: 0, total_page: 0 }
+    throw new Error('No wallet selected')
   }
 
   try {
-    const apiParams: WalletTransactionParams = {
-      walletType: selectedWallet.walletType,
-      currency: selectedWallet.currency,
-      fromDate: params?.startDate ? format(new Date(params.startDate), 'dd/MM/yyyy') : format(new Date(), '01/MM/yyyy'),
-      toDate: params?.endDate ? format(new Date(params.endDate), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy'),
-      pageIndex: params?.page || 1,
-      pageSize: params?.pageSize,
-      search: params?.search,
-      supplierId: selectedWallet.supplierId,
-    }
 
-        console.log("Check walletType")
-    const response: WalletApiResponse = await getWalletTransactions(apiParams)
 
-    // 
+    // Build filter array
+    const filters = []
+    
+ 
+    // Add currency filter
+    filters.push({
+      field: 'currencyId',
+      operator: 'eq',
+      value: selectedWallet.currency,
+      manualFilter: false
+    })
 
+    // Call appropriate API based on wallet type
+    const response = selectedWallet.walletType === 'settlement_wallet'
+      ? await getSettlementWalletTransactions(params)
+      : await getTopUpWalletTransactions(params)
+
+    console.log("======= API response ========:", response)
+
+    // Parse response based on wallet type
     let data: WalletTransaction[] = []
     let total_record = 0
 
-    if ('result' in response && 'data' in response.result) {
-      // Top-up wallet response structure
-      data = response.result.data.result
-      total_record = response.result.data.param.rowCount || 0
-    } else if ('data' in response) {
-      // Settlement wallet response structure
-      data = response.data.result
-      total_record = response.data.param.rowCount || 0
+    if (selectedWallet.walletType === 'settlement_wallet') {
+      // Settlement wallet response structure: { code, message, message_kh, data: { param, result } }
+      const settlementResponse = response as SettlementWalletApiResponse
+      if (settlementResponse?.data?.result) {
+        data = settlementResponse.data.result
+        total_record = settlementResponse.data.param?.rowCount || 0
+      } else {
+        throw new Error('Invalid settlement wallet API response structure')
+      }
+    } else {
+      // Top-up wallet response structure: { param, result: { code, message, message_kh, data: { param, result } } }
+      const topUpResponse = response as TopUpWalletApiResponse
+      if (topUpResponse?.result?.data?.result) {
+        data = topUpResponse.result.data.result
+        total_record = topUpResponse.result.data.param?.rowCount || 0
+      } else {
+        throw new Error('Invalid top-up wallet API response structure')
+      }
     }
 
-    const pageSize = params?.pageSize || 10
+    const pageSize = Number(params?.page_size) || 10
     const total_page = Math.ceil(total_record / pageSize)
+
+    console.log("======= Returning server data ========:", {
+      dataLength: data.length,
+      total_record,
+      total_page
+    })
 
     return {
       data,
@@ -892,8 +906,10 @@ const fetchTransactionsForTable = async (params?: {
       total_page,
     }
   } catch (error: unknown) {
+    console.error('Error fetching wallet transactions:', error)
     errorHandler.handleApiError(error)
-    return { data: [], total_record: 0, total_page: 0 }
+    // Re-throw the error so the table component can handle it properly
+    throw error
   } finally {
     isLoadingTransactions.value = false
   }
