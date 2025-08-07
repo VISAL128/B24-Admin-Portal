@@ -2,6 +2,7 @@ export enum ColumnType {
   Text = 'text',
   Number = 'number',
   Currency = 'currency',
+  Amount = 'amount',
   Date = 'date',
   DateTime = 'datetime',
   Boolean = 'boolean',

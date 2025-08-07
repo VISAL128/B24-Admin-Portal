@@ -787,6 +787,7 @@ const filteredColumns = computed(() => {
       // Skip selection column
       return
     }
+    // If sorting is enabled, wrap header in sortable header function
     if (col.enableSorting) {
       col.header = ({ column }) => createSortableHeader(column, col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id))
     }
@@ -810,6 +811,15 @@ const filteredColumns = computed(() => {
     if (col.type === ColumnType.DateTime && !col.cell) {
       col.cell = ({ row }) => useFormat().formatDateTime(row.getValue(col.id as string))
     }
+    // else if (col.type === ColumnType.Amount && !col.cell) {
+    //   col.cell = ({ row }) => {
+    //     h(
+    //       'div',
+    //       { class: 'text-right' },
+    //       formatAmountV2('12345',  DEFAULT_CURRENCY_CONFIG.code)
+    //     )
+    //   }
+    // }
   })
   const visibleColumnIds = computed(() =>
     columnConfig.value

@@ -1,24 +1,10 @@
 <template>
   <div class="flex flex-col h-full space-y-4">
-    <!-- Loading state -->
-    <!-- <div v-if="loading" class="flex justify-center items-center py-10">
-      <UIcon
-        name="i-lucide-loader-circle"
-        class="animate-spin h-8 w-8 text-gray-500"
-      />
-    </div> -->
+    <PageHeader
+      :title="t('settlement_history_details.title')"
+      :subtitle="t('settlement_history_details.subtitle')"
+    />
     <LoadingSpinner v-if="loading" fullscreen />
-
-    <!-- Error state -->
-    <!-- <UAlert
-      v-else-if="true"
-      title="Error"
-      color="error"
-      variant="soft"
-      icon="i-lucide-alert-circle"
-    >
-      {{ error }}
-    </UAlert> -->
 
     <div v-else-if="error" class="flex flex-1 items-center justify-center">
       <UCard class="bg-error-100 dark:bg-error-300/50" variant="solid">

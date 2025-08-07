@@ -1,5 +1,6 @@
 import { ColumnType } from '@/utils/enumModel'
 import { format } from 'date-fns/format'
+import { useCurrency } from '~/composables/utils/useCurrency'
 // import { useI18n } from 'vue-i18n'
 
 // Helper to support nested accessors like "supplier.code"
@@ -82,6 +83,10 @@ export function formatAmount(
 
     return formattedNumber
   }
+}
+
+export function formatAmountV2(amount: number | string, currency?: string) {
+  return useCurrency().formatAmount(amount, currency)
 }
 
 /**

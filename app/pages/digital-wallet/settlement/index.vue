@@ -47,6 +47,7 @@
       show-row-number
       show-date-filter
       enabled-auto-refresh
+      :search-tooltip="t('search_by_settler')"
       @data-changed="handleDataChanged"
       @row-click="handleViewDetails"
       @fullscreen-toggle="(isFullScreen) => isTableFullscreen = isFullScreen"
