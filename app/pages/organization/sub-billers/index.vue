@@ -449,11 +449,13 @@ const columns: BaseTableColumn<Supplier>[] = [
       h('span', {}, syncCode ?? ''), // ✅ Safe fallback
     ])
   },
+      enableSorting: true,
 },
   {
     id: 'name',
     accessorKey: 'name',
     header: t('name'),
+    enableSorting: true,
   },
   {
     id: 'address',

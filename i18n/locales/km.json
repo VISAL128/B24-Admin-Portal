@@ -175,7 +175,7 @@
       "internet": "អ៊ីនធឺណិត",
       "insurance": "ការធានារ៉ាប់រង"
     },
-        "wallet_number": "លេខកូដកាបូប",
+    "wallet_number": "លេខកូដកាបូប",
     "bank_account_number": "លេខគណនី"
   },
   "wallet": "កាបូប",
@@ -538,7 +538,7 @@
       "error": "កំហុស",
       "processing": "កំពុងដំណើរការ"
     },
-    "active":{
+    "active": {
       "1": "សកម្ម",
       "0": "អសកម្ម"
     },
@@ -557,11 +557,11 @@
     "enter_fullscreen": "បើកអេក្រង់ពេញ",
     "exit_fullscreen": "បិទអេក្រង់ពេញ",
     "column_config": {
-        "tooltip": "លាក់/បង្ហាញជួរឈរ",
-        "reset": "កំណត់ឡើងវិញ",
-        "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
-        "columns": "ជួរឈរ"
-      },
+      "tooltip": "លាក់/បង្ហាញជួរឈរ",
+      "reset": "កំណត់ឡើងវិញ",
+      "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
+      "columns": "ជួរឈរ"
+    },
     "settlement-history": {
       "columns": {
         "created_date": "កាលបរិច្ឆេទទូទាត់",
@@ -610,7 +610,28 @@
       }
     }
   },
-    "search_placeholder": "ស្វែងរក...",
+  "sub-biller-transaction-table": {
+    "columns": {
+      "collection_bank": "ធនាគារប្រមូលប្រាក់",
+      "settlement_bank": "ធនាគារទូទាត់",
+      "settlement_type": "ប្រភេទទូទាត់",
+      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "status": "ស្ថានភាព",
+      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "bank_ref": "លេខយោងធនាគារ",
+      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "total_customer": "ចំនួនអតិថិជន"
+    }
+  },
+  "sub-billers-table": {
+    "columns": {
+      "name": "ឈ្មោះ",
+      "sync_code": "លេខកូដ"
+    }
+  },
+  "search_placeholder": "ស្វែងរក...",
   "no_permission": {
     "title": "ការចូលត្រូវបានកំណត់",
     "access_denied": "បដិសេធការចូល",
@@ -774,7 +795,7 @@
   "pages": {
     "transaction": {
       "title": "ប្រតិបត្តិការ",
-      "created_date":"កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
       "total_customer": "ចំនួនអតិថិជន",
       "bank_ref": "លេខយោងធនាគារ",
       "repush": "បញ្ជូនម្តងទៀត",
@@ -857,5 +878,4 @@
   "ascending": "តាមលំដាប់ឡើង",
   "descending": " តាមលំដាប់ចុះ",
   "clear": "សម្អាត"
-  
 }
