@@ -211,12 +211,16 @@ const fetchTransactionSummary = async () => {
         }
       ]
     }
+      // Only set loading to false when we successfully get data
+      isLoading.value = false
     } else {
       toast.add({
         title: t('error'),
         description: 'No transaction summary data available',
         color: 'error',
       })
+      // Keep loading state true to show skeleton cards
+      // isLoading.value remains true
     }
   } catch (error) {
     console.error('❌ Frontend: Error fetching transaction summary:', error)
@@ -226,10 +230,11 @@ const fetchTransactionSummary = async () => {
       description: t('failed_to_fetch_transaction_summary'),
       color: 'error',
     })
-  } finally {
-    isLoading.value = false
-    console.log('🏁 Frontend: Transaction summary fetch completed')
+    // Keep loading state true to show skeleton cards when there's an error
+    // isLoading.value remains true
   }
+  // Remove the finally block that was setting isLoading to false
+  console.log('🏁 Frontend: Transaction summary fetch completed')
 }
 
 onMounted(async () => {

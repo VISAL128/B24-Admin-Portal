@@ -2,8 +2,7 @@
 <template>
   <!-- Unified Card Container -->
   <div
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto"
-  >
+    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto">
     <!-- Filter / Sort / Column Configuration -->
     <div class="flex justify-between flex-wrap items-start gap-4 flex-shrink-0 mb-2 pt-2 px-3">
       <!-- 🔍 Filter Buttons -->
@@ -166,7 +165,7 @@
         </div>
       </div>
 
-      <!-- ⚙️ Column Configuration -->
+      <!-- ⚙️ Trailing Header -->
       <div class="flex justify-end items-center gap-2">
         <slot name="trailingHeader" />
         <ExportButton
@@ -174,104 +173,106 @@
           :headers="exportHeaders"
           :export-options="resolvedExportOptions"
         />
-
-        <!-- More Options Dropdown -->
-        <UPopover>
-          <template #default>
-            <UTooltip
-              :text="t('table.more_options')"
-              :delay-duration="200"
-              placement="top"
-            >
-              <UButton variant="ghost" class="p-2">
-                <UIcon
-                  name="material-symbols:more-vert"
-                  size="sm"
-                  class="text-gray-900 dark:text-white"
-                />
-              </UButton>
-            </UTooltip>
-          </template>
-
-          <template #content>
-            <div class="py-1 min-w-40">
-              <UButton
-                variant="ghost"
-                size="sm"
-                :icon="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"
-                class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                @click="toggleFullscreen"
+        <div class="flex items-center gap-0">
+          <!-- Column Configuration -->
+          <UPopover>
+            <template #default>
+              <UTooltip
+                key="column-config-tooltip"
+                :text="t('table.column_config.tooltip')"
+                :delay-duration="200"
+                placement="top"
               >
-                {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
-              </UButton>
-            </div>
-          </template>
-        </UPopover>
+                <UButton variant="ghost" class="p-2">
+                  <UIcon
+                    name="icon-park-outline:setting-config"
+                    size="sm"
+                    class="text-gray-900 dark:text-white"
+                  />
+                </UButton>
+              </UTooltip>
+            </template>
 
-        <UPopover>
-          <template #default>
-            <UTooltip
-              key="column-config-tooltip"
-              :text="t('table.column_config.tooltip')"
-              :delay-duration="200"
-              placement="top"
-            >
-              <UButton variant="ghost" class="p-2">
-                <UIcon
-                  name="icon-park-outline:setting-config"
-                  size="sm"
-                  class="text-gray-900 dark:text-white"
-                />
-              </UButton>
-            </UTooltip>
-          </template>
+            <template #content>
+              <div class="space-y-1 min-w-50">
+                <div class="flex items-center justify-between px-2 pt-2">
+                  <span class="text-sm font-medium">{{ t('table.column_config.columns') }}</span>
+                </div>
+                <Divider />
+                <div class="flex flex-col gap-1 px-2">
+                  <UCheckbox
+                    v-for="col in columnConfig"
+                    :id="col.id"
+                    :key="col.id"
+                    :label="getTranslationHeaderById(col.id)"
+                    :model-value="col.getIsVisible()"
+                    :ui="appConfig.ui.checkbox.slots"
+                    variant="list"
+                    class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                    size="sm"
+                    @update:model-value="
+                      (value) => {
+                        col.toggleVisibility(value as boolean)
+                        columnVisibility[col.id] = value as boolean
+                      }
+                    "
+                  />
+                </div>
+                <Divider />
+                <div class="flex justify-end px-2 pb-2">
+                  <UButton
+                    variant="link"
+                    size="xs"
+                    color="neutral"
+                    class="underline"
+                    :ui="{
+                      ...appConfig.ui.button.slots,
+                      leadingIcon: 'shrink-0 size-3 text-muted',
+                    }"
+                    @click="onResetColumnVisibility"
+                  >
+                    <template #default>
+                      {{ t('table.column_config.reset') }}
+                    </template>
+                  </UButton>
+                </div>
+              </div>
+            </template>
+          </UPopover>
 
-          <template #content>
-            <div class="space-y-1 min-w-50">
-              <div class="flex items-center justify-between px-2 pt-2">
-                <span class="text-sm font-medium">{{ t('table.column_config.columns') }}</span>
-              </div>
-              <Divider />
-              <div class="flex flex-col gap-1 px-2">
-                <UCheckbox
-                  v-for="col in columnConfig"
-                  :id="col.id"
-                  :key="col.id"
-                  :label="getTranslationHeaderById(col.id)"
-                  :model-value="col.getIsVisible()"
-                  :ui="appConfig.ui.checkbox.slots"
-                  variant="list"
-                  class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                  size="sm"
-                  @update:model-value="
-                    (value) => {
-                      col.toggleVisibility(value as boolean)
-                      columnVisibility[col.id] = value as boolean
-                    }
-                  "
-                />
-              </div>
-              <Divider />
-              <div class="flex justify-end px-2 pb-2">
+          <!-- More Options Dropdown -->
+          <UPopover>
+            <template #default>
+              <UTooltip
+                :text="t('table.more_options')"
+                :delay-duration="200"
+                placement="top"
+              >
+                <UButton variant="ghost" class="p-2">
+                  <UIcon
+                    name="material-symbols:more-vert"
+                    size="sm"
+                    class="text-gray-900 dark:text-white"
+                  />
+                </UButton>
+              </UTooltip>
+            </template>
+
+            <template #content>
+              <div class="py-1 min-w-40">
                 <UButton
-                  variant="link"
-                  size="xs"
-                  color="neutral"
-                  class="underline"
-                  :ui="{
-                    ...appConfig.ui.button.slots,
-                    leadingIcon: 'shrink-0 size-3 text-muted',
-                  }"
-                  @click="onResetColumnVisibility"
+                  variant="ghost"
+                  size="sm"
+                  :icon="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"
+                  class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                  @click="toggleFullscreen"
                 >
-                  <template #default>
-                    {{ t('table.column_config.reset') }}
-                  </template>
+                  {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
                 </UButton>
               </div>
-            </div>
-          </template>
-        </UPopover>
+            </template>
+          </UPopover>
+        </div>
       </div>
     </div>
 
@@ -356,7 +357,7 @@ import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { QueryParams } from '~/models/baseModel'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
-import { ColumnType } from '~/utils/enumModel'
+import { ColumnType, FilterOperatorPgwModule } from '~/utils/enumModel'
 import appConfig from '~~/app.config'
 import ExportButton from '../buttons/ExportButton.vue'
 
@@ -562,7 +563,7 @@ const fetchData = async (refresh = false) => {
       .filter(([_, value]) => value && value.trim() !== '')
       .map(([field, value]) => ({
         field,
-        operator: 'eq' as const,
+        operator: FilterOperatorPgwModule.Equals,
         value,
       }))
 

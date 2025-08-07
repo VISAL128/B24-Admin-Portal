@@ -1,3 +1,5 @@
+import type { FilterOperatorPgwModule } from '~/utils/enumModel'
+
 export class QueryParamsPgwModuleApi {
   pageIndex: number = 1;
   pageSize: number = 10;
@@ -9,7 +11,7 @@ export class QueryParamsPgwModuleApi {
 
 export interface ParamFilterPgwModuleApi {
   field: string;
-  operator: string;
+  operator: FilterOperatorPgwModule;
   value: string | number | boolean | Date;
   manualFilter?: boolean;
 }

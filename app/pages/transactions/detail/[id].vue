@@ -15,16 +15,26 @@
             </h4>
             
             <!-- Actions Right -->
-            <!-- <div class="flex items-center gap-2">
-              <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
+            <div class="flex items-center gap-2">
+              <!-- <StatusBadge :status="transactionData.status" variant="subtle" size="sm" /> -->
               <UButton
+                variant="outline"
+                icon="material-symbols:history"
+                size="sm"
+                @click="handleVoidPaymentRequest"
+                :loading="isVoidRequesting"
+                :disabled="isVoidRequesting"
+              >
+                {{ isVoidRequesting ? 'Processing...' : 'Void Payment History' }}
+              </UButton>
+              <!-- <UButton
                 class="text-gray-500"
                 variant="ghost"
                 icon="material-symbols:more-vert"
                 size="md"
                 @click="download"
-              />
-            </div> -->
+              /> -->
+            </div>
           </div>
           <!-- Transaction Content -->
           <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4">
@@ -280,14 +290,79 @@
           </div>
           Auto Direct Debit Summary
         </h4>
-        <!-- Horizontal line below header -->
-        <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3" />
-        
-        <!-- Content area (blank for now) -->
-        <div class="mt-4 h-full flex items-center justify-center">
-          <div class="text-center">
-            <UIcon name="material-symbols:account-balance-wallet-outline" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p class="text-sm text-gray-500 dark:text-gray-400">No direct debit data available</p>
+        <!-- Content area -->
+        <div class="relative h-72 overflow-hidden py-4">
+          <!-- Clickable Summary Card -->
+          <div
+            class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+            @click="openDirectDebitDetail"
+          >
+            <div class="space-y-3">
+              <!-- Bank Logo + Bank Name -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Bank</span>
+                <div class="flex items-center space-x-2">
+                  <UAvatar
+                    :src="summaryDirectDebit.bankLogo"
+                    :alt="summaryDirectDebit.bankName"
+                    size="sm"
+                  />
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ summaryDirectDebit.bankName }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Bank Reference -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Bank Reference</span>
+                 <ClipboardBadge
+                    :text="summaryDirectDebit.bankRef || ''"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                    class="mt-2"
+                  />
+              </div>
+              
+              <!-- Status -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                <StatusBadge :status="summaryDirectDebit.status" variant="subtle" size="sm" />
+              </div>
+              
+              <!-- Last Push Date -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Last Push Date</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ format.formatDateTime(summaryDirectDebit.lastPushDate, {
+                    dateStyle: userPreferences?.dateFormat || 'medium',
+                    timeStyle: userPreferences?.timeFormat || 'short',
+                  }) }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Click indicator -->
+            <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
+                Click to view details
+              </div>
+            </div>
+          </div>
+          
+          <!-- Verify Button -->
+          <div class="mt-3">
+            <UButton
+              size="md"
+              variant="outline"
+              icon="material-symbols:verified-outline"
+              class="w-full h-10 flex items-center justify-center"
+              @click="handleVerifyTransaction"
+              :loading="isVerifying"
+              :disabled="isVerifying"
+            >
+              {{ isVerifying ? 'Verifying...' : 'Verify Transaction' }}
+            </UButton>
           </div>
         </div>
       </div>
@@ -363,27 +438,36 @@
       v-model:open="showPushBackDetail"
       side="right"
       :overlay="false"
-      :title="isRepushDetailData() ? 'Activity Log Details' : 'Repush Transaction Detail'"
+      title="Repush Transaction Detail"
       @close="closeSlideover"
     >
       <template #body>
         <div class="space-y-4" v-if="selectedPushBackTransaction">
-          <!-- Check if it's repush detail (from activity logs) or summary data -->
-          <template v-if="isRepushDetailData()">
-            <!-- New UI for Repush Detail Data (Activity Logs) -->
-            <!-- Detail Section -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Status:</span>
+          <!-- Detail Section -->
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Total Repush</span
+                  >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                    getSelectedPushBackDetail()?.totalRepush || '0'
+                  }}</span>
+                </div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Status</span
+                  >
                   <StatusBadge
                     :status="getSelectedPushBackDetail()?.status || 'Unknown'"
                     variant="subtle"
                     size="sm"
                   />
                 </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Date:</span>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Last Repush Date</span
+                  >
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{
                     format.formatDateTime(getSelectedPushBackDetail()?.date, {
                       dateStyle: userPreferences?.dateFormat || 'medium',
@@ -392,124 +476,121 @@
                   }}</span>
                 </div>
               </div>
-            </div>
+          </div>
 
-            <!-- Response Payload Section -->
-            <div class="space-y-3">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
-                Response Payload
-              </h3>
-              <CopyableCodeBlock
-                :content="getSelectedPushBackDetail()?.payload"
-                success-message="Response payload copied to clipboard",
-                :max-length="250"
-              />
-            </div>
-
-            <!-- Status Code Section -->
-            <div class="space-y-3">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
-                Status Code
-              </h3>
-              <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Code:</span>
-                  <span class="text-sm font-mono font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.statusCode || 'N/A'
-                  }}</span>
-                </div>
-                <div class="flex justify-between items-start">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
-                  <span class="text-sm font-medium text-right" :class="[
-                    getSelectedPushBackDetail()?.statusCode === 200 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-red-600 dark:text-red-400'
-                  ]">{{
-                    getSelectedPushBackDetail()?.statusCode === 200 
-                      ? 'Success' 
-                      : 'Error'
-                  }}</span>
-                </div>
+          <!-- Biller Configuration Section -->
+          <div class="space-y-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+            >
+              Configuration
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Type:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                  getSelectedPushBackDetail()?.billerConfiguration.type
+                }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
+                <ClipboardBadge
+                  :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
+                  :copied-tooltip-text="$t('clipboard.copied')"
+                  class="mt-2"
+                />
               </div>
             </div>
-          </template>
+          </div>
 
-          <template v-else>
-            <!-- Original UI for Summary Data (Repush Summary Card) -->
-            <!-- Detail Section -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-              <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white"
-                      >Total Repush</span
-                    >
-                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                      getSelectedPushBackDetail()?.totalRepush || '0'
-                    }}</span>
-                  </div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white"
-                      >Status</span
-                    >
-                    <StatusBadge
-                      :status="getSelectedPushBackDetail()?.status || 'Unknown'"
-                      variant="subtle"
-                      size="sm"
-                    />
-                  </div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white"
-                      >Last Repush Date</span
-                    >
-                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                      format.formatDateTime(getSelectedPushBackDetail()?.date, {
-                        dateStyle: userPreferences?.dateFormat || 'medium',
-                        timeStyle: userPreferences?.timeFormat || 'short',
-                      })
-                    }}</span>
-                  </div>
-                </div>
-            </div>
+          <!-- Payload Sent Section -->
+          <div class="space-y-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+            >
+              Request Payload
+            </h3>
+            <CopyableCodeBlock
+              :content="getSelectedPushBackDetail()?.payload"
+              success-message="Payload copied to clipboard"
+              :max-length="250"
+            />
+          </div>
+        </div>
+      </template>
+    </USlideover>
 
-            <!-- Biller Configuration Section -->
-            <div class="space-y-3">
-              <h3
-                class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-              >
-                Configuration
-              </h3>
-              <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Type:</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.billerConfiguration.type
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
-                  <ClipboardBadge
-                    :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
-                    :copied-tooltip-text="$t('clipboard.copied')"
-                    class="mt-2"
-                  />
-                </div>
+    <!-- Activity Log Detail Slideover -->
+    <USlideover
+      v-model:open="showActivityLogDetail"
+      side="right"
+      :overlay="false"
+      title="Activity Log Details"
+      @close="closeActivityLogSlideover"
+    >
+      <template #body>
+        <div class="space-y-4" v-if="selectedActivityLog">
+          <!-- Detail Section -->
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">Status:</span>
+                <StatusBadge
+                  :status="getSelectedActivityLogDetail()?.status || 'Unknown'"
+                  variant="subtle"
+                  size="sm"
+                />
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">Date:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                  format.formatDateTime(getSelectedActivityLogDetail()?.date, {
+                    dateStyle: userPreferences?.dateFormat || 'medium',
+                    timeStyle: userPreferences?.timeFormat || 'short',
+                  })
+                }}</span>
               </div>
             </div>
+          </div>
 
-            <!-- Payload Sent Section -->
-            <div class="space-y-3">
-              <h3
-                class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-              >
-                Request Payload
-              </h3>
-              <CopyableCodeBlock
-                :content="getSelectedPushBackDetail()?.payload"
-                success-message="Payload copied to clipboard"
-                :max-length="250"
-              />
+          <!-- Response Payload Section -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Response Payload
+            </h3>
+            <CopyableCodeBlock
+              :content="getSelectedActivityLogDetail()?.payload"
+              success-message="Response payload copied to clipboard"
+              :max-length="250"
+            />
+          </div>
+
+          <!-- Status Code Section -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Status Code
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Code:</span>
+                <span class="text-sm font-mono font-medium text-gray-900 dark:text-white">{{
+                  getSelectedActivityLogDetail()?.statusCode || 'N/A'
+                }}</span>
+              </div>
+              <div class="flex justify-between items-start">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
+                <span class="text-sm font-medium text-right" :class="[
+                  getSelectedActivityLogDetail()?.statusCode === 200 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-red-600 dark:text-red-400'
+                ]">{{
+                  getSelectedActivityLogDetail()?.statusCode === 200 
+                    ? 'Success' 
+                    : 'Error'
+                }}</span>
+              </div>
             </div>
-          </template>
+          </div>
         </div>
       </template>
     </USlideover>
@@ -655,6 +736,7 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import appConfig from '~~/app.config'
+import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
 definePageMeta({
   auth: false,
@@ -679,11 +761,15 @@ const loading = ref(true)
 const showDownloadModal = ref(false)
 const showPushBackDetail = ref(false)
 const selectedPushBackTransaction = ref<any>(null)
+const showActivityLogDetail = ref(false)
+const selectedActivityLog = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
 
 const activeRepushTab = ref('repush_transaction_summary')
 const isRepushing = ref(false)
+const isVerifying = ref(false)
+const isVoidRequesting = ref(false)
 
 const repushTabs = [
   {
@@ -702,6 +788,25 @@ const repushTabs = [
 const customerSorting = ref([])
 const transactionAllocationSorting = ref([])
 const webhookSorting = ref([{ id: 'date', desc: true }])
+
+// Direct Debit Summary Data
+const summaryDirectDebit = ref<DirectDebitSummary>({
+  id: '001',
+  bankName: 'ACLEDA Bank',
+  bankLogo: 'https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png',
+  bankRef: 'BX1234FD56789',
+  lastPushDate: '2025-08-05T10:20:00+07:00',
+  status: 'pending', // or 'success' | 'failed'
+  payload: {
+    accountNumber: '123456789012',  
+    accountName: 'Chan Dara',
+    amount: 250.75,
+    currency: 'USD',
+    debitDate: '2025-08-04'
+  },
+  transactionId: '3dc106d3-fb58-41eb-91ba-c9356ccb50ca',
+  transactionNo: 'TXN-20250805001'
+})
 
 // Repush Summary Data
 const summary = ref<RepushSummary>({
@@ -1314,8 +1419,11 @@ const onRowSelect = (row: any) => {
 
 // Repush Detail Select function for Activity Logs
 const onRepushDetailSelect = (row: any) => {
-  selectedPushBackTransaction.value = row.original
-  showPushBackDetail.value = true
+  console.log('🔍 Activity Log row selected:', row.original)
+  console.log('📋 Row data structure:', JSON.stringify(row.original, null, 2))
+  selectedActivityLog.value = row.original
+  showActivityLogDetail.value = true
+  console.log('✅ Activity Log slideover should open')
 }
 
 const closeSlideover = () => {
@@ -1323,48 +1431,53 @@ const closeSlideover = () => {
   selectedPushBackTransaction.value = null
 }
 
-// Helper function to get selected push back detail
+const closeActivityLogSlideover = () => {
+  showActivityLogDetail.value = false
+  selectedActivityLog.value = null
+}
+
+// Helper function to get selected push back detail (for Repush Summary)
 const getSelectedPushBackDetail = () => {
   if (!selectedPushBackTransaction.value) return null
   
   const data = selectedPushBackTransaction.value as any
   
-  // Check if it's a repush detail item (has metaData property)
-  if (data.metaData && data.metaData.responsePayload) {
-    return {
-      transactionId: summary.value.transactionId,
-      date: data.date,
-      status: data.status,
-      totalRepush: summary.value.totalRepush,
-      billerConfiguration: {
-        type: summary.value.type || 'webhook',
-        url: summary.value.metaData?.url || 'N/A'
-      },
-      payload: data.metaData.responsePayload || {},
-      statusCode: data.metaData.statusCode || null
-    }
-  }
-  
-  // If it's RepushSummary data, map it to the expected structure
+  // For RepushSummary data (from clicking the summary card)
   return {
-    transactionId: data.transactionId,
+    transactionId: data.transactionId || summary.value.transactionId,
+    date: data.date || summary.value.date,
+    status: data.status || summary.value.status,
+    totalRepush: data.totalRepush || summary.value.totalRepush,
+    billerConfiguration: {
+      type: data.type || summary.value.type || 'webhook',
+      url: data.metaData?.url || summary.value.metaData?.url || 'N/A'
+    },
+    payload: data.payload || summary.value.payload || {},
+    statusCode: null
+  }
+}
+
+// Helper function to get selected activity log detail
+const getSelectedActivityLogDetail = () => {
+  if (!selectedActivityLog.value) return null
+  
+  const data = selectedActivityLog.value as any
+  
+  // For Activity Log data (repush detail items)
+  return {
+    transactionId: summary.value.transactionId,
     date: data.date,
     status: data.status,
-    totalRepush: data.totalRepush,
-    billerConfiguration: {
-      type: data.type || 'webhook',
-      url: data.metaData?.url || 'N/A'
-    },
-    payload: data.payload || {},
-    statusCode: null
+    totalRepush: summary.value.totalRepush,
+    payload: data.metaData?.responsePayload || {},
+    statusCode: data.metaData?.statusCode || null
   }
 }
 
 // Helper function to determine if the selected data is repush detail (from activity logs)
 const isRepushDetailData = () => {
-  if (!selectedPushBackTransaction.value) return false
-  const data = selectedPushBackTransaction.value as any
-  return data.metaData && data.metaData.responsePayload
+  // This function is no longer needed since we're using separate slidevers
+  return false
 }
 
 
@@ -1497,13 +1610,78 @@ const handleRepush = async () => {
   }
 }
 
+// Handle verify transaction
+const handleVerifyTransaction = async () => {
+  try {
+    isVerifying.value = true
+    
+    notification.showInfo({
+      title: 'Verifying Transaction',
+      description: `Verifying direct debit transaction ${summaryDirectDebit.value.transactionNo}...`,
+    })
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Update direct debit summary data
+    summaryDirectDebit.value.lastPushDate = new Date().toISOString()
+    summaryDirectDebit.value.status = 'success'
+    
+    notification.showSuccess({
+      title: 'Verification Successful',
+      description: `Transaction ${summaryDirectDebit.value.transactionNo} has been verified successfully.`,
+    })
+  } catch (error) {
+    console.error('Error verifying transaction:', error)
+    notification.showError({
+      title: 'Verification Failed',
+      description: 'Failed to verify transaction. Please try again.',
+    })
+  } finally {
+    isVerifying.value = false
+  }
+}
+
+// Handle void payment request
+const handleVoidPaymentRequest = async () => {
+  try {
+    isVoidRequesting.value = true
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Navigate to void payment detail page
+    router.push(`/void-payment/detail/${transactionId.value}`)
+  } catch (error) {
+    console.error('Error processing void request:', error)
+    notification.showError({
+      title: 'Void Request Failed',
+      description: 'Failed to process void payment request. Please try again.',
+    })
+  } finally {
+    isVoidRequesting.value = false
+  }
+}
+
 // Open repush detail slideover
 const openRepushDetail = () => {
+  console.log('🚀 Opening repush detail')
+  console.log('📊 Summary data:', summary.value)
   // Use the repush summary data as the selected transaction
   if (summary.value) {
     selectedPushBackTransaction.value = summary.value
     showPushBackDetail.value = true
+    console.log('✅ Slideover should open now')
+  }else{
+    console.log('❌ No summary data available')
   }
+}
+
+// Open direct debit detail (placeholder function)
+const openDirectDebitDetail = () => {
+  // Placeholder function - can be implemented later when direct debit detail slideover is needed
+  notification.showInfo({
+    title: 'Direct Debit Details',
+    description: 'Direct debit detail view is not yet implemented.',
+  })
 }
 
 onMounted(() => {

@@ -151,7 +151,6 @@ const navigateToDetails = (bankId: string) => {
   router.push(`/organization/banks/${bankId}`)
 }
 
-
 const handleViewDetails = (rowData: Bank) => {
   navigateToDetails(rowData.id)
 }

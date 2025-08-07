@@ -1,6 +1,7 @@
 import type { QueryParams } from '~/models/baseModel'
 import { QueryParamsPgwModuleApi } from '../model/pgw_module_api/base'
 import type { ParamFilterPgwModuleApi } from '../model/pgw_module_api/base'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
 
 /**
  * Maps client-side QueryParams to PGW Module API format
@@ -41,7 +42,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   if (clientParams.search) {
     filters.push({
       field: 'search',
-      operator: 'contains',
+      operator: FilterOperatorPgwModule.Contains,
       value: clientParams.search,
       manualFilter: false
     })
@@ -51,7 +52,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   if (clientParams.start_date) {
     filters.push({
       field: 'fromDate',
-      operator: 'gte',
+      operator: FilterOperatorPgwModule.GreaterThanOrEqualTo,
       value: clientParams.start_date,
       manualFilter: false
     })
@@ -60,7 +61,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   if (clientParams.end_date) {
     filters.push({
       field: 'toDate',
-      operator: 'lte',
+      operator: FilterOperatorPgwModule.LessThanOrEqualTo,
       value: clientParams.end_date,
       manualFilter: false
     })
@@ -91,7 +92,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
         
         filters.push({
           field: pgwField as ParamFilterPgwModuleApi['field'],
-          operator: filter.operator,
+          operator: filter.operator as FilterOperatorPgwModule,
           value: filter.value,
           manualFilter: false
         })
@@ -99,7 +100,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
     }
     else if (filtersArray && typeof filtersArray === 'object' && !Array.isArray(filtersArray)) {
       // If filters is a single object, convert it to an array
-      const singleFilter = filtersArray as { field: string; operator: string; value: string | number | boolean | Date; manualFilter?: boolean }
+      const singleFilter = filtersArray as { field: string; operator: FilterOperatorPgwModule; value: string | number | boolean | Date; manualFilter?: boolean }
       filters.push({
         field: mapFieldNameToPgwModule(singleFilter.field),
         operator: singleFilter.operator,

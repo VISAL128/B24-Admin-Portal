@@ -1,3 +1,5 @@
+import type { FilterOperatorPgwModule } from '~/utils/enumModel'
+
 export interface ApiResponse<T> {
   code: string | number // e.g., "SUCCESS"
   message: string
@@ -28,6 +30,9 @@ export interface PgwModuleResponseList<T> {
   result: T[]
 }
 
+/** * Query parameters for PGW Module API requests
+ * This interface can be extended based on specific API requirements
+*/
 export interface QueryParams {
   page?: number
   page_size?: number
@@ -42,7 +47,7 @@ export interface QueryParams {
   sortAsString?: string // Optional for direct string sort
   filters: {
     field: string
-    operator: 'eq' | 'neq' | 'contains' | 'doesnotcontain' | 'gt' | 'gte' | 'lt' | 'lte' | 'startswith' | 'endswith'
+    operator: FilterOperatorPgwModule
     value: string | number | boolean | Date
   }[]
 }
