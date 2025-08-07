@@ -280,14 +280,79 @@
           </div>
           Auto Direct Debit Summary
         </h4>
-        <!-- Horizontal line below header -->
-        <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3" />
-        
-        <!-- Content area (blank for now) -->
-        <div class="mt-4 h-full flex items-center justify-center">
-          <div class="text-center">
-            <UIcon name="material-symbols:account-balance-wallet-outline" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p class="text-sm text-gray-500 dark:text-gray-400">No direct debit data available</p>
+        <!-- Content area -->
+        <div class="relative h-72 overflow-hidden py-4">
+          <!-- Clickable Summary Card -->
+          <div
+            class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+            @click="openDirectDebitDetail"
+          >
+            <div class="space-y-3">
+              <!-- Bank Logo + Bank Name -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Bank</span>
+                <div class="flex items-center space-x-2">
+                  <UAvatar
+                    :src="summaryDirectDebit.bankLogo"
+                    :alt="summaryDirectDebit.bankName"
+                    size="sm"
+                  />
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ summaryDirectDebit.bankName }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Bank Reference -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Bank Reference</span>
+                 <ClipboardBadge
+                    :text="summaryDirectDebit.bankRef || ''"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                    class="mt-2"
+                  />
+              </div>
+              
+              <!-- Status -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                <StatusBadge :status="summaryDirectDebit.status" variant="subtle" size="sm" />
+              </div>
+              
+              <!-- Last Push Date -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Last Push Date</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ format.formatDateTime(summaryDirectDebit.lastPushDate, {
+                    dateStyle: userPreferences?.dateFormat || 'medium',
+                    timeStyle: userPreferences?.timeFormat || 'short',
+                  }) }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Click indicator -->
+            <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
+                Click to view details
+              </div>
+            </div>
+          </div>
+          
+          <!-- Verify Button -->
+          <div class="mt-3">
+            <UButton
+              size="md"
+              variant="outline"
+              icon="material-symbols:verified-outline"
+              class="w-full h-10 flex items-center justify-center"
+              @click="handleVerifyTransaction"
+              :loading="isVerifying"
+              :disabled="isVerifying"
+            >
+              {{ isVerifying ? 'Verifying...' : 'Verify Transaction' }}
+            </UButton>
           </div>
         </div>
       </div>
@@ -655,6 +720,7 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import appConfig from '~~/app.config'
+import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
 definePageMeta({
   auth: false,
@@ -684,6 +750,7 @@ const selectedTransactionAllocation = ref<any>(null)
 
 const activeRepushTab = ref('repush_transaction_summary')
 const isRepushing = ref(false)
+const isVerifying = ref(false)
 
 const repushTabs = [
   {
@@ -702,6 +769,25 @@ const repushTabs = [
 const customerSorting = ref([])
 const transactionAllocationSorting = ref([])
 const webhookSorting = ref([{ id: 'date', desc: true }])
+
+// Direct Debit Summary Data
+const summaryDirectDebit = ref<DirectDebitSummary>({
+  id: '001',
+  bankName: 'ACLEDA Bank',
+  bankLogo: 'https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png',
+  bankRef: 'BX1234FD56789',
+  lastPushDate: '2025-08-05T10:20:00+07:00',
+  status: 'pending', // or 'success' | 'failed'
+  payload: {
+    accountNumber: '123456789012',  
+    accountName: 'Chan Dara',
+    amount: 250.75,
+    currency: 'USD',
+    debitDate: '2025-08-04'
+  },
+  transactionId: '3dc106d3-fb58-41eb-91ba-c9356ccb50ca',
+  transactionNo: 'TXN-20250805001'
+})
 
 // Repush Summary Data
 const summary = ref<RepushSummary>({
@@ -1497,6 +1583,38 @@ const handleRepush = async () => {
   }
 }
 
+// Handle verify transaction
+const handleVerifyTransaction = async () => {
+  try {
+    isVerifying.value = true
+    
+    notification.showInfo({
+      title: 'Verifying Transaction',
+      description: `Verifying direct debit transaction ${summaryDirectDebit.value.transactionNo}...`,
+    })
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Update direct debit summary data
+    summaryDirectDebit.value.lastPushDate = new Date().toISOString()
+    summaryDirectDebit.value.status = 'success'
+    
+    notification.showSuccess({
+      title: 'Verification Successful',
+      description: `Transaction ${summaryDirectDebit.value.transactionNo} has been verified successfully.`,
+    })
+  } catch (error) {
+    console.error('Error verifying transaction:', error)
+    notification.showError({
+      title: 'Verification Failed',
+      description: 'Failed to verify transaction. Please try again.',
+    })
+  } finally {
+    isVerifying.value = false
+  }
+}
+
 // Open repush detail slideover
 const openRepushDetail = () => {
   // Use the repush summary data as the selected transaction
@@ -1504,6 +1622,15 @@ const openRepushDetail = () => {
     selectedPushBackTransaction.value = summary.value
     showPushBackDetail.value = true
   }
+}
+
+// Open direct debit detail (placeholder function)
+const openDirectDebitDetail = () => {
+  // Placeholder function - can be implemented later when direct debit detail slideover is needed
+  notification.showInfo({
+    title: 'Direct Debit Details',
+    description: 'Direct debit detail view is not yet implemented.',
+  })
 }
 
 onMounted(() => {
