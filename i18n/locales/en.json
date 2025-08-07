@@ -122,17 +122,6 @@
         "active": "Status"
       }
     },
-    "bank-settlements": {
-      "columns": {
-        "created_date": "Settlement Date",
-        "total_amount": "Total Amount",
-        "currency_id": "Currency",
-        "currency": "Currency",
-        "total_settled": "Total Settled",
-        "status": "Status",
-        "created_by": "Settled By"
-      }
-    },
     "transactions-history-table": {
       "columns": {
         "collection_bank": "Collection Bank",
@@ -148,25 +137,22 @@
         "total_customer": "Total Customer"
       }
     },
-    "sub-biller-transaction-table": {
+    "wallet-transactions-table":{
       "columns": {
-        "collection_bank": "Collection Bank",
-        "settlement_bank": "Settlement Bank",
-        "settlement_type": "Settlement Type",
+        "tran_date": "Transaction Date",
+        "wallet_type": "Wallet Type",
         "transaction_type": "Transaction Type",
-        "currency_id": "Currency",
         "status": "Status",
-        "created_date": "Transaction Date",
-        "bank_ref": "Bank Reference",
-        "sub_biller": "Sub Biller",
-        "total_amount": "Total Amount",
-        "total_customer": "Total Customer"
-      }
-    },
-    "sub-billers-table": {
-      "columns": {
-        "sync_code": "Code",
-        "name": "Name"
+        "amount": "Amount",
+        "currency_id": "Currency",
+        "fee_amount": "Fee Amount",
+        "net_amount": "Net Amount",
+        "counterparty": "Counterparty",
+        "payment_method": "Payment Method",
+        "merchant": "Merchant",
+        "channel": "Channel",
+        "customer_name":"Customer Name",
+        "actions":"Actions"
       }
     }
   },
@@ -212,6 +198,7 @@
   "copy_failed": "Copy Failed",
   "copy_failed_message": "Failed to copy to clipboard",
   "wallet_page": {
+    "tran_date": "Transaction Date",
     "title": "Digital Wallet",
     "subtitle": "Manage your wallet balances and transactions",
     "refresh": "Refresh",
@@ -225,7 +212,7 @@
     "account_number": "Account Number",
     "last_transaction": "Last Transaction",
     "copy_success": "Copied!",
-    "copy_success_message": "Account number copied to clipboard",
+    "copy_success_message": "Copied to clipboard",
     "copy_to_clipboard": "Copy to clipboard",
     "copy_account_number": "Copy account number",
     "copy_failed": "Copy Failed",
@@ -287,7 +274,7 @@
     "transaction_details": "Transaction Details",
     "transaction_no": "Transaction No",
     "transaction_amount": "Amount",
-    "transaction_type": "Type",
+    "transaction_type": "Transaction Type",
     "transaction_status": "Status",
     "transaction_date": "Date",
     "reference_no": "Reference No",
@@ -304,6 +291,8 @@
     "search_transactions": "Search transactions...",
     "search_placeholder": "Search by transaction number, reference, etc.",
     "date_range": "Date Range",
+    "actions": "Actions",
+    "view_details": "View Details",
     "transaction_types": {
       "top_up": "Top Up",
       "settlement": "Settlement", 
@@ -333,7 +322,7 @@
     },
     "wallet_number": "Wallet Number",
     "bank_account_number": "Bank Account Number",
-     "more_wallets_coming": "More wallets will appear here"
+    "more_wallets_coming": "More wallets will appear here"
   },
   "wallet": "Wallet",
   "transaction": {
@@ -877,7 +866,6 @@
     "logo_url": "Logo URL",
     "website_url": "Website URL",
     "is_active": "Active",
-    "activated_date": "Activated Date",
     "created_at": "Created At",
     "updated_at": "Updated At",
     "created_by": "Created By",
@@ -909,14 +897,11 @@
     "all_banks": "All Banks",
     "total_banks": "Total Banks",
     "bank_not_found_desc": "The requested bank could not be found.",
-    "bank_created_desc": "Bank {name} has been created successfully.",
-    "no_accounts_found": "No accounts available for this bank",
-    "default_account": "Default Account",
-    "settlement_history_desc": "View all settlement transactions processed through this bank",
-    "search_settlements": "Search settlement history..."
+    "bank_created_desc": "Bank {name} has been created successfully."
   },
   "additional_information": "Additional Information",
   "metadata": "Metadata",
-  "back": "Back"
+  "back": "Back",
+  "customer_name": "Customer Name"
   }
 

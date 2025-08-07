@@ -1,7 +1,7 @@
 // Defines the structure for a single wallet transaction record.
 export interface WalletTransaction {
   transaction_id: string;
-  transaction_date: string;
+  tran_date: string;
   currency: 'KHR' | 'USD';
   amount: number;
   settlement_amount: number;
