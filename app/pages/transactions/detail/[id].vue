@@ -15,16 +15,26 @@
             </h4>
             
             <!-- Actions Right -->
-            <!-- <div class="flex items-center gap-2">
-              <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
+            <div class="flex items-center gap-2">
+              <!-- <StatusBadge :status="transactionData.status" variant="subtle" size="sm" /> -->
               <UButton
+                variant="outline"
+                icon="material-symbols:history"
+                size="sm"
+                @click="handleVoidPaymentRequest"
+                :loading="isVoidRequesting"
+                :disabled="isVoidRequesting"
+              >
+                {{ isVoidRequesting ? 'Processing...' : 'Void Payment History' }}
+              </UButton>
+              <!-- <UButton
                 class="text-gray-500"
                 variant="ghost"
                 icon="material-symbols:more-vert"
                 size="md"
                 @click="download"
-              />
-            </div> -->
+              /> -->
+            </div>
           </div>
           <!-- Transaction Content -->
           <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4">
@@ -751,6 +761,7 @@ const selectedTransactionAllocation = ref<any>(null)
 const activeRepushTab = ref('repush_transaction_summary')
 const isRepushing = ref(false)
 const isVerifying = ref(false)
+const isVoidRequesting = ref(false)
 
 const repushTabs = [
   {
@@ -1612,6 +1623,37 @@ const handleVerifyTransaction = async () => {
     })
   } finally {
     isVerifying.value = false
+  }
+}
+
+// Handle void payment request
+const handleVoidPaymentRequest = async () => {
+  try {
+    isVoidRequesting.value = true
+    
+    notification.showInfo({
+      title: 'Processing Void Request',
+      description: `Processing void payment request for transaction ${transactionData.transactionNo}...`,
+    })
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    notification.showSuccess({
+      title: 'Void Request Submitted',
+      description: `Void payment request has been submitted successfully.`,
+    })
+
+    // Navigate to void payment detail page
+    router.push(`/void-payment/detail/${transactionId.value}`)
+  } catch (error) {
+    console.error('Error processing void request:', error)
+    notification.showError({
+      title: 'Void Request Failed',
+      description: 'Failed to process void payment request. Please try again.',
+    })
+  } finally {
+    isVoidRequesting.value = false
   }
 }
 
