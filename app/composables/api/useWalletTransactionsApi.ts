@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { WalletApiResponse } from '~/models/wallet'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
 
 // Define validation schemas for the inputs
 const WalletTransactionParamsSchema = z.object({
@@ -63,21 +64,21 @@ export function useWalletTransactionsApi() {
     // Search filter
     filters.push({
       field: 'search',
-      operator: 'contains',
+      operator: FilterOperatorPgwModule.Contains,
       value: walletType === 'settlement_wallet' ? search || '' : '',
       manualFilter: false,
     })
 
     // Date filters
-    filters.push({ field: 'fromDate', operator: 'gte', value: fromDate, manualFilter: false })
-    filters.push({ field: 'toDate', operator: 'lte', value: toDate, manualFilter: false })
+    filters.push({ field: 'fromDate', operator: FilterOperatorPgwModule.GreaterThanOrEqualTo, value: fromDate, manualFilter: false })
+    filters.push({ field: 'toDate', operator: FilterOperatorPgwModule.LessThanOrEqualTo, value: toDate, manualFilter: false })
 
     // Currency filter
-    filters.push({ field: 'currencyId', operator: 'eq', value: currency, manualFilter: false })
+    filters.push({ field: 'currencyId', operator: FilterOperatorPgwModule.Equals, value: currency, manualFilter: false })
 
     // Supplier ID filter for top-up wallet
     if (walletType === 'top_up_wallet' && supplierId) {
-      filters.push({ field: 'supplierId', operator: 'eq', value: supplierId, manualFilter: false })
+      filters.push({ field: 'supplierId', operator: FilterOperatorPgwModule.Equals, value: supplierId, manualFilter: false })
     }
 
     // 4. Construct query parameters

@@ -356,7 +356,7 @@ import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { QueryParams } from '~/models/baseModel'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
-import { ColumnType } from '~/utils/enumModel'
+import { ColumnType, FilterOperatorPgwModule } from '~/utils/enumModel'
 import appConfig from '~~/app.config'
 import ExportButton from '../buttons/ExportButton.vue'
 
@@ -562,7 +562,7 @@ const fetchData = async (refresh = false) => {
       .filter(([_, value]) => value && value.trim() !== '')
       .map(([field, value]) => ({
         field,
-        operator: 'eq' as const,
+        operator: FilterOperatorPgwModule.Equals,
         value,
       }))
 

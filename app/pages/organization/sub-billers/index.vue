@@ -9,23 +9,11 @@
       enabled-auto-refresh
       enabled-repush
       @row-click="handleViewDetailss"
-    >
-    </TablesExTable>
+    />
     </div>
 </template>
 
 <script setup lang="ts">
-const showSidebar = ref(false)
-const selectedRecord = ref<SettlementHistoryRecord | null>(null)
-const filters = ref<{ field: string; operator: string; value: string; manualFilter?: boolean }[]>(
-  []
-)
-
-definePageMeta({
-  auth: false,
-  breadcrumbs: [{ label: 'sub_biller', to: '/transactions' }],
-})
-
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
@@ -33,7 +21,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import StatusBadge from '~/components/StatusBadge.vue'
 import TableEmptyState from '~/components/TableEmptyState.vue'
-import BaseTable from '~/components/tables/BaseTable.vue'
+import type BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
@@ -48,12 +36,24 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
 import type { SubBillerQuery } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import { useTable } from '~/composables/utils/useTable'
 // const { createSortableHeader, createRowNumberCell } = useTable<Supplier>()
 import type { QueryParams } from '~/models/baseModel'
+
+const showSidebar = ref(false)
+const selectedRecord = ref<SettlementHistoryRecord | null>(null)
+const filters = ref<{ field: string; operator: FilterOperatorPgwModule; value: string; manualFilter?: boolean }[]>(
+  []
+)
+
+definePageMeta({
+  auth: false,
+  breadcrumbs: [{ label: 'sub_biller', to: '/transactions' }],
+})
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -120,7 +120,7 @@ watch(search, () => {
     ...filters.value.filter((f) => f.field !== 'search'),
     {
       field: 'search',
-      operator: 'contains',
+      operator: FilterOperatorPgwModule.Contains,
       value: search.value,
       manualFilter: false,
     },

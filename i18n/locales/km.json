@@ -583,21 +583,32 @@
         "active": "ស្ថានភាព"
       }
     },
+    "bank-settlements": {
+      "columns": {
+        "created_date": "កាលបរិច្ឆេទទូទាត់",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "currency": "រូបិយប័ណ្ណ",
+        "total_settled": "ចំនួនទឹកប្រាក់ដែលបានទូទាត់",
+        "status": "ស្ថានភាព",
+        "created_by": "ទូទាត់ដោយ"
+      }
+    },
     "transactions-history-table": {
-    "columns": {
-      "collection_bank": "ធនាគារប្រមូលប្រាក់",
-      "settlement_bank": "ធនាគារទូទាត់",
-      "settlement_type": "ប្រភេទទូទាត់",
-      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
-      "currency_id": "រូបិយប័ណ្ណ",
-      "status": "ស្ថានភាព",
-      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
-      "bank_ref": "លេខយោងធនាគារ",
-      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-      "total_customer": "ចំនួនអតិថិជន"
+      "columns": {
+        "collection_bank": "ធនាគារប្រមូលប្រាក់",
+        "settlement_bank": "ធនាគារទូទាត់",
+        "settlement_type": "ប្រភេទទូទាត់",
+        "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "bank_ref": "លេខយោងធនាគារ",
+        "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "total_customer": "ចំនួនអតិថិជន"
+      }
     }
-  }
   },
     "search_placeholder": "ស្វែងរក...",
   "no_permission": {
@@ -802,6 +813,7 @@
     "logo_url": "URL ឡូហ្គោ",
     "website_url": "URL គេហទំព័រ",
     "is_active": "សកម្ម",
+    "activated_date": "កាលបរិច្ឆេទដំណើរការ",
     "created_at": "បានបង្កើតនៅ",
     "updated_at": "បានអាប់ដេតនៅ",
     "created_by": "បង្កើតដោយ",
@@ -833,7 +845,11 @@
     "all_banks": "ធនាគារទាំងអស់",
     "total_banks": "ធនាគារសរុប",
     "bank_not_found_desc": "រកមិនឃើញធនាគារដែលបានស្នើសុំ។",
-    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។"
+    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។",
+    "no_accounts_found": "គ្មានគណនីសម្រាប់ធនាគារនេះ",
+    "default_account": "គណនីលំនាំដើម",
+    "settlement_history_desc": "មើលប្រតិបត្តិការទូទាត់ទាំងអស់ដែលបានដំណើរការតាមរយៈធនាគារនេះ",
+    "search_settlements": "ស្វែងរកប្រវត្តិទូទាត់..."
   },
   "additional_information": "ព័ត៌មានបន្ថែម",
   "metadata": "ទិន្នន័យមេតា",

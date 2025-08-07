@@ -122,6 +122,17 @@
         "active": "Status"
       }
     },
+    "bank-settlements": {
+      "columns": {
+        "created_date": "Settlement Date",
+        "total_amount": "Total Amount",
+        "currency_id": "Currency",
+        "currency": "Currency",
+        "total_settled": "Total Settled",
+        "status": "Status",
+        "created_by": "Settled By"
+      }
+    },
     "transactions-history-table": {
       "columns": {
         "collection_bank": "Collection Bank",
@@ -842,6 +853,7 @@
     "logo_url": "Logo URL",
     "website_url": "Website URL",
     "is_active": "Active",
+    "activated_date": "Activated Date",
     "created_at": "Created At",
     "updated_at": "Updated At",
     "created_by": "Created By",
@@ -873,7 +885,11 @@
     "all_banks": "All Banks",
     "total_banks": "Total Banks",
     "bank_not_found_desc": "The requested bank could not be found.",
-    "bank_created_desc": "Bank {name} has been created successfully."
+    "bank_created_desc": "Bank {name} has been created successfully.",
+    "no_accounts_found": "No accounts available for this bank",
+    "default_account": "Default Account",
+    "settlement_history_desc": "View all settlement transactions processed through this bank",
+    "search_settlements": "Search settlement history..."
   },
   "additional_information": "Additional Information",
   "metadata": "Metadata",
