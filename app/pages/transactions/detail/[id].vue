@@ -438,27 +438,36 @@
       v-model:open="showPushBackDetail"
       side="right"
       :overlay="false"
-      :title="isRepushDetailData() ? 'Activity Log Details' : 'Repush Transaction Detail'"
+      title="Repush Transaction Detail"
       @close="closeSlideover"
     >
       <template #body>
         <div class="space-y-4" v-if="selectedPushBackTransaction">
-          <!-- Check if it's repush detail (from activity logs) or summary data -->
-          <template v-if="isRepushDetailData()">
-            <!-- New UI for Repush Detail Data (Activity Logs) -->
-            <!-- Detail Section -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Status:</span>
+          <!-- Detail Section -->
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Total Repush</span
+                  >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                    getSelectedPushBackDetail()?.totalRepush || '0'
+                  }}</span>
+                </div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Status</span
+                  >
                   <StatusBadge
                     :status="getSelectedPushBackDetail()?.status || 'Unknown'"
                     variant="subtle"
                     size="sm"
                   />
                 </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Date:</span>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Last Repush Date</span
+                  >
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{
                     format.formatDateTime(getSelectedPushBackDetail()?.date, {
                       dateStyle: userPreferences?.dateFormat || 'medium',
@@ -467,124 +476,121 @@
                   }}</span>
                 </div>
               </div>
-            </div>
+          </div>
 
-            <!-- Response Payload Section -->
-            <div class="space-y-3">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
-                Response Payload
-              </h3>
-              <CopyableCodeBlock
-                :content="getSelectedPushBackDetail()?.payload"
-                success-message="Response payload copied to clipboard",
-                :max-length="250"
-              />
-            </div>
-
-            <!-- Status Code Section -->
-            <div class="space-y-3">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
-                Status Code
-              </h3>
-              <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Code:</span>
-                  <span class="text-sm font-mono font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.statusCode || 'N/A'
-                  }}</span>
-                </div>
-                <div class="flex justify-between items-start">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
-                  <span class="text-sm font-medium text-right" :class="[
-                    getSelectedPushBackDetail()?.statusCode === 200 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-red-600 dark:text-red-400'
-                  ]">{{
-                    getSelectedPushBackDetail()?.statusCode === 200 
-                      ? 'Success' 
-                      : 'Error'
-                  }}</span>
-                </div>
+          <!-- Biller Configuration Section -->
+          <div class="space-y-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+            >
+              Configuration
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Type:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                  getSelectedPushBackDetail()?.billerConfiguration.type
+                }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
+                <ClipboardBadge
+                  :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
+                  :copied-tooltip-text="$t('clipboard.copied')"
+                  class="mt-2"
+                />
               </div>
             </div>
-          </template>
+          </div>
 
-          <template v-else>
-            <!-- Original UI for Summary Data (Repush Summary Card) -->
-            <!-- Detail Section -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-              <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white"
-                      >Total Repush</span
-                    >
-                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                      getSelectedPushBackDetail()?.totalRepush || '0'
-                    }}</span>
-                  </div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white"
-                      >Status</span
-                    >
-                    <StatusBadge
-                      :status="getSelectedPushBackDetail()?.status || 'Unknown'"
-                      variant="subtle"
-                      size="sm"
-                    />
-                  </div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white"
-                      >Last Repush Date</span
-                    >
-                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                      format.formatDateTime(getSelectedPushBackDetail()?.date, {
-                        dateStyle: userPreferences?.dateFormat || 'medium',
-                        timeStyle: userPreferences?.timeFormat || 'short',
-                      })
-                    }}</span>
-                  </div>
-                </div>
-            </div>
+          <!-- Payload Sent Section -->
+          <div class="space-y-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+            >
+              Request Payload
+            </h3>
+            <CopyableCodeBlock
+              :content="getSelectedPushBackDetail()?.payload"
+              success-message="Payload copied to clipboard"
+              :max-length="250"
+            />
+          </div>
+        </div>
+      </template>
+    </USlideover>
 
-            <!-- Biller Configuration Section -->
-            <div class="space-y-3">
-              <h3
-                class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-              >
-                Configuration
-              </h3>
-              <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Type:</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.billerConfiguration.type
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
-                  <ClipboardBadge
-                    :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
-                    :copied-tooltip-text="$t('clipboard.copied')"
-                    class="mt-2"
-                  />
-                </div>
+    <!-- Activity Log Detail Slideover -->
+    <USlideover
+      v-model:open="showActivityLogDetail"
+      side="right"
+      :overlay="false"
+      title="Activity Log Details"
+      @close="closeActivityLogSlideover"
+    >
+      <template #body>
+        <div class="space-y-4" v-if="selectedActivityLog">
+          <!-- Detail Section -->
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">Status:</span>
+                <StatusBadge
+                  :status="getSelectedActivityLogDetail()?.status || 'Unknown'"
+                  variant="subtle"
+                  size="sm"
+                />
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">Date:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                  format.formatDateTime(getSelectedActivityLogDetail()?.date, {
+                    dateStyle: userPreferences?.dateFormat || 'medium',
+                    timeStyle: userPreferences?.timeFormat || 'short',
+                  })
+                }}</span>
               </div>
             </div>
+          </div>
 
-            <!-- Payload Sent Section -->
-            <div class="space-y-3">
-              <h3
-                class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-              >
-                Request Payload
-              </h3>
-              <CopyableCodeBlock
-                :content="getSelectedPushBackDetail()?.payload"
-                success-message="Payload copied to clipboard"
-                :max-length="250"
-              />
+          <!-- Response Payload Section -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Response Payload
+            </h3>
+            <CopyableCodeBlock
+              :content="getSelectedActivityLogDetail()?.payload"
+              success-message="Response payload copied to clipboard"
+              :max-length="250"
+            />
+          </div>
+
+          <!-- Status Code Section -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Status Code
+            </h3>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Code:</span>
+                <span class="text-sm font-mono font-medium text-gray-900 dark:text-white">{{
+                  getSelectedActivityLogDetail()?.statusCode || 'N/A'
+                }}</span>
+              </div>
+              <div class="flex justify-between items-start">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
+                <span class="text-sm font-medium text-right" :class="[
+                  getSelectedActivityLogDetail()?.statusCode === 200 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-red-600 dark:text-red-400'
+                ]">{{
+                  getSelectedActivityLogDetail()?.statusCode === 200 
+                    ? 'Success' 
+                    : 'Error'
+                }}</span>
+              </div>
             </div>
-          </template>
+          </div>
         </div>
       </template>
     </USlideover>
@@ -755,6 +761,8 @@ const loading = ref(true)
 const showDownloadModal = ref(false)
 const showPushBackDetail = ref(false)
 const selectedPushBackTransaction = ref<any>(null)
+const showActivityLogDetail = ref(false)
+const selectedActivityLog = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
 
@@ -1411,8 +1419,11 @@ const onRowSelect = (row: any) => {
 
 // Repush Detail Select function for Activity Logs
 const onRepushDetailSelect = (row: any) => {
-  selectedPushBackTransaction.value = row.original
-  showPushBackDetail.value = true
+  console.log('🔍 Activity Log row selected:', row.original)
+  console.log('📋 Row data structure:', JSON.stringify(row.original, null, 2))
+  selectedActivityLog.value = row.original
+  showActivityLogDetail.value = true
+  console.log('✅ Activity Log slideover should open')
 }
 
 const closeSlideover = () => {
@@ -1420,48 +1431,53 @@ const closeSlideover = () => {
   selectedPushBackTransaction.value = null
 }
 
-// Helper function to get selected push back detail
+const closeActivityLogSlideover = () => {
+  showActivityLogDetail.value = false
+  selectedActivityLog.value = null
+}
+
+// Helper function to get selected push back detail (for Repush Summary)
 const getSelectedPushBackDetail = () => {
   if (!selectedPushBackTransaction.value) return null
   
   const data = selectedPushBackTransaction.value as any
   
-  // Check if it's a repush detail item (has metaData property)
-  if (data.metaData && data.metaData.responsePayload) {
-    return {
-      transactionId: summary.value.transactionId,
-      date: data.date,
-      status: data.status,
-      totalRepush: summary.value.totalRepush,
-      billerConfiguration: {
-        type: summary.value.type || 'webhook',
-        url: summary.value.metaData?.url || 'N/A'
-      },
-      payload: data.metaData.responsePayload || {},
-      statusCode: data.metaData.statusCode || null
-    }
-  }
-  
-  // If it's RepushSummary data, map it to the expected structure
+  // For RepushSummary data (from clicking the summary card)
   return {
-    transactionId: data.transactionId,
+    transactionId: data.transactionId || summary.value.transactionId,
+    date: data.date || summary.value.date,
+    status: data.status || summary.value.status,
+    totalRepush: data.totalRepush || summary.value.totalRepush,
+    billerConfiguration: {
+      type: data.type || summary.value.type || 'webhook',
+      url: data.metaData?.url || summary.value.metaData?.url || 'N/A'
+    },
+    payload: data.payload || summary.value.payload || {},
+    statusCode: null
+  }
+}
+
+// Helper function to get selected activity log detail
+const getSelectedActivityLogDetail = () => {
+  if (!selectedActivityLog.value) return null
+  
+  const data = selectedActivityLog.value as any
+  
+  // For Activity Log data (repush detail items)
+  return {
+    transactionId: summary.value.transactionId,
     date: data.date,
     status: data.status,
-    totalRepush: data.totalRepush,
-    billerConfiguration: {
-      type: data.type || 'webhook',
-      url: data.metaData?.url || 'N/A'
-    },
-    payload: data.payload || {},
-    statusCode: null
+    totalRepush: summary.value.totalRepush,
+    payload: data.metaData?.responsePayload || {},
+    statusCode: data.metaData?.statusCode || null
   }
 }
 
 // Helper function to determine if the selected data is repush detail (from activity logs)
 const isRepushDetailData = () => {
-  if (!selectedPushBackTransaction.value) return false
-  const data = selectedPushBackTransaction.value as any
-  return data.metaData && data.metaData.responsePayload
+  // This function is no longer needed since we're using separate slidevers
+  return false
 }
 
 
@@ -1630,20 +1646,8 @@ const handleVerifyTransaction = async () => {
 const handleVoidPaymentRequest = async () => {
   try {
     isVoidRequesting.value = true
-    
-    notification.showInfo({
-      title: 'Processing Void Request',
-      description: `Processing void payment request for transaction ${transactionData.transactionNo}...`,
-    })
-
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    notification.showSuccess({
-      title: 'Void Request Submitted',
-      description: `Void payment request has been submitted successfully.`,
-    })
-
     // Navigate to void payment detail page
     router.push(`/void-payment/detail/${transactionId.value}`)
   } catch (error) {
@@ -1659,10 +1663,15 @@ const handleVoidPaymentRequest = async () => {
 
 // Open repush detail slideover
 const openRepushDetail = () => {
+  console.log('🚀 Opening repush detail')
+  console.log('📊 Summary data:', summary.value)
   // Use the repush summary data as the selected transaction
   if (summary.value) {
     selectedPushBackTransaction.value = summary.value
     showPushBackDetail.value = true
+    console.log('✅ Slideover should open now')
+  }else{
+    console.log('❌ No summary data available')
   }
 }
 
