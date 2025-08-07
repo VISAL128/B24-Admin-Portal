@@ -1,6 +1,6 @@
 <template>
   <div class="relative group">
-    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 relative">
+    <div class="rounded-lg p-3 relative" style="background-color: #202d64;">
       <!-- Copy Button Overlay -->
       <UButton
         variant="ghost"
@@ -10,11 +10,11 @@
         :class="[
           'absolute top-2 right-2 z-10 transition-all duration-200',
           'opacity-0 group-hover:opacity-100',
-          'bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm',
-          'border border-gray-200 dark:border-gray-600',
-          'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100',
+          'bg-white/20 backdrop-blur-sm',
+          'border border-white/30',
+          'text-white/80 hover:text-white',
           'shadow-sm hover:shadow-md',
-          copied ? 'opacity-100 text-green-600 dark:text-green-400' : '',
+          copied ? 'opacity-100 text-green-400' : '',
         ]"
         :title="copied ? 'Copied!' : 'Copy to clipboard'"
       />
@@ -24,10 +24,24 @@
         <slot>
           <pre
             v-if="content"
-            class="text-sm text-gray-900 dark:text-white font-mono whitespace-pre-wrap break-all"
+            class="text-sm text-white font-mono whitespace-pre-wrap break-all"
             >{{ formattedContent }}</pre
           >
         </slot>
+        
+        <!-- Show More/Less Button -->
+        <div v-if="shouldShowToggle" class="mt-2 pt-2 border-t border-white/20">
+          <button
+            @click="toggleExpanded"
+            class="text-xs text-white/70 hover:text-white transition-colors duration-200 flex items-center gap-1"
+          >
+            <span>{{ isExpanded ? 'Show Less' : 'Show More' }}</span>
+            <UIcon 
+              :name="isExpanded ? 'material-symbols:expand-less' : 'material-symbols:expand-more'" 
+              class="w-3 h-3"
+            />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -42,18 +56,23 @@ interface Props {
   content?: any
   jsonFormat?: boolean
   successMessage?: string
+  maxLength?: number
+  showTruncated?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   jsonFormat: true,
   successMessage: 'Content copied to clipboard',
+  maxLength: 500,
+  showTruncated: true,
 })
 
 const { copy } = useClipboard()
 const notification = useNotification()
 const copied = ref(false)
+const isExpanded = ref(false)
 
-const formattedContent = computed(() => {
+const fullContent = computed(() => {
   if (!props.content) return ''
 
   if (props.jsonFormat && typeof props.content === 'object') {
@@ -63,9 +82,28 @@ const formattedContent = computed(() => {
   return typeof props.content === 'string' ? props.content : String(props.content)
 })
 
+const formattedContent = computed(() => {
+  const content = fullContent.value
+  
+  if (!props.showTruncated || isExpanded.value || content.length <= props.maxLength) {
+    return content
+  }
+  
+  return content.substring(0, props.maxLength) + '...'
+})
+
+const shouldShowToggle = computed(() => {
+  return props.showTruncated && fullContent.value.length > props.maxLength
+})
+
+const toggleExpanded = () => {
+  isExpanded.value = !isExpanded.value
+}
+
 const copyContent = async () => {
   try {
-    await copy(formattedContent.value)
+    // Always copy the full content, not the truncated version
+    await copy(fullContent.value)
     copied.value = true
 
     notification.showSuccess({

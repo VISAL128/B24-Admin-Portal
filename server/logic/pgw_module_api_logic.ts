@@ -43,14 +43,16 @@ export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
   method: string = 'POST',
-  isGetListRequest: boolean = false
+  body: unknown | null = null
 ): Promise<T> {
   try {
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
-    
+    const query = getQuery<QueryParams>(event)
+    // Check if the query is type of QueryParams
+    const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query
+
     // Only use QueryParams mapping for GET list requests
-    if (isGetListRequest) {
-      const query = getQuery<QueryParams>(event)
+    if (isQueryParams) {
       const pgwParams = mapQueryParamsToPgwModule(query)
       const serializedParams = serializePgwModuleParams(pgwParams)
       
@@ -85,6 +87,10 @@ export async function requestToPgwModuleApi<T>(
         Authorization: `Bearer ${event.context.auth?.token || ''}`,
       },
       signal: AbortSignal.timeout(30000),
+    }
+
+    if (body && method !== 'GET' && method !== 'HEAD') {
+      options.body = JSON.stringify(body)
     }
     
     const response = await fetch(url, options)

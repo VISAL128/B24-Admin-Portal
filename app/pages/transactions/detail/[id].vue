@@ -5,37 +5,17 @@
       <!-- Left Section: Transaction Detail (50% width) -->
       <div class="lg:col-span-1">
         <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
-          <!-- Tab Header -->
+          <!-- Header -->
           <div class="flex justify-between items-center mb-3">
-            <!-- Tabs -->
-            <div class="flex gap-2">
-              <div
-                v-for="tab in tabs"
-                :key="tab.value"
-                @click="activeTab = tab.value"
-                class="relative flex flex-col items-center"
-              >
-                <!-- Tab Wrapper -->
-                <div
-                  class="flex items-center gap-2 px-4 py-2 cursor-pointer transition-all duration-200 ease-in-out rounded-t-xl"
-                  :class="activeTab === tab.value
-                    ? 'bg-primary/5 text-primary'
-                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/50'"
-                >
-                  <UIcon :name="tab.icon" class="w-4 h-4" />
-                  <span class="text-sm font-medium">{{ tab.label }}</span>
-                </div>
-
-                <!-- Underline -->
-                <div
-                  v-if="activeTab === tab.value"
-                  class="h-[2px] bg-primary rounded-full w-[65%]"
-                ></div>
+            <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
+              <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+                <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
               </div>
-            </div>
-
+              Transaction Detail
+            </h4>
+            
             <!-- Actions Right -->
-            <div class="flex items-center gap-2">
+            <!-- <div class="flex items-center gap-2">
               <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
               <UButton
                 class="text-gray-500"
@@ -44,79 +24,48 @@
                 size="md"
                 @click="download"
               />
-            </div>
+            </div> -->
           </div>
-          
-          <!-- Tab Content Wrapper -->
-          <div class="relative transition-all duration-300 ease-in-out">
-            <!-- Transaction Tab Content -->
-            <div
-              v-show="activeTab === 'transaction'"
-              ref="transactionRef"
-              class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4"
-            >
-              <div class="space-y-0">
-                <div
-                  v-for="(field, index) in allFields"
-                  :key="index"
+          <!-- Transaction Content -->
+          <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4">
+            <div class="space-y-0">
+              <div
+                v-for="(field, index) in allFields"
+                :key="index"
+                :class="[
+                  'flex justify-between items-center py-3',
+                  index < allFields.length - 1 ? 'border-b border-dotted border-gray-200 dark:border-gray-700' : ''
+                ]"
+              >
+                <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">{{ field.label }}</span>
+                <StatusBadge v-if="field.type === 'status'" :status="field.value" variant="subtle" size="sm" />
+                <TransactionTypeBadge
+                  v-else-if="field.type === 'badge'"
+                  :transaction-type="field.value"
+                  size="sm"
+                />
+                <span
+                  v-else-if="field.type === 'amount'"
+                  class="text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  {{ field.value }}
+                </span>
+                <ClipboardBadge
+                  v-else-if="field.type === 'code' && field.copyable"
+                  :text="field.rawValue"
+                  :copied-tooltip-text="$t('clipboard.copied')"
+                  class="mt-1"
+                />
+                <span
+                  v-else
                   :class="[
-                    'flex justify-between items-center py-3',
-                    index < allFields.length - 1 ? 'border-b border-dotted border-gray-200 dark:border-gray-700' : ''
+                    'text-sm font-medium text-gray-900 dark:text-white',
+                    field.type === 'code' ? 'font-mono break-all' : ''
                   ]"
                 >
-                  <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">{{ field.label }}</span>
-
-                  <TransactionTypeBadge
-                    v-if="field.type === 'badge'"
-                    :transaction-type="field.value"
-                    size="sm"
-                  />
-                  <span
-                    v-else-if="field.type === 'amount'"
-                    class="text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    {{ field.value }}
-                  </span>
-                  <ClipboardBadge
-                    v-else-if="field.type === 'code' && field.copyable"
-                    :text="field.rawValue"
-                    :copied-tooltip-text="$t('clipboard.copied')"
-                    class="mt-1"
-                  />
-                  <span
-                    v-else
-                    :class="[
-                      'text-sm font-medium text-gray-900 dark:text-white',
-                      field.type === 'code' ? 'font-mono break-all' : ''
-                    ]"
-                  >
-                    {{ field.value }}
-                  </span>
-                </div>
+                  {{ field.value }}
+                </span>
               </div>
-            </div>
-
-            <!-- Push Back Transaction Tab Content -->
-            <div
-              v-show="activeTab === 'repush'"
-              :style="{ height: transactionHeight + 'px' }"
-              class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col p-3">
-               <UTable
-                ref="table"
-                :data="webhookHistoryData"
-                :columns="webhookColumns"
-                sticky
-                sortable
-                v-model:sort="webhookSorting"
-                class="-mx-3"
-                :style="{ maxHeight: 'h-full'}"
-                :ui="{
-                  ...appConfig.ui.table.slots,
-                }"
-                @select="onRowSelect"
-              />
-
-              
             </div>
           </div>
         </div>
@@ -126,18 +75,6 @@
       <div class="space-y-3 flex flex-col h-full">
         <!-- Settlement Bank Section -->
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-          <!-- <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center space-x-3">
-              <div class="flex items-center">
-                <div
-                  class="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-2"
-                >
-                  <UIcon name="material-symbols:account-balance-outline"  class="w-4 h-4 text-green-600" />
-                </div>
-                <h4 class="text-base font-medium text-gray-900 dark:text-white">Settlement Bank</h4>
-              </div>
-            </div>
-          </div> -->
           <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
             <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
               <UIcon name="material-symbols:account-balance-outline" class="w-4 h-4 text-primary" />
@@ -175,7 +112,7 @@
             <!-- Settlement Amount -->
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Amount</span>
-              <span class="text-lg font-bold text-primary">
+              <span class="text-lg font-bold">
                 {{ useCurrency().formatAmount(transactionData.settlementAmount) }}
                 {{ transactionData.currency }}
               </span>
@@ -210,33 +147,6 @@
       </div>
     </div>
 
-    <!-- Customer Information Table -->
-    <!-- <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3"
-    >
-      <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
-        <div
-          class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
-        >
-          <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
-        </div>
-        Transaction Detail
-      </h4>
-      <UTable
-        :data="customerDetails"
-        :columns="customerColumns"
-        class="w-full"
-        sortable
-        v-model:sort="customerSorting"
-        :ui="{
-          td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
-          th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
-          thead: 'whitespace-nowrap',
-          tbody: 'whitespace-nowrap',
-        }"
-      />
-    </div> -->
-
     <!-- Transaction Allocation Table -->
     <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
       <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
@@ -247,21 +157,6 @@
       </h4>
       <!-- Horizontal line below header -->
       <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
-      <!-- <UTable
-        :data="transactionAllocateData"
-        :columns="transactionAllocateColumns"
-        class="w-full"
-        sortable
-        v-model:sort="transactionAllocationSorting"
-        :ui="{
-          td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
-          th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
-          thead: 'whitespace-nowrap',
-          tbody: 'whitespace-nowrap',
-          tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
-        }"
-        @select="onTransactionAllocationSelect"
-      /> -->
       <UTable
         ref="table"
         :data="transactionAllocateData"
@@ -279,43 +174,106 @@
 
     <!-- Repush Transaction Summary and Auto Direct Debit Summary Cards -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <!-- Left Card: Repush Transaction Summary -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-64">
-        <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
-          <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
-            <UIcon name="material-symbols:sync-outline" class="w-4 h-4 text-primary" />
-          </div>
-          Repush Transaction Summary
-        </h4>
-        <!-- Horizontal line below header -->
-        <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3" />
-        
-        <!-- Content area -->
-        <div class="mt-4 h-full">
-          <!-- Summary content will go here -->
-          <div class="space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Total Repush Attempts</span>
-              <span class="text-lg font-bold text-gray-900 dark:text-white">3</span>
+      <!-- Left Card: Repush Transaction Summary with Tabs -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-86">
+        <!-- Reusable Tabs Component -->
+        <ExTab
+          v-model="activeRepushTab"
+          :tabs="repushTabs"
+          size="md"
+        >
+          <template #default="{ activeTab }">
+            <!-- Tab Content -->
+            <div class="relative h-72 overflow-hidden">
+              <!-- Repush Summary Tab Content -->
+              <div
+                v-show="activeTab === 'repush_transaction_summary'"
+                class="h-full"
+              >
+                <!-- Clickable Summary Card -->
+                <div
+                  class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+                  @click="openRepushDetail"
+                >
+                  <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Total Repush</span>
+                      <span class="text-lg font-bold text-gray-900 dark:text-white">{{ summary.totalRepush }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                      <StatusBadge :status="summary.status" variant="subtle" size="sm" />
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ summary.type }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Last Repush Date</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ format.formatDateTime(summary.date, {
+                          dateStyle: userPreferences?.dateFormat || 'medium',
+                          timeStyle: userPreferences?.timeFormat || 'short',
+                        }) }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Click indicator -->
+                  <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                      <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
+                      Click to view details
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Repush Button -->
+                <div class="mt-3">
+                  <UButton
+                    size="md"
+                    variant="outline"
+                    icon="material-symbols:sync"
+                    class="w-full h-10 flex items-center justify-center"
+                    @click="handleRepush"
+                    :loading="isRepushing"
+                    :disabled="isRepushing"
+                  >
+                    {{ isRepushing ? 'Repushing...' : 'Repush Transaction' }}
+                  </UButton>
+                </div>
+              </div>
+
+              <!-- Activity Logs Tab Content -->
+              <div
+                v-show="activeTab === 'repush_activity_logs'"
+                class="h-full"
+              >
+                <div
+                  class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col p-3 space-y-3">
+                  <UTable
+                    ref="table"
+                    :data="summary.repushDetails || []"
+                    :columns="repushDetailsColumns"
+                    sticky
+                    sortable
+                    v-model:sort="webhookSorting"
+                    class="-mx-3"
+                    :style="{ maxHeight: 'h-full'}"
+                    :ui="{
+                      ...appConfig.ui.table.slots,
+                    }"
+                    @select="onRepushDetailSelect"
+                  />
+                </div>
+              </div>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Success</span>
-              <span class="text-sm font-medium text-green-600">2</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Failed</span>
-              <span class="text-sm font-medium text-red-600">1</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Last Attempt</span>
-              <span class="text-sm text-gray-600 dark:text-gray-400">2025-07-22 10:30 AM</span>
-            </div>
-          </div>
-        </div>
+          </template>
+        </ExTab>
       </div>
 
       <!-- Right Card: Auto Direct Debit Summary -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-64">
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-86">
         <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
           <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
             <UIcon name="material-symbols:account-balance-wallet-outline" class="w-4 h-4 text-primary" />
@@ -400,32 +358,32 @@
       </template>
     </UModal>
 
-    <!-- Push Back Transaction Detail Slideover -->
+    <!-- Repush Transaction Detail Slideover -->
     <USlideover
       v-model:open="showPushBackDetail"
       side="right"
       :overlay="false"
-      :title="'Push Back Transaction Detail'"
+      :title="isRepushDetailData() ? 'Activity Log Details' : 'Repush Transaction Detail'"
       @close="closeSlideover"
     >
       <template #body>
         <div class="space-y-4" v-if="selectedPushBackTransaction">
-          <!-- Transaction ID Section -->
-          <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-            <div class="flex justify-between items-start mb-3">
-              <div>
-                <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Transaction ID:</span
-                  >
-                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                    getSelectedPushBackDetail()?.transactionId
-                  }}</span>
+          <!-- Check if it's repush detail (from activity logs) or summary data -->
+          <template v-if="isRepushDetailData()">
+            <!-- New UI for Repush Detail Data (Activity Logs) -->
+            <!-- Detail Section -->
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">Status:</span>
+                  <StatusBadge
+                    :status="getSelectedPushBackDetail()?.status || 'Unknown'"
+                    variant="subtle"
+                    size="sm"
+                  />
                 </div>
-                <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Repush Date:</span
-                  >
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">Date:</span>
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{
                     format.formatDateTime(getSelectedPushBackDetail()?.date, {
                       dateStyle: userPreferences?.dateFormat || 'medium',
@@ -433,95 +391,125 @@
                     })
                   }}</span>
                 </div>
-                <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Repush Status:</span
-                  >
-                  <StatusBadge
+              </div>
+            </div>
 
-                    :status="getSelectedPushBackDetail()?.status || 'Unknown'"
-                    variant="subtle"
-                    size="sm"
+            <!-- Response Payload Section -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+                Response Payload
+              </h3>
+              <CopyableCodeBlock
+                :content="getSelectedPushBackDetail()?.payload"
+                success-message="Response payload copied to clipboard",
+                :max-length="250"
+              />
+            </div>
+
+            <!-- Status Code Section -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+                Status Code
+              </h3>
+              <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Code:</span>
+                  <span class="text-sm font-mono font-medium text-gray-900 dark:text-white">{{
+                    getSelectedPushBackDetail()?.statusCode || 'N/A'
+                  }}</span>
+                </div>
+                <div class="flex justify-between items-start">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
+                  <span class="text-sm font-medium text-right" :class="[
+                    getSelectedPushBackDetail()?.statusCode === 200 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-red-600 dark:text-red-400'
+                  ]">{{
+                    getSelectedPushBackDetail()?.statusCode === 200 
+                      ? 'Success' 
+                      : 'Error'
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <template v-else>
+            <!-- Original UI for Summary Data (Repush Summary Card) -->
+            <!-- Detail Section -->
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+              <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white"
+                      >Total Repush</span
+                    >
+                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                      getSelectedPushBackDetail()?.totalRepush || '0'
+                    }}</span>
+                  </div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white"
+                      >Status</span
+                    >
+                    <StatusBadge
+                      :status="getSelectedPushBackDetail()?.status || 'Unknown'"
+                      variant="subtle"
+                      size="sm"
+                    />
+                  </div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white"
+                      >Last Repush Date</span
+                    >
+                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                      format.formatDateTime(getSelectedPushBackDetail()?.date, {
+                        dateStyle: userPreferences?.dateFormat || 'medium',
+                        timeStyle: userPreferences?.timeFormat || 'short',
+                      })
+                    }}</span>
+                  </div>
+                </div>
+            </div>
+
+            <!-- Biller Configuration Section -->
+            <div class="space-y-3">
+              <h3
+                class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+              >
+                Configuration
+              </h3>
+              <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Type:</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                    getSelectedPushBackDetail()?.billerConfiguration.type
+                  }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
+                  <ClipboardBadge
+                    :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                    class="mt-2"
                   />
                 </div>
-                 <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Total Repush:</span
-                  >
-                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                    getSelectedPushBackDetail()?.totalRepush || '0'
-                  }}</span>
-                </div>
-                
               </div>
             </div>
-          </div>
 
-          <!-- Biller Configuration Section -->
-          <div class="space-y-3">
-            <h3
-              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-            >
-              Biller Configuration:
-            </h3>
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Type:</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                  getSelectedPushBackDetail()?.billerConfiguration.type
-                }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600 dark:text-gray-400">URL:</span>
-                <ClipboardBadge
-                  :text="getSelectedPushBackDetail()?.billerConfiguration.url || ''"
-                  :copied-tooltip-text="$t('clipboard.copied')"
-                  class="mt-2"
-                />
-              </div>
+            <!-- Payload Sent Section -->
+            <div class="space-y-3">
+              <h3
+                class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
+              >
+                Request Payload
+              </h3>
+              <CopyableCodeBlock
+                :content="getSelectedPushBackDetail()?.payload"
+                success-message="Payload copied to clipboard"
+                :max-length="250"
+              />
             </div>
-          </div>
-
-          <!-- Payload Sent Section -->
-          <div class="space-y-3">
-            <h3
-              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-            >
-              Payload Sent:
-            </h3>
-            <CopyableCodeBlock
-              :content="getSelectedPushBackDetail()?.payload"
-              success-message="Payload copied to clipboard"
-            />
-          </div>
-
-          <!-- Response Section -->
-          <div class="space-y-3">
-            <h3
-              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-            >
-              Response:
-            </h3>
-            <CopyableCodeBlock
-              :content="getSelectedPushBackDetail()?.response"
-              success-message="Response copied to clipboard"
-            >
-              <div class="space-y-2">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Status Code:</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.response.statusCode
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.response.message
-                  }}</span>
-                </div>
-              </div>
-            </CopyableCodeBlock>
-          </div>
+          </template>
         </div>
       </template>
     </USlideover>
@@ -658,6 +646,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
 import CopyableCodeBlock from '~/components/CopyableCodeBlock.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
+import ExTab from '~/components/tabs/ExTab.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
@@ -666,6 +655,7 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import appConfig from '~~/app.config'
+import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
 definePageMeta({
   auth: false,
   breadcrumbs: [
@@ -692,33 +682,19 @@ const selectedPushBackTransaction = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
 
-const activeTab = ref('transaction')
-const transactionRef = ref<HTMLElement | null>(null)
-const transactionHeight = ref(0)
+const activeRepushTab = ref('repush_transaction_summary')
+const isRepushing = ref(false)
 
-const updateHeight = () => {
-  nextTick(() => {
-    if (transactionRef.value) {
-      transactionHeight.value = transactionRef.value.offsetHeight
-    }
-  })
-}
-
-onMounted(updateHeight)
-watch(activeTab, (val) => {
-  if (val === 'transaction') updateHeight()
-})
-
-const tabs = [
+const repushTabs = [
   {
-    label: 'Transaction',
-    value: 'transaction',
-    icon: 'material-symbols:credit-card-clock-outline'
+    label: 'Repush Summary',
+    value: 'repush_transaction_summary',
+    icon: 'material-symbols:sync-outline'
   },
   {
-    label: 'Repush',
-    value: 'repush',
-    icon: 'material-symbols:sync-outline'
+    label: 'Activity Logs',
+    value: 'repush_activity_logs',
+    icon: 'material-symbols:history'
   }
 ]
 
@@ -726,6 +702,72 @@ const tabs = [
 const customerSorting = ref([])
 const transactionAllocationSorting = ref([])
 const webhookSorting = ref([{ id: 'date', desc: true }])
+
+// Repush Summary Data
+const summary = ref<RepushSummary>({
+  id: 'pushback-001',
+  transactionId: '3dc106d3-fb58-41eb-91ba-c9356ccb50ca',
+  transactionNo: 'TXN-20240722001',
+  totalRepush: 2,
+  date: '2024-07-22T10:30:00+07:00',
+  status: RepushStatus.Success,
+  type: RepushType.Webhook,
+  metaData: {
+    url: 'https://webhook.example.com'
+  },
+  payload: {
+    status: 'success',
+    amount: 10.5,
+    currency: 'USD',
+    customer: {
+      name: 'John Doe',
+      phone: '012345678'
+    }
+  },
+  repushDetails: [
+      {
+        id: 1,
+        date: '2024-07-22T10:35:00+07:00',
+        status: RepushStatus.Failed,
+        metaData: {
+          statusCode: 400,
+          responsePayload: {
+            status: 'error',
+            amount: 10.5,
+            currency: 'USD',
+            customer: {
+              name: 'John Doe',
+              phone: '012345678'
+            }
+          },
+          responseHeader: {
+            'Content-Type': 'application/json'
+          }
+        }
+      },
+      {
+        id: 2,
+        date: '2024-07-23T10:35:00+07:00',
+        status: RepushStatus.Success,
+        metaData: {
+          statusCode: 200,
+          responsePayload: {
+            status: 'success',
+            amount: 10.5,
+            currency: 'USD',
+            customer: {
+              name: 'John Doe',
+              phone: '012345678'
+            }
+          },
+          responseHeader: {
+            'Content-Type': 'application/json'
+          }
+        }
+      }
+    ]
+  
+})
 
 // Customer Details Data
 interface CustomerDetail {
@@ -1116,6 +1158,56 @@ const webhookColumns = [
   },
 ]
 
+// Repush Details Columns for Activity Logs
+const repushDetailsColumns = [
+  {
+    id: 'row_number',
+    header: () => '#',
+    cell: ({ row, table }: any) => createRowNumberCell(row, table),
+    size: 50,
+    maxSize: 50,
+    enableSorting: false,
+  },
+  {
+    id: 'date',
+    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
+    accessorKey: 'date',
+    enableSorting: true,
+    cell: ({ row }: any) => {
+      return h('div', { class: 'text-sm text-left' }, [
+        format.formatDateTime(row.original.date, {
+          dateStyle: userPreferences?.dateFormat || 'medium',
+          timeStyle: userPreferences?.timeFormat || 'short',
+        }),
+      ])
+    },
+    size: 120,
+  },
+  {
+    id: 'status',
+    header: () => h('div', { class: 'text-left' }, 'Status'),
+    accessorKey: 'status',
+    enableSorting: false,
+    cell: ({ row }: any) =>
+      h(StatusBadge, {
+        class: 'text-left',
+        status: row.original.status,
+        variant: 'subtle',
+        size: 'sm',
+      }),
+    size: 100,
+  },
+  {
+    id: 'statusCode',
+    header: () => h('div', { class: 'text-center' }, 'Status Code'),
+    accessorKey: 'metaData.statusCode',
+    enableSorting: false,
+    cell: ({ row }: any) =>
+      h('div', { class: 'text-center font-mono text-sm' }, row.original.metaData?.statusCode || 'N/A'),
+    size: 100,
+  },
+]
+
 // Transaction data
 const transactionData = {
   transactionNo: transactionId.value || 'TXN-20250729001',
@@ -1146,12 +1238,18 @@ const maskAccountNumber = (accountNumber: string): string => {
 
 // Transaction overview fields
 const transactionOverviewFields = computed(() => [
+  // {
+  //   label: 'Transaction No',
+  //   value: transactionData.transactionNo,
+  //   type: 'code',
+  //   copyable: true,
+  //   rawValue: transactionData.transactionNo,
+  // },
   {
-    label: 'Transaction No',
-    value: transactionData.transactionNo,
-    type: 'code',
-    copyable: true,
-    rawValue: transactionData.transactionNo,
+    label: 'Status',
+    value: transactionData.status,
+    type: 'status',
+    status: transactionData.status,
   },
   {
     label: 'Transaction Amount',
@@ -1214,6 +1312,12 @@ const onRowSelect = (row: any) => {
   showPushBackDetail.value = true
 }
 
+// Repush Detail Select function for Activity Logs
+const onRepushDetailSelect = (row: any) => {
+  selectedPushBackTransaction.value = row.original
+  showPushBackDetail.value = true
+}
+
 const closeSlideover = () => {
   showPushBackDetail.value = false
   selectedPushBackTransaction.value = null
@@ -1221,9 +1325,46 @@ const closeSlideover = () => {
 
 // Helper function to get selected push back detail
 const getSelectedPushBackDetail = () => {
-  if (!selectedPushBackTransaction.value || !selectedPushBackTransaction.value.id) return null
-  const id = selectedPushBackTransaction.value.id as string
-  return pushBackDetailData.value[id as keyof typeof pushBackDetailData.value]
+  if (!selectedPushBackTransaction.value) return null
+  
+  const data = selectedPushBackTransaction.value as any
+  
+  // Check if it's a repush detail item (has metaData property)
+  if (data.metaData && data.metaData.responsePayload) {
+    return {
+      transactionId: summary.value.transactionId,
+      date: data.date,
+      status: data.status,
+      totalRepush: summary.value.totalRepush,
+      billerConfiguration: {
+        type: summary.value.type || 'webhook',
+        url: summary.value.metaData?.url || 'N/A'
+      },
+      payload: data.metaData.responsePayload || {},
+      statusCode: data.metaData.statusCode || null
+    }
+  }
+  
+  // If it's RepushSummary data, map it to the expected structure
+  return {
+    transactionId: data.transactionId,
+    date: data.date,
+    status: data.status,
+    totalRepush: data.totalRepush,
+    billerConfiguration: {
+      type: data.type || 'webhook',
+      url: data.metaData?.url || 'N/A'
+    },
+    payload: data.payload || {},
+    statusCode: null
+  }
+}
+
+// Helper function to determine if the selected data is repush detail (from activity logs)
+const isRepushDetailData = () => {
+  if (!selectedPushBackTransaction.value) return false
+  const data = selectedPushBackTransaction.value as any
+  return data.metaData && data.metaData.responsePayload
 }
 
 
@@ -1320,6 +1461,48 @@ const downloadReceiptAsImage = async () => {
       title: 'Download Failed',
       description: 'Failed to download receipt. Please try again.',
     })
+  }
+}
+
+// Handle repush transaction
+const handleRepush = async () => {
+  try {
+    isRepushing.value = true
+    
+    notification.showInfo({
+      title: 'Repushing Transaction',
+      description: `Repushing transaction ${summary.value.transactionNo}...`,
+    })
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Update summary data
+    summary.value.totalRepush += 1
+    summary.value.date = new Date().toISOString()
+    summary.value.status = RepushStatus.Success
+    
+    notification.showSuccess({
+      title: 'Repush Successful',
+      description: `Transaction ${summary.value.transactionNo} has been repushed successfully.`,
+    })
+  } catch (error) {
+    console.error('Error repushing transaction:', error)
+    notification.showError({
+      title: 'Repush Failed',
+      description: 'Failed to repush transaction. Please try again.',
+    })
+  } finally {
+    isRepushing.value = false
+  }
+}
+
+// Open repush detail slideover
+const openRepushDetail = () => {
+  // Use the repush summary data as the selected transaction
+  if (summary.value) {
+    selectedPushBackTransaction.value = summary.value
+    showPushBackDetail.value = true
   }
 }
 

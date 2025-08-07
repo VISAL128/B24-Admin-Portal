@@ -87,6 +87,7 @@
     }
   },
   "table": {
+    "more_options": "More Options",
     "filters": "Filters",
     "empty_state_message": "No data available.",
     "loading": "Loading...",

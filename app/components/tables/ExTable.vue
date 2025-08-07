@@ -175,22 +175,38 @@
           :export-options="resolvedExportOptions"
         />
 
-        <!-- Fullscreen Toggle Button -->
-        <UTooltip
-          :text="isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen')"
-          :delay-duration="200"
-          placement="top"
-        >
-          <UButton variant="ghost" class="p-2" @click="toggleFullscreen">
-            <UIcon
-              :name="
-                isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'
-              "
-              size="sm"
-              class="text-gray-900 dark:text-white"
-            />
-          </UButton>
-        </UTooltip>
+        <!-- More Options Dropdown -->
+        <UPopover>
+          <template #default>
+            <UTooltip
+              :text="t('table.more_options')"
+              :delay-duration="200"
+              placement="top"
+            >
+              <UButton variant="ghost" class="p-2">
+                <UIcon
+                  name="material-symbols:more-vert"
+                  size="sm"
+                  class="text-gray-900 dark:text-white"
+                />
+              </UButton>
+            </UTooltip>
+          </template>
+
+          <template #content>
+            <div class="py-1 min-w-40">
+              <UButton
+                variant="ghost"
+                size="sm"
+                :icon="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"
+                class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                @click="toggleFullscreen"
+              >
+                {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
+              </UButton>
+            </div>
+          </template>
+        </UPopover>
 
         <UPopover>
           <template #default>
@@ -766,8 +782,15 @@ const filteredColumns = computed(() => {
   const columns = columnsWithRowNumber.value
 
   columns.forEach((col) => {
+    if(col.id === 'select' || col.accessorKey === 'select' || col.id === 'row_number' || col.accessorKey === 'row_number') {
+      // Skip selection column
+      return
+    }
     if (col.enableSorting) {
-      col.header = ({ column }) => createSortableHeader(column, getTranslationHeaderById(col.id))
+      col.header = ({ column }) => createSortableHeader(column, col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id))
+    }
+    else {
+      col.header = col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id)
     }
   })
 

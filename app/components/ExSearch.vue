@@ -1,6 +1,7 @@
 <template>
   <UInput
     :id="`ex-search-${Math.random().toString(36).substring(2, 15)}`"
+    ref="inputRef"
     v-model="searchValue"
     :name="`ex-search-${Math.random().toString(36).substring(2, 15)}`"
     :placeholder="placeholder"
@@ -10,12 +11,12 @@
     :size="size"
     :disabled="disabled"
     :loading="loading"
+    @focus="onFocus"
     @input="onInput"
     @keyup.enter="onEnter"
-    @focus="onFocus"
     @blur="onBlur"
   >
-    <template v-if="searchValue && showClearButton" #trailing>
+    <template #trailing>
       <UButton
         v-if="searchValue && showClearButton"
         :icon="clearIcon"
@@ -25,12 +26,13 @@
         :ui="appConfig.ui.button.slots"
         @click="clearSearch"
       />
+      <UTooltip v-if="showTooltip && !searchValue && searchTooltip" :text="searchTooltip" :delay-duration="300">
+        <UIcon :size="size" name="material-symbols:info-outline" class="text-gray-400" />
+      </UTooltip>
     </template>
 
     <template #leading>
-      <UTooltip :text="searchTooltip || placeholder" :delay-duration="300">
-        <UIcon :size="size" name="material-symbols:search-rounded" class="text-gray-400" />
-      </UTooltip>
+      <UIcon :size="size" name="material-symbols:search-rounded" class="text-gray-400" />
     </template>
 
   </UInput>
@@ -64,7 +66,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
   placeholder: undefined,
-  icon: 'material-symbols:search-rounded',
+  icon: '',
   clearIcon: 'material-symbols:close',
   size: 'sm',
   inputClass: 'w-64',
@@ -79,6 +81,8 @@ const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
 
+const inputRef = useTemplateRef('inputRef')
+
 // Computed placeholder with fallback to translation
 const placeholder = computed(() => {
   return props.placeholder || t('search')
@@ -91,6 +95,8 @@ const searchValue = computed({
     emit('update:modelValue', value)
   },
 })
+
+const showTooltip = ref(false)
 
 // Debounce timer ref
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -119,11 +125,14 @@ const onEnter = () => {
 // Handle focus event
 const onFocus = (event: FocusEvent) => {
   emit('focus', event)
+  console.log('Input focused')
+  showTooltip.value = true
 }
 
 // Handle blur event
 const onBlur = (event: FocusEvent) => {
   emit('blur', event)
+  showTooltip.value = false
 }
 
 // Clear search function
@@ -142,6 +151,14 @@ watch(
     }
   }
 )
+
+// onMounted(() => {
+//   if (inputRef.value?.inputRef) {
+//     inputRef.value.inputRef.onfocus = () => {
+//       showTooltip.value = true
+//     }
+//   }
+// })
 
 // Cleanup on unmount
 onUnmounted(() => {
