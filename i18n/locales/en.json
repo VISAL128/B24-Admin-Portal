@@ -136,6 +136,24 @@
         "total_amount": "Total Amount",
         "total_customer": "Total Customer"
       }
+    },
+    "wallet-transactions-table":{
+      "columns": {
+        "tran_date": "Transaction Date",
+        "wallet_type": "Wallet Type",
+        "transaction_type": "Transaction Type",
+        "status": "Status",
+        "amount": "Amount",
+        "currency_id": "Currency",
+        "fee_amount": "Fee Amount",
+        "net_amount": "Net Amount",
+        "counterparty": "Counterparty",
+        "payment_method": "Payment Method",
+        "merchant": "Merchant",
+        "channel": "Channel",
+        "customer_name":"Customer Name",
+        "actions":"Actions"
+      }
     }
   },
   "status": {
@@ -180,6 +198,7 @@
   "copy_failed": "Copy Failed",
   "copy_failed_message": "Failed to copy to clipboard",
   "wallet_page": {
+    "tran_date": "Transaction Date",
     "title": "Digital Wallet",
     "subtitle": "Manage your wallet balances and transactions",
     "refresh": "Refresh",
@@ -193,7 +212,7 @@
     "account_number": "Account Number",
     "last_transaction": "Last Transaction",
     "copy_success": "Copied!",
-    "copy_success_message": "Account number copied to clipboard",
+    "copy_success_message": "Copied to clipboard",
     "copy_to_clipboard": "Copy to clipboard",
     "copy_account_number": "Copy account number",
     "copy_failed": "Copy Failed",
@@ -255,7 +274,7 @@
     "transaction_details": "Transaction Details",
     "transaction_no": "Transaction No",
     "transaction_amount": "Amount",
-    "transaction_type": "Type",
+    "transaction_type": "Transaction Type",
     "transaction_status": "Status",
     "transaction_date": "Date",
     "reference_no": "Reference No",
@@ -272,6 +291,8 @@
     "search_transactions": "Search transactions...",
     "search_placeholder": "Search by transaction number, reference, etc.",
     "date_range": "Date Range",
+    "actions": "Actions",
+    "view_details": "View Details",
     "transaction_types": {
       "top_up": "Top Up",
       "settlement": "Settlement", 
@@ -301,7 +322,7 @@
     },
     "wallet_number": "Wallet Number",
     "bank_account_number": "Bank Account Number",
-     "more_wallets_coming": "More wallets will appear here"
+    "more_wallets_coming": "More wallets will appear here"
   },
   "wallet": "Wallet",
   "transaction": {

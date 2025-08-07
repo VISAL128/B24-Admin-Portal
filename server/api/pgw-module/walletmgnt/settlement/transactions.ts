@@ -4,13 +4,11 @@ export default defineEventHandler(async (event) => {
   try {
 
     const fullEndpoint = `/walletmgnt/settlement/transactions`
-
-    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', true)
+    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET')
 
     return response
-    
   } catch (error) {
-    console.error('Error fetching settlement transaction list:', error)
+    console.error('Failed to fetch settlement transaction list', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to fetch settlement transaction list',

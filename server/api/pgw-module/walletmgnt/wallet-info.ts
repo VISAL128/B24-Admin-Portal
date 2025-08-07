@@ -8,13 +8,13 @@ export default defineEventHandler(async (event) => {
   try {
     const body = (await readBody(event)) as WalletBalanceRequest
 
-   console.log('Fetching wallet balance with body:', body)
-   
+    console.log('Fetching wallet balance with body:', body)
+    
     const response = (await requestToPgwModuleApi(
       event,
       '/walletmgnt/wallet-info',
       'POST',
-      false,
+      body
     )) as WalletBalanceResponse
 
     return response

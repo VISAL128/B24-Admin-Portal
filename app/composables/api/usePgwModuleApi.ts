@@ -154,6 +154,7 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
    */
   const getSettlementWalletTransactions = async (params?: QueryParams) => {
   
+    console.log('Fetching settlement wallet transactions with params:', params)
     const url = `/api/pgw-module/walletmgnt/settlement/transactions`
 
     return await executeV2(() =>
@@ -168,27 +169,40 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
   /**
    * Get top-up wallet transactions from PGW Module API
    */
+
   const getTopUpWalletTransactions = async (params?: QueryParams) => {
-    // Convert params object to URLSearchParams
-    const urlParams = new URLSearchParams()
-    if (params) {
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null && value !== '') {
-          urlParams.append(key, String(value))
-        }
-      }
-    }
-    
-    const queryString = urlParams.toString()
-    const url = `/api/pgw-module/walletmgnt/top-up/transactions${queryString ? `?${queryString}` : ''}`
+  
+    const url = `/api/pgw-module/walletmgnt/top-up/transactions`
 
     return await executeV2(() =>
       $fetch(url, {
         method: 'GET',
         onResponseError() {},
+        query: params
       })
     )
   }
+  // const getTopUpWalletTransactions = async (params?: QueryParams) => {
+  //   // Convert params object to URLSearchParams
+  //   const urlParams = new URLSearchParams()
+  //   if (params) {
+  //     for (const [key, value] of Object.entries(params)) {
+  //       if (value !== undefined && value !== null && value !== '') {
+  //         urlParams.append(key, String(value))
+  //       }
+  //     }
+  //   }
+    
+  //   const queryString = urlParams.toString()
+  //   const url = `/api/pgw-module/walletmgnt/top-up/transactions${queryString ? `?${queryString}` : ''}`
+
+  //   return await executeV2(() =>
+  //     $fetch(url, {
+  //       method: 'GET',
+  //       onResponseError() {},
+  //     })
+  //   )
+  // }
 
   return {
     getProfile,

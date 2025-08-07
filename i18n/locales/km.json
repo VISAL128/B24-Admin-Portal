@@ -100,6 +100,7 @@
   "copy_failed": "ចម្លងបរាជ័យ",
   "copy_failed_message": "បរាជ័យក្នុងការចម្លងទៅក្ដារឈូស",
   "wallet_page": {
+    "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
     "title": "កាបូបឌីជីថល",
     "subtitle": "គ្រប់គ្រងសមតុល្យកាបូប និងប្រតិបត្តិការរបស់អ្នក",
     "refresh": "ផ្ទុកឡើងវិញ",
@@ -113,7 +114,7 @@
     "account_number": "លេខគណនី",
     "last_transaction": "ប្រតិបត្តិការចុងក្រោយ",
     "copy_success": "បានចម្លង!",
-    "copy_success_message": "លេខគណនីត្រូវបានចម្លង",
+    "copy_success_message": "ត្រូវបានចម្លងទៅក្ដារឈូស",
     "copy_to_clipboard": "ចម្លងទៅក្ដារ",
     "copy_account_number": "ចម្លងលេខគណនី",
     "copy_failed": "ចម្លងបរាជ័យ",
@@ -167,6 +168,52 @@
     "view_all": "មើលទាំងអស់",
     "recent_transactions": "ប្រតិបត្តិការថ្មីៗ",
     "no_transactions": "មិនមានប្រតិបត្តិការថ្មីៗ",
+    "transaction_list": "បញ្ជីប្រតិបត្តិការ",
+    "transaction_history": "ប្រវត្តិប្រតិបត្តិការ",
+    "load_more": "ចុះបន្ថែម",
+    "loading_transactions": "កំពុងទាញយកប្រតិបត្តិការ...",
+    "no_more_transactions": "អស់ប្រតិបត្តិការសម្រាប់ទាញយកហើយ",
+    "transaction_details": "ព័ត៌មានលម្អិតប្រតិបត្តិការ",
+    "transaction_no": "លេខប្រតិបត្តិការ",
+    "transaction_amount": "ចំនួនទឹកប្រាក់",
+    "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+    "transaction_status": "ស្ថានភាព",
+    "transaction_date": "កាលបរិច្ឆេទ",
+    "reference_no": "លេខយោង",
+    "bank_reference": "លេខយោងធនាគារ",
+    "fee_amount": "ចំនួនថ្លៃសេវា",
+    "net_amount": "ចំនួនសុទ្ធ",
+    "counterparty": "ភាគីដទៃ",
+    "payment_method": "វិធីបង់ប្រាក់",
+    "merchant": "អ្នកលក់",
+    "channel": "បណ្តាញ",
+    "filter_transactions": "ច្រោះប្រតិបត្តិការ",
+    "all_types": "ប្រភេទទាំងអស់",
+    "all_statuses": "ស្ថានភាពទាំងអស់",
+    "search_transactions": "ស្វែងរកប្រតិបត្តិការ...",
+    "search_placeholder": "ស្វែងរកតាមលេខប្រតិបត្តិការ, លេខយោង, ជាដើម",
+    "date_range": "ជួរកាលបរិច្ឆេទ",
+    "actions": "សកម្មភាព",
+    "view_details": "មើលព័ត៌មានលម្អិត",
+    "transaction_types": {
+      "top_up": "បញ្ចូលប្រាក់",
+      "settlement": "ការទូទាត់", 
+      "transfer": "ផ្ទេរ",
+      "payment": "ការបង់ប្រាក់"
+    },
+    "transaction_statuses": {
+      "completed": "បានបញ្ចប់",
+      "pending": "រង់ចាំ",
+      "failed": "បរាជ័យ",
+      "cancelled": "បានលុបចោល"
+    },
+    "date_ranges": {
+      "today": "ថ្ងៃនេះ",
+      "this_week": "សប្តាហ៍នេះ",
+      "this_month": "ខែនេះ",
+      "last_30_days": "៣០ថ្ងៃចុងក្រោយ",
+      "custom": "ជួរកំណត់ផ្ទាល់"
+    },
     "billers": {
       "ev_charging": "បញ្ចូលថ្ម EV",
       "electricity": "អគ្គិសនី",
@@ -175,8 +222,9 @@
       "internet": "អ៊ីនធឺណិត",
       "insurance": "ការធានារ៉ាប់រង"
     },
-        "wallet_number": "លេខកូដកាបូប",
-    "bank_account_number": "លេខគណនី"
+    "wallet_number": "លេខកូដកាបូប",
+    "bank_account_number": "លេខគណនី",
+    "more_wallets_coming": "កាបូបបន្ថែមទៀតនឹងបង្ហាញនៅទីនេះ"
   },
   "wallet": "កាបូប",
   "settlement_menu": "ការទូទាត់",
@@ -548,6 +596,23 @@
     }
   },
   "table": {
+    "wallet-transactions-table":{
+    "columns": {
+      "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "wallet_type": "ប្រភេទកាបូប",
+      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+      "status": "ស្ថានភាព",
+      "amount": "ចំនួន",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "fee_amount": "ចំនួនថ្លៃកក់",
+      "net_amount": "ចំនួនសុទ្ធ",
+      "counterparty": "ភាគីដទៃ",
+      "payment_method": "វិធីបង់ប្រាក់",
+      "merchant": "អ្នកលក់",
+      "channel": "បណ្តាញ",
+      "customer_name":"ឈ្មោះអតិថិជន",
+      "action": "សកម្មភាព"
+    },
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
@@ -842,4 +907,5 @@
   "descending": " តាមលំដាប់ចុះ",
   "clear": "សម្អាត",
   "customer_name": "ឈ្មោះអតិថិជន"
+}
 }

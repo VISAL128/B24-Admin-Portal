@@ -1,20 +1,22 @@
 import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
 
+
+/**
+ * Fetch top-up transactions from PGW Module API
+ */
+
 export default defineEventHandler(async (event) => {
   try {
-    const queryString = getQuery(event)
-    const queryParams = new URLSearchParams(queryString as Record<string, string>).toString()
 
-    const fullEndpoint = `/walletmgnt/top-up/transactions${queryParams ? `?${queryParams}` : ''}`
-
+    const fullEndpoint = `/walletmgnt/top-up/transactions`
     const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET')
-
     return response
+    
   } catch (error) {
-    console.error('Error fetching top-up transaction list:', error)
+    console.error('Failed to fetch settlement transaction list', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to fetch top-up transaction list',
+      statusMessage: 'Failed to fetch settlement transaction list',
     })
   }
 })

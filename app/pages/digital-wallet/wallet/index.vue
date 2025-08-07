@@ -533,6 +533,7 @@
       <!-- Transaction List Section -->
       <div v-if="walletTypes.length > 0 && selectedWalletType" class="mt-8">
         <TablesExTable
+          :key="`${TABLE_ID}-${selectedWalletType}`"
           ref="tableRef"
           :columns="columns"
           :table-id="TABLE_ID"
@@ -567,8 +568,8 @@ import type { WalletSummaryData } from '~~/server/model/pgw_module_api/wallet_tr
 import type { WalletTransaction, SettlementWalletApiResponse, TopUpWalletApiResponse } from '~/models/wallet'
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'
-import { useStatusColor } from '~/composables/utils/useStatusColor'
 import type { QueryParams } from '~/models/baseModel'
+import { StatusBadge } from '#components'
 
 // Define page meta
 definePageMeta({
@@ -584,7 +585,6 @@ const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getSet
 const { formatDateTime } = useFormat()
 const { t } = useI18n()
 const errorHandler = useErrorHandler()
-const { getVariantColorByStatus } = useStatusColor()
 
 // Wallet store
 const walletStore = useWalletStore()
@@ -787,10 +787,10 @@ const getWalletTypeIcon = (type: string) => {
 
 const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
   {
-    id: 'transaction_date',
-    accessorKey: 'transaction_date',
+    id: 'tran_date',
+    accessorKey: 'tran_date',
     header: t('wallet_page.date'),
-    cell: ({ row }) => formatDateTime(row.original.transaction_date),
+    cell: ({ row }) => formatDateTime(row.original.tran_date),
     enableSorting: true,
   },
   {
@@ -808,30 +808,48 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
   {
     id: 'amount',
     accessorKey: 'amount',
-    header: () => h('div', { class: 'w-full flex justify-end' }, t('settlement.amount')),
+    header: t('settlement.amount'),
     cell: ({ row }) => h('div', { class: 'text-right' }, formatCurrency(row.original.amount, row.original.currency)),
     enableSorting: true,
   },
-  {
+  // {
+  //   id: 'status',
+  //   accessorKey: 'status',
+  //   header: t('settlement_history.columns.status'),
+  //   cell: ({ row }) => {
+  //     const UBadge = resolveComponent('UBadge')
+  //     return h(
+  //       UBadge,
+  //       {
+  //         color: getVariantColorByStatus(row.original.status),
+  //         variant: 'subtle',
+  //       },
+  //       () => t('wallet_page.transaction_status'),
+        
+  //     )
+  //   },
+  //   enableColumnFilter: true,
+  //   filterOptions: [
+  //     { label: t('completed'), value: t('completed') },
+  //     { label: t('pending'), value: t('pending') },
+  //     { label: t('failed'), value: t('failed') },
+  //   ],
+  // },
+   {
     id: 'status',
-    accessorKey: 'status',
-    header: t('settlement_history.columns.status'),
-    cell: ({ row }) => {
-      const UBadge = resolveComponent('UBadge')
-      return h(
-        UBadge,
-        {
-          color: getVariantColorByStatus(row.original.status),
-          variant: 'subtle',
-        },
-        () => t(`status.${row.original.status.toLowerCase()}`)
-      )
-    },
+    header: () => t('status.header'),
+    cell: ({ row }) =>
+      h(StatusBadge, {
+        status: row.original.status,
+        variant: 'subtle',
+        size: 'sm',
+      }),
     enableColumnFilter: true,
+    filterType: 'select',
     filterOptions: [
-      { value: 'pending', label: t('status.pending') },
-      { value: 'completed', label: t('status.completed') },
-      { value: 'failed', label: t('status.failed') },
+      { label: t('completed'), value: t('completed') },
+      { label: t('pending'), value: t('pending') },
+      { label: t('failed'), value: t('failed') },
     ],
   },
   {
@@ -855,11 +873,9 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
 
 // Wrapper function for TablesExTable
 const fetchTransactionsForTable = async (params?: QueryParams) => {
-  console.log("======= fetchTransactionsForTable params ========:", params)
   isLoadingTransactions.value = true
 
   const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
-  console.log("======= selectedWallet ========:", selectedWallet)
   
   if (!selectedWallet) {
     // This can happen on initial load before a wallet is selected.
@@ -869,6 +885,11 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
   }
 
   try {
+    console.log("======= Fetching transactions for wallet:", selectedWallet)
+    console.log("======= Using params:", params)
+    console.log("======= Wallet type:", selectedWallet.walletType)
+    console.log("======= API endpoint will be:", selectedWallet.walletType === 'settlement_wallet' ? 'settlement' : 'top-up')
+    
     const response = selectedWallet.walletType === 'settlement_wallet'
       ? await getSettlementWalletTransactions(params)
       : await getTopUpWalletTransactions(params)
@@ -901,7 +922,8 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
     console.log("======= Returning server data ========:", {
       dataLength: data.length,
       total_record,
-      total_page
+      total_page,
+      walletType: selectedWallet.walletType
     })
 
     return {
@@ -1124,9 +1146,16 @@ const currentSummaryData = computed(() => {
 
 // Watch for wallet type changes to trigger animations and reload balance
 watch(selectedWalletType, async (newType, oldType) => {
-  if (newType !== oldType) {
+  if (newType !== oldType && newType) {
+    console.log("======= Wallet type changed from", oldType, "to", newType)
+    
     const selectedWallet = walletTypes.value.find((type) => type.id === newType)
-    selectedWalletTypeAPI.value = selectedWallet?.name || ''
+    if (!selectedWallet) {
+      console.warn('Selected wallet not found:', newType)
+      return
+    }
+
+    selectedWalletTypeAPI.value = selectedWallet.name || ''
 
     // Update summary display currency based on selected wallet
     if (selectedWallet?.currency) {
@@ -1139,9 +1168,18 @@ watch(selectedWalletType, async (newType, oldType) => {
     // Load data in parallel when wallet type changes.
     isWalletLoading.value = true
     isLoadingSummary.value = true
-    // The table will be re-keyed and fetch its own data, so we don't need to set its loading state here.
+    
     try {
-      await Promise.all([loadWalletBalance(), loadTransactionSummary()])
+      await Promise.all([
+        loadWalletBalance(), 
+        loadTransactionSummary()
+      ])
+      console.log("======= Wallet data reloaded for type:", selectedWallet.walletType)
+      
+      // The table should automatically refetch due to the key change
+      // No need to manually call refetch since the component will be re-mounted
+    } catch (error) {
+      console.error('Failed to reload wallet data:', error)
     } finally {
       // The individual loading states are managed within their respective functions,
       // but we can set them to false here as a fallback.
