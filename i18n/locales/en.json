@@ -135,6 +135,27 @@
         "total_amount": "Total Amount",
         "total_customer": "Total Customer"
       }
+    },
+    "sub-biller-transaction-table": {
+      "columns": {
+        "collection_bank": "Collection Bank",
+        "settlement_bank": "Settlement Bank",
+        "settlement_type": "Settlement Type",
+        "transaction_type": "Transaction Type",
+        "currency_id": "Currency",
+        "status": "Status",
+        "created_date": "Transaction Date",
+        "bank_ref": "Bank Reference",
+        "sub_biller": "Sub Biller",
+        "total_amount": "Total Amount",
+        "total_customer": "Total Customer"
+      }
+    },
+    "sub-billers-table": {
+      "columns": {
+        "sync_code": "Code",
+        "name": "Name"
+      }
     }
   },
   "status": {

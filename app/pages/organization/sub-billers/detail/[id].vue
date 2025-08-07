@@ -141,7 +141,7 @@
         {{ t('wallet_page.current_balance') }}
       </div>
       <div class="text-3xl font-bold tracking-wide mt-1">
-        {{ wallet.balance }} {{ wallet.currency }}
+        {{ useCurrency().formatAmount(wallet.balance ?? '0', wallet.currency) }} {{ wallet.currency }}
       </div>
     </div>
 
@@ -203,7 +203,7 @@
   <!-- Transaction Table Below Wallet Cards -->
     <div class="overflow-x-auto">
           <TablesExTable
-    ref="table"
+      ref="table"
       :columns="columns"
       table-id="sub-biller-transaction-table"
       :fetch-data-fn="fetchTransactionHistory"
@@ -285,6 +285,7 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import type { SubBillerWallet} from "~/models/subBiller"
 import { useTable } from '~/composables/utils/useTable'
+import TablesExTable from '~/components/tables/ExTable.vue'
 
 definePageMeta({
   auth: false,
@@ -384,12 +385,10 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    header: ({ column }) => createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
+    header: t('pages.transaction.created_date'),
     cell: ({ row }) =>
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
-    size: 50,
-    maxSize: 150,
   },
   {
     id: 'bank_ref',

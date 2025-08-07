@@ -596,6 +596,27 @@
       "total_amount": "ចំនួនទឹកប្រាក់សរុប",
       "total_customer": "ចំនួនអតិថិជន"
     }
+  },
+  "sub-biller-transaction-table": {
+    "columns": {
+      "collection_bank": "ធនាគារប្រមូលប្រាក់",
+      "settlement_bank": "ធនាគារទូទាត់",
+      "settlement_type": "ប្រភេទទូទាត់",
+      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "status": "ស្ថានភាព",
+      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "bank_ref": "លេខយោងធនាគារ",
+      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+      "total_customer": "ចំនួនអតិថិជន"
+    }
+  },
+  "sub-billers-table": {
+    "columns": {
+      "name": "ឈ្មោះ",
+      "sync_code": "លេខកូដ"
+    }
   }
   },
     "search_placeholder": "ស្វែងរក...",
