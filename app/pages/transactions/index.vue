@@ -26,12 +26,13 @@
       @fullscreen-toggle="handleFullscreenToggle"
     >
     <template #trailingHeader>
-      <UTooltip :text="t('pages.transaction.repush_description')">
+      <!-- Repush Button - Only show when rows are selected -->
+      <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
           <UButton 
             variant="outline"
             size="sm"
             @click="handleRepush()"> 
-            {{ t('pages.transaction.repush') }}
+            {{ t('pages.transaction.repush') }} ({{ selectedRows.length }})
             <template #trailing>
               <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
             </template>
@@ -39,7 +40,7 @@
           </UButton>
         </UTooltip>
 
-        <USelectMenu
+        <!-- <USelectMenu
           v-model="selectedDateFilter"
           :items="dateOptions"
           class="w-auto min-w-[200px]"
@@ -52,7 +53,7 @@
           <template #default="{ modelValue }">
             <span v-if="modelValue" v-html="modelValue.label" />
           </template>
-        </USelectMenu>
+        </USelectMenu> -->
 
     </template>
     </TablesExTable>
@@ -67,16 +68,17 @@ definePageMeta({
 
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { computed, h, onBeforeMount, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import InfoBanner from '~/components/cards/InfoBanner.vue'
 import SummaryCards from '~/components/cards/SummaryCards.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
-import BaseTable from '~/components/tables/BaseTable.vue'
 import TablesExTable from '~/components/tables/ExTable.vue'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useErrorHandler } from '~/composables/useErrorHandler'
+import { useNotification } from '~/composables/useNotification'
 import {
   exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
@@ -338,10 +340,10 @@ const fetchTransactionForTable = async (params?: {
 const { createSortableHeader, createRowNumberCell } = useTable()
 const { t, locale } = useI18n()
 const errorHandler = useErrorHandler()
-const table = ref<InstanceType<typeof BaseTable> | null>(null)
+const table = ref<any>(null)
 const sortBy = ref<string | null>(null)
 const sortDirection = ref<'asc' | 'desc' | null>(null)
-const selectedRows = computed(() => table.value?.getSelectedRows?.() ?? [])
+const selectedRows = computed(() => table.value?.getSelectedRows() ?? [])
 const allRows = computed(() => table.value?.getAllRows() ?? [])
 const router = useRouter()
 const toast = useToast()
@@ -517,7 +519,7 @@ const pdfExportHeaders = computed(() => getPDFHeaders(t))
 const exportToExcelHandler = async () => {
   // ...existing export logic...
   try {
-    const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
+    const selectedRows = table.value?.getSelectedRows() || []
     const dataToExport =
       selectedRows.length > 0
         ? selectedRows.map((row: { original: any }) => row.original)
@@ -598,7 +600,7 @@ const exportToExcelHandler = async () => {
 const exportToPDFHandler = async () => {
   // ...existing export logic...
   try {
-    const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
+    const selectedRows = table.value?.getSelectedRows() || []
     const dataToExport =
       selectedRows.length > 0
         ? selectedRows.map((row: { original: any }) => row.original)

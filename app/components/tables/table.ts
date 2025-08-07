@@ -19,6 +19,13 @@ export type BaseTableColumn<T> = TableColumn<T> & {
    * Note: rendering should be working when cell is undefined
    * and type is set to ColumnType.DateTime   */
   type?: ColumnType
+  /**
+   * Header text for the column
+   * This is used for rendering the column header and can be localized
+   * @note Do not use `t()` for translation, just provide the key
+   * @example 'table.column.headerText'
+   */
+  headerText?: string
 }
 
 export type TableFetchResult<TData> = {
