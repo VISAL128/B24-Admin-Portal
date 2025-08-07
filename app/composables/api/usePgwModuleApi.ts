@@ -1,5 +1,5 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
-import type { SubBillerListResponse, SubBillerQuery, WalletListResponse } from '~/models/subBiller'
+import type { SubBillerListResponse, WalletListResponse } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transactionSummary'
@@ -17,6 +17,7 @@ import type {
   WalletTransactionRequest,
   WalletTransactionResponse,
 } from '~~/server/model/pgw_module_api/wallet_transactions'
+import type { QueryParams } from '~/models/baseModel'
 
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
@@ -90,20 +91,13 @@ export const usePgwModuleApi = () => {
     )
   }
 
-  const getSubBillers = async (payload: SubBillerQuery) => {
-    const query = new URLSearchParams(
-      Object.entries(payload).reduce(
-        (acc, [key, value]) => {
-          if (value !== undefined && value !== null) acc[key] = String(value)
-          return acc
-        },
-        {} as Record<string, string>
-      )
-    ).toString()
+  const getSubBillers = async (query?: QueryParams) => {
+
     console.log('Fetching sub billers with query:', query)
     const rep = await executeV2(() =>
-      $fetch<SubBillerListResponse>(`/api/pgw-module/sub-biller/get-sub-biller?${query}`, {
+      $fetch<SubBillerListResponse>(`/api/pgw-module/sub-biller/get-sub-biller`, {
         method: 'GET',
+        query
       })
     )
     return rep
@@ -158,24 +152,15 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
   /**
    * Get settlement wallet transactions from PGW Module API
    */
-  const getSettlementWalletTransactions = async (params?: Record<string, string | number | boolean>) => {
-    // Convert params object to URLSearchParams
-    const urlParams = new URLSearchParams()
-    if (params) {
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null && value !== '') {
-          urlParams.append(key, String(value))
-        }
-      }
-    }
-    
-    const queryString = urlParams.toString()
-    const url = `/api/pgw-module/walletmgnt/settlement/transactions${queryString ? `?${queryString}` : ''}`
+  const getSettlementWalletTransactions = async (params?: QueryParams) => {
+  
+    const url = `/api/pgw-module/walletmgnt/settlement/transactions`
 
     return await executeV2(() =>
       $fetch(url, {
         method: 'GET',
         onResponseError() {},
+        query: params
       })
     )
   }
@@ -183,7 +168,7 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
   /**
    * Get top-up wallet transactions from PGW Module API
    */
-  const getTopUpWalletTransactions = async (params?: Record<string, string | number | boolean>) => {
+  const getTopUpWalletTransactions = async (params?: QueryParams) => {
     // Convert params object to URLSearchParams
     const urlParams = new URLSearchParams()
     if (params) {

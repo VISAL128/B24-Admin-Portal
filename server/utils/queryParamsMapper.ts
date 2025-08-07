@@ -33,15 +33,6 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   if (pgwParams.sorts.endsWith(';')) {
     pgwParams.sorts = pgwParams.sorts.slice(0, -1)
   }
-  // pgwParams.sorts = 'name-' // Example hardcoded sort for testing, remove in production
-
-  console.log('QueryParams:', clientParams)
-  console.log('Is clientParams.sorts an array?', Array.isArray(clientParams.sorts))
-  console.log('Client sorts length:', clientParams?.sorts?.length)
-  console.log('Mapped sorts:', pgwParams.sorts)
-  console.log('clientParams.sorts:', clientParams.sorts)
-
-  // pgwParams.sorts = 'name-'
   
   // Initialize filters array
   const filters: ParamFilterPgwModuleApi[] = []
@@ -51,7 +42,8 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
     filters.push({
       field: 'search',
       operator: 'contains',
-      value: clientParams.search
+      value: clientParams.search,
+      manualFilter: false
     })
   }
   
@@ -60,7 +52,8 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
     filters.push({
       field: 'fromDate',
       operator: 'gte',
-      value: clientParams.start_date
+      value: clientParams.start_date,
+      manualFilter: false
     })
   }
   
@@ -68,23 +61,54 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
     filters.push({
       field: 'toDate',
       operator: 'lte',
-      value: clientParams.end_date
+      value: clientParams.end_date,
+      manualFilter: false
     })
   }
   
   // Map additional filters
-  if (clientParams.filters && clientParams.filters.length > 0) {
-    for (const filter of clientParams.filters) {
-      // Map field names if needed for PGW API compatibility
-      const pgwField = mapFieldNameToPgwModule(filter.field)
-      
+  if (clientParams.filters) {
+    let filtersArray = clientParams.filters
+    console.log('Client filters:', filtersArray)
+    // Handle case where filters is a JSON string (from URL query params)
+    if (typeof clientParams.filters === 'string') {
+      try {
+        filtersArray = JSON.parse(clientParams.filters)
+      } catch (error) {
+        console.warn('Failed to parse filters JSON string:', error)
+        filtersArray = []
+      }
+    }
+    
+    // Ensure it's an array and has items
+    if (Array.isArray(filtersArray) && filtersArray.length > 0) {
+      for (let filter of filtersArray) {
+        if (typeof filter === 'string') {
+          filter = JSON.parse(filter)
+        }
+        // Map field names if needed for PGW API compatibility
+        const pgwField = mapFieldNameToPgwModule(filter.field)
+        
+        filters.push({
+          field: pgwField as ParamFilterPgwModuleApi['field'],
+          operator: filter.operator,
+          value: filter.value,
+          manualFilter: false
+        })
+      }
+    }
+    else if (filtersArray && typeof filtersArray === 'object' && !Array.isArray(filtersArray)) {
+      // If filters is a single object, convert it to an array
+      const singleFilter = filtersArray as { field: string; operator: string; value: string | number | boolean | Date; manualFilter?: boolean }
       filters.push({
-        field: pgwField as ParamFilterPgwModuleApi['field'],
-        operator: filter.operator,
-        value: filter.value
+        field: mapFieldNameToPgwModule(singleFilter.field),
+        operator: singleFilter.operator,
+        value: singleFilter.value,
+        manualFilter: false
       })
     }
   }
+  console.log('Mapped filters:', filters)
   
   // Map status filters if any
 //   if (clientParams.statuses && clientParams.statuses.length > 0) {
@@ -98,7 +122,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
 //     }
 //   }
   
-  pgwParams.filters = filters
+  pgwParams.filter = filters
   
   return pgwParams
 }
@@ -130,6 +154,6 @@ export function serializePgwModuleParams(pgwParams: QueryParamsPgwModuleApi): Re
     pageCount: pgwParams.pageCount,
     rowCount: pgwParams.rowCount,
     sorts: pgwParams.sorts,
-    Filters: pgwParams.filters
+    Filter: pgwParams.filter
   }
 }

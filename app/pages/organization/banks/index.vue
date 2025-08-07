@@ -8,7 +8,6 @@
       :search-tooltip="t('banks.search_placeholder')"
       :fetch-data-fn="fetchBanks"
       show-row-number
-      show-date-filter
       @row-click="handleViewDetails"
       />
   </div>
@@ -216,6 +215,11 @@ const columns: BaseTableColumn<Bank>[] = [
     },
     enableSorting: true,
     size: 200,
+    // enableColumnFilter: true,
+    // filterOptions: [
+    //   { label: 'AC', value: 'ACLEDA' },
+    //   { label: 'ABA', value: 'ABA' }
+    // ]
   },
   {
     id: 'activated_date',

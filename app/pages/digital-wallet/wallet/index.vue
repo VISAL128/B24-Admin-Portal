@@ -827,6 +827,29 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
         () => t(`status.${row.original.status.toLowerCase()}`)
       )
     },
+    enableColumnFilter: true,
+    filterOptions: [
+      { value: 'pending', label: t('status.pending') },
+      { value: 'completed', label: t('status.completed') },
+      { value: 'failed', label: t('status.failed') },
+    ],
+  },
+  {
+    id: 'actions',
+    header: t('wallet_page.actions'),
+    cell: ({ row }) => {
+      const UButton = resolveComponent('UButton')
+      return h(
+        UButton,
+        {
+          variant: 'outline',
+          color: 'primary',
+          size: 'sm',
+          onClick: () => handleViewDetails(row.original),
+        },
+        () => t('wallet_page.view_details')
+      )
+    },    
   },
 ])
 
@@ -846,33 +869,15 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
   }
 
   try {
-
-
-    // Build filter array
-    const filters = []
-    
- 
-    // Add currency filter
-    filters.push({
-      field: 'currencyId',
-      operator: 'eq',
-      value: selectedWallet.currency,
-      manualFilter: false
-    })
-
-    // Call appropriate API based on wallet type
     const response = selectedWallet.walletType === 'settlement_wallet'
       ? await getSettlementWalletTransactions(params)
       : await getTopUpWalletTransactions(params)
-
-    console.log("======= API response ========:", response)
 
     // Parse response based on wallet type
     let data: WalletTransaction[] = []
     let total_record = 0
 
     if (selectedWallet.walletType === 'settlement_wallet') {
-      // Settlement wallet response structure: { code, message, message_kh, data: { param, result } }
       const settlementResponse = response as SettlementWalletApiResponse
       if (settlementResponse?.data?.result) {
         data = settlementResponse.data.result
@@ -881,7 +886,6 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
         throw new Error('Invalid settlement wallet API response structure')
       }
     } else {
-      // Top-up wallet response structure: { param, result: { code, message, message_kh, data: { param, result } } }
       const topUpResponse = response as TopUpWalletApiResponse
       if (topUpResponse?.result?.data?.result) {
         data = topUpResponse.result.data.result

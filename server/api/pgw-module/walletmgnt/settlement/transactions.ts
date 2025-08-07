@@ -2,14 +2,13 @@ import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
 
 export default defineEventHandler(async (event) => {
   try {
-    const queryString = getQuery(event)
-    const queryParams = new URLSearchParams(queryString as Record<string, string>).toString()
 
-    const fullEndpoint = `/walletmgnt/settlement/transactions${queryParams ? `?${queryParams}` : ''}`
+    const fullEndpoint = `/walletmgnt/settlement/transactions`
 
-    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET')
+    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', true)
 
     return response
+    
   } catch (error) {
     console.error('Error fetching settlement transaction list:', error)
     throw createError({

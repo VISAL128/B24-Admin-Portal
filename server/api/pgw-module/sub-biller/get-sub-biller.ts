@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 
     const fullEndpoint = `/sub-biller/get-sub-biller${queryParams ? `?${queryParams}` : ''}`
 
-    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET')
+    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', true)
 
     return response
   } catch (error) {
