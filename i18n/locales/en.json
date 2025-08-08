@@ -122,6 +122,17 @@
         "active": "Status"
       }
     },
+    "bank-settlements": {
+      "columns": {
+        "bank_name": "Bank Name",
+        "created_date": "Settlement Date",
+        "total_amount": "Total Amount",
+        "currency_id": "Currency",
+        "total_settled": "Total Settled",
+        "status": "Status",
+        "created_by": "Settled By"
+      }
+    },
     "transactions-history-table": {
       "columns": {
         "collection_bank": "Collection Bank",
@@ -309,7 +320,12 @@
       "today": "Today",
       "this_week": "This Week",
       "this_month": "This Month",
+      "last_7_days": "Last 7 Days",
+      "last_14_days": "Last 14 Days",
       "last_30_days": "Last 30 Days",
+      "last_3_months": "Last 3 Months",
+      "last_6_months": "Last 6 Months",
+      "last_year": "Last Year",
       "custom": "Custom Range"
     },
     "billers": {
@@ -879,6 +895,7 @@
     "toggle_status": "Toggle Status",
     "activate_bank": "Activate Bank",
     "deactivate_bank": "Deactivate Bank",
+    "activated_date": "Activated Date",
     "confirm_delete": "Are you sure you want to delete this bank?",
     "confirm_activate": "Are you sure you want to activate this bank?",
     "confirm_deactivate": "Are you sure you want to deactivate this bank?",
@@ -897,7 +914,8 @@
     "all_banks": "All Banks",
     "total_banks": "Total Banks",
     "bank_not_found_desc": "The requested bank could not be found.",
-    "bank_created_desc": "Bank {name} has been created successfully."
+    "bank_created_desc": "Bank {name} has been created successfully.",
+    "settlement_history_desc": "View all settlement transactions processed through this bank"
   },
   "additional_information": "Additional Information",
   "metadata": "Metadata",

@@ -51,13 +51,7 @@ const pdfExportHeaders = computed(() => props.headers)
 // }
 
 const exportItems: DropdownMenuItem[] = [
-  {
-    label: t('pdf'),
-    icon: 'tabler:file-type-pdf',
-    onSelect() {
-      exportToPDFHandler()
-    },
-  },
+  
   {
     label: t('excel'),
     icon: 'tabler:file-excel',
@@ -65,6 +59,13 @@ const exportItems: DropdownMenuItem[] = [
       exportToExcelHandler()
     },
   },
+  {
+    label: t('pdf'),
+    icon: 'tabler:file-type-pdf',
+    onSelect() {
+      exportToPDFHandler()
+    },
+  }
 ]
 
 const exportToExcelHandler = async () => {

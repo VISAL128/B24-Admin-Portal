@@ -2,7 +2,8 @@
 <template>
   <!-- Unified Card Container -->
   <div
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto">
+    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto"
+  >
     <!-- Filter / Sort / Column Configuration -->
     <div class="flex justify-between flex-wrap items-start gap-4 flex-shrink-0 mb-2 pt-2 px-3">
       <!-- 🔍 Filter Buttons -->
@@ -18,7 +19,7 @@
             @keyup.enter="debouncedFetchData"
           />
           <template v-if="showDateFilter">
-            <UPopover>
+            <!-- <UPopover>
               <UButton
                 color="neutral"
                 variant="subtle"
@@ -42,7 +43,14 @@
               <template #content>
                 <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
               </template>
-            </UPopover>
+            </UPopover> -->
+            <UiDateRangePicker
+              v-model="modelValue"
+              placeholder="Select date range..."
+              size="md"
+              variant="outline"
+              color="primary"
+            />
           </template>
 
           <UPopover v-if="showFilterButton" v-model:open="showAdvancedOptions">
@@ -243,11 +251,7 @@
           <!-- More Options Dropdown -->
           <UPopover>
             <template #default>
-              <UTooltip
-                :text="t('table.more_options')"
-                :delay-duration="200"
-                placement="top"
-              >
+              <UTooltip :text="t('table.more_options')" :delay-duration="200" placement="top">
                 <UButton variant="ghost" class="p-2">
                   <UIcon
                     name="material-symbols:more-vert"
@@ -263,7 +267,11 @@
                 <UButton
                   variant="ghost"
                   size="sm"
-                  :icon="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"
+                  :icon="
+                    isFullscreen
+                      ? 'material-symbols:fullscreen-exit'
+                      : 'material-symbols:fullscreen'
+                  "
                   class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                   @click="toggleFullscreen"
                 >
@@ -345,7 +353,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
-import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { CalendarDate } from '@internationalized/date'
 import type { TableRow } from '@nuxt/ui'
 import { computed, onMounted, readonly, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -482,7 +490,7 @@ const getTranslationHeaderById = (id: string) => {
 const search = ref('')
 const startDate = ref('')
 const endDate = ref('')
-const df = new DateFormatter('en-US', { dateStyle: 'medium' })
+// const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 const today = new Date()
 const showDateFilter = computed(() => props.showDateFilter ?? true)
 const modelValue = shallowRef({
@@ -783,15 +791,24 @@ const filteredColumns = computed(() => {
   const columns = columnsWithRowNumber.value
 
   columns.forEach((col) => {
-    if(col.id === 'select' || col.accessorKey === 'select' || col.id === 'row_number' || col.accessorKey === 'row_number') {
+    if (
+      col.id === 'select' ||
+      col.accessorKey === 'select' ||
+      col.id === 'row_number' ||
+      col.accessorKey === 'row_number'
+    ) {
       // Skip selection column
       return
     }
     // If sorting is enabled, wrap header in sortable header function
     if (col.enableSorting) {
-      col.header = ({ column }) => createSortableHeader(column, col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id))
-    }
-    else {
+      col.header = ({ column }) =>
+        createSortableHeader(
+          column,
+          col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id),
+          col.sortableHeaderAlignment || 'left',
+        )
+    } else {
       col.header = col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id)
     }
   })

@@ -211,7 +211,12 @@
       "today": "ថ្ងៃនេះ",
       "this_week": "សប្តាហ៍នេះ",
       "this_month": "ខែនេះ",
-      "last_30_days": "៣០ថ្ងៃចុងក្រោយ",
+      "last_7_days": "៧ ថ្ងៃចុងក្រោយ",
+      "last_14_days": "១៤ ថ្ងៃចុងក្រោយ",
+      "last_30_days": "៣០ ថ្ងៃចុងក្រោយ",
+      "last_3_months": "៣ ខែចុងក្រោយ",
+      "last_6_months": "៦ ខែចុងក្រោយ",
+      "last_year": "១ ឆ្នាំចុងក្រោយ",
       "custom": "ជួរកំណត់ផ្ទាល់"
     },
     "billers": {
@@ -648,6 +653,17 @@
         "active": "ស្ថានភាព"
       }
     },
+    "bank-settlements": {
+      "columns": {
+        "created_date": "កាលបរិច្ឆេទទូទាត់",
+        "bank_name": "ឈ្មោះធនាគារ",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "total_settled": "ចំនួនទូទាត់សរុប",
+        "settled_by": "ទូទាត់ដោយ"
+      }
+    },
     "transactions-history-table": {
     "columns": {
       "collection_bank": "ធនាគារប្រមូលប្រាក់",
@@ -874,6 +890,7 @@
     "updated_at": "បានអាប់ដេតនៅ",
     "created_by": "បង្កើតដោយ",
     "updated_by": "អាប់ដេតដោយ",
+    "activated_date": "កាលបរិច្ឆេទសកម្ម",
     "settlement_banks": "ធនាគារទូទាត់",
     "collection_banks": "ធនាគារប្រមូលប្រាក់",
     "bank_details": "ព័ត៌មានលម្អិតធនាគារ",
@@ -901,7 +918,9 @@
     "all_banks": "ធនាគារទាំងអស់",
     "total_banks": "ធនាគារសរុប",
     "bank_not_found_desc": "រកមិនឃើញធនាគារដែលបានស្នើសុំ។",
-    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។"
+    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។",
+    "settlement_history_desc": "មើលប្រតិបត្តិការទូទាត់ទាំងអស់ដែលបានដំណើរការតាមរយៈធនាគារនេះ"
+
   },
   "additional_information": "ព័ត៌មានបន្ថែម",
   "metadata": "ទិន្នន័យមេតា",
