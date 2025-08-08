@@ -26,6 +26,7 @@ export type BaseTableColumn<T> = TableColumn<T> & {
    * @example 'table.column.headerText'
    */
   headerText?: string
+  sortableHeaderAlignment?: 'left' | 'center' | 'right'
 }
 
 export type TableFetchResult<TData> = {

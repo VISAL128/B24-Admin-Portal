@@ -163,7 +163,7 @@ export const pgwModuleApiLogic = () => {
         },
         signal: AbortSignal.timeout(30000),
       }
-
+ 
       const response = await fetch(url, options)
       return handlePgwModuleApiResponse(response)
     } catch (error) {

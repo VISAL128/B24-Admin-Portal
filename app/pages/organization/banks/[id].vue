@@ -4,9 +4,6 @@
     <PageHeader
       :title="bank?.name_kh"
       :subtitle="bank?.name"
-      :show-status-button="!!bank && !loading"
-      :status-button-config="statusButtonConfig"
-      @status-toggle="toggleStatus"
     />
 
     <!-- Content -->

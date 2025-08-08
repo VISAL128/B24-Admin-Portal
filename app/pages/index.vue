@@ -67,12 +67,6 @@
                 </div>
             </UCard> -->
     </div>
-    <!-- Drawer -->
-    <!-- <TransactionDetailDrawer
-      :model-value="showTransactionDrawer"
-      :transaction-id="selectedTransactionId"
-      @update:modelValue="onUpdateModelValue"
-    /> -->
   </div>
 </template>
 

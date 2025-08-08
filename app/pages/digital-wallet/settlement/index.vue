@@ -511,6 +511,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     id: 'total_amount',
     accessorKey: 'total_amount',
     header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
+    sortableHeaderAlignment: 'right',
     cell: ({ row }) =>
       h(
         'div',
