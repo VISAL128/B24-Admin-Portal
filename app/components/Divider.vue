@@ -1,3 +1,3 @@
 <template>
-  <div class="border-b-1 border-gray-300" />
+  <div class="border-b-1 border-gray-200 dark:border-gray-700" />
 </template>

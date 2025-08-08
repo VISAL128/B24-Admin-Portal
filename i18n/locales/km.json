@@ -100,6 +100,7 @@
   "copy_failed": "ចម្លងបរាជ័យ",
   "copy_failed_message": "បរាជ័យក្នុងការចម្លងទៅក្ដារឈូស",
   "wallet_page": {
+    "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
     "title": "កាបូបឌីជីថល",
     "subtitle": "គ្រប់គ្រងសមតុល្យកាបូប និងប្រតិបត្តិការរបស់អ្នក",
     "refresh": "ផ្ទុកឡើងវិញ",
@@ -113,7 +114,7 @@
     "account_number": "លេខគណនី",
     "last_transaction": "ប្រតិបត្តិការចុងក្រោយ",
     "copy_success": "បានចម្លង!",
-    "copy_success_message": "លេខគណនីត្រូវបានចម្លង",
+    "copy_success_message": "ត្រូវបានចម្លងទៅក្ដារឈូស",
     "copy_to_clipboard": "ចម្លងទៅក្ដារ",
     "copy_account_number": "ចម្លងលេខគណនី",
     "copy_failed": "ចម្លងបរាជ័យ",
@@ -167,6 +168,58 @@
     "view_all": "មើលទាំងអស់",
     "recent_transactions": "ប្រតិបត្តិការថ្មីៗ",
     "no_transactions": "មិនមានប្រតិបត្តិការថ្មីៗ",
+    "transaction_list": "បញ្ជីប្រតិបត្តិការ",
+    "transaction_history": "ប្រវត្តិប្រតិបត្តិការ",
+    "load_more": "ចុះបន្ថែម",
+    "loading_transactions": "កំពុងទាញយកប្រតិបត្តិការ...",
+    "no_more_transactions": "អស់ប្រតិបត្តិការសម្រាប់ទាញយកហើយ",
+    "transaction_details": "ព័ត៌មានលម្អិតប្រតិបត្តិការ",
+    "transaction_no": "លេខប្រតិបត្តិការ",
+    "transaction_amount": "ចំនួនទឹកប្រាក់",
+    "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+    "transaction_status": "ស្ថានភាព",
+    "transaction_date": "កាលបរិច្ឆេទ",
+    "reference_no": "លេខយោង",
+    "bank_reference": "លេខយោងធនាគារ",
+    "fee_amount": "ចំនួនថ្លៃសេវា",
+    "net_amount": "ចំនួនសុទ្ធ",
+    "counterparty": "ភាគីដទៃ",
+    "payment_method": "វិធីបង់ប្រាក់",
+    "merchant": "អ្នកលក់",
+    "channel": "បណ្តាញ",
+    "filter_transactions": "ច្រោះប្រតិបត្តិការ",
+    "all_types": "ប្រភេទទាំងអស់",
+    "all_statuses": "ស្ថានភាពទាំងអស់",
+    "search_transactions": "ស្វែងរកប្រតិបត្តិការ...",
+    "search_placeholder": "ស្វែងរកតាមលេខប្រតិបត្តិការ, លេខយោង, ជាដើម",
+    "date_range": "ជួរកាលបរិច្ឆេទ",
+    "actions": "សកម្មភាព",
+    "view_details": "មើលព័ត៌មានលម្អិត",
+    "transaction_types": {
+      "top_up": "បញ្ចូលប្រាក់",
+      "settlement": "ការទូទាត់",
+      "transfer": "ផ្ទេរ",
+      "payment": "ការបង់ប្រាក់"
+    },
+    "transaction_statuses": {
+      "completed": "បានបញ្ចប់",
+      "pending": "រង់ចាំ",
+      "failed": "បរាជ័យ",
+      "cancelled": "បានលុបចោល"
+    },
+    "date_ranges": {
+      "today": "ថ្ងៃនេះ",
+      "yesterday": "ម្សិលមិញ",
+      "this_week": "សប្តាហ៍នេះ",
+      "this_month": "ខែនេះ",
+      "last_7_days": "៧ ថ្ងៃចុងក្រោយ",
+      "last_14_days": "១៤ ថ្ងៃចុងក្រោយ",
+      "last_30_days": "៣០ ថ្ងៃចុងក្រោយ",
+      "last_3_months": "៣ ខែចុងក្រោយ",
+      "last_6_months": "៦ ខែចុងក្រោយ",
+      "last_year": "១ ឆ្នាំចុងក្រោយ",
+      "custom": "ជួរកំណត់ផ្ទាល់"
+    },
     "billers": {
       "ev_charging": "បញ្ចូលថ្ម EV",
       "electricity": "អគ្គិសនី",
@@ -175,8 +228,9 @@
       "internet": "អ៊ីនធឺណិត",
       "insurance": "ការធានារ៉ាប់រង"
     },
-        "wallet_number": "លេខកូដកាបូប",
-    "bank_account_number": "លេខគណនី"
+    "wallet_number": "លេខកូដកាបូប",
+    "bank_account_number": "លេខគណនី",
+    "more_wallets_coming": "កាបូបបន្ថែមទៀតនឹងបង្ហាញនៅទីនេះ"
   },
   "wallet": "កាបូប",
   "settlement_menu": "ការទូទាត់",
@@ -538,7 +592,7 @@
       "error": "កំហុស",
       "processing": "កំពុងដំណើរការ"
     },
-    "active":{
+    "active": {
       "1": "សកម្ម",
       "0": "អសកម្ម"
     },
@@ -548,6 +602,24 @@
     }
   },
   "table": {
+    "wallet-transactions-table": {
+      "columns": {
+        "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "wallet_type": "ប្រភេទកាបូប",
+        "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+        "status": "ស្ថានភាព",
+        "amount": "ចំនួន",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "fee_amount": "ចំនួនថ្លៃកក់",
+        "net_amount": "ចំនួនសុទ្ធ",
+        "counterparty": "ភាគីដទៃ",
+        "payment_method": "វិធីបង់ប្រាក់",
+        "merchant": "អ្នកលក់",
+        "channel": "បណ្តាញ",
+        "customer_name": "ឈ្មោះអតិថិជន",
+        "action": "សកម្មភាព"
+      }
+    },
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
@@ -557,11 +629,11 @@
     "enter_fullscreen": "បើកអេក្រង់ពេញ",
     "exit_fullscreen": "បិទអេក្រង់ពេញ",
     "column_config": {
-        "tooltip": "លាក់/បង្ហាញជួរឈរ",
-        "reset": "កំណត់ឡើងវិញ",
-        "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
-        "columns": "ជួរឈរ"
-      },
+      "tooltip": "លាក់/បង្ហាញជួរឈរ",
+      "reset": "កំណត់ឡើងវិញ",
+      "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
+      "columns": "ជួរឈរ"
+    },
     "settlement-history": {
       "columns": {
         "created_date": "កាលបរិច្ឆេទទូទាត់",
@@ -583,44 +655,34 @@
         "active": "ស្ថានភាព"
       }
     },
+    "bank-settlements": {
+      "columns": {
+        "created_date": "កាលបរិច្ឆេទទូទាត់",
+        "bank_name": "ឈ្មោះធនាគារ",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "total_settled": "ចំនួនទូទាត់សរុប",
+        "settled_by": "ទូទាត់ដោយ"
+      }
+    },
     "transactions-history-table": {
-    "columns": {
-      "collection_bank": "ធនាគារប្រមូលប្រាក់",
-      "settlement_bank": "ធនាគារទូទាត់",
-      "settlement_type": "ប្រភេទទូទាត់",
-      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
-      "currency_id": "រូបិយប័ណ្ណ",
-      "status": "ស្ថានភាព",
-      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
-      "bank_ref": "លេខយោងធនាគារ",
-      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-      "total_customer": "ចំនួនអតិថិជន"
+      "columns": {
+        "collection_bank": "ធនាគារប្រមូលប្រាក់",
+        "settlement_bank": "ធនាគារទូទាត់",
+        "settlement_type": "ប្រភេទទូទាត់",
+        "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "bank_ref": "លេខយោងធនាគារ",
+        "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "total_customer": "ចំនួនអតិថិជន"
+      }
     }
   },
-  "sub-biller-transaction-table": {
-    "columns": {
-      "collection_bank": "ធនាគារប្រមូលប្រាក់",
-      "settlement_bank": "ធនាគារទូទាត់",
-      "settlement_type": "ប្រភេទទូទាត់",
-      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
-      "currency_id": "រូបិយប័ណ្ណ",
-      "status": "ស្ថានភាព",
-      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
-      "bank_ref": "លេខយោងធនាគារ",
-      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-      "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-      "total_customer": "ចំនួនអតិថិជន"
-    }
-  },
-  "sub-billers-table": {
-    "columns": {
-      "name": "ឈ្មោះ",
-      "sync_code": "លេខកូដ"
-    }
-  }
-  },
-    "search_placeholder": "ស្វែងរក...",
+  "search_placeholder": "ស្វែងរក...",
   "no_permission": {
     "title": "ការចូលត្រូវបានកំណត់",
     "access_denied": "បដិសេធការចូល",
@@ -784,7 +846,7 @@
   "pages": {
     "transaction": {
       "title": "ប្រតិបត្តិការ",
-      "created_date":"កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
       "total_customer": "ចំនួនអតិថិជន",
       "bank_ref": "លេខយោងធនាគារ",
       "repush": "បញ្ជូនម្តងទៀត",
@@ -806,6 +868,9 @@
     "bank_code": "លេខកូដធនាគារ",
     "bank_name": "ឈ្មោះធនាគារ",
     "bank_short_name": "ឈ្មោះខ្លី",
+    "name_kh": "ឈ្មោះ (ខ្មែរ)",
+    "active_banks": "ធនាគារសកម្ម",
+    "inactive_banks": "ធនាគារអសកម្ម",
     "swift_code": "លេខកូដ SWIFT",
     "description": "ការពិពណ៌នា",
     "country_code": "ប្រទេស",
@@ -827,6 +892,7 @@
     "updated_at": "បានអាប់ដេតនៅ",
     "created_by": "បង្កើតដោយ",
     "updated_by": "អាប់ដេតដោយ",
+    "activated_date": "កាលបរិច្ឆេទសកម្ម",
     "settlement_banks": "ធនាគារទូទាត់",
     "collection_banks": "ធនាគារប្រមូលប្រាក់",
     "bank_details": "ព័ត៌មានលម្អិតធនាគារ",
@@ -854,13 +920,14 @@
     "all_banks": "ធនាគារទាំងអស់",
     "total_banks": "ធនាគារសរុប",
     "bank_not_found_desc": "រកមិនឃើញធនាគារដែលបានស្នើសុំ។",
-    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។"
+    "bank_created_desc": "ធនាគារ {name} ត្រូវបានបង្កើតដោយជោគជ័យ។",
+    "settlement_history_desc": "មើលប្រតិបត្តិការទូទាត់ទាំងអស់ដែលបានដំណើរការតាមរយៈធនាគារនេះ"
   },
   "additional_information": "ព័ត៌មានបន្ថែម",
   "metadata": "ទិន្នន័យមេតា",
   "back": "ត្រលប់",
   "ascending": "តាមលំដាប់ឡើង",
   "descending": " តាមលំដាប់ចុះ",
-  "clear": "សម្អាត"
-  
+  "clear": "សម្អាត",
+  "customer_name": "ឈ្មោះអតិថិជន"
 }

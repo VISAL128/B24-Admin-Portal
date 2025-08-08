@@ -77,6 +77,7 @@ import StatusBadge from '~/components/StatusBadge.vue'
 import TablesExTable from '~/components/tables/ExTable.vue'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useErrorHandler } from '~/composables/useErrorHandler'
 import { useNotification } from '~/composables/useNotification'
 import {
@@ -94,6 +95,7 @@ import type { TransactionHistoryRecord } from '~/models/transaction'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transactionSummary'
 
 const pgwModuleApi = usePgwModuleApi()
+const transactionApi = useTransactionApi()
 
 const showInfoBanner = ref(true)
 const dateOptions = computed(() => {
@@ -162,73 +164,15 @@ const handleFullscreenToggle = (fullscreen: boolean) => {
 const fetchTransactionSummary = async () => {
   try {
     isLoading.value = true
-    const response = await pgwModuleApi.getTransactionSummary()
-    // Check if response has data (the API returns data directly, not wrapped in success/code)
-    if (response) {
-      console.log('✅ Frontend: Processing response data')
-    // transactionSummary.value = response
-    transactionSummary.value = {
-      period: {
-        type: 'month',
-        label: 'This Month',
-        dateFrom: '2025-08-01',
-        dateTo: '2025-08-31'
-      },
-      summarys: [
-        {
-          title: 'Total Transaction',
-          values: [{ value: 1245 }],
-          filterLabel: 'This month',
-          dateRange: '01/08/2025 - 31/08/2025',
-          periodType: 'month'
-        },
-        {
-          title: 'Failed Transactions',
-          values: [{ value: 23 }],
-          filterLabel: 'This month',
-          dateRange: '01/08/2025 - 31/08/2025',
-          periodType: 'month'
-        },
-        {
-          title: 'Total Amount',
-          values: [
-            { currency: 'KHR', value: 15680000 },
-            { currency: 'USD', value: 3920.50 }
-          ],
-          filterLabel: 'This month',
-          dateRange: '01/08/2025 - 31/08/2025',
-          periodType: 'month'
-        },
-        {
-          title: 'Total Settlement',
-          values: [
-            { currency: 'KHR', value: 15456000 },
-            { currency: 'USD', value: 3864.25 }
-          ],
-          filterLabel: 'This month',
-          dateRange: '01/08/2025 - 31/08/2025',
-          periodType: 'month'
-        }
-      ]
-    }
-    } else {
-      toast.add({
-        title: t('error'),
-        description: 'No transaction summary data available',
-        color: 'error',
-      })
-    }
+    const response = await transactionApi.getTransactionSummary()
+    transactionSummary.value = response
+    isLoading.value = false
+    console.log('✅ Frontend: Transaction summary loaded successfully')
   } catch (error) {
     console.error('❌ Frontend: Error fetching transaction summary:', error)
-    errorHandler.handleApiError(error)
-    toast.add({
-      title: t('error'),
-      description: t('failed_to_fetch_transaction_summary'),
-      color: 'error',
-    })
-  } finally {
-    isLoading.value = false
-    console.log('🏁 Frontend: Transaction summary fetch completed')
+    // Error handling is done automatically by executeV2 → errorHandler.handleApiError()
+    // Keep loading state true to show skeleton cards when there's an error
+    // isLoading.value remains true
   }
 }
 

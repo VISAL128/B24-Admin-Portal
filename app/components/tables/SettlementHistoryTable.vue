@@ -50,22 +50,6 @@ watch(
   },
   { deep: true, immediate: true }
 )
-// const pageSize = ref<{ label: string; value: number }>(
-//   props.currentQuery.page_size
-//     ? { label: props.currentQuery.page_size.toString(), value: props.currentQuery.page_size }
-//     : APP_CONSTANTS.DEFAULT_PAGE_SIZE
-// )
-// const onPageSizeChange = () => {
-//   settlementHistoryQuery.value.page = 1
-//   settlementHistoryQuery.value.page_size = pageSize.value?.value || 10
-//   // Emit the search event with the updated query
-//   props.onSearchSubmit?.(settlementHistoryQuery.value)
-// }
-// function onPageUpdate(page: number) {
-//   settlementHistoryQuery.value.page = page
-//   // Emit the search event with the updated query
-//   props.onSearchSubmit?.(settlementHistoryQuery.value)
-// }
 
 const handleSearchSubmit = () => {
   settlementHistoryQuery.value.page = 1
@@ -74,23 +58,6 @@ const handleSearchSubmit = () => {
 
 const openSlideover = ref(false)
 const openSliderWithData = ref<SettlementHistoryDetail | null>(null)
-
-// This function is search locally in the table
-// const filteredSettlementHistorys = computed(() => {
-//   const searchTerm = (settlementHistoryQuery.value.search || '').toLowerCase()
-//   if (searchTerm) {
-//     return props.settlementHistorys.filter((item) => {
-//       return (
-//         item.supplier.name.toLowerCase().includes(searchTerm) ||
-//         item.cpo?.code?.toLowerCase().includes(searchTerm) ||
-//         item.cpo?.name?.toLowerCase().includes(searchTerm) ||
-//         item.settle_amount.toString().includes(searchTerm) ||
-//         item.status.toLowerCase().includes(searchTerm)
-//       )
-//     })
-//   }
-//   return props.settlementHistorys
-// })
 
 const sortingHistory = ref([
   {

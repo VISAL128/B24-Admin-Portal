@@ -11,6 +11,20 @@ export interface Bank {
   activated_date: string
 }
 
+export interface BankAccount {
+  id: string
+  bank_id: string
+  code: string
+  name: string
+  title: string
+  account_type_id: string
+  status: string
+  currency_id: string
+  is_default: boolean
+  created_date: string
+  updated_date: string
+}
+
 export interface BankListResponse {
   records: Bank[]
   total_record: number

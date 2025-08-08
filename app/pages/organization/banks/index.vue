@@ -1,6 +1,12 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
+     <CardsSummaryCards
+      v-show="!isTableFullscreen" 
+      :cards="summarys"
+      :is-loading="isLoading"
+      :skeleton-count="3"
+    />
     <ExTable
       :table-id="TABLE_ID"
       :columns="columns"
@@ -9,6 +15,7 @@
       :fetch-data-fn="fetchBanks"
       show-row-number
       @row-click="handleViewDetails"
+      @fullscreen-toggle="(val) => isTableFullscreen = val"
       />
   </div>
 </template>
@@ -23,6 +30,7 @@ import { useTableConfig } from '~/composables/utils/useTableConfig'
 import type { BankListTableFetchResult, BaseTableColumn } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
 import type { QueryParams } from '~/models/baseModel'
+import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
 
 definePageMeta({
   auth: true,
@@ -42,6 +50,9 @@ const { statusCellBuilder } = useStatusBadge()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const table = useTemplateRef<any>('table')
 const router = useRouter()
+const isTableFullscreen = ref(false)
+const isLoading = ref(false)
+const summarys = ref<SummaryCard[]>([])
 
 // Define table ID and default column visibility
 const TABLE_ID = 'banks-list'
@@ -131,7 +142,34 @@ watch(
 // Fetch banks data from API
 const fetchBanks = async (params?: QueryParams): Promise<BankListTableFetchResult | undefined> => {
   try {
-    const data = await getBanks(params)
+     isLoading.value = true
+    const data = await getBanks(params) 
+    summarys.value = [
+      {
+        title: t('banks.total_banks'),
+        values: [{
+          value: data.data.length
+        }],
+        filterLabel: '',
+        dateRange: ''
+      },
+      {
+        title: t('banks.active_banks'),
+        values: [{
+          value: data.data.filter(bank => bank.active).length
+        }],
+        filterLabel: '',
+        dateRange: ''
+      },
+      {
+        title: t('banks.inactive_banks'),
+        values: [{
+          value: data.data.filter(bank => !bank.active).length
+        }],
+        filterLabel: '',
+        dateRange: ''
+      }
+    ]
     return {
       data: data.data,
       total_page: data.total_pages || 0,
@@ -140,6 +178,9 @@ const fetchBanks = async (params?: QueryParams): Promise<BankListTableFetchResul
   } catch (error: unknown) {
     // Show error notification to user
     errorHandler.handleApiError(error)
+  }
+  finally {
+    isLoading.value = false
   }
 }
 
@@ -150,7 +191,6 @@ onMounted(() => {
 const navigateToDetails = (bankId: string) => {
   router.push(`/organization/banks/${bankId}`)
 }
-
 
 const handleViewDetails = (rowData: Bank) => {
   navigateToDetails(rowData.id)

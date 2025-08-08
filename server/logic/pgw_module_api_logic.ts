@@ -43,13 +43,14 @@ export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
   method: string = 'POST',
-  body: unknown | null = null
+  body?: unknown
 ): Promise<T> {
   try {
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
     const query = getQuery<QueryParams>(event)
-    // Check if the query is type of QueryParams
-    const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query
+    
+    // Check if the query is type of QueryParams for GET requests
+    const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query && method === 'GET'
 
     // Only use QueryParams mapping for GET list requests
     if (isQueryParams) {
@@ -77,9 +78,10 @@ export async function requestToPgwModuleApi<T>(
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' }
       })
     } else {
-      console.log(`Requesting PGW Module API: ${url}`, { method })
+      console.log(`Requesting PGW Module API: ${url}`, { method, hasBody: !!body })
     }
-    
+
+    console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' } })
     const options: RequestInit = {
       method,
       headers: {
@@ -89,8 +91,23 @@ export async function requestToPgwModuleApi<T>(
       signal: AbortSignal.timeout(30000),
     }
 
-    if (body && method !== 'GET' && method !== 'HEAD') {
-      options.body = JSON.stringify(body)
+    // For POST requests, if no body is provided as parameter, try to read it from the request
+    if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+      let requestBody = body
+      
+      // If no body provided as parameter, try to read from request
+      if (!requestBody) {
+        try {
+          requestBody = await readBody(event)
+        } catch (error) {
+          console.warn('Could not read request body:', error)
+        }
+      }
+      
+      if (requestBody) {
+        options.body = JSON.stringify(requestBody)
+        console.log(`Adding request body to ${method} request`)
+      }
     }
     
     const response = await fetch(url, options)
@@ -146,7 +163,7 @@ export const pgwModuleApiLogic = () => {
         },
         signal: AbortSignal.timeout(30000),
       }
-
+ 
       const response = await fetch(url, options)
       return handlePgwModuleApiResponse(response)
     } catch (error) {

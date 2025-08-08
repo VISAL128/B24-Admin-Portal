@@ -36,6 +36,19 @@ export const useTable = <_T>(externalSortState?: Ref<Array<{ id: string; desc: b
       right: 'justify-end text-right',
     }
 
+    const getAlignmentClass = () => {
+      switch (alignment) {
+        case 'left':
+          return alignmentClasses.left
+        case 'center':
+          return alignmentClasses.center
+        case 'right':
+          return alignmentClasses.right
+        default:
+          return alignmentClasses.left
+      }
+    }
+
     const handleSort = () => {
       const columnId = column.id
       const current = getCurrentSortState(columnId)
@@ -95,7 +108,7 @@ export const useTable = <_T>(externalSortState?: Ref<Array<{ id: string; desc: b
       return 'i-lucide-arrow-up-down'
     }
 
-    return h('div', { class: `w-full ${alignmentClasses[alignment]}` }, [
+    return h('div', { class: `w-full ${getAlignmentClass()}` }, [
       h(UButton, {
         color: 'neutral',
         variant: 'ghost',

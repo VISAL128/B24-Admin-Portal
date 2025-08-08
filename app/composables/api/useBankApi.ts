@@ -10,7 +10,6 @@ export const useBankApi = () => {
 
   /**
    * Get list of banks with optional filtering and pagination (Legacy endpoint)
-   * @deprecated Use getBanksByServiceId or getBanksFromPgwModule instead
    */
   const getBanks = async (query?: QueryParams): Promise<ApiResponse<Bank[]>> => {
     const response = await execute<Bank[]>(() =>
@@ -106,7 +105,7 @@ export const useBankApi = () => {
    */
   const getBankById = async (id: string): Promise<Bank | null> => {
     const response = await execute<Bank>(() =>
-      $fetch<ApiResponse<Bank>>(`/api/management/banks/${id}`, {
+      $fetch<ApiResponse<Bank>>(`/api/pgw-module/bank/${id}`, {
         method: 'GET',
       })
     )

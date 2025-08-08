@@ -19,7 +19,7 @@
             @keyup.enter="debouncedFetchData"
           />
           <template v-if="showDateFilter">
-            <UPopover>
+            <!-- <UPopover>
               <UButton
                 color="neutral"
                 variant="subtle"
@@ -43,7 +43,14 @@
               <template #content>
                 <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
               </template>
-            </UPopover>
+            </UPopover> -->
+            <UiDateRangePicker
+              v-model="modelValue"
+              placeholder="Select date range..."
+              size="md"
+              variant="outline"
+              color="primary"
+            />
           </template>
 
           <UPopover v-if="showFilterButton" v-model:open="showAdvancedOptions">
@@ -166,7 +173,7 @@
         </div>
       </div>
 
-      <!-- ⚙️ Column Configuration -->
+      <!-- ⚙️ Trailing Header -->
       <div class="flex justify-end items-center gap-2">
         <slot name="trailingHeader" />
         <ExportButton
@@ -174,104 +181,106 @@
           :headers="exportHeaders"
           :export-options="resolvedExportOptions"
         />
-
-        <!-- More Options Dropdown -->
-        <UPopover>
-          <template #default>
-            <UTooltip
-              :text="t('table.more_options')"
-              :delay-duration="200"
-              placement="top"
-            >
-              <UButton variant="ghost" class="p-2">
-                <UIcon
-                  name="material-symbols:more-vert"
-                  size="sm"
-                  class="text-gray-900 dark:text-white"
-                />
-              </UButton>
-            </UTooltip>
-          </template>
-
-          <template #content>
-            <div class="py-1 min-w-40">
-              <UButton
-                variant="ghost"
-                size="sm"
-                :icon="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"
-                class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                @click="toggleFullscreen"
+        <div class="flex items-center gap-0">
+          <!-- Column Configuration -->
+          <UPopover>
+            <template #default>
+              <UTooltip
+                key="column-config-tooltip"
+                :text="t('table.column_config.tooltip')"
+                :delay-duration="200"
+                placement="top"
               >
-                {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
-              </UButton>
-            </div>
-          </template>
-        </UPopover>
+                <UButton variant="ghost" class="p-2">
+                  <UIcon
+                    name="icon-park-outline:setting-config"
+                    size="sm"
+                    class="text-gray-900 dark:text-white"
+                  />
+                </UButton>
+              </UTooltip>
+            </template>
 
-        <UPopover>
-          <template #default>
-            <UTooltip
-              key="column-config-tooltip"
-              :text="t('table.column_config.tooltip')"
-              :delay-duration="200"
-              placement="top"
-            >
-              <UButton variant="ghost" class="p-2">
-                <UIcon
-                  name="icon-park-outline:setting-config"
-                  size="sm"
-                  class="text-gray-900 dark:text-white"
-                />
-              </UButton>
-            </UTooltip>
-          </template>
+            <template #content>
+              <div class="space-y-1 min-w-50">
+                <div class="flex items-center justify-between px-2 pt-2">
+                  <span class="text-sm font-medium">{{ t('table.column_config.columns') }}</span>
+                </div>
+                <Divider />
+                <div class="flex flex-col gap-1 px-2">
+                  <UCheckbox
+                    v-for="col in columnConfig"
+                    :id="col.id"
+                    :key="col.id"
+                    :label="getTranslationHeaderById(col.id)"
+                    :model-value="col.getIsVisible()"
+                    :ui="appConfig.ui.checkbox.slots"
+                    variant="list"
+                    class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                    size="sm"
+                    @update:model-value="
+                      (value) => {
+                        col.toggleVisibility(value as boolean)
+                        columnVisibility[col.id] = value as boolean
+                      }
+                    "
+                  />
+                </div>
+                <Divider />
+                <div class="flex justify-end px-2 pb-2">
+                  <UButton
+                    variant="link"
+                    size="xs"
+                    color="neutral"
+                    class="underline"
+                    :ui="{
+                      ...appConfig.ui.button.slots,
+                      leadingIcon: 'shrink-0 size-3 text-muted',
+                    }"
+                    @click="onResetColumnVisibility"
+                  >
+                    <template #default>
+                      {{ t('table.column_config.reset') }}
+                    </template>
+                  </UButton>
+                </div>
+              </div>
+            </template>
+          </UPopover>
 
-          <template #content>
-            <div class="space-y-1 min-w-50">
-              <div class="flex items-center justify-between px-2 pt-2">
-                <span class="text-sm font-medium">{{ t('table.column_config.columns') }}</span>
-              </div>
-              <Divider />
-              <div class="flex flex-col gap-1 px-2">
-                <UCheckbox
-                  v-for="col in columnConfig"
-                  :id="col.id"
-                  :key="col.id"
-                  :label="getTranslationHeaderById(col.id)"
-                  :model-value="col.getIsVisible()"
-                  :ui="appConfig.ui.checkbox.slots"
-                  variant="list"
-                  class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                  size="sm"
-                  @update:model-value="
-                    (value) => {
-                      col.toggleVisibility(value as boolean)
-                      columnVisibility[col.id] = value as boolean
-                    }
-                  "
-                />
-              </div>
-              <Divider />
-              <div class="flex justify-end px-2 pb-2">
+          <!-- More Options Dropdown -->
+          <UPopover>
+            <template #default>
+              <UTooltip :text="t('table.more_options')" :delay-duration="200" placement="top">
+                <UButton variant="ghost" class="p-2">
+                  <UIcon
+                    name="material-symbols:more-vert"
+                    size="sm"
+                    class="text-gray-900 dark:text-white"
+                  />
+                </UButton>
+              </UTooltip>
+            </template>
+
+            <template #content>
+              <div class="py-1 min-w-40">
                 <UButton
-                  variant="link"
-                  size="xs"
-                  color="neutral"
-                  class="underline"
-                  :ui="{
-                    ...appConfig.ui.button.slots,
-                    leadingIcon: 'shrink-0 size-3 text-muted',
-                  }"
-                  @click="onResetColumnVisibility"
+                  variant="ghost"
+                  size="sm"
+                  :icon="
+                    isFullscreen
+                      ? 'material-symbols:fullscreen-exit'
+                      : 'material-symbols:fullscreen'
+                  "
+                  class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                  @click="toggleFullscreen"
                 >
-                  <template #default>
-                    {{ t('table.column_config.reset') }}
-                  </template>
+                  {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
                 </UButton>
               </div>
-            </div>
-          </template>
-        </UPopover>
+            </template>
+          </UPopover>
+        </div>
       </div>
     </div>
 
@@ -344,7 +353,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
-import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { CalendarDate } from '@internationalized/date'
 import type { TableRow } from '@nuxt/ui'
 import { computed, onMounted, readonly, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -356,7 +365,7 @@ import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { QueryParams } from '~/models/baseModel'
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~/utils/constants'
-import { ColumnType } from '~/utils/enumModel'
+import { ColumnType, FilterOperatorPgwModule } from '~/utils/enumModel'
 import appConfig from '~~/app.config'
 import ExportButton from '../buttons/ExportButton.vue'
 
@@ -481,7 +490,7 @@ const getTranslationHeaderById = (id: string) => {
 const search = ref('')
 const startDate = ref('')
 const endDate = ref('')
-const df = new DateFormatter('en-US', { dateStyle: 'medium' })
+// const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 const today = new Date()
 const showDateFilter = computed(() => props.showDateFilter ?? true)
 const modelValue = shallowRef({
@@ -562,7 +571,7 @@ const fetchData = async (refresh = false) => {
       .filter(([_, value]) => value && value.trim() !== '')
       .map(([field, value]) => ({
         field,
-        operator: 'eq' as const,
+        operator: FilterOperatorPgwModule.Equals,
         value,
       }))
 
@@ -782,14 +791,24 @@ const filteredColumns = computed(() => {
   const columns = columnsWithRowNumber.value
 
   columns.forEach((col) => {
-    if(col.id === 'select' || col.accessorKey === 'select' || col.id === 'row_number' || col.accessorKey === 'row_number') {
+    if (
+      col.id === 'select' ||
+      col.accessorKey === 'select' ||
+      col.id === 'row_number' ||
+      col.accessorKey === 'row_number'
+    ) {
       // Skip selection column
       return
     }
+    // If sorting is enabled, wrap header in sortable header function
     if (col.enableSorting) {
-      col.header = ({ column }) => createSortableHeader(column, col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id))
-    }
-    else {
+      col.header = ({ column }) =>
+        createSortableHeader(
+          column,
+          col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id),
+          col.sortableHeaderAlignment || 'left',
+        )
+    } else {
       col.header = col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id)
     }
   })
@@ -809,6 +828,15 @@ const filteredColumns = computed(() => {
     if (col.type === ColumnType.DateTime && !col.cell) {
       col.cell = ({ row }) => useFormat().formatDateTime(row.getValue(col.id as string))
     }
+    // else if (col.type === ColumnType.Amount && !col.cell) {
+    //   col.cell = ({ row }) => {
+    //     h(
+    //       'div',
+    //       { class: 'text-right' },
+    //       formatAmountV2('12345',  DEFAULT_CURRENCY_CONFIG.code)
+    //     )
+    //   }
+    // }
   })
   const visibleColumnIds = computed(() =>
     columnConfig.value

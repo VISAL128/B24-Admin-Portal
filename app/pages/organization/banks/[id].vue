@@ -1,309 +1,190 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-4 overflow-hidden">
+  <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
-    <div
-      class="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900 rounded shadow"
-    >
-      <div class="flex items-center gap-2">
-        <UButton
-          variant="ghost"
-          icon="i-lucide-arrow-left"
-          size="sm"
-          @click="$router.push('/organization/banks')"
-        >
-          {{ t('back') }}
-        </UButton>
-        <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ t('banks.bank_details') }}
-        </h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <UButton
-          v-if="bank"
-          color="primary"
-          variant="outline"
-          icon="i-lucide-edit"
-          size="sm"
-          @click="$router.push(`/organization/banks/${bank.id}/edit`)"
-        >
-          {{ t('banks.edit_bank') }}
-        </UButton>
-        <UButton
-          v-if="bank"
-          :color="bank.is_active ? 'error' : 'success'"
-          variant="outline"
-          :icon="bank.is_active ? 'i-lucide-pause' : 'i-lucide-play'"
-          size="sm"
-          @click="toggleStatus"
-        >
-          {{ bank.is_active ? t('banks.deactivate_bank') : t('banks.activate_bank') }}
-        </UButton>
-      </div>
-    </div>
+    <PageHeader
+      :title="bank?.name_kh"
+      :subtitle="bank?.name"
+    />
 
     <!-- Content -->
     <div v-if="loading" class="flex items-center justify-center flex-1">
       <LoadingSpinner />
     </div>
 
-    <div v-else-if="bank" class="flex-1 overflow-auto">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div v-else-if="bank" class="flex-1 overflow-auto space-y-3">
+      <!-- Bank Information Cards -->
+      <div v-if="!tblFull" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <!-- General Information -->
-        <UCard>
+        <UCard :ui="appConfig.ui.card.slots">
           <template #header>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ t('banks.general_information') }}
-            </h3>
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+                <UIcon name="material-symbols:chat-info-outline" class="w-4 h-4 text-primary" />
+              </div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ t('banks.general_information') }}
+              </h3>
+            </div>
           </template>
 
           <div class="space-y-4">
+            <UAvatar :name="bank.name" :src="bank.logo" size="3xl" />
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.bank_code') }}
+                  {{ t('banks.bank_name') }}
                 </label>
-                <p class="text-sm text-gray-900 dark:text-white font-mono">{{ bank.bank_code }}</p>
+                <p class="text-sm text-gray-900 dark:text-white">{{ bank.name }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.bank_short_name') }}
+                  {{ t('banks.name_kh') }}
                 </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.bank_short_name }}</p>
+                <p class="text-sm text-gray-900 dark:text-white">{{ bank.name_kh || '-' }}</p>
               </div>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ t('banks.bank_name') }}
-              </label>
-              <p class="text-sm text-gray-900 dark:text-white font-semibold">
-                {{ bank.name }}
-              </p>
-            </div>
-
+            <Divider />
             <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.swift_code') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white font-mono">
-                  {{ bank.swift_code || '-' }}
-                </p>
-              </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.is_active') }}
                 </label>
-                <UBadge :color="bank.is_active ? 'success' : 'error'" variant="subtle">
-                  {{ bank.is_active ? t('status.active') : t('status.inactive') }}
-                </UBadge>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.country_code') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.country_code }}</p>
+                <StatusBadge :status="bank.active ? 'active' : 'inactive'" size="sm" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.currency_code') }}
+                  {{ t('banks.activated_date') }}
                 </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.currency }}</p>
+                <p class="text-sm text-gray-900 dark:text-white">
+                  {{ formatDateTime(bank.activated_date) }}
+                </p>
               </div>
             </div>
-
+            <Divider />
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.is_settlement_bank') }}
                 </label>
-                <UBadge :color="bank.is_settlement_bank ? 'success' : 'neutral'" variant="subtle">
-                  {{ bank.is_settlement_bank ? t('yes') : t('no') }}
-                </UBadge>
+                <StatusBadge
+                  :status="bank.is_settlement_bank ? 'yes' : 'no'"
+                  :use-translation="true"
+                  size="sm"
+                />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.is_collection_bank') }}
                 </label>
-                <UBadge :color="bank.is_collection_bank ? 'success' : 'neutral'" variant="subtle">
-                  {{ bank.is_collection_bank ? t('yes') : t('no') }}
-                </UBadge>
+                <StatusBadge
+                  :status="bank.is_collection_bank ? 'yes' : 'no'"
+                  :use-translation="true"
+                  size="sm"
+                />
               </div>
-            </div>
-
-            <div v-if="bank.description">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ t('banks.description') }}
-              </label>
-              <p class="text-sm text-gray-900 dark:text-white">{{ bank.description }}</p>
             </div>
           </div>
         </UCard>
 
         <!-- Account Information -->
-        <UCard>
+        <UCard :ui="appConfig.ui.card.slots">
           <template #header>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ t('banks.account_information') }}
-            </h3>
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+                <UIcon
+                  name="material-symbols:inbox-text-person-outline"
+                  class="w-4 h-4 text-primary"
+                />
+              </div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ t('banks.account_information') }}
+              </h3>
+            </div>
           </template>
 
           <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ t('banks.account_number') }}
-              </label>
-              <p class="text-sm text-gray-900 dark:text-white font-mono">
-                {{ bank.account_number || '-' }}
+            <div v-if="bankAccounts.length === 0" class="text-center py-8">
+              <UIcon name="i-lucide-credit-card" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ t('banks.no_accounts_found') }}
               </p>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ t('banks.account_name') }}
-              </label>
-              <p class="text-sm text-gray-900 dark:text-white">{{ bank.account_name || '-' }}</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.branch_name') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.branch_name || '-' }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.branch_code') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white font-mono">
-                  {{ bank.branch_code || '-' }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </UCard>
-
-        <!-- Contact Information -->
-        <UCard>
-          <template #header>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ t('banks.contact_information') }}
-            </h3>
-          </template>
-
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ t('banks.contact_person') }}
-              </label>
-              <p class="text-sm text-gray-900 dark:text-white">{{ bank.contact_person || '-' }}</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.contact_phone') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.contact_phone || '-' }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.contact_email') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.contact_email || '-' }}</p>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ t('banks.address') }}
-              </label>
-              <p class="text-sm text-gray-900 dark:text-white">{{ bank.address || '-' }}</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div v-if="bank.website_url">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.website_url') }}
-                </label>
-                <a
-                  :href="bank.website_url"
-                  target="_blank"
-                  class="text-sm text-primary hover:text-primary-dark underline"
-                >
-                  {{ bank.website_url }}
-                </a>
-              </div>
-              <div v-if="bank.logo">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.logo_url') }}
-                </label>
-                <div class="flex items-center gap-2">
-                  <img
-                    :src="bank.logo"
-                    :alt="bank.name"
-                    class="w-8 h-8 object-contain"
-                    @error="
-                      (e) => {
-                        if (e.target) (e.target as HTMLElement).style.display = 'none'
-                      }
-                    "
-                  />
-                  <span class="text-xs text-gray-500">{{ bank.logo }}</span>
+            <div v-else class="space-y-3">
+              <div
+                v-for="account in bankAccounts"
+                :key="account.id"
+                class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+              >
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      {{ t('banks.account_number') }}
+                    </label>
+                    <p class="text-sm text-gray-900 dark:text-white font-mono">
+                      {{ account.code }}
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      {{ t('banks.account_name') }}
+                    </label>
+                    <p class="text-sm text-gray-900 dark:text-white">{{ account.name }}</p>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      {{ t('banks.currency_code') }}
+                    </label>
+                    <p class="text-sm text-gray-900 dark:text-white">{{ account.currency_id }}</p>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      {{ t('status.header') }}
+                    </label>
+                    <StatusBadge :status="account.status" size="sm" />
+                  </div>
+                </div>
+                <div v-if="account.is_default" class="mt-2">
+                  <UBadge color="primary" variant="subtle" size="xs">
+                    {{ t('banks.default_account') }}
+                  </UBadge>
                 </div>
               </div>
             </div>
           </div>
         </UCard>
+      </div>
 
-        <!-- Metadata -->
-        <UCard>
-          <template #header>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ t('metadata') }}
-            </h3>
-          </template>
-
-          <div class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.created_at') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">
-                  {{ useFormat().formatDateTime(bank.created_at) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.created_by') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.created_by || '-' }}</p>
-              </div>
+      <!-- Settlement History Table -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg shadow">
+        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-start">
+            <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+              <UIcon name="material-symbols:chat-info-outline" class="w-4 h-4 text-primary" />
             </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.updated_at') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">
-                  {{ useFormat().formatDateTime(bank.updated_at) }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {{ t('banks.updated_by') }}
-                </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.updated_by || '-' }}</p>
-              </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ t('settlement_history_title') }}
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ t('banks.settlement_history_desc') }}
+              </p>
             </div>
           </div>
-        </UCard>
+        </div>
+
+        <ExTable
+          :table-id="`bank-settlements`"
+          :columns="settlementColumns"
+          :fetch-data-fn="fetchSettlements"
+          :show-date-filter="true"
+          :show-search="true"
+          show-row-number
+          :search-tooltip="t('search_by_settler')"
+          class="border-0 max-h-[800px] overflow-auto"
+          @row-click="handleRowClick"
+          @fullscreen-toggle="(isFullScreen) => tblFull = isFullScreen"
+        />
       </div>
     </div>
 
@@ -322,13 +203,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useBankApi } from '~/composables/api/useBankApi'
-import type { Bank } from '~/models/bank'
 import { useI18n } from 'vue-i18n'
+import { useBankApi } from '~/composables/api/useBankApi'
+import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { useFormat } from '~/composables/utils/useFormat'
+import { useErrorHandler } from '~/composables/useErrorHandler'
+import { useNotification } from '~/composables/useNotification'
+import type { Bank, BankAccount } from '~/models/bank'
+import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
+import type { QueryParams } from '~/models/baseModel'
+import type { StatusButtonConfig } from '~/components/PageHeader.vue'
+import { ColumnType } from '~/utils/enumModel'
+import { getTranslatedStatusLabel, formatAmountV2 } from '~/utils/helper'
 import LoadingSpinner from '~/components/LoadingSpinner.vue'
+import ExTable from '~/components/tables/ExTable.vue'
+import StatusBadge from '~/components/StatusBadge.vue'
+import PageHeader from '~/components/PageHeader.vue'
+import appConfig from '~~/app.config'
+
+// Define settlement history status enum
+enum SettlementHistoryStatus {
+  PENDING = 'pending',
+  COMPLETED = 'completed', 
+  FAILED = 'failed',
+  SUCCESS = 'success',
+}
 
 definePageMeta({
   auth: true,
@@ -342,13 +244,154 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { getBankById, toggleBankStatus } = useBankApi()
+const { getSettlementHistory } = useSupplierApi()
+const { formatDateTime } = useFormat()
 const errorHandler = useErrorHandler()
 const notification = useNotification()
 
 const bank = ref<Bank | null>(null)
+const bankAccounts = ref<BankAccount[]>([])
 const loading = ref(false)
+const tblFull = ref(false)
 
 const bankId = computed(() => route.params.id as string)
+
+// Status button configuration
+const statusButtonConfig = computed((): StatusButtonConfig | undefined => {
+  if (!bank.value) return undefined
+  
+  return {
+    text: bank.value.active ? t('banks.deactivate_bank') : t('banks.activate_bank'),
+    color: bank.value.active ? 'error' : 'success',
+    icon: bank.value.active ? 'material-symbols:block' : 'material-symbols:play-circle-outline',
+    loading: false,
+  }
+})
+
+// Settlement table columns configuration
+const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[] => [
+  {
+    id: 'created_date',
+    accessorKey: 'created_date',
+    header: t('table.settlement-history.columns.created_date'),
+    type: ColumnType.Date,
+    enableSorting: true,
+    cell: ({ row }) => formatDateTime(row.original.created_date),
+  },
+  {
+    id: 'total_settled',
+    accessorKey: 'total_settled',
+    header: t('table.settlement-history.columns.total_settled'),
+    type: ColumnType.Number,
+    enableSorting: true,
+    cell: ({ row }) => row.original.total_settled?.toLocaleString() || '0',
+  },
+  {
+    id: 'status',
+    accessorKey: 'status',
+    header: t('table.settlement-history.columns.status'),
+    type: ColumnType.Text,
+    enableColumnFilter: true,
+    filterOptions: Object.values(SettlementHistoryStatus).map(status => ({
+      label: getTranslatedStatusLabel(status),
+      value: status,
+    })),
+    cell: ({ row }) =>
+      h(StatusBadge, {
+        status: row.original.status,
+        type: 'settlement',
+      }),
+  },
+  {
+    id: 'created_by',
+    accessorKey: 'created_by',
+    header: t('table.settlement-history.columns.created_by'),
+    type: ColumnType.Text,
+    enableSorting: true,
+    cell: ({ row }) => row.original.created_by || '-',
+  },
+  {
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    // header: t('table.settlement-history.columns.currency_id'),
+    type: ColumnType.Text,
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+    cell: ({ row }) => row.original.currency_id,
+  },
+  {
+    id: 'total_amount',
+    accessorKey: 'total_amount',
+    header: t('table.settlement-history.columns.total_amount'),
+    cell: ({ row }) =>
+      h('div', { class: 'text-right' }, formatAmountV2(row.original.total_amount, row.original.currency_id)),
+    type: ColumnType.Amount,
+    enableSorting: true
+  }
+])
+
+
+const handleRowClick = (rowData: SettlementHistoryRecord) => {
+  router.push(`/digital-wallet/settlement/details/${rowData.id}`)
+}
+
+// Fetch settlement data for the table
+const fetchSettlements = async (
+  params?: QueryParams
+): Promise<(TableFetchResult<SettlementHistoryRecord[]> & Record<string, unknown>) | null> => {
+  try {
+    if (!params) {
+      return {
+        data: [],
+        total_record: 0,
+        total_page: 0,
+      }
+    }
+
+    const query: SettlementHistoryQuery = {
+      page: params.page || 1,
+      page_size: params.page_size || 10,
+      supplier_id: '',
+      search: params.search || undefined,
+      start_date: params.start_date || undefined,
+      end_date: params.end_date || undefined,
+      status: params.statuses || undefined,
+    }
+
+    const response = await getSettlementHistory(query)
+
+    if (!response) {
+      return {
+        data: [],
+        total_record: 0,
+        total_page: 0,
+      }
+    }
+
+    return {
+      data: response.records || [],
+      total_record: response.total_record || 0,
+      total_page: response.total_page || 0,
+      page: response.page || params.page || 1,
+      sum_total_amount_khr: response.sum_total_amount_khr || 0,
+      sum_total_amount_usd: response.sum_total_amount_usd || 0,
+      sum_total_settled: response.sum_total_settled || 0,
+      sum_success: response.sum_success || 0,
+      sum_failed: response.sum_failed || 0,
+    }
+  } catch (error) {
+    console.error('Error fetching settlement data:', error)
+    errorHandler.handleApiError(error)
+    return {
+      data: [],
+      total_record: 0,
+      total_page: 0,
+    }
+  }
+}
 
 const fetchBank = async () => {
   if (!bankId.value) return
@@ -357,6 +400,7 @@ const fetchBank = async () => {
   try {
     const response = await getBankById(bankId.value)
     bank.value = response
+    await fetchBankAccounts()
   } catch (error) {
     errorHandler.handleApiError(error)
     router.push('/organization/banks')
@@ -365,10 +409,53 @@ const fetchBank = async () => {
   }
 }
 
+const fetchBankAccounts = async () => {
+  if (!bankId.value) return
+
+  try {
+    // Mock data for now - replace with actual API call when available
+    bankAccounts.value = [
+      {
+        id: '1',
+        bank_id: bankId.value,
+        code: '001234567890',
+        name: 'Primary Settlement Account',
+        title: 'Main Account',
+        account_type_id: 'settlement',
+        status: 'active',
+        currency_id: 'USD',
+        is_default: true,
+        created_date: '2024-01-01T00:00:00Z',
+        updated_date: '2024-01-01T00:00:00Z',
+      },
+      {
+        id: '2',
+        bank_id: bankId.value,
+        code: '002345678901',
+        name: 'KHR Collection Account',
+        title: 'Collection Account',
+        account_type_id: 'collection',
+        status: 'active',
+        currency_id: 'KHR',
+        is_default: false,
+        created_date: '2024-01-01T00:00:00Z',
+        updated_date: '2024-01-01T00:00:00Z',
+      },
+    ]
+
+    // Uncomment when API is available:
+    // const accounts = await getBankAccounts(bankId.value)
+    // bankAccounts.value = accounts || []
+  } catch (error) {
+    console.error('Error fetching bank accounts:', error)
+    bankAccounts.value = []
+  }
+}
+
 const toggleStatus = async () => {
   if (!bank.value) return
 
-  const newStatus = !bank.value.is_active
+  const newStatus = !bank.value.active
   const confirmMessage = newStatus ? t('banks.confirm_activate') : t('banks.confirm_deactivate')
 
   if (!confirm(confirmMessage)) return

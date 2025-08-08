@@ -2,6 +2,7 @@ export enum ColumnType {
   Text = 'text',
   Number = 'number',
   Currency = 'currency',
+  Amount = 'amount',
   Date = 'date',
   DateTime = 'datetime',
   Boolean = 'boolean',
@@ -20,6 +21,20 @@ enum FilterOperator {
   In = 'in',
   NotIn = 'not_in',
 }
+
+enum FilterOperatorPgwModule {
+  Equals = 'eq',
+  NotEquals = 'neq',
+  Contains = 'contains',
+  DoesNotContain = 'doesnotcontain',
+  GreaterThan = 'gt',
+  GreaterThanOrEqualTo = 'gte',
+  LessThan = 'lt',
+  LessThanOrEqualTo = 'lte',
+  StartsWith = 'startswith',
+  EndsWith = 'endswith',
+}
+
 enum FilterType {
   Text = 'text',
   Number = 'number',
@@ -65,4 +80,4 @@ enum BankServiceStatus {
   Active = 1,
   Inactive = 2
 }
-export { SortDirection, FilterOperator, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus, FeeType, Currency, BankServiceStatus  };
+export { SortDirection, FilterOperator, FilterOperatorPgwModule, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus, FeeType, Currency, BankServiceStatus  };

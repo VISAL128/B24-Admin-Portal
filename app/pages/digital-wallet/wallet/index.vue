@@ -64,12 +64,12 @@
             />
 
             <!-- History Icon -->
-            <UIcon
+            <!-- <UIcon
               name="material-symbols:history"
               class="w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200"
               :title="t('wallet_page.history')"
               @click="navigateToHistory"
-            />
+            /> -->
           </div>
         </div>
       </div>
@@ -531,16 +531,24 @@
       </div>
 
       <!-- Transaction List Section -->
-      <div v-if="walletTypes.length > 0 || isLoadingWalletTypes" class="mt-8">
+      <div v-if="walletTypes.length > 0 && selectedWalletType" class="mt-8">
         <TablesExTable
+          :key="`${TABLE_ID}-${selectedWalletType}`"
+          ref="tableRef"
           :columns="columns"
           :table-id="TABLE_ID"
-          :fetch-data-fn="fetchSettlementForTable"
+          :fetch-data-fn="fetchTransactionsForTable"
+          :loading="isLoadingTransactions"
           show-row-number
           show-date-filter
           search-tooltip="Search transactions"
           @row-click="handleViewDetails"
         />
+      </div>
+      
+      <!-- Transaction List Shimmer (when wallet types are loading) -->
+      <div v-else-if="isLoadingWalletTypes" class="mt-8">
+        <TableShimmer :rows="10" show-row-number />
       </div>
     </div>
   </div>
@@ -548,20 +556,20 @@
 
 <script setup lang="ts">
 import { h, resolveComponent, computed, ref, watch, onMounted, onUnmounted } from 'vue'
-import { format } from 'date-fns'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import TableShimmer from '~/components/tables/TableShimmer.vue'
+
 import { useWalletStore } from '~/stores/wallet'
-import { useWalletTransactionsApi } from '~/composables/api/useWalletTransactionsApi'
-import type { WalletTransactionParams } from '~/composables/api/useWalletTransactionsApi'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
 import type { WalletSummaryData } from '~~/server/model/pgw_module_api/wallet_transaction_summary'
-import type { WalletTransaction, WalletApiResponse } from '~/models/wallet'
+import type { WalletTransaction, SettlementWalletApiResponse, TopUpWalletApiResponse } from '~/models/wallet'
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'
-import { useStatusColor } from '~/composables/utils/useStatusColor'
+import type { QueryParams } from '~/models/baseModel'
+import { StatusBadge } from '#components'
 
 // Define page meta
 definePageMeta({
@@ -573,15 +581,16 @@ definePageMeta({
 const { formatCurrency } = useCurrency()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
-const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary } = usePgwModuleApi()
-const { getWalletTransactions } = useWalletTransactionsApi()
+const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getSettlementWalletTransactions, getTopUpWalletTransactions } = usePgwModuleApi()
 const { formatDateTime } = useFormat()
 const { t } = useI18n()
 const errorHandler = useErrorHandler()
-const { getVariantColorByStatus } = useStatusColor()
 
 // Wallet store
 const walletStore = useWalletStore()
+
+// Component Refs
+const tableRef = ref()
 
 // Reactive data
 const isRefreshing = ref(false)
@@ -633,17 +642,22 @@ const loadWalletTypes = async () => {
     isLoadingWalletTypes.value = true
     const response = await getWalletTypes()
 
+    console.log("======= loadWalletTypes response ========:", response)
+
     if (response.data?.wallet_type) {
       // Update wallet types from API - new format where keys are wallet IDs and values are objects
       const walletTypeData = response.data.wallet_type
       walletTypes.value = Object.entries(walletTypeData).map(([walletId, walletInfo]) => {
+        
         const info = walletInfo as unknown as {
           type: 'settlement_wallet' | 'top_up_wallet'
           name: string
           currency: 'KHR' | 'USD'
           supplier_id?: string
         }
+
         const cleanType = info.name.split(' - ')[0] || info.name
+
         return {
           id: walletId, // Use the wallet ID as the identifier
           label: info.name, // Full name with ID (e.g., "Settlement Wallet - 000000229")
@@ -683,6 +697,7 @@ const loadWalletBalance = async () => {
 
   // Get the selected wallet data
   const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  
   if (!selectedWallet) return
 
   try {
@@ -772,10 +787,10 @@ const getWalletTypeIcon = (type: string) => {
 
 const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
   {
-    id: 'transaction_date',
-    accessorKey: 'transaction_date',
+    id: 'tran_date',
+    accessorKey: 'tran_date',
     header: t('wallet_page.date'),
-    cell: ({ row }) => formatDateTime(row.original.transaction_date),
+    cell: ({ row }) => formatDateTime(row.original.tran_date),
     enableSorting: true,
   },
   {
@@ -787,79 +802,129 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
   {
     id: 'customer_name',
     accessorKey: 'customer_name',
-    header: t('wallet_page.customer_name'),
+    header: t('customer_name'),
     cell: ({ row }) => row.original.customer_name || '-',
   },
   {
     id: 'amount',
     accessorKey: 'amount',
-    header: () => h('div', { class: 'w-full flex justify-end' }, t('wallet_page.amount')),
+    header: t('settlement.amount'),
     cell: ({ row }) => h('div', { class: 'text-right' }, formatCurrency(row.original.amount, row.original.currency)),
     enableSorting: true,
   },
-  {
+  // {
+  //   id: 'status',
+  //   accessorKey: 'status',
+  //   header: t('settlement_history.columns.status'),
+  //   cell: ({ row }) => {
+  //     const UBadge = resolveComponent('UBadge')
+  //     return h(
+  //       UBadge,
+  //       {
+  //         color: getVariantColorByStatus(row.original.status),
+  //         variant: 'subtle',
+  //       },
+  //       () => t('wallet_page.transaction_status'),
+        
+  //     )
+  //   },
+  //   enableColumnFilter: true,
+  //   filterOptions: [
+  //     { label: t('completed'), value: t('completed') },
+  //     { label: t('pending'), value: t('pending') },
+  //     { label: t('failed'), value: t('failed') },
+  //   ],
+  // },
+   {
     id: 'status',
-    accessorKey: 'status',
-    header: t('wallet_page.status'),
+    header: () => t('status.header'),
+    cell: ({ row }) =>
+      h(StatusBadge, {
+        status: row.original.status,
+        variant: 'subtle',
+        size: 'sm',
+      }),
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: t('completed'), value: t('completed') },
+      { label: t('pending'), value: t('pending') },
+      { label: t('failed'), value: t('failed') },
+    ],
+  },
+  {
+    id: 'actions',
+    header: t('wallet_page.actions'),
     cell: ({ row }) => {
-      const UBadge = resolveComponent('UBadge')
+      const UButton = resolveComponent('UButton')
       return h(
-        UBadge,
+        UButton,
         {
-          color: getVariantColorByStatus(row.original.status),
-          variant: 'subtle',
+          variant: 'outline',
+          color: 'primary',
+          size: 'sm',
+          onClick: () => handleViewDetails(row.original),
         },
-        () => t(`status.${row.original.status.toLowerCase()}`)
+        () => t('wallet_page.view_details')
       )
-    },
+    },    
   },
 ])
 
 // Wrapper function for TablesExTable
-const fetchSettlementForTable = async (params?: {
-  page?: number
-  pageSize?: number
-  search?: string
-  startDate?: string
-  endDate?: string
-}) => {
+const fetchTransactionsForTable = async (params?: QueryParams) => {
   isLoadingTransactions.value = true
-  const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
 
+  const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
+  
   if (!selectedWallet) {
+    // This can happen on initial load before a wallet is selected.
+    // The table should not attempt to fetch data in this case.
     isLoadingTransactions.value = false
-    return { data: [], total_record: 0, total_page: 0 }
+    throw new Error('No wallet selected')
   }
 
   try {
-    const apiParams: WalletTransactionParams = {
-      walletType: selectedWallet.walletType,
-      currency: selectedWallet.currency,
-      fromDate: params?.startDate ? format(new Date(params.startDate), 'dd/MM/yyyy') : format(new Date(), '01/MM/yyyy'),
-      toDate: params?.endDate ? format(new Date(params.endDate), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy'),
-      pageIndex: params?.page || 1,
-      pageSize: params?.pageSize,
-      search: params?.search,
-      supplierId: selectedWallet.supplierId,
-    }
+    console.log("======= Fetching transactions for wallet:", selectedWallet)
+    console.log("======= Using params:", params)
+    console.log("======= Wallet type:", selectedWallet.walletType)
+    console.log("======= API endpoint will be:", selectedWallet.walletType === 'settlement_wallet' ? 'settlement' : 'top-up')
+    
+    const response = selectedWallet.walletType === 'settlement_wallet'
+      ? await getSettlementWalletTransactions(params)
+      : await getTopUpWalletTransactions(params)
 
-    const response: WalletApiResponse = await getWalletTransactions(apiParams)
-
+    // Parse response based on wallet type
     let data: WalletTransaction[] = []
     let total_record = 0
 
-    if ('result' in response && 'data' in response.result) {
-      // Top-up wallet response structure
-      data = response.result.data.result
-      total_record = response.result.data.param.rowCount || 0
-    } else if ('data' in response) {
-      // Settlement wallet response structure
-      data = response.data.result
-      total_record = response.data.param.rowCount || 0
+    if (selectedWallet.walletType === 'settlement_wallet') {
+      const settlementResponse = response as SettlementWalletApiResponse
+      if (settlementResponse?.data?.result) {
+        data = settlementResponse.data.result
+        total_record = settlementResponse.data.param?.rowCount || 0
+      } else {
+        throw new Error('Invalid settlement wallet API response structure')
+      }
+    } else {
+      const topUpResponse = response as TopUpWalletApiResponse
+      if (topUpResponse?.result?.data?.result) {
+        data = topUpResponse.result.data.result
+        total_record = topUpResponse.result.data.param?.rowCount || 0
+      } else {
+        throw new Error('Invalid top-up wallet API response structure')
+      }
     }
 
-    const pageSize = params?.pageSize || 10
+    const pageSize = Number(params?.page_size) || 10
     const total_page = Math.ceil(total_record / pageSize)
+
+    console.log("======= Returning server data ========:", {
+      dataLength: data.length,
+      total_record,
+      total_page,
+      walletType: selectedWallet.walletType
+    })
 
     return {
       data,
@@ -867,8 +932,10 @@ const fetchSettlementForTable = async (params?: {
       total_page,
     }
   } catch (error: unknown) {
+    console.error('Error fetching wallet transactions:', error)
     errorHandler.handleApiError(error)
-    return { data: [], total_record: 0, total_page: 0 }
+    // Re-throw the error so the table component can handle it properly
+    throw error
   } finally {
     isLoadingTransactions.value = false
   }
@@ -876,7 +943,7 @@ const fetchSettlementForTable = async (params?: {
 
 // New row click handler
 const handleViewDetails = (row: WalletTransaction) => {
-  console.log('View details for:', row)
+  console.log('View details for...:', row)
 }
 
 // Computed wallet type data
@@ -903,7 +970,7 @@ const summaryData = computed(() => {
   }
 
   // Log the data for debugging
-  console.log(`Loading ${isSettlementWallet ? 'Settlement' : 'Top-up'} data:`, sourceData)
+  
 
   return sourceData
 })
@@ -1079,9 +1146,16 @@ const currentSummaryData = computed(() => {
 
 // Watch for wallet type changes to trigger animations and reload balance
 watch(selectedWalletType, async (newType, oldType) => {
-  if (newType !== oldType) {
+  if (newType !== oldType && newType) {
+    console.log("======= Wallet type changed from", oldType, "to", newType)
+    
     const selectedWallet = walletTypes.value.find((type) => type.id === newType)
-    selectedWalletTypeAPI.value = selectedWallet?.name || ''
+    if (!selectedWallet) {
+      console.warn('Selected wallet not found:', newType)
+      return
+    }
+
+    selectedWalletTypeAPI.value = selectedWallet.name || ''
 
     // Update summary display currency based on selected wallet
     if (selectedWallet?.currency) {
@@ -1094,9 +1168,18 @@ watch(selectedWalletType, async (newType, oldType) => {
     // Load data in parallel when wallet type changes.
     isWalletLoading.value = true
     isLoadingSummary.value = true
-    // The table will be re-keyed and fetch its own data, so we don't need to set its loading state here.
+    
     try {
-      await Promise.all([loadWalletBalance(), loadTransactionSummary()])
+      await Promise.all([
+        loadWalletBalance(), 
+        loadTransactionSummary()
+      ])
+      console.log("======= Wallet data reloaded for type:", selectedWallet.walletType)
+      
+      // The table should automatically refetch due to the key change
+      // No need to manually call refetch since the component will be re-mounted
+    } catch (error) {
+      console.error('Failed to reload wallet data:', error)
     } finally {
       // The individual loading states are managed within their respective functions,
       // but we can set them to false here as a fallback.
@@ -1122,7 +1205,6 @@ onMounted(async () => {
     await Promise.all([
       loadWalletBalance(),
       loadTransactionSummary(),
-      // The table will trigger its own fetch on mount, so no need to call here.
     ])
   } else {
     // If no wallets are found, ensure all shimmers are turned off.
@@ -1149,13 +1231,6 @@ const refreshBalances = async () => {
     await Promise.all([
       loadWalletBalance(),
       loadTransactionSummary(),
-      // We need a way to trigger the table refresh.
-      // The table is keyed to `selectedWalletType`, but a manual refresh needs to re-trigger.
-      // A simple way is to change the key, but that's not ideal.
-      // The best way is to have the table expose a refresh method.
-      // For now, we will rely on the fact that the table component will likely
-      // re-fetch if its `fetch-data-fn` is called again.
-      // A better approach would be to have a `ref` on the table and call a method.
     ])
   } catch (error) {
     console.error('Failed to refresh balances:', error)
@@ -1171,26 +1246,26 @@ const refreshBalances = async () => {
   }
 }
 
-const navigateToHistory = () => {
-  // Set the wallet type filter in the store
-  if (selectedWalletType.value && selectedWalletTypeAPI.value) {
-    walletStore.setupTransactionHistoryFilter({
-      walletType: selectedWalletTypeAPI.value,
-      period: 'this_month',
-    })
-  }
+// const navigateToHistory = () => {
+//   // Set the wallet type filter in the store
+//   if (selectedWalletType.value && selectedWalletTypeAPI.value) {
+//     walletStore.setupTransactionHistoryFilter({
+//       walletType: selectedWalletTypeAPI.value,
+//       period: 'this_month',
+//     })
+//   }
 
-  // Check if it's a settlement wallet type
-  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
-  const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
+//   // Check if it's a settlement wallet type
+//   const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+//   const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
 
-  // Navigate to appropriate page based on wallet type
-  if (isSettlementWallet) {
-    navigateTo('/digital-wallet/settlement')
-  } else {
-    navigateTo('/transactions')
-  }
-}
+//   // Navigate to appropriate page based on wallet type
+//   if (isSettlementWallet) {
+//     navigateTo('/digital-wallet/settlement')
+//   } else {
+//     navigateTo('/transactions')
+//   }
+// }
 
 const copyToClipboard = async (text: string) => {
   try {
