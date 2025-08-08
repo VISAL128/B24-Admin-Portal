@@ -2,6 +2,8 @@ import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { SubBillerListResponse, WalletListResponse } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
+import type { TransactionListResponse } from '~/models/transaction'
+
 import type {
   FeeSummaryResponse,
   TopUpSummaryResponse,
@@ -191,6 +193,18 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
   //   )
   // }
 
+    const getTransactions = async (query?: QueryParams) => {
+
+    console.log('Fetching transactions with query:', query)
+    const rep = await executeV2(() =>
+      $fetch<TransactionListResponse>(`/api/pgw-module/transaction/list/v2`, {
+        method: 'GET',
+        query
+      })
+    )
+    return rep
+  }
+
   return {
     getProfile,
     getWalletTypes,
@@ -202,6 +216,7 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
     getTopUpWalletTransactions,
     getSubBillers,
     getSubBillerById,
-    getSubBillerWalletList
+    getSubBillerWalletList,
+    getTransactions
   }
 }

@@ -434,7 +434,7 @@ const columns: BaseTableColumn<Supplier>[] = [
   {
     id: 'name',
     accessorKey: 'name',
-    header: t('name'),
+    headerText: t('name'),
     enableSorting: true,
   },
   {
