@@ -19,31 +19,6 @@
             @keyup.enter="debouncedFetchData"
           />
           <template v-if="showDateFilter">
-            <!-- <UPopover>
-              <UButton
-                color="neutral"
-                variant="subtle"
-                size="sm"
-                icon="material-symbols:calendar-month-outline-rounded"
-                class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700"
-              >
-                <template v-if="modelValue.start">
-                  <template v-if="modelValue.end">
-                    {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
-                    {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
-                  </template>
-                  <template v-else>
-                    {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }}
-                  </template>
-                </template>
-                <template v-else>
-                  {{ t('pick_a_date') }}
-                </template>
-              </UButton>
-              <template #content>
-                <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
-              </template>
-            </UPopover> -->
             <UiDateRangePicker
               v-model="modelValue"
               placeholder="Select date range..."
@@ -53,7 +28,7 @@
             />
           </template>
 
-          <UPopover v-if="showFilterButton" v-model:open="showAdvancedOptions">
+          <UPopover v-if="showFilterButton" v-model:open="showColumnFilterPopup">
             <UTooltip :text="t('table.filters')" :delay-duration="200">
               <UButton variant="ghost" class="p-2 relative">
                 <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
@@ -83,10 +58,15 @@
                             <StatusSelection
                               :model-value="selectedStatuses"
                               :multiple="true"
-                              :available-statuses="col.filterValues || []"
+                              :available-statuses="['all' , ...getColumnFilterOptions(col).map((status) => status.value.toString()) || []]"
                               :include-all-statuses="false"
                               :placeholder="t('settlement.select_status')"
                               :searchable="false"
+                              @update:model-value="(val) => {
+                                val = val as { label: string; value: string }[]
+                                selectedStatuses = val
+                                emit('filter-change', col.id, val.map((s) => s.value).join(','))
+                              }"
                             />
                           </template>
                           <template v-else>
@@ -135,6 +115,15 @@
                     >
                       <template #default>
                         {{ t('table.column_config.reset') }}
+                      </template>
+                    </UButton>
+                    <UButton
+                      size="sm"
+                      :ui="appConfig.ui.button.slots"
+                      @click="onApplyColumnFilters"
+                    >
+                      <template #default>
+                        {{ t('table.column_config.apply') }}
                       </template>
                     </UButton>
                   </div>
@@ -440,38 +429,24 @@ const saveColumnVisibility = () => {
 const saveColumnFilters = () => {
   tableConfig.saveColumnFilters(props.tableId, columnFilters.value)
   if (import.meta.env.DEV)
-    console.log(`💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
+    console.log(`DEV: 💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
 }
 
 const saveDateRange = () => {
   tableConfig.saveDateRange(props.tableId, dateRange.value)
   if (import.meta.env.DEV)
-    console.log(`💾 Saved date range for table ${props.tableId}:`, dateRange.value)
+    console.log(`DEV: 💾 Saved date range for table ${props.tableId}:`, dateRange.value)
 }
 
 const saveSorting = () => {
   tableConfig.saveSortingState(props.tableId, sorting.value)
   if (import.meta.env.DEV)
-    console.log(`💾 Saved sorting for table ${props.tableId}:`, sorting.value)
+    console.log(`DEV: 💾 Saved sorting for table ${props.tableId}:`, sorting.value)
 }
 
 watch(columnVisibility, saveColumnVisibility, { deep: true })
-watch(columnFilters, saveColumnFilters, { deep: true })
 watch(dateRange, saveDateRange, { deep: true })
 watch(sorting, saveSorting, { deep: true })
-
-// Watch column filters for data fetching when using fetchDataFn
-watch(
-  columnFilters,
-  async (_newFilters) => {
-    if (props.fetchDataFn && mounted.value) {
-      // Reset to first page when filters change
-      internalPage.value = 1
-      await fetchData()
-    }
-  },
-  { deep: true }
-)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columnConfig = computed((): any[] => {
@@ -508,7 +483,7 @@ const selectedStatuses = ref<{ label: string; value: string }[]>([{ label: 'all'
 const autoRefresh = ref(false)
 const isRefreshing = ref(false)
 
-const showAdvancedOptions = ref(false)
+const showColumnFilterPopup = ref(false)
 
 const emit = defineEmits<{
   (e: 'filter-change', columnId: string, value: string): void
@@ -531,6 +506,16 @@ const loading = ref(false)
 
 // Use internal data if no data prop is provided
 const tableData = computed(() => internalData.value)
+
+const onApplyColumnFilters = async () => {
+  saveColumnFilters()
+  showColumnFilterPopup.value = false
+  if (props.fetchDataFn && mounted.value) {
+    // Reset to first page when filters change
+    internalPage.value = 1
+    await fetchData()
+  }
+}
 
 // Fetch data function
 const fetchData = async (refresh = false) => {
@@ -581,6 +566,9 @@ const fetchData = async (refresh = false) => {
       search: search.value,
       start_date: props.showDateFilter ? startDate.value : undefined,
       end_date: props.showDateFilter ? endDate.value : undefined,
+      statuses: selectedStatuses.value
+        .filter((s) => s.value !== 'all' && s.value !== '')
+        .map((s) => s.value),
       sorts: Array.from(sorts),
       sortAsString: sortingStr,
       filters: filters.length > 0 ? filters : [],
@@ -694,7 +682,7 @@ const allColumnIds = computed(() =>
 const activeFilterCount = computed(() => {
   const columnFilterCount = Object.values(columnFilters.value).filter((val) => val !== '').length
   const sortFilterCount = selectedSortField.value ? 1 : 0
-  return columnFilterCount + sortFilterCount
+  return columnFilterCount + sortFilterCount + (selectedStatuses.value.filter((s) => s.value !== 'all' && s.value !== '').length > 0 ? 1 : 0)
 })
 
 const exportHeaders = computed(() =>
@@ -1050,7 +1038,9 @@ const onResetColumnVisibility = () => {
 
 const resetColumnFilters = () => {
   columnFilters.value = {}
+  selectedStatuses.value = [{ label: 'all', value: '' }]
   emit('filter-change', '', '')
+  showColumnFilterPopup.value = false
 }
 
 const resetSorting = () => {

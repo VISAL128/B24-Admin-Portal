@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, nextTick, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { h, nextTick, ref, resolveComponent, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { CalendarDate } from '@internationalized/date'
@@ -109,38 +109,6 @@ const isTableFullscreen = ref(false)
 const isLoading = ref(false)
 const dateRangeFilterDisplay = ref('')
 
-// Initialize status filter from localStorage or defaults
-const initializeStatusFilter = () => {
-  const savedStatusValues = tableConfig.getStatusFilter(TABLE_ID)
-
-  if (savedStatusValues && savedStatusValues.length > 0) {
-    const filteredValues = savedStatusValues.filter((value) => {
-      // If we have specific statuses, remove the "All" (empty string) option
-      const hasSpecificStatuses = savedStatusValues.some((v) => v !== '')
-      return hasSpecificStatuses ? value !== '' : true
-    })
-
-    selectedStatuses.value = filteredValues.map((value) => ({
-      label: value === '' ? t('status.all') : getTranslatedStatusLabel(value),
-      value,
-    }))
-  } else {
-    // Default to "All" status when no saved values
-    selectedStatuses.value = [
-      {
-        label: t('status.all'),
-        value: '',
-      },
-    ]
-  }
-}
-
-const selectedStatuses = ref<{ label: string; value: string }[]>([
-  {
-    label: t('status.all'),
-    value: '',
-  },
-])
 const availableStatuses = ref<string[]>(Object.values(SettlementHistoryStatus))
 const today = new Date()
 const modelValue = shallowRef({
@@ -217,32 +185,9 @@ const saveSortingState = () => {
   tableConfig.saveSortingState(TABLE_ID, sortingState.value)
 }
 
-// Save status filter changes to localStorage
-const saveStatusFilter = () => {
-  tableConfig.saveStatusFilter(
-    TABLE_ID,
-    selectedStatuses.value.map((status) => status.value)
-  )
-}
-
 // Watch for changes and auto-save
 watch(columnVisibility, saveColumnVisibility, { deep: true })
 watch(sortingState, saveSortingState, { deep: true })
-watch(selectedStatuses, saveStatusFilter, { deep: true })
-
-// Watch for language changes to update status label
-const { locale } = useI18n()
-watch(
-  locale,
-  () => {
-    // Update the selected status labels when language changes
-    selectedStatuses.value = selectedStatuses.value.map((status) => ({
-      ...status,
-      label: status.value === '' ? t('status.all') : getTranslatedStatusLabel(status.value),
-    }))
-  },
-  { immediate: false }
-)
 
 // Initialize table column visibility from saved configuration
 const initializeTableColumnVisibility = () => {
@@ -301,7 +246,7 @@ const fetchSettlementForTable = async (params?: QueryParams): Promise<Settlement
       page: params?.page || page.value,
       start_date: params?.start_date,
       end_date: params?.end_date,
-      status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
+      status: params?.statuses || [],
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
     }
 
@@ -334,13 +279,6 @@ onBeforeMount(() => {
   // Set default date range to current month
   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
-})
-
-// Initial load
-onMounted(() => {
-
-  initializeStatusFilter()
-  // fetchSettlementHistory()
 })
 
 const onGenerateSettlement = () => {
@@ -490,7 +428,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     header: () => t('status.header'),
     cell: ({ row }) => statusCellBuilder(row.original.status, true),
     enableColumnFilter: true,
-    filterType: 'select',
+    filterType: 'status',
     filterOptions: availableStatuses.value.map((status) => ({
       label: getTranslatedStatusLabel(status),
       value: status,

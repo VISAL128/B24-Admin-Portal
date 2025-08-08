@@ -98,6 +98,7 @@
     "column_config": {
       "tooltip": "Hide/Show Columns",
       "reset": "Reset",
+      "apply": "Apply",
       "reset_description": "Reset columns and sorting to defaults",
       "columns": "Columns"
       },
