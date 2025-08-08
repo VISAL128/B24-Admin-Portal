@@ -87,6 +87,8 @@ const modelValue = computed({
 })
 
 const ranges = [
+  { label: t('wallet_page.date_ranges.today'), duration: { days: 1 } },
+  { label: t('wallet_page.date_ranges.yesterday'), duration: { days: 2 } },
   { label: t('wallet_page.date_ranges.last_7_days'), duration: { days: 7 } },
   { label: t('wallet_page.date_ranges.last_14_days'), duration: { days: 14 } },
   { label: t('wallet_page.date_ranges.last_30_days'), duration: { days: 30 } },

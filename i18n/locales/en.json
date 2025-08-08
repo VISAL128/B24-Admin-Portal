@@ -318,6 +318,7 @@
     },
     "date_ranges": {
       "today": "Today",
+      "yesterday": "Yesterday",
       "this_week": "This Week",
       "this_month": "This Month",
       "last_7_days": "Last 7 Days",
