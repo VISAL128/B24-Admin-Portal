@@ -210,7 +210,6 @@
       show-row-number
       show-date-filter
       enabled-auto-refresh
-      enabled-repush
       @row-click="handleViewDetails"
     >
     <template #trailingHeader>
@@ -298,11 +297,11 @@ definePageMeta({
 const { t } = useI18n()
 
 const tabs = [
-  { label: t('details'), value: 'details' },
   { label: t('wallet'), value: 'wallet' },
+  { label: t('details'), value: 'details' }
 ]
 
-const activeTab = ref('details')
+const activeTab = ref('wallet')
 const route = useRoute()
 const notification = useNotification()
 
