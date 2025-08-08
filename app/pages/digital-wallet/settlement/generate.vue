@@ -675,7 +675,7 @@ const fetchInquirySettlementCpo = async () => {
 
     const response = await supplierApi.getInquirySettlement(request)
     if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000))
-    listInquirySettlement.value = response
+    listInquirySettlement.value = response || undefined
   } catch (error) {
     console.error('Failed to fetch CPOs:', error)
   } finally {

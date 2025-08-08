@@ -5,4 +5,5 @@ export interface UserPreferences {
   hour12: boolean
   currency: string
   defaultPageSize: number
+  autoRefreshInterval: number // in seconds
 }
