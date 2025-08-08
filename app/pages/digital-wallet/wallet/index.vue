@@ -852,23 +852,23 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
       { label: t('failed'), value: t('failed') },
     ],
   },
-  {
-    id: 'actions',
-    header: t('wallet_page.actions'),
-    cell: ({ row }) => {
-      const UButton = resolveComponent('UButton')
-      return h(
-        UButton,
-        {
-          variant: 'outline',
-          color: 'primary',
-          size: 'sm',
-          onClick: () => handleViewDetails(row.original),
-        },
-        () => t('wallet_page.view_details')
-      )
-    },    
-  },
+  // {
+  //   id: 'actions',
+  //   header: t('wallet_page.actions'),
+  //   cell: ({ row }) => {
+  //     const UButton = resolveComponent('UButton')
+  //     return h(
+  //       UButton,
+  //       {
+  //         variant: 'outline',
+  //         color: 'primary',
+  //         size: 'sm',
+  //         onClick: () => handleViewDetails(row.original),
+  //       },
+  //       () => t('wallet_page.view_details')
+  //     )
+  //   },    
+  // },
 ])
 
 // Wrapper function for TablesExTable
