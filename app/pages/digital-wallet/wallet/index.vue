@@ -801,8 +801,8 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
     enableColumnFilter: true,
     filterType: 'select',
     filterOptions: [
-      { label: t('wallet_payment'), value: t('wallet_payment') },
-      { label: t('wallet_topup'), value: t('wallet_topup') },
+      { label: t('dynamic_filter.tranType.wallet_payment'), value: t('wallet_payment') },
+      { label: t('dynamic_filter.tranType.wallet_topup'), value: t('wallet_topup') },
      ],
          enableSorting: true
   },
