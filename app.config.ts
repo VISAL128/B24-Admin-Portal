@@ -237,6 +237,7 @@ export default defineAppConfig({
       slots: {
         leadingIcon: 'shrink-0 size-4 text-muted',
         trailingIcon: 'shrink-0 size-4 text-muted',
+        base: 'min-w-16 justify-center',
       },
     },
     input: {

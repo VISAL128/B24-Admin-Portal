@@ -413,30 +413,10 @@ const handleFilterChange = (columnId: string, value: string) => {
 }
 
 const columns: BaseTableColumn<Supplier>[] = [
-  {
-    id: 'select',
-    header: ({ table }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all',
-      }),
-    cell: ({ row }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row',
-      }),
-    enableSorting: false,
-    enableHiding: false,
-  },
 {
   id: 'syncCode',
   accessorKey: 'syncCode',
-  header: t('code'),
+  headerText: t('code'),
   cell: ({ row }) => {
     const syncCode = row.original.syncCode
 
@@ -454,13 +434,13 @@ const columns: BaseTableColumn<Supplier>[] = [
   {
     id: 'name',
     accessorKey: 'name',
-    header: t('name'),
+    headerText: t('name'),
     enableSorting: true,
   },
   {
     id: 'address',
     accessorKey: 'address',
-    header: t('settlement.generate.form.address'),
+    headerText: t('settlement.generate.form.address'),
   },
   // {
   //   id: 'collection_bank',

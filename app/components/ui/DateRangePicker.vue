@@ -87,8 +87,8 @@ const modelValue = computed({
 })
 
 const ranges = [
-  { label: t('wallet_page.date_ranges.today'), duration: { days: 1 } },
-  { label: t('wallet_page.date_ranges.yesterday'), duration: { days: 2 } },
+  { label: t('wallet_page.date_ranges.today'), duration: { days: 0 } },
+  { label: t('wallet_page.date_ranges.yesterday'), duration: { days: 1 } },
   { label: t('wallet_page.date_ranges.last_7_days'), duration: { days: 7 } },
   { label: t('wallet_page.date_ranges.last_14_days'), duration: { days: 14 } },
   { label: t('wallet_page.date_ranges.last_30_days'), duration: { days: 30 } },
@@ -99,7 +99,8 @@ const ranges = [
 
 function isRangeSelected(duration: Duration) {
   const startDate = sub(new Date(), duration)
-  const endDate = new Date()
+  // For single day ranges (today, yesterday), end date should be same as start date
+  const endDate = duration.days === 0 || duration.days === 1 ? startDate : new Date()
 
   const startCalendarDate = new CalendarDate(
     startDate.getFullYear(),
@@ -121,7 +122,8 @@ function isRangeSelected(duration: Duration) {
 
 function selectRange(duration: Duration) {
   const startDate = sub(new Date(), duration)
-  const endDate = new Date()
+  // For single day ranges (today, yesterday), end date should be same as start date
+  const endDate = duration.days === 0 || duration.days === 1 ? startDate : new Date()
 
   const newValue = {
     start: new CalendarDate(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()),

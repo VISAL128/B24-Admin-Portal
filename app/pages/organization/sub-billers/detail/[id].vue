@@ -210,7 +210,6 @@
       show-row-number
       show-date-filter
       enabled-auto-refresh
-      enabled-repush
       @row-click="handleViewDetails"
     >
     <template #trailingHeader>
@@ -286,6 +285,7 @@ import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import type { SubBillerWallet} from "~/models/subBiller"
 import { useTable } from '~/composables/utils/useTable'
 import TablesExTable from '~/components/tables/ExTable.vue'
+import type { QueryParams } from '~/models/baseModel'
 
 definePageMeta({
   auth: false,
@@ -298,11 +298,11 @@ definePageMeta({
 const { t } = useI18n()
 
 const tabs = [
-  { label: t('details'), value: 'details' },
   { label: t('wallet'), value: 'wallet' },
+  { label: t('details'), value: 'details' }
 ]
 
-const activeTab = ref('details')
+const activeTab = ref('wallet')
 const route = useRoute()
 const notification = useNotification()
 
@@ -385,23 +385,23 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    header: t('pages.transaction.created_date'),
+    headerText: t('pages.transaction.created_date'),
     cell: ({ row }) =>
-      useFormat().formatDateTime(row.original.created_date),
+      useFormat().formatDateTime(row.original.date),
     enableSorting: true,
   },
   {
     id: 'bank_ref',
     accessorKey: 'bank_ref',
-    header: () => t('pages.transaction.bank_ref'),
-    cell: ({ row }) => row.original.bank_ref || '-',
+    headerText: t('pages.transaction.bank_ref'),
+    cell: ({ row }) => row.original.bankReference || '-',
     enableSorting: true,
   },
   {
     id: 'collection_bank',
     accessorKey: 'collection_bank',
-    header: () => t('collection_bank'),
-    cell: ({ row }) => row.original.collection_bank || '-',
+    headerText: t('collection_bank'),
+    cell: ({ row }) => row.original.collectionBank || '-',
     enableColumnFilter: true,
     filterOptions: [
       { label: 'ABA', value: 'ABA' },
@@ -412,8 +412,8 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'settlement_bank',
     accessorKey: 'settlement_bank',
-    header: () => t('settlement_bank'),
-    cell: ({ row }) => row.original.settlement_bank || '-',
+    headerText: t('settlement_bank'),
+    cell: ({ row }) => row.original.settlementBank || '-',
     enableColumnFilter: true,
     filterOptions: [
       { label: 'ABA', value: 'ABA' },
@@ -424,7 +424,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'settlement_type',
     accessorKey: 'settlement_type',
-    header: () => t('settlement_type'),
+    headerText: t('settlement_type'),
     cell: ({ row }) => row.original.settlement_type || '-',
     enableColumnFilter: true,
     filterOptions: [
@@ -435,8 +435,8 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'transaction_type',
     accessorKey: 'transaction_type',
-    header: () => t('transaction_type'),
-    cell: ({ row }) => row.original.transaction_type || '-',
+    headerText: t('transaction_type'),
+    cell: ({ row }) => row.original.transactionType || '-',
     enableSorting: true,
     enableColumnFilter: true,
     filterOptions: [
@@ -449,23 +449,24 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'sub_biller',
     accessorKey: 'sub_biller',
-    header: () => t('sub_biller'),
-    cell: ({ row }) => row.original.sub_biller || '-',
+    headerText: t('sub_biller'),
+    cell: ({ row }) => row.original.subSupplier || '-',
     enableSorting: true,
   },
   {
     id: 'total_customer',
     accessorKey: 'total_customer',
     header : ({ column }) => createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
+    headerText: t('pages.transaction.total_customer'),
     cell: ({ row }) =>  h(
         'div',
         { class: 'text-right' },
-        row.original.total_customer || '-',
+        row.original.numberOfCustomer || '-',
       ),
   },
   {
     id: 'status',
-    header: () => t('status.header'),
+    headerText: t('status.header'),
     cell: ({ row }) =>
       h(StatusBadge, {
         status: row.original.status,
@@ -483,8 +484,8 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'currency_id',
     accessorKey: 'currency_id',
-    header: () => t('settlement.currency'),
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
+    headerText: t('settlement.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
     enableColumnFilter: true,
     filterOptions: [
       { label: t('currency.usd'), value: 'USD' },
@@ -495,24 +496,25 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     id: 'total_amount',
     accessorKey: 'total_amount',
     header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
+    headerText: t('total_amount'),
     cell: ({ row }) =>
       h(
         'div',
         { class: 'text-right' },
-        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
+        useCurrency().formatAmount(row.original.transactionAmount, row.original.currency)
       ),
     enableMultiSort: true,
     enableSorting: true,
     size: 50,
     maxSize: 150,
   },
- 
 ]
 
 
 
 const { getSubBillerById } = usePgwModuleApi()
 const { getSubBillerWalletList } = usePgwModuleApi()
+const { getTransactions } = usePgwModuleApi()
 
 const supplierData = ref<Supplier | null>(null)
 
@@ -736,104 +738,25 @@ const supplierBackgroundImage = computed(() => {
 })
 
 
-const fetchTransactionHistory = async (params?: {
-  page?: number
-  pageSize?: number
-  search?: string
-  startDate?: string
-  endDate?: string
-}) : Promise<TableFetchResult<TransactionHistoryRecord[]> | null>  => {
-  loading.value = true
+const fetchTransactionHistory = async (params?: QueryParams): Promise<{
+  data: TransactionHistoryRecord[]
+  total_record: number
+  total_page: number
+} | null> => {
   try {
-    const banks = ['ABA', 'ACLEDA', 'AMK'] as const
-    const subBillers = [
-      'Cambodia Electric Co.',
-      'Smart Axiata',
-      'Cellcard',
-      'Ezecom',
-      'Metfone',
-      'Sabay Digital',
-      'Foodpanda Cambodia',
-      'Nham24',
-      'Kerry Express',
-      'J&T Express',
-      'B-Hub Technology',
-      'Phnom Penh Water Supply',
-      'City Gas Cambodia',
-      'Total Energies Cambodia',
-      'ISPP International School',
-    ]
-
-    // Generate full dataset
-    const fullData: TransactionHistoryRecord[] = Array.from({ length: 100 }, (_, i) => ({
-      id: `txn-${i + 1}`,
-      created_date: new Date(Date.now() - i * 86400000),
-      bank_ref: `BANKREF-${i + 1000}`,
-      collection_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_type: i % 2 === 0 ? 'Auto' : 'Manual',
-      total_amount: 1000000 + i * 5000,
-      currency_id: i % 2 === 0 ? 'USD' : 'KHR',
-      status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
-      total_customer: i + 1,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4]!,
-      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)]!,
-    }))
-
-    // Apply search filter if provided
-    let filteredData = fullData
-    if (params?.search) {
-      const searchLower = params.search.toLowerCase()
-      filteredData = fullData.filter(item => 
-        item.bank_ref.toLowerCase().includes(searchLower) ||
-        item.collection_bank.toLowerCase().includes(searchLower) ||
-        item.settlement_bank.toLowerCase().includes(searchLower) ||
-        item.transaction_type.toLowerCase().includes(searchLower) ||
-        item.sub_biller.toLowerCase().includes(searchLower) ||
-        item.total_customer.toString().toLowerCase().includes(searchLower)
-      )
-    }
-
-    // Apply date filter if provided
-    if (params?.startDate && params?.endDate) {
-      const startDate = new Date(params.startDate)
-      const endDate = new Date(params.endDate)
-      filteredData = filteredData.filter(item => {
-        const itemDate = new Date(item.created_date)
-        return itemDate >= startDate && itemDate <= endDate
-      })
-    }
-
-    // Calculate pagination
-    const currentPage = params?.page || 1
-    const currentPageSize = params?.pageSize || 10
-    const totalRecords = filteredData.length
-    const totalPages = Math.ceil(totalRecords / currentPageSize)
-    
-    // Apply pagination
-    const startIndex = (currentPage - 1) * currentPageSize
-    const endIndex = startIndex + currentPageSize
-    const paginatedData = filteredData.slice(startIndex, endIndex)
-
+  
+    const response = await getTransactions(params)
+    console.log('Fetched transactions:', response)
     return {
-      data: paginatedData,
-      total_record: totalRecords,
-      total_page: totalPages,
+      data: response.results || [],
+      total_record: response.param?.rowCount || 0,
+      total_page: response.param?.pageCount || 0,
     }
-  } catch (error: unknown) {
-    console.error('Error loading transaction data:', error)
-    errorMsg.value = (error as Error).message || 'Failed to load transaction history.'
+  } catch (error) {
     errorHandler.handleApiError(error)
-    return {
-      data: [],
-      total_record: 0,
-      total_page: 0,
-    }
-  } finally {
-    loading.value = false
+    return null
   }
 }
-
 const supplierOverviewFields = computed(() => [
   {
     label: 'Code',
@@ -881,7 +804,6 @@ const download = async () => {
 }
 
 onMounted(() => {
-  fetchTransactionHistory()
   fetchSubBillerById()
   fetchWallets()
 })

@@ -19,31 +19,6 @@
             @keyup.enter="debouncedFetchData"
           />
           <template v-if="showDateFilter">
-            <!-- <UPopover>
-              <UButton
-                color="neutral"
-                variant="subtle"
-                size="sm"
-                icon="material-symbols:calendar-month-outline-rounded"
-                class="bg-gray hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700"
-              >
-                <template v-if="modelValue.start">
-                  <template v-if="modelValue.end">
-                    {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
-                    {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
-                  </template>
-                  <template v-else>
-                    {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }}
-                  </template>
-                </template>
-                <template v-else>
-                  {{ t('pick_a_date') }}
-                </template>
-              </UButton>
-              <template #content>
-                <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
-              </template>
-            </UPopover> -->
             <UiDateRangePicker
               v-model="modelValue"
               placeholder="Select date range..."
@@ -53,7 +28,7 @@
             />
           </template>
 
-          <UPopover v-if="showFilterButton" v-model:open="showAdvancedOptions">
+          <UPopover v-if="showFilterButton" v-model:open="showColumnFilterPopup" @update:open="onFilterPopoverToggle">
             <UTooltip :text="t('table.filters')" :delay-duration="200">
               <UButton variant="ghost" class="p-2 relative">
                 <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
@@ -76,52 +51,68 @@
                   </h4>
                   <div class="flex flex-col flex-1 gap-2">
                     <Divider />
-                    <div class="space-y-2 px-2 flex flex-col flex-1 min-h-0">
+                    <div class="px-2 flex flex-col flex-1 min-h-0">
                       <template v-for="col in filteredColumns" :key="col.id">
                         <template v-if="col.enableColumnFilter">
-                          <template v-if="'filterType' in col && col.filterType === 'status'">
-                            <StatusSelection
-                              :model-value="selectedStatuses"
-                              :multiple="true"
-                              :available-statuses="col.filterValues || []"
-                              :include-all-statuses="false"
-                              :placeholder="t('settlement.select_status')"
-                              :searchable="false"
-                            />
-                          </template>
-                          <template v-else>
-                            <USelectMenu
-                              :model-value="{
-                                label: columnFilters[col.id]
-                                  ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
-                                  : t(`table.${props.tableId}.columns.${col.id}`) ||
-                                    getColumnLabel(col),
-                                value: columnFilters[col.id] || '',
-                              }"
-                              :default-value="{ label: t('all'), value: '' }"
-                              :items="[
-                                { label: t('all'), value: '' },
-                                ...getColumnFilterOptions(col),
-                              ]"
-                              option-attribute="label"
-                              value-attribute="value"
-                              size="sm"
-                              class="w-full"
-                              :search-input="false"
-                              @update:model-value="
-                                (val) => {
-                                  columnFilters[col.id] = String(val?.value || '')
-                                  emit('filter-change', col.id, columnFilters[col.id] || '')
-                                }
-                              "
-                            />
-                          </template>
+                          <div class="space-y-1">
+                            <!-- Filter Label -->
+                            <label 
+                              :for="`filter-${col.id}`" 
+                              class="text-xs font-medium text-gray-700 dark:text-gray-300"
+                            >
+                              {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
+                            </label>
+                            
+                            <template v-if="'filterType' in col && col.filterType === 'status'">
+                              <StatusSelection
+                                :id="`filter-${col.id}`"
+                                :model-value="selectedStatuses"
+                                :multiple="true"
+                                :available-statuses="['all' , ...getColumnFilterOptions(col).map((status) => status.value.toString()) || []]"
+                                :include-all-statuses="false"
+                                :placeholder="t('settlement.select_status')"
+                                :searchable="false"
+                                @update:model-value="(val) => {
+                                  val = val as { label: string; value: string }[]
+                                  selectedStatuses = val
+                                  emit('filter-change', col.id, val.map((s) => s.value).join(','))
+                                }"
+                              />
+                            </template>
+                            <template v-else>
+                              <USelectMenu
+                                :id="`filter-${col.id}`"
+                                :model-value="{
+                                  label: columnFilters[col.id]
+                                    ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
+                                    : t('all'),
+                                  value: columnFilters[col.id] || '',
+                                }"
+                                :default-value="{ label: t('all'), value: '' }"
+                                :items="[
+                                  { label: t('all'), value: '' },
+                                  ...getColumnFilterOptions(col),
+                                ]"
+                                option-attribute="label"
+                                value-attribute="value"
+                                size="sm"
+                                class="w-full"
+                                :search-input="false"
+                                @update:model-value="
+                                  (val) => {
+                                    columnFilters[col.id] = String(val?.value || '')
+                                    emit('filter-change', col.id, columnFilters[col.id] || '')
+                                  }
+                                "
+                              />
+                            </template>
+                          </div>
                         </template>
                       </template>
                     </div>
                     <Divider />
                   </div>
-                  <div class="flex flex-wrap justify-end px-2">
+                  <div class="flex flex-wrap justify-between px-2">
                     <UButton
                       variant="link"
                       size="xs"
@@ -137,6 +128,15 @@
                         {{ t('table.column_config.reset') }}
                       </template>
                     </UButton>
+                    <UButton
+                      size="sm"
+                      :ui="appConfig.ui.button.slots"
+                      @click="onApplyColumnFilters"
+                    >
+                      <template #default>
+                        {{ t('table.column_config.apply') }}
+                      </template>
+                    </UButton>
                   </div>
                 </div>
               </div>
@@ -147,12 +147,14 @@
             <USwitch
               v-model="autoRefresh"
               :label="t('settlement.auto_refresh')"
+              :disabled="isDateRangeExceedsWeek"
               checked-icon="material-symbols:sync"
               unchecked-icon="material-symbols:sync-disabled"
               size="sm"
+              :class="isDateRangeExceedsWeek ? 'opacity-80 cursor-not-allowed' : ''"
             />
             <UTooltip
-              :text="t('settlement.auto_refresh_desc')"
+              :text="isDateRangeExceedsWeek ? t('settlement.auto_refresh_disabled_long_range') : `${t('settlement.auto_refresh_desc')} (${autoRefreshIntervalMs / 1000} ${t('seconds')})`"
               :delay-duration="200"
               placement="top"
             >
@@ -426,6 +428,7 @@ const initializeSorting = (): Array<{ id: string; desc: boolean }> => {
 
 const columnVisibility = ref<Record<string, boolean>>({})
 const columnFilters = ref<Record<string, string>>({})
+const appliedColumnFilters = ref<Record<string, string>>({})
 const dateRange = ref<{ start: string; end: string }>({ start: '', end: '' })
 const sorting = ref<Array<{ id: string; desc: boolean }>>([])
 const mounted = ref(false)
@@ -440,38 +443,24 @@ const saveColumnVisibility = () => {
 const saveColumnFilters = () => {
   tableConfig.saveColumnFilters(props.tableId, columnFilters.value)
   if (import.meta.env.DEV)
-    console.log(`💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
+    console.log(`DEV: 💾 Saved column filters for table ${props.tableId}:`, columnFilters.value)
 }
 
 const saveDateRange = () => {
   tableConfig.saveDateRange(props.tableId, dateRange.value)
   if (import.meta.env.DEV)
-    console.log(`💾 Saved date range for table ${props.tableId}:`, dateRange.value)
+    console.log(`DEV: 💾 Saved date range for table ${props.tableId}:`, dateRange.value)
 }
 
 const saveSorting = () => {
   tableConfig.saveSortingState(props.tableId, sorting.value)
   if (import.meta.env.DEV)
-    console.log(`💾 Saved sorting for table ${props.tableId}:`, sorting.value)
+    console.log(`DEV: 💾 Saved sorting for table ${props.tableId}:`, sorting.value)
 }
 
 watch(columnVisibility, saveColumnVisibility, { deep: true })
-watch(columnFilters, saveColumnFilters, { deep: true })
 watch(dateRange, saveDateRange, { deep: true })
 watch(sorting, saveSorting, { deep: true })
-
-// Watch column filters for data fetching when using fetchDataFn
-watch(
-  columnFilters,
-  async (_newFilters) => {
-    if (props.fetchDataFn && mounted.value) {
-      // Reset to first page when filters change
-      internalPage.value = 1
-      await fetchData()
-    }
-  },
-  { deep: true }
-)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columnConfig = computed((): any[] => {
@@ -493,6 +482,19 @@ const endDate = ref('')
 // const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 const today = new Date()
 const showDateFilter = computed(() => props.showDateFilter ?? true)
+
+// Check if date range exceeds 7 days (a week)
+const isDateRangeExceedsWeek = computed(() => {
+  if (!startDate.value || !endDate.value) return false
+  
+  const start = new Date(startDate.value)
+  const end = new Date(endDate.value)
+  const diffTime = Math.abs(end.getTime() - start.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  return diffDays > 7
+})
+
 const modelValue = shallowRef({
   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
@@ -504,11 +506,20 @@ const pageSize = ref<{ label: string; value: number }>({
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
 
+// Get auto refresh interval from user preferences (in seconds)
+const autoRefreshIntervalMs = computed(() => {
+  const userPrefs = useUserPreferences()
+  const currentPrefs = userPrefs.getPreferences()
+  const intervalSeconds = currentPrefs?.autoRefreshInterval || 30
+  return intervalSeconds * 1000 // Convert to milliseconds
+})
+
 const selectedStatuses = ref<{ label: string; value: string }[]>([{ label: 'all', value: '' }])
+const appliedSelectedStatuses = ref<{ label: string; value: string }[]>([{ label: 'all', value: '' }])
 const autoRefresh = ref(false)
 const isRefreshing = ref(false)
 
-const showAdvancedOptions = ref(false)
+const showColumnFilterPopup = ref(false)
 
 const emit = defineEmits<{
   (e: 'filter-change', columnId: string, value: string): void
@@ -531,6 +542,45 @@ const loading = ref(false)
 
 // Use internal data if no data prop is provided
 const tableData = computed(() => internalData.value)
+
+const onFilterPopoverToggle = (isOpen: boolean) => {
+  if (isOpen) {
+    // Load column filters from localStorage when popover opens
+    const savedFilters = tableConfig.getColumnFilters(props.tableId)
+    if (savedFilters) {
+      columnFilters.value = { ...savedFilters }
+      appliedColumnFilters.value = { ...savedFilters }
+      
+      // Update selectedStatuses if there are status filters
+      const statusKeys = Object.keys(savedFilters).filter(key => key.includes('status') || key.includes('active'))
+      if (statusKeys.length > 0) {
+        const statusValues = statusKeys.map(key => savedFilters[key]).filter(val => val && val !== '')
+        if (statusValues.length > 0) {
+          selectedStatuses.value = statusValues.map(val => ({ label: val || '', value: val || '' }))
+          appliedSelectedStatuses.value = statusValues.map(val => ({ label: val || '', value: val || '' }))
+        }
+      }
+      
+      if (import.meta.env.DEV) {
+        console.log(`DEV: 📂 Loaded column filters for table ${props.tableId}:`, savedFilters)
+      }
+    }
+  }
+}
+
+const onApplyColumnFilters = async () => {
+  // Update applied filters when apply is clicked
+  appliedColumnFilters.value = { ...columnFilters.value }
+  appliedSelectedStatuses.value = [...selectedStatuses.value]
+  
+  saveColumnFilters()
+  showColumnFilterPopup.value = false
+  if (props.fetchDataFn && mounted.value) {
+    // Reset to first page when filters change
+    internalPage.value = 1
+    await fetchData()
+  }
+}
 
 // Fetch data function
 const fetchData = async (refresh = false) => {
@@ -579,8 +629,11 @@ const fetchData = async (refresh = false) => {
       page: internalPage.value,
       page_size: pageSize.value.value,
       search: search.value,
-      start_date: props.showDateFilter ? startDate.value : undefined,
-      end_date: props.showDateFilter ? endDate.value : undefined,
+      start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value) : undefined,
+      end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value) : undefined,
+      statuses: selectedStatuses.value
+        .filter((s) => s.value !== 'all' && s.value !== '')
+        .map((s) => s.value),
       sorts: Array.from(sorts),
       sortAsString: sortingStr,
       filters: filters.length > 0 ? filters : [],
@@ -637,15 +690,16 @@ const { t } = useI18n()
 
 const filteredData = computed(() => {
   const data = tableData.value as T[]
-  let result: T[] = data
+  return data
+  // let result: T[] = data
 
-  for (const [key, val] of Object.entries(columnFilters.value)) {
-    if (val) {
-      result = result.filter((row) => String(row[key as keyof T]) === val)
-    }
-  }
+  // for (const [key, val] of Object.entries(columnFilters.value)) {
+  //   if (val) {
+  //     result = result.filter((row) => String(row[key as keyof T]) === val)
+  //   }
+  // }
 
-  return result
+  // return result
 })
 
 const showFilterButton = computed(() => {
@@ -692,9 +746,9 @@ const allColumnIds = computed(() =>
 
 // Computed property for active filter count
 const activeFilterCount = computed(() => {
-  const columnFilterCount = Object.values(columnFilters.value).filter((val) => val !== '').length
+  const columnFilterCount = Object.values(appliedColumnFilters.value).filter((val) => val !== '').length
   const sortFilterCount = selectedSortField.value ? 1 : 0
-  return columnFilterCount + sortFilterCount
+  return columnFilterCount + sortFilterCount + (appliedSelectedStatuses.value.filter((s) => s.value !== 'all' && s.value !== '').length > 0 ? 1 : 0)
 })
 
 const exportHeaders = computed(() =>
@@ -787,7 +841,6 @@ const handlePageChange = async (val: number) => {
 
 const filteredColumns = computed(() => {
   // Force reactivity by accessing sorting state
-  const currentSorting = sorting.value
   const columns = columnsWithRowNumber.value
 
   columns.forEach((col) => {
@@ -812,16 +865,6 @@ const filteredColumns = computed(() => {
       col.header = col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id)
     }
   })
-
-  // Debug: Log which columns have sorting enabled
-  if (import.meta.env.DEV) {
-    const sortableColumns = columns.filter((col) => col.enableSorting)
-    console.log(
-      '🔧 Sortable columns:',
-      sortableColumns.map((col) => ({ id: col.id, enableSorting: col.enableSorting }))
-    )
-    console.log('🔧 Current sorting state:', currentSorting)
-  }
 
   // re-build cells
   columns.forEach((col) => {
@@ -971,6 +1014,9 @@ onMounted(() => {
   }
 
   columnVisibility.value = initializeColumnVisibility()
+  // Initialize applied filters with current values
+  appliedColumnFilters.value = { ...columnFilters.value }
+  appliedSelectedStatuses.value = [...selectedStatuses.value]
   // columnFilters.value = initializeColumnFilters()
   // sorting.value = initializeSorting()
 
@@ -993,7 +1039,7 @@ onMounted(() => {
   if (autoRefresh.value) {
     autoRefreshInterval = setInterval(() => {
       if (props.fetchDataFn) fetchData()
-    }, 5000)
+    }, autoRefreshIntervalMs.value)
   }
 
   mounted.value = true
@@ -1004,7 +1050,7 @@ watch(autoRefresh, (val) => {
     if (!autoRefreshInterval) {
       autoRefreshInterval = setInterval(() => {
         if (props.fetchDataFn) fetchData()
-      }, 5000)
+      }, autoRefreshIntervalMs.value)
     }
   } else {
     if (autoRefreshInterval) {
@@ -1013,6 +1059,24 @@ watch(autoRefresh, (val) => {
     }
   }
   tableConfig.saveAutoRefresh(props.tableId, autoRefresh.value)
+})
+
+// Watch for date range changes and disable auto-refresh if range exceeds 7 days
+watch(isDateRangeExceedsWeek, (exceedsWeek) => {
+  if (exceedsWeek && autoRefresh.value) {
+    autoRefresh.value = false
+  }
+})
+
+// Watch for auto refresh interval changes and restart interval if needed
+watch(autoRefreshIntervalMs, () => {
+  if (autoRefresh.value && autoRefreshInterval) {
+    // Clear existing interval and restart with new interval
+    clearInterval(autoRefreshInterval)
+    autoRefreshInterval = setInterval(() => {
+      if (props.fetchDataFn) fetchData()
+    }, autoRefreshIntervalMs.value)
+  }
 })
 
 onBeforeUnmount(() => {
@@ -1050,33 +1114,15 @@ const onResetColumnVisibility = () => {
 
 const resetColumnFilters = () => {
   columnFilters.value = {}
+  selectedStatuses.value = [{ label: 'all', value: '' }]
   emit('filter-change', '', '')
+  showColumnFilterPopup.value = false
+  onApplyColumnFilters()
 }
 
 const resetSorting = () => {
   sorting.value = []
   emit('sort-change', '', null)
-}
-
-const _resetDateRange = () => {
-  const today = new Date()
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
-  const firstDayCalendar = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-  const lastDayCalendar = new CalendarDate(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    lastDayOfMonth
-  )
-
-  const defaultStart = `${firstDayCalendar.year}-${String(firstDayCalendar.month).padStart(2, '0')}-${String(firstDayCalendar.day).padStart(2, '0')}`
-  const defaultEnd = `${lastDayCalendar.year}-${String(lastDayCalendar.month).padStart(2, '0')}-${String(lastDayCalendar.day).padStart(2, '0')}`
-
-  dateRange.value = { start: defaultStart, end: defaultEnd }
-  startDate.value = defaultStart
-  endDate.value = defaultEnd
-  modelValue.value.start = firstDayCalendar
-  modelValue.value.end = lastDayCalendar
-  emit('daterange-change', dateRange.value)
 }
 
 // Fullscreen toggle function

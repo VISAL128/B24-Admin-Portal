@@ -12,16 +12,30 @@ export interface TransactionHistoryQuery {
 
 export interface TransactionHistoryRecord {
   id: string
-  created_date: Date
-  bank_ref: string
-  collection_bank: string
-  settlement_bank: string
+  date: Date
+  bankReference: string
+  collectionBank: string
+  settlementBank: string
   settlement_type: string
-  total_amount: number
-  currency_id: string
+  transactionAmount: number
+  currency: string
   status: string
-  total_customer: number
-  transaction_type: string
-  sub_biller: string
-  
+  numberOfCustomer: number
+  transactionType: string
+  subSupplier: string
+}
+
+
+export interface TransactionListResponse {
+  param: PaginationParam
+  results: TransactionHistoryRecord[]
+}
+
+export interface PaginationParam {
+  pageIndex: number
+  pageSize: number
+  pageCount: number
+  rowCount: number
+  sorts: string
+  filter: string
 }
