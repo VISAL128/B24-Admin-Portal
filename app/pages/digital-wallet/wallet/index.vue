@@ -555,7 +555,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, resolveComponent, computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { h, computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
@@ -787,17 +787,24 @@ const getWalletTypeIcon = (type: string) => {
 
 const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
   {
-    id: 'tran_date',
-    accessorKey: 'tran_date',
+    id: 'tranDate',
+    accessorKey: 'tranDate',
     header: t('wallet_page.date'),
     cell: ({ row }) => formatDateTime(row.original.tran_date),
     enableSorting: true,
   },
   {
-    id: 'transaction_type',
-    accessorKey: 'transaction_type',
+    id: 'tranType',
+    accessorKey: 'tranType',
     header: t('wallet_page.transaction_type'),
     cell: ({ row }) => row.original.transaction_type || '-',
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: t('wallet_payment'), value: t('wallet_payment') },
+      { label: t('wallet_topup'), value: t('wallet_topup') },
+     ],
+         enableSorting: true
   },
   {
     id: 'customer_name',
@@ -805,11 +812,23 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
     header: t('customer_name'),
     cell: ({ row }) => row.original.customer_name || '-',
   },
+    {
+    id: 'currency',
+    accessorKey: 'currency',
+    header: t('currency'),
+    cell: ({ row }) => row.original.currency || '-',
+  },
   {
-    id: 'amount',
-    accessorKey: 'amount',
+    id: 'totalAmount',
+    accessorKey: 'totalAmount',
     header: t('settlement.amount'),
-    cell: ({ row }) => h('div', { class: 'text-right' }, formatCurrency(row.original.amount, row.original.currency)),
+        cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-center' },
+        useCurrency().formatAmount(row.original.amount, row.original.currency)
+      ),
+    // cell: ({ row }) => formatCurrency(row.original.amount, row.original.currency),
     enableSorting: true,
   },
   // {
