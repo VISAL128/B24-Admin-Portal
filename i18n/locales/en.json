@@ -587,6 +587,7 @@
       },
       "form": {
         "type": "Type",
+        "total_biller": "Total Biller",
         "total_transactions": "Total Transactions",
         "no_cpo_settlement_title": "No CPO",
         "no_cpo_settlement_message": "No CPO available for settlement.",
@@ -871,6 +872,7 @@
     "name_kh": "Khmer Name",
     "active_banks": "Active Banks",
     "inactive_banks": "Inactive Banks",
+    "default_account": "Default Account",
     "bank_short_name": "Short Name",
     "swift_code": "SWIFT Code",
     "description": "Description",

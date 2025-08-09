@@ -629,8 +629,8 @@ const fetchData = async (refresh = false) => {
       page: internalPage.value,
       page_size: pageSize.value.value,
       search: search.value,
-      start_date: props.showDateFilter ? startDate.value : undefined,
-      end_date: props.showDateFilter ? endDate.value : undefined,
+      start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value) : undefined,
+      end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value) : undefined,
       statuses: selectedStatuses.value
         .filter((s) => s.value !== 'all' && s.value !== '')
         .map((s) => s.value),

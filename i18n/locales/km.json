@@ -485,6 +485,7 @@
       },
       "form": {
         "type": "ប្រភេទ",
+        "total_biller": "ចំនួនម្ចាស់អាជីវកម្មរង",
         "total_transactions": "ប្រតិបត្តិការសរុប",
         "no_cpo_settlement_title": "មិនមាន CPO",
         "no_cpo_settlement_message": "មិនមាន CPO សម្រាប់ការទូទាត់។",
@@ -878,6 +879,7 @@
     "active_banks": "ធនាគារសកម្ម",
     "inactive_banks": "ធនាគារអសកម្ម",
     "swift_code": "លេខកូដ SWIFT",
+    "default_account": "គណនីចម្បង",
     "description": "ការពិពណ៌នា",
     "country_code": "ប្រទេស",
     "currency_code": "រូបិយប័ណ្ណ",
