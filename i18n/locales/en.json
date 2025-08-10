@@ -85,6 +85,10 @@
     "currency_id": {
       "USD": "USD - US Dollar",
       "KHR": "KHR - Cambodian Riel"
+    },
+    "tranType": {
+      "wallet_payment": "Payment",
+      "wallet_topup": "Top Up"
     }
   },
   "table": {
@@ -152,11 +156,11 @@
     },
     "wallet-transactions-table":{
       "columns": {
-        "tran_date": "Transaction Date",
+        "tranDate": "Transaction Date",
         "wallet_type": "Wallet Type",
         "transaction_type": "Transaction Type",
         "status": "Status",
-        "amount": "Amount",
+        "totalAmount": "Total Amount",
         "currency_id": "Currency",
         "fee_amount": "Fee Amount",
         "net_amount": "Net Amount",
@@ -165,9 +169,12 @@
         "merchant": "Merchant",
         "channel": "Channel",
         "customer_name":"Customer Name",
-        "actions":"Actions"
+        "actions":"Actions",
+        "currency": "Currency",
+        "tranType": "Transaction Type"
       }
     }
+
   },
   "status": {
     "all": "All status",

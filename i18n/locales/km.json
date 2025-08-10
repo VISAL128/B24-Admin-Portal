@@ -605,16 +605,20 @@
     "currency_id": {
       "USD": "USD - ដុល្លារអាមេរិក",
       "KHR": "KHR - រៀលកម្ពុជា"
+    },
+    "tranType": {
+      "wallet_payment": "បង់ប្រាក់ពីកាបូប",
+      "wallet_topup": "បញ្ចូលប្រាក់ពីកាបូប"
     }
   },
   "table": {
     "wallet-transactions-table": {
       "columns": {
-        "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ",
         "wallet_type": "ប្រភេទកាបូប",
         "transaction_type": "ប្រភេទប្រតិបត្តិការ",
         "status": "ស្ថានភាព",
-        "amount": "ចំនួន",
+        "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
         "currency_id": "រូបិយប័ណ្ណ",
         "fee_amount": "ចំនួនថ្លៃកក់",
         "net_amount": "ចំនួនសុទ្ធ",
@@ -623,7 +627,10 @@
         "merchant": "អ្នកលក់",
         "channel": "បណ្តាញ",
         "customer_name": "ឈ្មោះអតិថិជន",
-        "action": "សកម្មភាព"
+        "action": "សកម្មភាព",
+        "currency":"រូបិយប័ណ្ណ",
+        "tranType": "ប្រភេទប្រតិបត្តិការ"
+
       }
     },
     "more_options": "ជម្រើសផ្សេងទៀត",
