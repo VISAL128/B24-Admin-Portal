@@ -266,26 +266,24 @@
 </template>
 
 <script setup lang="ts">
-import html2canvas from 'html2canvas'
 import { computed, h, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
+import TablesExTable from '~/components/tables/ExTable.vue'
+import type { BaseTableColumn } from '~/components/tables/table'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
+import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
-import type { Supplier } from '~/models/supplier'
-import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
-import type { TransactionHistoryRecord } from '~/models/transaction'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
-import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
-import type { SubBillerWallet} from "~/models/subBiller"
 import { useTable } from '~/composables/utils/useTable'
-import TablesExTable from '~/components/tables/ExTable.vue'
 import type { QueryParams } from '~/models/baseModel'
+import type { SubBillerWallet } from "~/models/subBiller"
+import type { Supplier } from '~/models/supplier'
+import type { TransactionHistoryRecord } from '~/models/transaction'
 
 definePageMeta({
   auth: false,
@@ -425,7 +423,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     id: 'settlement_type',
     accessorKey: 'settlement_type',
     headerText: t('settlement_type'),
-    cell: ({ row }) => row.original.settlement_type || '-',
+    cell: ({ row }) => row.original.settlementType || '-',
     enableColumnFilter: true,
     filterOptions: [
       { label: 'Auto', value: 'Auto' },
@@ -450,7 +448,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     id: 'sub_biller',
     accessorKey: 'sub_biller',
     headerText: t('sub_biller'),
-    cell: ({ row }) => row.original.subSupplier || '-',
+    cell: ({ row }) => row.original.subBiller || '-',
     enableSorting: true,
   },
   {
@@ -461,7 +459,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     cell: ({ row }) =>  h(
         'div',
         { class: 'text-right' },
-        row.original.numberOfCustomer || '-',
+        row.original.countTotalCustomer || '-',
       ),
   },
   {

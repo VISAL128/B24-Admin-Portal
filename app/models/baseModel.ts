@@ -30,6 +30,18 @@ export interface PgwModuleResponseList<T> {
   result: T[]
 }
 
+export interface PgwModuleResponseLists<T> {
+  param: {
+    pageIndex: number
+    pageSize: number
+    pageCount: number
+    rowCount: number
+    sorts: string
+    filter: string
+  },
+  results: T[]
+}
+
 /** * Query parameters for PGW Module API requests
  * This interface can be extended based on specific API requirements
 */
