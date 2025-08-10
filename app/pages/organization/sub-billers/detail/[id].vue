@@ -275,6 +275,7 @@ import TablesExTable from '~/components/tables/ExTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { useCurrency } from '~/composables/utils/useCurrency'
@@ -512,7 +513,8 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
 
 const { getSubBillerById } = usePgwModuleApi()
 const { getSubBillerWalletList } = usePgwModuleApi()
-const { getTransactions } = usePgwModuleApi()
+// const { getTransactions } = usePgwModuleApi()
+const { getTransactionList } = useTransactionApi()
 
 const supplierData = ref<Supplier | null>(null)
 
@@ -742,8 +744,8 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
   total_page: number
 } | null> => {
   try {
-  
-    const response = await getTransactions(params)
+
+    const response = await getTransactionList(params)
     console.log('Fetched transactions:', response)
     return {
       data: response.results || [],

@@ -222,7 +222,7 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
 } | null> => {
   try {
   
-    const response = await getTransactions(params)
+    const response = await getTransactionList(params)
     console.log('Fetched transactions:', response)
     return {
       data: response.results || [],
