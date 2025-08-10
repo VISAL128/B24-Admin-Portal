@@ -10,7 +10,6 @@
     <ExTable
       :table-id="TABLE_ID"
       :columns="columns"
-      :column-visibility="columnVisibility"
       :search-tooltip="t('banks.search_placeholder')"
       :fetch-data-fn="fetchBanks"
       show-row-number
@@ -21,12 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { h, nextTick, onMounted, ref, resolveComponent, watch } from 'vue'
+import { h, onMounted, ref, resolveComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBankApi } from '~/composables/api/useBankApi'
 import type { Bank } from '~/models/bank'
 import { useI18n } from 'vue-i18n'
-import { useTableConfig } from '~/composables/utils/useTableConfig'
 import type { BankListTableFetchResult, BaseTableColumn } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
 import type { QueryParams } from '~/models/baseModel'
@@ -47,97 +45,13 @@ const { getBanks } = useBankApi()
 const errorHandler = useErrorHandler()
 const { statusCellBuilder } = useStatusBadge()
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const table = useTemplateRef<any>('table')
 const router = useRouter()
 const isTableFullscreen = ref(false)
 const isLoading = ref(false)
 const summarys = ref<SummaryCard[]>([])
 
-// Define table ID and default column visibility
+// Define table ID
 const TABLE_ID = 'banks-list'
-const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
-  row_number: true,
-  bank_code: true,
-  bank_name: true,
-  bank_short_name: true,
-  swift_code: true,
-  country_code: true,
-  currency_code: true,
-  is_settlement_bank: true,
-  is_collection_bank: true,
-  is_active: true,
-  created_at: true,
-  select: true,
-}
-
-// Use table configuration composable
-const tableConfig = useTableConfig()
-
-// Initialize column visibility from localStorage or defaults
-const initializeColumnVisibility = (): Record<string, boolean> => {
-  const savedConfig = tableConfig.getColumnConfig(TABLE_ID)
-  return savedConfig || DEFAULT_COLUMN_VISIBILITY
-}
-
-const columnVisibility = ref<Record<string, boolean>>(initializeColumnVisibility())
-
-// Initialize sorting state from localStorage or defaults
-const initializeSortingState = (): Array<{ id: string; desc: boolean }> => {
-  const savedSorting = tableConfig.getSortingState(TABLE_ID)
-  return savedSorting || []
-}
-
-const sortingState = ref<Array<{ id: string; desc: boolean }>>(initializeSortingState())
-
-// Save column visibility changes to localStorage
-const saveColumnVisibility = () => {
-  tableConfig.saveColumnConfig(TABLE_ID, columnVisibility.value)
-}
-
-// Save sorting state changes to localStorage
-const saveSortingState = () => {
-  tableConfig.saveSortingState(TABLE_ID, sortingState.value)
-}
-
-// Watch for changes and auto-save
-watch(columnVisibility, saveColumnVisibility, { deep: true })
-watch(sortingState, saveSortingState, { deep: true })
-
-// Initialize table column visibility from saved configuration
-const initializeTableColumnVisibility = () => {
-  if (table?.value?.tableApi) {
-    Object.entries(columnVisibility.value).forEach(([columnId, isVisible]) => {
-      const column = table.value.tableApi.getColumn(columnId)
-      if (column) {
-        column.toggleVisibility(isVisible)
-      }
-    })
-  }
-}
-
-// Initialize table sorting state from saved configuration
-const initializeTableSortingState = () => {
-  if (table?.value?.tableApi && sortingState.value.length > 0) {
-    // Apply saved sorting state
-    table.value.tableApi.setSorting(sortingState.value)
-  }
-}
-
-// Watch for table API changes to initialize column visibility and sorting
-watch(
-  () => table?.value?.tableApi,
-  (newApi) => {
-    if (newApi) {
-      // Small delay to ensure table is fully initialized
-      nextTick(() => {
-        initializeTableColumnVisibility()
-        initializeTableSortingState()
-      })
-    }
-  },
-  { immediate: true }
-)
 
 // Fetch banks data from API
 const fetchBanks = async (params?: QueryParams): Promise<BankListTableFetchResult | undefined> => {

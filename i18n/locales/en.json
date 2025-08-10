@@ -525,6 +525,7 @@
     }
   },
   "settlement": {
+    "no_transaction_allocations": "No transaction allocations found.",
     "settlement_details_description": "Details of the settlement",
     "refresh": "Refresh",
     "auto_refresh": "Auto Refresh",

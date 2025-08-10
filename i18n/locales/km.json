@@ -416,6 +416,7 @@
     }
   },
   "settlement": {
+    "no_transaction_allocations": "គ្មានការបែងចែកប្រតិបត្តិការ",
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
     "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
