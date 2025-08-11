@@ -1,10 +1,7 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
-    <PageHeader
-      :title="bank?.name_kh"
-      :subtitle="bank?.name"
-    />
+    <PageHeader :title="bank?.name_kh" :subtitle="bank?.name" />
 
     <!-- Content -->
     <div v-if="loading" class="flex items-center justify-center flex-1">
@@ -183,7 +180,7 @@
           :search-tooltip="t('search_by_settler')"
           class="border-0 max-h-[800px] overflow-auto"
           @row-click="handleRowClick"
-          @fullscreen-toggle="(isFullScreen) => tblFull = isFullScreen"
+          @fullscreen-toggle="(isFullScreen) => (tblFull = isFullScreen)"
         />
       </div>
     </div>
@@ -227,7 +224,7 @@ import appConfig from '~~/app.config'
 // Define settlement history status enum
 enum SettlementHistoryStatus {
   PENDING = 'pending',
-  COMPLETED = 'completed', 
+  COMPLETED = 'completed',
   FAILED = 'failed',
   SUCCESS = 'success',
 }
@@ -259,7 +256,7 @@ const bankId = computed(() => route.params.id as string)
 // Status button configuration
 const statusButtonConfig = computed((): StatusButtonConfig | undefined => {
   if (!bank.value) return undefined
-  
+
   return {
     text: bank.value.active ? t('banks.deactivate_bank') : t('banks.activate_bank'),
     color: bank.value.active ? 'error' : 'success',
@@ -292,7 +289,7 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
     header: t('table.settlement-history.columns.status'),
     type: ColumnType.Text,
     enableColumnFilter: true,
-    filterOptions: Object.values(SettlementHistoryStatus).map(status => ({
+    filterOptions: Object.values(SettlementHistoryStatus).map((status) => ({
       label: getTranslatedStatusLabel(status),
       value: status,
     })),
@@ -327,12 +324,15 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
     accessorKey: 'total_amount',
     header: t('table.settlement-history.columns.total_amount'),
     cell: ({ row }) =>
-      h('div', { class: 'text-right' }, formatAmountV2(row.original.total_amount, row.original.currency_id)),
+      h(
+        'div',
+        { class: 'text-right' },
+        formatAmountV2(row.original.total_amount, row.original.currency_id)
+      ),
     type: ColumnType.Amount,
-    enableSorting: true
-  }
+    enableSorting: true,
+  },
 ])
-
 
 const handleRowClick = (rowData: SettlementHistoryRecord) => {
   router.push(`/digital-wallet/settlement/details/${rowData.id}`)
@@ -359,6 +359,7 @@ const fetchSettlements = async (
       start_date: params.start_date || undefined,
       end_date: params.end_date || undefined,
       status: params.statuses || undefined,
+      banks: [],
     }
 
     const response = await getSettlementHistory(query)
