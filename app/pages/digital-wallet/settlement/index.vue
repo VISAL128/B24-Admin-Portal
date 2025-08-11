@@ -117,24 +117,28 @@ const modelValue = shallowRef({
 
 const summarys = ref<SummaryCard[]>([
   {
+    key: 'total_amount',
     title: t('settlement.total_amount'),
     values: [{ value: 0, currency: 'KHR' }, { value: 0, currency: 'USD' }],
     filterLabel: '',
     dateRange: '',
   },
   {
+    key: 'total_settled',
     title: t('settlement.total_settled'),
     values: [{ value: 0 }],
     filterLabel: '',
     dateRange: '',
   },
   {
+    key: 'success',
     title: t('settlement.success'),
     values: [{ value: 0 }],
     filterLabel: '',
     dateRange: '',
   },
   {
+    key: 'failed',
     title: t('settlement.failed'),
     values: [{ value: 0 }],
     filterLabel: '',
@@ -165,8 +169,8 @@ const fetchSettlementForTable = async (params?: QueryParams): Promise<Settlement
       search: params?.search || undefined,
       page_size: params?.page_size || pageSize.value.value,
       page: params?.page || page.value,
-      start_date: params?.start_date ? formatDateForBackendRequest(params?.start_date, 'yyy/MM/dd') : undefined,
-      end_date: params?.end_date ? formatDateForBackendRequest(params?.end_date, 'yyy/MM/dd') : undefined,
+      start_date: params?.start_date ? formatDateForBackendRequest(params?.start_date, 'yyyy/MM/dd') : undefined,
+      end_date: params?.end_date ? formatDateForBackendRequest(params?.end_date, 'yyyy/MM/dd') : undefined,
       status: params?.statuses || [],
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
     }
@@ -180,6 +184,7 @@ const fetchSettlementForTable = async (params?: QueryParams): Promise<Settlement
       sum_total_amount_usd: data?.sum_total_amount_usd || 0,
       sum_total_settled: data?.sum_total_settled || 0,
       sum_success: data?.sum_success || 0,
+      sum_failed: data?.sum_failed || 0,
     }
   } catch (error: unknown) {
     // Show error notification to user
@@ -212,6 +217,7 @@ const navigateToDetails = (settlementId: string) => {
 }
 
 const handleDataChanged = (result: SettlementHistoryTableFetchResult) => {
+      console.log('Data changed:', result)
   // Update summary with the result data
       summarys.value = summarys.value.map((card) => {
         card.dateRange = dateRangeFilterDisplay.value
@@ -227,7 +233,7 @@ const handleDataChanged = (result: SettlementHistoryTableFetchResult) => {
           return { ...card, values: [{ value: result.sum_total_settled || 0 }] }
         } else if (card.title === t('settlement.success')) {
           return { ...card, values: [{ value: result.sum_success || 0 }] }
-        } else if (card.title === t('settlement.failed')) {
+        } else if (card.key === 'failed') {
           return { ...card, values: [{ value: result.sum_failed || 0 }] }
         }
         return card
@@ -285,6 +291,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
+    enableHiding: true,
     size: 50,
     maxSize: 150,
   },

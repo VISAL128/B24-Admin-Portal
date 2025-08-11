@@ -86,6 +86,7 @@ export interface SummaryCardValue {
 }
 
 export interface SummaryCard {
+  key?: string
   title: string
   values: SummaryCardValue[]
   filterLabel: string
