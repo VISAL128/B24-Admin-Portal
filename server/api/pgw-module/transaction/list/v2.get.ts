@@ -2,8 +2,7 @@ import { requestToPgwModuleApi } from '../../../../logic/pgw_module_api_logic'
 
 export default defineEventHandler(async (event) => {
   try {
-    const fullEndpoint = `/transaction/list/v2`
-    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', true)
+    const response = await requestToPgwModuleApi(event, PGW_MODULE_API_ENDPOINTS.TRANSACTION.GET_TRANSACTION_LIST, 'GET', true)
 
     return response
   } catch (error) {
