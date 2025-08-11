@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-x-auto">
+  <div class="flex flex-col h-full w-full">
     <TablesExTable
       ref="table"
       :columns="columns"
@@ -7,7 +7,6 @@
       :fetch-data-fn="fetchSubBiller"
       show-row-number
       enabled-auto-refresh
-      enabled-repush
       @row-click="handleViewDetailss"
     />
   </div>
@@ -421,7 +420,7 @@ const columns: BaseTableColumn<Supplier>[] = [
       const syncCode = row.original.syncCode
       const Icon = resolveComponent('Icon') // Ensure globally registered or imported
 
-      return h('div', { class: 'flex items-center gap-3' }, [
+    return h('div', { class: 'flex items-center gap-3' }, [
         // Circular background wrapper
         h(
           'div',

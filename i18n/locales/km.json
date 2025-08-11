@@ -699,6 +699,32 @@
         "subSupplier": "ម្ចាស់អាជីវកម្មរង",
         "transactionAmount": "ចំនួនទឹកប្រាក់"
       }
+    },
+    "sub-biller-transaction-table": {
+      "columns": {
+        "collectionBank": "ធនាគារប្រមូលប្រាក់",
+        "settlementBank": "ធនាគារទូទាត់",
+        "settlementType": "ប្រភេទទូទាត់",
+        "transactionType": "ប្រភេទប្រតិបត្តិការ",
+        "currency": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "bankReference": "លេខយោងធនាគារ",
+        "subBiller": "ម្ចាស់អាជីវកម្មរង",
+        "totalAmount": "ចំនួនទឹកប្រាក់",
+        "numberOfCustomer": "ចំនួនអតិថិជន",
+        "totalCustomer": "ចំនួនអតិថិជន",
+        "subSupplier": "ម្ចាស់អាជីវកម្មរង",
+        "transactionAmount": "ចំនួនទឹកប្រាក់",
+        "walletAccountDisplay": "កាបូប"
+      }
+    },
+    "sub-billers-table": {
+      "columns": {
+        "syncCode":"លេខកូដ",
+        "name":"ឈ្មោះ",
+        "address":"អាសយដ្ឋាន"
+      }
     }
   },
   "search_placeholder": "ស្វែងរក...",
@@ -950,5 +976,7 @@
   "descending": " តាមលំដាប់ចុះ",
   "clear": "សម្អាត",
   "customer_name": "ឈ្មោះអតិថិជន",
-  "deactivate": "បិទដំណើរការ"
+  "deactivate": "បិទដំណើរការ",
+  "deactivate_subbiller_confirmation": "តើអ្នកប្រាកដជាចង់បិទដំណើរការម្ចាស់អាជីវកម្មរងនេះទេ?",
+  "logo_recommendation": "ណែនាំ"
 }

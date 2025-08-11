@@ -43,3 +43,7 @@ export interface WalletListResponse {
   message_kh: string
   data: SubBillerWallet[]
 }
+
+export interface DeactivateSubBillerReq {
+  subBillerId: string
+}

@@ -1,5 +1,5 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
-import type { SubBillerListResponse, WalletListResponse } from '~/models/subBiller'
+import type { SubBillerListResponse, WalletListResponse, DeactivateSubBillerReq} from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import type { TransactionListResponse } from '~/models/transaction'
 import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
@@ -93,37 +93,39 @@ export const usePgwModuleApi = () => {
   }
 
   const getSubBillers = async (query?: QueryParams) => {
-
     console.log('Fetching sub billers with query:', query)
     const rep = await executeV2(() =>
       $fetch<SubBillerListResponse>(`/api/pgw-module/sub-biller/get-sub-biller`, {
         method: 'GET',
-        query
+        query,
       })
     )
     return rep
   }
 
   /**
- * Get a specific sub biller by ID from PGW Module API
- */
-const getSubBillerById = async (id: string) => {
-  return await executeV2(() =>
-    $fetch<Supplier>(`/api/pgw-module/sub-biller/${id}`, {
-      method: 'GET',
-      onResponseError() {},
-    })
-  )
-}
+   * Get a specific sub biller by ID from PGW Module API
+   */
+  const getSubBillerById = async (id: string) => {
+    return await executeV2(() =>
+      $fetch<Supplier>(`/api/pgw-module/sub-biller/${id}`, {
+        method: 'GET',
+        onResponseError() {},
+      })
+    )
+  }
 
-const getSubBillerWalletList = async (subBillerSupplierId: string) => {
-  return await executeV2(() =>
-    $fetch<WalletListResponse>(`/api/pgw-module/sub-biller/get-wallet-list?subBillerSupplierId=${subBillerSupplierId}`, {
-      method: 'GET',
-      onResponseError() {},
-    })
-  )
-}
+  const getSubBillerWalletList = async (subBillerSupplierId: string) => {
+    return await executeV2(() =>
+      $fetch<WalletListResponse>(
+        `/api/pgw-module/sub-biller/get-wallet-list?subBillerSupplierId=${subBillerSupplierId}`,
+        {
+          method: 'GET',
+          onResponseError() {},
+        }
+      )
+    )
+  }
 
   /**
    * Get wallet transactions with pagination from PGW Module API
@@ -142,7 +144,6 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
    * Get settlement wallet transactions from PGW Module API
    */
   const getSettlementWalletTransactions = async (params?: QueryParams) => {
-  
     console.log('Fetching settlement wallet transactions with params:', params)
     const url = `/api/pgw-module/walletmgnt/settlement/transactions`
 
@@ -150,7 +151,7 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
       $fetch(url, {
         method: 'GET',
         onResponseError() {},
-        query: params
+        query: params,
       })
     )
   }
@@ -160,14 +161,13 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
    */
 
   const getTopUpWalletTransactions = async (params?: QueryParams) => {
-  
     const url = `/api/pgw-module/walletmgnt/top-up/transactions`
 
     return await executeV2(() =>
       $fetch(url, {
         method: 'GET',
         onResponseError() {},
-        query: params
+        query: params,
       })
     )
   }
@@ -181,7 +181,7 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
   //       }
   //     }
   //   }
-    
+
   //   const queryString = urlParams.toString()
   //   const url = `/api/pgw-module/walletmgnt/top-up/transactions${queryString ? `?${queryString}` : ''}`
 
@@ -193,16 +193,26 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
   //   )
   // }
 
-    const getTransactions = async (query?: QueryParams) => {
-
+  const getTransactions = async (query?: QueryParams) => {
     console.log('Fetching transactions with query:', query)
     const rep = await executeV2(() =>
       $fetch<TransactionListResponse>(`/api/pgw-module/transaction/list/v2`, {
         method: 'GET',
-        query
+        query,
       })
     )
     return rep
+  }
+
+  
+    const deactivateSubBiller = async (request: DeactivateSubBillerReq) => {
+    return await executeV2(() =>
+      $fetch<WalletBalanceResponse>(`/api/pgw-module/sub-biller/deactivate`, {
+        method: 'POST',
+        body: request,
+        onResponseError() {},
+      })
+    )
   }
 
   return {
@@ -217,6 +227,7 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
     getSubBillers,
     getSubBillerById,
     getSubBillerWalletList,
-    getTransactions
+    getTransactions,
+    deactivateSubBiller
   }
 }

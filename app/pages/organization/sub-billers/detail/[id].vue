@@ -193,16 +193,20 @@
                 :style="{ backgroundImage: `url('${supplierBackgroundImage}')` }"
               >
                 <div
-                  class="absolute inset-0 backdrop-blur-xs bg-black/20 dark:bg-black/40 w-full h-full"
+                  class="absolute inset-0 backdrop-blur-xs bg-black/20 dark:bg-black/40 w-full h-full pointer-events-none z-0"
                 ></div>
 
-                <!-- Deactivate Button (absolute top-right) -->
-                <button
-                  @click="handleDeactivate"
-                  class="absolute top-4 right-4 text-sm font-medium text-white hover:underline"
-                >
-                  {{ t('deactivate') }}
-                </button>
+                <!-- TOP-RIGHT EDIT BUTTON (global) -->
+                <div class="absolute top-2 right-2 z-30">
+                  <button
+                    @click="openEditModal"
+                    class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white/90 bg-white/10 hover:bg-white/20 backdrop-blur px-3 py-1.5 rounded-full border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    :aria-label="t('edit')"
+                  >
+                    <UIcon name="i-heroicons-pencil-square-20-solid" class="w-4 h-4" />
+                    <span>{{ t('edit') }}</span>
+                  </button>
+                </div>
 
                 <div class="relative z-10 flex flex-col items-center">
                   <div
@@ -286,6 +290,184 @@
         </div>
       </section>
     </div>
+
+    <UModal
+      v-model:open="isShowDeactivateConfirmModal"
+      :title="t('confirmation')"
+      :transition="true"
+      :fullscreen="false"
+    >
+      <template #body>
+        <p class="text-sm">
+          {{ t('deactivate_subbiller_confirmation') }}
+        </p>
+      </template>
+
+      <template #footer>
+        <div class="w-full flex justify-end gap-2">
+          <UButton
+            :label="t('cancel')"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="isShowDeactivateConfirmModal = false"
+          />
+          <UButton
+            :label="t('confirm')"
+            color="error"
+            size="sm"
+            :loading="isDeactivating"
+            @click="confirmDeactivateSubBiller"
+          />
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="isShowEditModal"
+      :title="t('edit')"
+      :transition="true"
+      :fullscreen="false"
+      :close="{ class: 'rounded-full', onClick: () => {} }"
+    >
+      <template #header="{ close }">
+        <div class="flex items-center justify-between w-full">
+          <h3 class="text-base font-semibold">
+            {{ t('edit') }}
+          </h3>
+          <div class="flex items-center gap-2">
+            <!-- Deactivate button near close -->
+            <UButton
+              :label="t('deactivate')"
+              color="error"
+              variant="outline"
+              size="xs"
+              class="justify-center"
+              @click="
+                () => {
+                  isShowEditModal = false
+                  isShowDeactivateConfirmModal = true
+                }
+              "
+            />
+            <UButton
+              icon="i-heroicons-x-mark-20-solid"
+              color="neutral"
+              variant="ghost"
+              size="md"
+              @click="close"
+            />
+          </div>
+        </div>
+      </template>
+      <template #body>
+        <div class="space-y-6">
+          <!-- Profile image section -->
+          <div
+            class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40"
+          >
+            <div class="relative">
+              <img
+                v-if="avatarPreview"
+                :src="avatarPreview"
+                alt="Logo"
+                class="w-20 h-20 rounded-full object-cover border border-white shadow"
+              />
+              <div
+                v-else
+                class="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500"
+              >
+                <UIcon name="material-symbols:home-work-outline" class="w-8 h-8" />
+              </div>
+
+              <!-- camera button -->
+              <button
+                type="button"
+                class="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-gray-50"
+                @click="triggerAvatarPick"
+                :title="t('change_logo')"
+              >
+                <UIcon name="i-heroicons-camera" class="w-4 h-4" />
+              </button>
+
+              <!-- remove button -->
+              <button
+                v-if="avatarPreview"
+                type="button"
+                class="absolute -top-1 -right-1 inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow hover:bg-white"
+                @click="removeAvatar"
+                :title="t('remove_logo')"
+              >
+                <UIcon name="i-heroicons-x-mark-20-solid" class="w-4 h-4" />
+              </button>
+
+              <input
+                ref="avatarInputRef"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="onAvatarSelected"
+              />
+            </div>
+
+            <div class="flex-1">
+              <div class="text-sm text-gray-600 dark:text-gray-400">
+                {{ t('logo_recommendation') }} • 512×512 PNG/JPG • &lt; 2MB
+              </div>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <UFormGroup :label="t('name')" :required="true" :error="formErrors.name">
+              <UInput v-model="editForm.name" :placeholder="t('enter_name')" />
+            </UFormGroup>
+
+            <UFormGroup :label="t('code')" :error="formErrors.syncCode">
+              <UInput v-model="editForm.syncCode" :placeholder="t('enter_code')" />
+            </UFormGroup>
+
+            <UFormGroup :label="t('phone')" :error="formErrors.phone">
+              <UInput v-model="editForm.phone" :placeholder="t('enter_phone')" />
+            </UFormGroup>
+
+            <UFormGroup :label="t('email')" :error="formErrors.email">
+              <UInput v-model="editForm.email" :placeholder="t('enter_email')" />
+            </UFormGroup>
+
+            <UFormGroup :label="t('tin')" :error="formErrors.tinNumber">
+              <UInput v-model="editForm.tinNumber" :placeholder="t('enter_tin')" />
+            </UFormGroup>
+
+            <UFormGroup :label="t('address')" class="md:col-span-2" :error="formErrors.address">
+              <UTextarea v-model="editForm.address" :placeholder="t('enter_address')" :rows="3" />
+            </UFormGroup>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="w-full flex flex-row justify-end gap-2">
+          <UButton
+            :label="t('cancel')"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            class="w-20 justify-center"
+            @click="isShowEditModal = false"
+            :disabled="isSavingEdit"
+          />
+          <UButton
+            :label="t('save')"
+            color="primary"
+            size="sm"
+            class="w-24 justify-center"
+            :loading="isSavingEdit"
+            @click="handleSaveEdit"
+          />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -306,9 +488,10 @@ import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import type { QueryParams } from '~/models/baseModel'
-import type { SubBillerWallet } from "~/models/subBiller"
+import type { SubBillerWallet, DeactivateSubBillerReq } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import type { TransactionHistoryRecord } from '~/models/transaction'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
 
 definePageMeta({
   auth: false,
@@ -352,6 +535,184 @@ const isLoadingTable = ref(true)
 const isDetailsCollapsed = ref(false)
 const toggleDetails = () => (isDetailsCollapsed.value = !isDetailsCollapsed.value)
 
+const isShowEditModal = ref(false)
+const isSavingEdit = ref(false)
+
+type EditForm = {
+  name: string
+  syncCode: string
+  phone: string
+  email: string
+  tinNumber: string
+  address: string
+}
+
+const editForm = ref<EditForm>({
+  name: '',
+  syncCode: '',
+  phone: '',
+  email: '',
+  tinNumber: '',
+  address: '',
+})
+
+const formErrors = ref<Record<string, string | null>>({
+  name: null,
+  syncCode: null,
+  phone: null,
+  email: null,
+  tinNumber: null,
+  address: null,
+})
+
+// avatar state/refs
+const avatarInputRef = ref<HTMLInputElement | null>(null)
+const avatarFile = ref<File | null>(null)
+const avatarPreview = ref<string | null>(null)
+
+const triggerAvatarPick = () => avatarInputRef.value?.click()
+
+const onAvatarSelected = (e: Event) => {
+  const files = (e.target as HTMLInputElement).files
+  if (!files || !files[0]) return
+  const file = files[0]
+
+  // basic checks
+  if (file.size > 2 * 1024 * 1024) {
+    notification.showWarning({ title: t('file_too_large'), description: t('max_2mb') })
+    return
+  }
+
+  avatarFile.value = file
+  const reader = new FileReader()
+  reader.onload = () => (avatarPreview.value = String(reader.result || ''))
+  reader.readAsDataURL(file)
+}
+
+const removeAvatar = () => {
+  avatarFile.value = null
+  avatarPreview.value = null
+  if (avatarInputRef.value) avatarInputRef.value.value = ''
+}
+
+// seed form + image when opening
+const openEditModal = () => {
+  const s = supplierData.value
+  editForm.value = {
+    name: s?.name ?? '',
+    syncCode: s?.syncCode ?? '',
+    phone: s?.phone ?? '',
+    email: s?.email ?? '',
+    tinNumber: s?.tinNumber ?? '',
+    address: s?.address ?? '',
+  }
+  // image preview (use existing logo if any)
+  avatarFile.value = null
+  avatarPreview.value = supplierProfileImage.value || null
+
+  Object.keys(formErrors.value).forEach((k) => (formErrors.value[k] = null))
+  isShowEditModal.value = true
+}
+
+// example: inject your real uploader here
+const uploadImageAndGetUrl = async (file: File): Promise<string> => {
+  // e.g. const res = await mediaApi.upload(file)
+  // return res.publicUrl
+  return new Promise((resolve) =>
+    setTimeout(() => resolve('https://cdn.example.com/logo.png'), 600)
+  )
+}
+
+const isShowDeactivateConfirmModal = ref(false)
+const isDeactivating = ref(false)
+
+const confirmDeactivateSubBiller = async () => {
+  try {
+    isDeactivating.value = true
+    await deactivateSubBiller({
+      subBillerId: supplierData?.value?.id ?? '',
+    })
+    notification.showSuccess({
+      title: t('success'),
+      description: t('sub_biller_deactivated_successfully'),
+    })
+    isShowDeactivateConfirmModal.value = false
+    router.replace(`/organization/sub-billers`)
+  } catch (err) {
+    console.error('Deactivate sub-biller failed:', err)
+    notification.showError({
+      title: t('failed'),
+      description: t('failed_to_deactivate_sub_biller'),
+    })
+  } finally {
+    isDeactivating.value = false
+  }
+}
+
+const handleSaveEdit = async () => {
+  if (!validateEditForm()) return
+  try {
+    isSavingEdit.value = true
+    const id = transactionId.value
+
+    let logoUrl: string | null = null
+    if (avatarFile.value) {
+      logoUrl = await uploadImageAndGetUrl(avatarFile.value)
+    } else if (avatarPreview.value === null) {
+      // user removed image
+      logoUrl = '' // or null, depending on API to clear logo
+    } // else keep existing (omit field)
+
+    const payload: Record<string, any> = {
+      name: editForm.value.name,
+      syncCode: editForm.value.syncCode || null,
+      phone: editForm.value.phone || null,
+      email: editForm.value.email || null,
+      tinNumber: editForm.value.tinNumber || null,
+      address: editForm.value.address || null,
+    }
+    if (logoUrl !== null) {
+      // match your backend field; if it's nested extData, map accordingly
+      payload.logoUrl = logoUrl
+    }
+
+    // await updateSubBillerById(id, payload)
+
+    await fetchSubBillerById()
+    isShowEditModal.value = false
+    notification.showSuccess({
+      title: t('saved'),
+      description: t('sub_biller_updated_successfully'),
+    })
+  } catch (err) {
+    console.error('Save sub-biller failed:', err)
+    notification.showError({ title: t('failed'), description: t('failed_to_save_changes') })
+  } finally {
+    isSavingEdit.value = false
+  }
+}
+
+// simple validations
+const validateEditForm = (): boolean => {
+  let ok = true
+  Object.keys(formErrors.value).forEach((k) => (formErrors.value[k] = null))
+
+  if (!editForm.value.name?.trim()) {
+    formErrors.value.name = t('validation.required') as string
+    ok = false
+  }
+
+  if (editForm.value.email?.trim()) {
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.value.email)
+    if (!emailOk) {
+      formErrors.value.email = t('validation.invalid_email') as string
+      ok = false
+    }
+  }
+
+  return ok
+}
+
 const getCardGradientByIndex = (index: number): string | undefined => {
   const gradients: string[] = [
     'bg-gradient-to-r from-blue-500 to-blue-500',
@@ -386,21 +747,21 @@ const navigateToDetails = (rowId: string) => {
 
 const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
-    id: 'created_date',
+    id: 'createdDate',
     accessorKey: 'created_date',
     headerText: t('pages.transaction.created_date'),
     cell: ({ row }) => useFormat().formatDateTime(row.original.date),
     enableSorting: true,
   },
   {
-    id: 'bank_ref',
+    id: 'bankReference',
     accessorKey: 'bank_ref',
     headerText: t('pages.transaction.bank_ref'),
     cell: ({ row }) => row.original.bankReference || '-',
     enableSorting: true,
   },
   {
-    id: 'collection_bank',
+    id: 'collectionBank',
     accessorKey: 'collection_bank',
     headerText: t('collection_bank'),
     cell: ({ row }) => row.original.collectionBank || '-',
@@ -412,7 +773,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     ],
   },
   {
-    id: 'settlement_bank',
+    id: 'settlementBank',
     accessorKey: 'settlement_bank',
     headerText: t('settlement_bank'),
     cell: ({ row }) => row.original.settlementBank || '-',
@@ -424,7 +785,13 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     ],
   },
   {
-    id: 'settlement_type',
+    id: 'walletAccountDisplay',
+    accessorKey: 'wallet',
+    headerText: t('wallet'),
+    cell: ({ row }) => row.original.walletAccountDisplay || '-',
+  },
+  {
+    id: 'settlementType',
     accessorKey: 'settlement_type',
     headerText: t('settlement_type'),
     cell: ({ row }) => row.original.settlementType || '-',
@@ -435,7 +802,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     ],
   },
   {
-    id: 'transaction_type',
+    id: 'transactionType',
     accessorKey: 'transaction_type',
     headerText: t('transaction_type'),
     cell: ({ row }) => row.original.transactionType || '-',
@@ -449,22 +816,12 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     ],
   },
   {
-    id: 'sub_biller',
-    accessorKey: 'sub_biller',
-    headerText: t('sub_biller'),
-    cell: ({ row }) => row.original.subBiller || '-',
-    enableSorting: true,
-  },
-  {
-    id: 'total_customer',
+    id: 'totalCustomer',
     accessorKey: 'total_customer',
     headerText: t('pages.transaction.total_customer'),
-    cell: ({ row }) =>  h(
-        'div',
-        { class: 'text-right' },
-        row.original.countTotalCustomer || '-',
-      ),
+    cell: ({ row }) => h('div', { class: 'text-right' }, row.original.countTotalCustomer || '-'),
   },
+
   {
     id: 'status',
     headerText: t('status.header'),
@@ -483,7 +840,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     ],
   },
   {
-    id: 'currency_id',
+    id: 'currencyId',
     accessorKey: 'currency_id',
     headerText: t('settlement.currency'),
     cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
@@ -494,7 +851,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     ],
   },
   {
-    id: 'total_amount',
+    id: 'totalAmount',
     accessorKey: 'total_amount',
     headerText: t('total_amount'),
     cell: ({ row }) =>
@@ -510,8 +867,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   },
 ]
 
-const { getSubBillerById } = usePgwModuleApi()
-const { getSubBillerWalletList } = usePgwModuleApi()
+const { getSubBillerById, getSubBillerWalletList, deactivateSubBiller } = usePgwModuleApi()
 // const { getTransactions } = usePgwModuleApi()
 const { getTransactionList } = useTransactionApi()
 
@@ -718,7 +1074,11 @@ const fetchTransactionHistory = async (
   total_page: number
 } | null> => {
   try {
-
+    params?.filters.push({
+      field: 'subBillerId',
+      operator: FilterOperatorPgwModule.Equals,
+      value: transactionId.value,
+    })
     const response = await getTransactionList(params)
     console.log('Fetched transactions:', response)
     return {

@@ -79,7 +79,7 @@
       "error": "Error",
       "processing": "Processing"
     },
-    "active":{
+    "active": {
       "1": "Active",
       "2": "Inactive"
     },
@@ -107,7 +107,7 @@
       "apply": "Apply",
       "reset_description": "Reset columns and sorting to defaults",
       "columns": "Columns"
-      },
+    },
     "settlement-history": {
       "columns": {
         "created_date": "Settlement Date",
@@ -158,7 +158,7 @@
         "transactionAmount": "Total Amount"
       }
     },
-    "wallet-transactions-table":{
+    "wallet-transactions-table": {
       "columns": {
         "tranDate": "Transaction Date",
         "wallet_type": "Wallet Type",
@@ -172,13 +172,39 @@
         "payment_method": "Payment Method",
         "merchant": "Merchant",
         "channel": "Channel",
-        "customer_name":"Customer Name",
-        "actions":"Actions",
+        "customer_name": "Customer Name",
+        "actions": "Actions",
         "currency": "Currency",
         "tranType": "Transaction Type"
       }
+    },
+    "sub-biller-transaction-table": {
+      "columns": {
+        "collectionBank": "Collection Bank",
+        "settlementBank": "Settlement Bank",
+        "settlementType": "Settlement Type",
+        "transactionType": "Transaction Type",
+        "currencyId": "Currency",
+        "status": "Status",
+        "date": "Transaction Date",
+        "bankReference": "Bank Reference",
+        "subBiller": "Sub Biller",
+        "subSupplier": "Sub Biller",
+        "totalAmount": "Total Amount",
+        "totalCustomer": "Total Customer",
+        "numberOfCustomer": "Total Customer",
+        "transactionAmount": "Total Amount",
+        "createdDate": "Transaction Date",
+        "walletAccountDisplay": "Wallet"
+      }
+    },
+    "sub-billers-table": {
+      "columns": {
+        "syncCode": "Code",
+        "name": "Name",
+        "address": "Address"
+      }
     }
-
   },
   "status": {
     "all": "All status",
@@ -319,7 +345,7 @@
     "view_details": "View Details",
     "transaction_types": {
       "top_up": "Top Up",
-      "settlement": "Settlement", 
+      "settlement": "Settlement",
       "transfer": "Transfer",
       "payment": "Payment"
     },
@@ -860,7 +886,7 @@
   "pages": {
     "transaction": {
       "title": "Transaction",
-      "created_date":"Transaction Date",
+      "created_date": "Transaction Date",
       "total_customer": "Total Customer",
       "bank_ref": "Bank Reference",
       "repush": "Repush",
@@ -942,6 +968,7 @@
   "metadata": "Metadata",
   "back": "Back",
   "customer_name": "Customer Name",
-  "deactivate": "Deactivate"
-  }
-
+  "deactivate": "Deactivate",
+  "deactivate_subbiller_confirmation": "Do you really want to deactivate this sub-biller?",
+  "logo_recommendation": "Logo recommendation"
+}
