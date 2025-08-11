@@ -119,5 +119,12 @@ export enum RepushToBillerType {
   RMQ = 'rmq',
 }
 
+export enum PeriodType {
+  Today = 1,
+  ThisWeek = 2,
+  ThisMonth = 3,
+  Custom = 4,
+}
+
 export { BankServiceStatus, Currency, FeeType, FilterOperator, FilterOperatorPgwModule, FilterType, PartyType, SettlementHistoryStatus, SettlementStatus, SortDirection, Status };
 
