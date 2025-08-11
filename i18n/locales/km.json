@@ -173,6 +173,7 @@
     "transaction_list": "បញ្ជីប្រតិបត្តិការ",
     "transaction_history": "ប្រវត្តិប្រតិបត្តិការ",
     "load_more": "ចុះបន្ថែម",
+    "show_less": "បង្ហាញតិច",
     "loading_transactions": "កំពុងទាញយកប្រតិបត្តិការ...",
     "no_more_transactions": "អស់ប្រតិបត្តិការសម្រាប់ទាញយកហើយ",
     "transaction_details": "ព័ត៌មានលម្អិតប្រតិបត្តិការ",
@@ -219,6 +220,9 @@
       "last_30_days": "៣០ ថ្ងៃចុងក្រោយ",
       "last_3_months": "៣ ខែចុងក្រោយ",
       "last_6_months": "៦ ខែចុងក្រោយ",
+      "this_quarter": "ត្រីមាសនេះ",
+      "last_quarter": "ត្រីមាសមុន",
+      "this_year": "ឆ្នាំនេះ",
       "last_year": "១ ឆ្នាំចុងក្រោយ",
       "custom": "ជួរកំណត់ផ្ទាល់"
     },
@@ -630,30 +634,29 @@
         "channel": "បណ្តាញ",
         "customerName": "ឈ្មោះអតិថិជន",
         "action": "សកម្មភាព",
-        "currencyId":"រូបិយប័ណ្ណ",
+        "currencyId": "រូបិយប័ណ្ណ",
         "tranType": "ប្រភេទប្រតិបត្តិការ"
-
       }
     },
     "wallet-transactions-table-settlement_wallet": {
       "columns": {
-      "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ",
-      "wallet_type": "ប្រភេទកាបូប",
-      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
-      "status": "ស្ថានភាព",
-      "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
-      "currency_id": "រូបិយប័ណ្ណ",
-      "fee_amount": "ចំនួនថ្លៃកក់",
-      "net_amount": "ចំនួនសុទ្ធ",
-      "counterparty": "ភាគីដទៃ",
-      "payment_method": "វិធីបង់ប្រាក់",
-      "merchant": "អ្នកលក់",
-      "channel": "បណ្តាញ",
-      "customerName": "ឈ្មោះអតិថិជន",
-      "action": "សកម្មភាព",
-      "currencyId":"រូបិយប័ណ្ណ",
-      "tranType": "ប្រភេទប្រតិបត្តិការ"
-    }
+        "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "wallet_type": "ប្រភេទកាបូប",
+        "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+        "status": "ស្ថានភាព",
+        "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
+        "currency_id": "រូបិយប័ណ្ណ",
+        "fee_amount": "ចំនួនថ្លៃកក់",
+        "net_amount": "ចំនួនសុទ្ធ",
+        "counterparty": "ភាគីដទៃ",
+        "payment_method": "វិធីបង់ប្រាក់",
+        "merchant": "អ្នកលក់",
+        "channel": "បណ្តាញ",
+        "customerName": "ឈ្មោះអតិថិជន",
+        "action": "សកម្មភាព",
+        "currencyId": "រូបិយប័ណ្ណ",
+        "tranType": "ប្រភេទប្រតិបត្តិការ"
+      }
     },
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",
@@ -699,7 +702,7 @@
         "currency_id": "រូបិយប័ណ្ណ",
         "status": "ស្ថានភាព",
         "total_settled": "ចំនួនទូទាត់សរុប",
-        "settled_by": "ទូទាត់ដោយ"
+        "created_by": "ទូទាត់ដោយ"
       }
     },
     "transactions-history-table": {

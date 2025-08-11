@@ -359,7 +359,7 @@ const fetchSettlements = async (
       start_date: params.start_date || undefined,
       end_date: params.end_date || undefined,
       status: params.statuses || undefined,
-      banks: [],
+      banks: bank.value?.bank_id ? [bank.value.bank_id] : [],
     }
 
     const response = await getSettlementHistory(query)
