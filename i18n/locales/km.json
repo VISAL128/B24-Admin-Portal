@@ -612,7 +612,7 @@
     }
   },
   "table": {
-    "wallet-transactions-table": {
+    "wallet-transactions-table-top_up_wallet": {
       "columns": {
         "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ",
         "wallet_type": "ប្រភេទកាបូប",
@@ -626,12 +626,32 @@
         "payment_method": "វិធីបង់ប្រាក់",
         "merchant": "អ្នកលក់",
         "channel": "បណ្តាញ",
-        "customer_name": "ឈ្មោះអតិថិជន",
+        "customerName": "ឈ្មោះអតិថិជន",
         "action": "សកម្មភាព",
-        "currency":"រូបិយប័ណ្ណ",
+        "currencyId":"រូបិយប័ណ្ណ",
         "tranType": "ប្រភេទប្រតិបត្តិការ"
 
       }
+    },
+    "wallet-transactions-table-settlement_wallet": {
+      "columns": {
+      "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "wallet_type": "ប្រភេទកាបូប",
+      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+      "status": "ស្ថានភាព",
+      "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
+      "currency_id": "រូបិយប័ណ្ណ",
+      "fee_amount": "ចំនួនថ្លៃកក់",
+      "net_amount": "ចំនួនសុទ្ធ",
+      "counterparty": "ភាគីដទៃ",
+      "payment_method": "វិធីបង់ប្រាក់",
+      "merchant": "អ្នកលក់",
+      "channel": "បណ្តាញ",
+      "customerName": "ឈ្មោះអតិថិជន",
+      "action": "សកម្មភាព",
+      "currencyId":"រូបិយប័ណ្ណ",
+      "tranType": "ប្រភេទប្រតិបត្តិការ"
+    }
     },
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",

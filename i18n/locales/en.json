@@ -154,7 +154,7 @@
         "total_customer": "Total Customer"
       }
     },
-    "wallet-transactions-table":{
+    "wallet-transactions-table-top_up_wallet":{
       "columns": {
         "tranDate": "Transaction Date",
         "wallet_type": "Wallet Type",
@@ -168,9 +168,29 @@
         "payment_method": "Payment Method",
         "merchant": "Merchant",
         "channel": "Channel",
-        "customer_name":"Customer Name",
+        "customerName":"Customer Name",
         "actions":"Actions",
-        "currency": "Currency",
+        "currencyId": "Currency",
+        "tranType": "Transaction Type"
+      }
+    },
+    "wallet-transactions-table-settlement_wallet":{
+      "columns": {
+        "tranDate": "Transaction Date",
+        "wallet_type": "Wallet Type",
+        "transaction_type": "Transaction Type",
+        "status": "Status",
+        "totalAmount": "Total Amount",
+        "currency_id": "Currency",
+        "fee_amount": "Fee Amount",
+        "net_amount": "Net Amount",
+        "counterparty": "Counterparty",
+        "payment_method": "Payment Method",
+        "merchant": "Merchant",
+        "channel": "Channel",
+        "customerName":"Customer Name",
+        "actions":"Actions",
+        "currencyId": "Currency",
         "tranType": "Transaction Type"
       }
     }
