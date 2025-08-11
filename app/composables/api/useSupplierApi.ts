@@ -82,7 +82,10 @@ export const useSupplierApi = () => {
   ): Promise<SettlementHistoryResponse | null> => {
     payload.supplier_id = useAuth().currentProfile.value?.id || ''
     const rep = await execute(() =>
-      $fetch<ApiResponse<SettlementHistoryResponse>>('/api/management/settlement-history', { method: 'POST', body: payload })
+      $fetch<ApiResponse<SettlementHistoryResponse>>('/api/management/settlement-history', {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch settlement history:', rep.message)

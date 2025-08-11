@@ -33,11 +33,11 @@
         class="text-primary font-bold">{{ value }}</p>
       </div>
     </div> -->
-    <CardsSummaryCards 
-      v-show="!isTableFullscreen" 
-      :cards="summarys" 
-      :is-loading="isLoading" 
-      :skeleton-count="summarys.length" 
+    <CardsSummaryCards
+      v-show="!isTableFullscreen"
+      :cards="summarys"
+      :is-loading="isLoading"
+      :skeleton-count="summarys.length"
     />
     <ExTable
       ref="table"
@@ -50,14 +50,14 @@
       :search-tooltip="t('search_by_settler')"
       @data-changed="handleDataChanged"
       @row-click="handleViewDetails"
-      @fullscreen-toggle="(isFullScreen) => isTableFullscreen = isFullScreen"
+      @fullscreen-toggle="(isFullScreen) => (isTableFullscreen = isFullScreen)"
     >
-    <template #trailingHeader>
-      <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
+      <template #trailingHeader>
+        <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
           {{ t('generate_settlement') }}
-      </UButton>
-    </template>
-  </ExTable>
+        </UButton>
+      </template>
+    </ExTable>
   </div>
 </template>
 
@@ -117,29 +117,36 @@ const modelValue = shallowRef({
 
 const summarys = ref<SummaryCard[]>([
   {
+    key: 'total_amount',
     title: t('settlement.total_amount'),
-    values: [{ value: 0, currency: 'KHR' }, { value: 0, currency: 'USD' }],
+    values: [
+      { value: 0, currency: 'KHR' },
+      { value: 0, currency: 'USD' },
+    ],
     filterLabel: '',
     dateRange: '',
   },
   {
+    key: 'total_settled',
     title: t('settlement.total_settled'),
     values: [{ value: 0 }],
     filterLabel: '',
     dateRange: '',
   },
   {
+    key: 'success',
     title: t('settlement.success'),
     values: [{ value: 0 }],
     filterLabel: '',
     dateRange: '',
   },
   {
+    key: 'failed',
     title: t('settlement.failed'),
     values: [{ value: 0 }],
     filterLabel: '',
     dateRange: '',
-  }
+  },
 ])
 
 // Define table ID
@@ -156,7 +163,9 @@ onBeforeUnmount(() => {
 })
 
 // Wrapper function for BaseTableV2
-const fetchSettlementForTable = async (params?: QueryParams): Promise<SettlementHistoryTableFetchResult | null> => {
+const fetchSettlementForTable = async (
+  params?: QueryParams
+): Promise<SettlementHistoryTableFetchResult | null> => {
   try {
     isLoading.value = true
     dateRangeFilterDisplay.value = `${params?.start_date} - ${params?.end_date}`
@@ -165,10 +174,15 @@ const fetchSettlementForTable = async (params?: QueryParams): Promise<Settlement
       search: params?.search || undefined,
       page_size: params?.page_size || pageSize.value.value,
       page: params?.page || page.value,
-      start_date: params?.start_date ? formatDateForBackendRequest(params?.start_date, 'yyy/MM/dd') : undefined,
-      end_date: params?.end_date ? formatDateForBackendRequest(params?.end_date, 'yyy/MM/dd') : undefined,
+      start_date: params?.start_date
+        ? formatDateForBackendRequest(params?.start_date, 'yyyy/MM/dd')
+        : undefined,
+      end_date: params?.end_date
+        ? formatDateForBackendRequest(params?.end_date, 'yyyy/MM/dd')
+        : undefined,
       status: params?.statuses || [],
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
+      banks: [],
     }
 
     const data = await getSettlementHistory(payload)
@@ -180,6 +194,7 @@ const fetchSettlementForTable = async (params?: QueryParams): Promise<Settlement
       sum_total_amount_usd: data?.sum_total_amount_usd || 0,
       sum_total_settled: data?.sum_total_settled || 0,
       sum_success: data?.sum_success || 0,
+      sum_failed: data?.sum_failed || 0,
     }
   } catch (error: unknown) {
     // Show error notification to user
@@ -213,26 +228,26 @@ const navigateToDetails = (settlementId: string) => {
 
 const handleDataChanged = (result: SettlementHistoryTableFetchResult) => {
   // Update summary with the result data
-      summarys.value = summarys.value.map((card) => {
-        card.dateRange = dateRangeFilterDisplay.value
-        if (card.title === t('settlement.total_amount')) {
-          return {
-            ...card,
-            values: [
-              { value: result.sum_total_amount_khr || 0, currency: 'KHR' },
-              { value: result.sum_total_amount_usd || 0, currency: 'USD' },
-            ],
-          }
-        } else if (card.title === t('settlement.total_settled')) {
-          return { ...card, values: [{ value: result.sum_total_settled || 0 }] }
-        } else if (card.title === t('settlement.success')) {
-          return { ...card, values: [{ value: result.sum_success || 0 }] }
-        } else if (card.title === t('settlement.failed')) {
-          return { ...card, values: [{ value: result.sum_failed || 0 }] }
-        }
-        return card
-      })
-  }
+  summarys.value = summarys.value.map((card) => {
+    card.dateRange = dateRangeFilterDisplay.value
+    if (card.title === t('settlement.total_amount')) {
+      return {
+        ...card,
+        values: [
+          { value: result.sum_total_amount_khr || 0, currency: 'KHR' },
+          { value: result.sum_total_amount_usd || 0, currency: 'USD' },
+        ],
+      }
+    } else if (card.title === t('settlement.total_settled')) {
+      return { ...card, values: [{ value: result.sum_total_settled || 0 }] }
+    } else if (card.title === t('settlement.success')) {
+      return { ...card, values: [{ value: result.sum_success || 0 }] }
+    } else if (card.key === 'failed') {
+      return { ...card, values: [{ value: result.sum_failed || 0 }] }
+    }
+    return card
+  })
+}
 
 const handleViewDetails = (rowData: SettlementHistoryRecord) => {
   navigateToDetails(rowData.id)
@@ -285,11 +300,12 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
+    enableHiding: true,
     size: 50,
     maxSize: 150,
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
-  
+
   {
     id: 'created_by',
     accessorKey: 'created_by',
@@ -317,9 +333,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
             variant: 'subtle',
             class: 'flex items-center gap-1',
           },
-          () => [
-            h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`),
-          ]
+          () => [h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`)]
         ),
         // Success and Fail badges
         h(
@@ -381,8 +395,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
       { label: t('currency.usd'), value: 'USD' },
       { label: t('currency.khr'), value: 'KHR' },
     ],
-    size: 50
-  }
-  
+    size: 50,
+  },
 ]
 </script>

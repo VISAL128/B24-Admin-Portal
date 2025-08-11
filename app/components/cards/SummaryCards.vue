@@ -49,9 +49,9 @@
       <!-- Title and Filter Label -->
       <div class="flex justify-between items-start">
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ card.title }}</h3>
-        <span class="text-xs font-medium text-primary whitespace-nowrap">
+        <!-- <span class="text-xs font-medium text-primary whitespace-nowrap">
           {{ card.filterLabel }}
-        </span>
+        </span> -->
       </div>
 
       <!-- Values -->
@@ -86,6 +86,7 @@ export interface SummaryCardValue {
 }
 
 export interface SummaryCard {
+  key?: string
   title: string
   values: SummaryCardValue[]
   filterLabel: string

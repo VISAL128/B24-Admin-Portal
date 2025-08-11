@@ -2,6 +2,7 @@ import type { BankServiceStatus } from "#imports"
 
 export interface Bank {
   id: string
+  bank_id: string
   name: string
   name_kh?: string
   is_settlement_bank: boolean

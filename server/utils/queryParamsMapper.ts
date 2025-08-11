@@ -10,18 +10,17 @@ import { FilterOperatorPgwModule } from '~/utils/enumModel'
  */
 export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParamsPgwModuleApi {
   const pgwParams = new QueryParamsPgwModuleApi()
-  
+
   // Map pagination
   pgwParams.pageIndex = clientParams.page || 1
   pgwParams.pageSize = clientParams.page_size || 10
-  
+
   // Map sorting - convert to PGW format (field+ for asc, field- for desc, separated by ;)
   if (clientParams.sortAsString) {
     // If sortAsString is provided, use it directly
     pgwParams.sorts = clientParams.sortAsString
-    
-  }else{
-      // Otherwise, build sorts from array (THIS IS NOT YET WORKING)
+  } else {
+    // Otherwise, build sorts from array (THIS IS NOT YET WORKING)
     const sortsArray = clientParams.sorts || []
     if (sortsArray.length > 0) {
       sortsArray.forEach((sort: { field: string; direction: 'asc' | 'desc' }) => {
@@ -34,39 +33,39 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   if (pgwParams.sorts.endsWith(';')) {
     pgwParams.sorts = pgwParams.sorts.slice(0, -1)
   }
-  
+
   // Initialize filters array
   const filters: ParamFilterPgwModuleApi[] = []
-  
+
   // Map search to filter
   if (clientParams.search) {
     filters.push({
       field: 'search',
       operator: FilterOperatorPgwModule.Contains,
       value: clientParams.search,
-      manualFilter: false
+      manualFilter: false,
     })
   }
-  
+
   // Map date range to filters
   if (clientParams.start_date) {
     filters.push({
       field: 'fromDate',
       operator: FilterOperatorPgwModule.GreaterThanOrEqualTo,
       value: clientParams.start_date,
-      manualFilter: false
+      manualFilter: false,
     })
   }
-  
+
   if (clientParams.end_date) {
     filters.push({
       field: 'toDate',
       operator: FilterOperatorPgwModule.LessThanOrEqualTo,
       value: clientParams.end_date,
-      manualFilter: false
+      manualFilter: false,
     })
   }
-  
+
   // Map additional filters
   if (clientParams.filters) {
     let filtersArray = clientParams.filters
@@ -80,7 +79,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
         filtersArray = []
       }
     }
-    
+
     // Ensure it's an array and has items
     if (Array.isArray(filtersArray) && filtersArray.length > 0) {
       for (let filter of filtersArray) {
@@ -89,42 +88,46 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
         }
         // Map field names if needed for PGW API compatibility
         const pgwField = mapFieldNameToPgwModule(filter.field)
-        
+
         filters.push({
           field: pgwField as ParamFilterPgwModuleApi['field'],
           operator: filter.operator as FilterOperatorPgwModule,
           value: filter.value,
-          manualFilter: false
+          manualFilter: false,
         })
       }
-    }
-    else if (filtersArray && typeof filtersArray === 'object' && !Array.isArray(filtersArray)) {
+    } else if (filtersArray && typeof filtersArray === 'object' && !Array.isArray(filtersArray)) {
       // If filters is a single object, convert it to an array
-      const singleFilter = filtersArray as { field: string; operator: FilterOperatorPgwModule; value: string | number | boolean | Date; manualFilter?: boolean }
+      const singleFilter = filtersArray as {
+        field: string
+        operator: FilterOperatorPgwModule
+        value: string | number | boolean | Date
+        manualFilter?: boolean
+      }
       filters.push({
         field: mapFieldNameToPgwModule(singleFilter.field),
         operator: singleFilter.operator,
         value: singleFilter.value,
-        manualFilter: false
+        manualFilter: false,
       })
     }
   }
   console.log('Mapped filters:', filters)
-  
+
   // Map status filters if any
-//   if (clientParams.statuses && clientParams.statuses.length > 0) {
-//     // Assuming status is mapped to a search filter for PGW
-//     for (const status of clientParams.statuses) {
-//       filters.push({
-//         field: 'search',
-//         operator: 'eq',
-//         value: status
-//       })
-//     }
-//   }
-  
+  //   if (clientParams.statuses && clientParams.statuses.length > 0) {
+  //     // Assuming status is mapped to a search filter for PGW
+  //     for (const status of clientParams.statuses) {
+  //       filters.push({
+  //         field: 'search',
+  //         operator: 'eq',
+  //         value: status
+  //       })
+  //     }
+  //   }
+
   pgwParams.filter = filters
-  
+
   return pgwParams
 }
 
@@ -135,10 +138,10 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
  */
 function mapFieldNameToPgwModule(clientField: string): string {
   const fieldMapping: Record<string, string> = {
-    'supplier_id': 'supplierId',
+    supplier_id: 'supplierId',
     // Add more field mappings as needed
   }
-  
+
   return fieldMapping[clientField] || clientField
 }
 
@@ -147,7 +150,9 @@ function mapFieldNameToPgwModule(clientField: string): string {
  * @param pgwParams - QueryParamsPgwModuleApi instance
  * @returns Plain object suitable for API request
  */
-export function serializePgwModuleParams(pgwParams: QueryParamsPgwModuleApi): Record<string, unknown> {
+export function serializePgwModuleParams(
+  pgwParams: QueryParamsPgwModuleApi
+): Record<string, unknown> {
   // Simple serialization without class-transformer for now
   return {
     pageIndex: pgwParams.pageIndex,
@@ -155,6 +160,6 @@ export function serializePgwModuleParams(pgwParams: QueryParamsPgwModuleApi): Re
     pageCount: pgwParams.pageCount,
     rowCount: pgwParams.rowCount,
     sorts: pgwParams.sorts,
-    Filter: pgwParams.filter
+    Filter: pgwParams.filter,
   }
 }

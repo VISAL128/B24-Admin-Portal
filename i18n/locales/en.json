@@ -158,7 +158,7 @@
         "transactionAmount": "Total Amount"
       }
     },
-    "wallet-transactions-table": {
+    "wallet-transactions-table-top_up_wallet": {
       "columns": {
         "tranDate": "Transaction Date",
         "wallet_type": "Wallet Type",
@@ -172,9 +172,9 @@
         "payment_method": "Payment Method",
         "merchant": "Merchant",
         "channel": "Channel",
-        "customer_name": "Customer Name",
+        "customerName": "Customer Name",
         "actions": "Actions",
-        "currency": "Currency",
+        "currencyId": "Currency",
         "tranType": "Transaction Type"
       }
     },
@@ -203,6 +203,26 @@
         "syncCode": "Code",
         "name": "Name",
         "address": "Address"
+      }
+    },
+    "wallet-transactions-table-settlement_wallet": {
+      "columns": {
+        "tranDate": "Transaction Date",
+        "wallet_type": "Wallet Type",
+        "transaction_type": "Transaction Type",
+        "status": "Status",
+        "totalAmount": "Total Amount",
+        "currency_id": "Currency",
+        "fee_amount": "Fee Amount",
+        "net_amount": "Net Amount",
+        "counterparty": "Counterparty",
+        "payment_method": "Payment Method",
+        "merchant": "Merchant",
+        "channel": "Channel",
+        "customerName": "Customer Name",
+        "actions": "Actions",
+        "currencyId": "Currency",
+        "tranType": "Transaction Type"
       }
     }
   },
@@ -319,6 +339,7 @@
     "transaction_list": "Transaction List",
     "transaction_history": "Transaction History",
     "load_more": "Load More",
+    "show_less": "Show Less",
     "loading_transactions": "Loading transactions...",
     "no_more_transactions": "No more transactions to load",
     "transaction_details": "Transaction Details",
@@ -365,6 +386,9 @@
       "last_30_days": "Last 30 Days",
       "last_3_months": "Last 3 Months",
       "last_6_months": "Last 6 Months",
+      "this_quarter": "This Quarter",
+      "last_quarter": "Last Quarter",
+      "this_year": "This Year",
       "last_year": "Last Year",
       "custom": "Custom Range"
     },

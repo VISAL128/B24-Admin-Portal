@@ -18,6 +18,7 @@ import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import EmptyState from '~/components/TableEmptyState.vue'
 import SumTranDataUnderTable from '~/components/tables/SumTranDataUnderTable.vue'
+import TableShimmer from '~/components/tables/TableShimmer.vue'
 import type { SupplierProfile } from '~/models/supplier'
 import { useTable } from '~/composables/utils/useTable'
 import appConfig from '~~/app.config'
@@ -371,15 +372,17 @@ const tranDetailsSorting = ref([
 ])
 
 const exportHeaders = computed(() =>
-  cpoSettlementTransactionColumns.filter((col) => col.id !== 'row_number').map((col) => ({
-    key: String(col.id || ''),
-    label:
-      typeof col.header === 'string'
-        ? col.header
-        : (col.id ? String(col.id) : '')
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, (l) => l.toUpperCase()),
-  }))
+  cpoSettlementTransactionColumns
+    .filter((col) => col.id !== 'row_number')
+    .map((col) => ({
+      key: String(col.id || ''),
+      label:
+        typeof col.header === 'string'
+          ? col.header
+          : (col.id ? String(col.id) : '')
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, (l) => l.toUpperCase()),
+    }))
 )
 
 const resolvedExportOptions = computed(() => ({
@@ -740,7 +743,7 @@ definePageMeta({
                     color="primary"
                     variant="outline"
                     icon="material-symbols:sync"
-                    :loading="!listInquirySettlement"
+                    :loading="isLoadingInquiry"
                     @click="fetchInquirySettlementCpo"
                   >
                     {{ t('settlement.refresh') }}
@@ -748,8 +751,10 @@ definePageMeta({
                 </div>
               </div>
               <!-- Summary -->
-               <CardsSummaryCards
-               :cards="[
+              <CardsSummaryCards
+                :is-loading="isLoadingInquiry"
+                :skeleton-count="3"
+                :cards="[
                   {
                     title: t('settlement.generate.form.total_biller'),
                     values: [
@@ -758,30 +763,39 @@ definePageMeta({
                       },
                     ],
                     dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: ''
+                    filterLabel: '',
                   },
                   {
                     title: t('settlement.generate.form.total_transactions'),
                     values: [
                       {
-                        value: listInquirySettlement?.settlements?.reduce((acc, curr) => acc + (curr.transaction_allocations?.length || 0), 0) || 0,
+                        value:
+                          listInquirySettlement?.settlements?.reduce(
+                            (acc, curr) => acc + (curr.transaction_allocations?.length || 0),
+                            0
+                          ) || 0,
                       },
                     ],
                     dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: ''
+                    filterLabel: '',
                   },
                   {
                     title: t('settlement.generate.form.total_amount'),
                     values: [
                       {
-                        value: listInquirySettlement?.settlements?.reduce((acc, curr) => acc + (curr.amount || 0), 0) || 0,
+                        value:
+                          listInquirySettlement?.settlements?.reduce(
+                            (acc, curr) => acc + (curr.amount || 0),
+                            0
+                          ) || 0,
                         currency: selectedCurrency?.value.code || defaultCurrency.code,
                       },
                     ],
                     dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: ''
+                    filterLabel: '',
                   },
-               ]" />
+                ]"
+              />
               <!-- Settlement List and Transaction Details -->
               <div class="flex flex-1 sm:flex-col lg:flex-row gap-6 min-h-0">
                 <!-- Master Table -->
@@ -789,9 +803,13 @@ definePageMeta({
                   class="flex-2 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
                 >
                   <div class="h-full overflow-auto">
+                    <!-- Table Skeleton -->
+                    <TableShimmer v-if="isLoadingInquiry" :rows="5" :show-row-number="true" />
+                    <!-- Actual Table -->
                     <UTable
+                      v-else
                       ref="table"
-                      :loading="isLoadingInquiry"
+                      :loading="false"
                       :data="listInquirySettlement?.settlements || []"
                       :columns="cpoSettlementColumns"
                       :ui="appConfig.ui.table.slots"
@@ -831,19 +849,19 @@ definePageMeta({
                           {{ t('settlement.generate.form.transaction_history') }}
                         </h3>
                         <div class="flex gap-4">
-                          <ButtonsExportButton 
+                          <ButtonsExportButton
                             :data="selectedCpoSettlement.transaction_allocations"
                             :headers="exportHeaders"
                             :export-options="resolvedExportOptions"
                           />
                           <UButton
-                          icon="i-lucide-x"
-                          size="xs"
-                          color="gray"
-                          variant="ghost"
-                          class="hover:bg-gray-100 transition-colors duration-200"
-                          @click="selectedCpoSettlement = null"
-                        />
+                            icon="i-lucide-x"
+                            size="xs"
+                            color="gray"
+                            variant="ghost"
+                            class="hover:bg-gray-100 transition-colors duration-200"
+                            @click="selectedCpoSettlement = null"
+                          />
                         </div>
                       </div>
                     </div>
