@@ -10,10 +10,11 @@ export const useTransactionApi = () => {
   /**
    * Get transaction summary from transaction API
    */
-  const getTransactionSummary = async () => {
+  const getTransactionSummary = async (query?: { FromDate?: string; ToDate?: string; PeriodType?: number }) => {
     return await executeV2(() =>
       $fetch<TransactionSummaryModel>(`/api/pgw-module/transaction/summary`, {
         method: 'GET',
+        query,
         onResponseError() {},
       })
     )
