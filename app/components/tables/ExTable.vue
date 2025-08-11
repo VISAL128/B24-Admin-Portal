@@ -669,8 +669,10 @@ const fetchData = async (refresh = false) => {
       page: internalPage.value,
       page_size: pageSize.value.value,
       search: search.value,
-      start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value, 'yyyy/MM/dd') : undefined,
-      end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value, 'yyyy/MM/dd') : undefined,
+      // start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value, 'yyyy/MM/dd') : undefined,
+      // end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value, 'yyyy/MM/dd') : undefined,
+      start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value, startDateFormatPattern.value) : undefined,
+      end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value, endDateFormatPattern.value) : undefined,
       statuses: selectedStatuses.value
         .filter((s) => s.value !== 'all' && s.value !== '')
         .map((s) => s.value),
@@ -758,8 +760,17 @@ const props = defineProps<{
   ) => Promise<(TableFetchResult<T[]> & Record<string, unknown>) | null | undefined>
   enabledAutoRefresh?: boolean
   searchTooltip?: string
+  // New optional props to customize date formats sent to backend
+  dateFormat?: string
+  startDateFormat?: string
+  endDateFormat?: string
 }>()
 
+// Computed helpers for customizable date formats
+const startDateFormatPattern = computed(() => props.startDateFormat || props.dateFormat || 'yyyy/MM/dd')
+const endDateFormatPattern = computed(() => props.endDateFormat || props.dateFormat || 'yyyy/MM/dd')
+
+// Watch for page size changes and refetch data
 watch(pageSize, async (_newSize) => {
   internalPage.value = 1
   if (props.fetchDataFn && mounted.value) {
