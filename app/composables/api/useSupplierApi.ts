@@ -87,7 +87,6 @@ export const useSupplierApi = () => {
         body: payload,
       })
     )
-    console.log('Settlement History Response:', rep)
     if (rep.code !== 'SUCCESS') {
       console.error('Failed to fetch settlement history:', rep.message)
       return null

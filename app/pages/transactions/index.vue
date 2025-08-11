@@ -25,6 +25,7 @@
       enabled-repush
       @row-click="handleViewDetails"
       @fullscreen-toggle="handleFullscreenToggle"
+      @data-changed="handleDataChanged"
     >
       <template #trailingHeader>
         <!-- Repush Button - Only show when rows are selected -->
@@ -77,10 +78,13 @@ const getTransactionTypeKey = (value: string): string => {
 
 const pgwModuleApi = usePgwModuleApi()
 const transactionApi = useTransactionApi()
-const {getTransactionList} = useTransactionApi()
-const { getTransactions } = usePgwModuleApi()
+const {getTransactionList, getTransactionSummary} = useTransactionApi()
 
 const showInfoBanner = ref(true)
+const isLoading = ref(true)
+// Fullscreen state for table
+const isTableFullscreen = ref(false)
+
 
 // Handle Repush Transaction
 const handleRepush = () => {
@@ -104,96 +108,80 @@ const skeletonCount = computed(() => {
   return transactionSummary.value?.summarys?.length || 4
 })
 
-const isLoading = ref(true)
-
-// Fullscreen state for table
-const isTableFullscreen = ref(false)
 
 // Handle fullscreen toggle from ExTable
 const handleFullscreenToggle = (fullscreen: boolean) => {
   isTableFullscreen.value = fullscreen
 }
 
+// Helper: Normalize various date string formats to YYYY-MM-DD
+const toYMD = (dateStr?: string): string | undefined => {
+  if (!dateStr) return undefined
+  // Handle separators
+  if (dateStr.includes('/')) {
+    const [a, b, c] = dateStr.split('/')
+    if (!a || !b || !c) return undefined
+    // dd/MM/yyyy or yyyy/MM/dd
+    if (a.length === 4) {
+      // yyyy/MM/dd
+      return `${a}-${b.padStart(2, '0')}-${c.padStart(2, '0')}`
+    } else {
+      // dd/MM/yyyy
+      return `${c}-${b.padStart(2, '0')}-${a.padStart(2, '0')}`
+    }
+  }
+  if (dateStr.includes('-')) {
+    const [a, b, c] = dateStr.split('-')
+    if (!a || !b || !c) return undefined
+    // dd-MM-yyyy or yyyy-MM-dd
+    if (a.length === 4) return `${a}-${b.padStart(2, '0')}-${c.padStart(2, '0')}`
+    return `${c}-${b.padStart(2, '0')}-${a.padStart(2, '0')}`
+  }
+  // Fallback to Date parsing
+  const d = new Date(dateStr)
+  if (!isNaN(d.getTime())) {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+  return undefined
+}
+
 // Function to fetch transaction summary from API
-const fetchTransactionSummary = async () => {
+const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: string; PeriodType?: number }) => {
   try {
     isLoading.value = true
-    const response = await transactionApi.getTransactionSummary()
+    const response = await getTransactionSummary(params)
     transactionSummary.value = response
     isLoading.value = false
     console.log('✅ Frontend: Transaction summary loaded successfully')
   } catch (error) {
     console.error('❌ Frontend: Error fetching transaction summary:', error)
-    // Error handling is done automatically by executeV2 → errorHandler.handleApiError()
     // Keep loading state true to show skeleton cards when there's an error
-    // isLoading.value remains true
+  }
+}
+
+// New handler: get the exact dates used by the table fetch and apply to summary
+const handleDataChanged = (result: Record<string, any>) => {
+  const FromDate = toYMD(result?.start_date)
+  const ToDate = toYMD(result?.end_date)
+  if (FromDate || ToDate) {
+    fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 })
   }
 }
 
 onMounted(async () => {
-  // Fetch transaction summary
-  await fetchTransactionSummary()
+  // Default monthly summary (PeriodType=4) custom date range for the current month
+  const now = new Date()
+  const first = new Date(now.getFullYear(), now.getMonth(), 1)
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const FromDate = `${first.getFullYear()}-${pad(first.getMonth() + 1)}-${pad(first.getDate())}`
+  const ToDate = `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`
+
+  await fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 })
 })
-
-// Fetch function for TablesExTable following sub-billers structure
-// const fetchTransactionList = async (params?: QueryParams): Promise<{
-//   data: TransactionModel[]
-//   total_record: number
-//   total_page: number
-// } | null> => {
-//   try {
-//     const response = await transactionApi.getTransactionList(params)
-
-//     return {
-//       data: response.data?.results || [],
-//       total_record: response.data?.param?.rowCount || 0,
-//       total_page: response.data?.param?.pageCount || 0,
-//     }
-//   } catch (error) {
-//     errorHandler.handleApiError(error)
-//     return null
-//   }
-// }
-
-// const fetchTransactionList = async (params?: QueryParams): Promise<TransactionListTableFetchResult | undefined> => {
-//   try {
-//     isLoading.value = true
-//     const response = await transactionApi.getTransactionList(params)
-    
-//     console.log('Fetched response:', response)
-    
-//     return {
-//       data: response.data || [],
-//       total_page: response.total_pages || 0,
-//       total_record: response.total_records || 0,
-//     }
-//   } catch (error: unknown) {
-//     // Show error notification to user
-//     errorHandler.handleApiError(error)
-//   }
-//   finally {
-//     isLoading.value = false
-//   }
-// }
-
-// const fetchTransactionList = async (params?: QueryParams): Promise<{
-//   data: TransactionHi[]
-//   total_record: number
-//   total_page: number
-// } | null> => {
-//   try {
-
-//     const response = await getTransactionList(params)
-//     return {
-//       data: response.results || [],
-//       total_record: response.param?.rowCount || 0,
-//       total_page: response.param?.pageCount || 0,
-//     }
-//   } catch (error) {
-//     errorHandler.handleApiError(error)
-//     return null
-//   }
-// }
 
 const fetchTransactionHistory = async (params?: QueryParams): Promise<{
   data: TransactionHistoryRecord[]
@@ -201,14 +189,16 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
   total_page: number
 } | null> => {
   try {
-    // params.filter
     const response = await getTransactionList(params)
     console.log('Fetched transactions:', response)
     return {
       data: response.results || [],
       total_record: response.param?.rowCount || 0,
       total_page: response.param?.pageCount || 0,
-    }
+      // pass through the dates used for this fetch so parent can sync summary
+      start_date: params?.start_date,
+      end_date: params?.end_date,
+    } as any
   } catch (error) {
     errorHandler.handleApiError(error)
     return null
@@ -267,11 +257,7 @@ const TABLE_ID = 'transaction-history-table'
 //   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
 //   // Set default date range to current month
 //   startDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1).toString()
-//   endDate.value = new CalendarDate(
-//     today.getFullYear(),
-//     today.getMonth() + 1,
-//     lastDayOfMonth
-//   ).toString()
+//   endDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth).toString()
 //   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
 //   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
 // })

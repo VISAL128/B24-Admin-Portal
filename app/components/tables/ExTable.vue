@@ -28,7 +28,11 @@
             />
           </template>
 
-          <UPopover v-if="showFilterButton" v-model:open="showColumnFilterPopup" @update:open="onFilterPopoverToggle">
+          <UPopover
+            v-if="showFilterButton"
+            v-model:open="showColumnFilterPopup"
+            @update:open="onFilterPopoverToggle"
+          >
             <UTooltip :text="t('table.filters')" :delay-duration="200">
               <UButton variant="ghost" class="p-2 relative">
                 <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
@@ -56,27 +60,34 @@
                         <template v-if="col.enableColumnFilter">
                           <div class="space-y-1">
                             <!-- Filter Label -->
-                            <label 
-                              :for="`filter-${col.id}`" 
+                            <label
+                              :for="`filter-${col.id}`"
                               class="text-xs font-medium text-gray-700 dark:text-gray-300"
                             >
                               {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
                             </label>
-                            
+
                             <template v-if="'filterType' in col && col.filterType === 'status'">
                               <StatusSelection
                                 :id="`filter-${col.id}`"
                                 :model-value="selectedStatuses"
                                 :multiple="true"
-                                :available-statuses="['all' , ...getColumnFilterOptions(col).map((status) => status.value.toString()) || []]"
+                                :available-statuses="[
+                                  'all',
+                                  ...(getColumnFilterOptions(col).map((status) =>
+                                    status.value.toString()
+                                  ) || []),
+                                ]"
                                 :include-all-statuses="false"
                                 :placeholder="t('settlement.select_status')"
                                 :searchable="false"
-                                @update:model-value="(val) => {
-                                  val = val as { label: string; value: string }[]
-                                  selectedStatuses = val
-                                  emit('filter-change', col.id, val.map((s) => s.value).join(','))
-                                }"
+                                @update:model-value="
+                                  (val) => {
+                                    val = val as { label: string; value: string }[]
+                                    selectedStatuses = val
+                                    emit('filter-change', col.id, val.map((s) => s.value).join(','))
+                                  }
+                                "
                               />
                             </template>
                             <template v-else>
@@ -154,7 +165,11 @@
               :class="isDateRangeExceedsWeek ? 'opacity-80 cursor-not-allowed' : ''"
             />
             <UTooltip
-              :text="isDateRangeExceedsWeek ? t('settlement.auto_refresh_disabled_long_range') : `${t('settlement.auto_refresh_desc')} (${autoRefreshIntervalMs / 1000} ${t('seconds')})`"
+              :text="
+                isDateRangeExceedsWeek
+                  ? t('settlement.auto_refresh_disabled_long_range')
+                  : `${t('settlement.auto_refresh_desc')} (${autoRefreshIntervalMs / 1000} ${t('seconds')})`
+              "
               :delay-duration="200"
               placement="top"
             >
@@ -392,12 +407,12 @@ const initializeColumnVisibility = (): Record<string, boolean> => {
   if (savedConfig && Object.keys(savedConfig).length > 0) {
     return savedConfig
   }
-  
+
   // If no saved config or empty, use current defaultColumnVisibility
   if (Object.keys(defaultColumnVisibility.value).length > 0) {
     return { ...defaultColumnVisibility.value }
   }
-  
+
   // Fallback: create default visibility for all columns
   const defaultVisibility: Record<string, boolean> = {}
   columnsWithRowNumber.value.forEach((col) => {
@@ -502,13 +517,16 @@ const columnConfig = computed(() => {
             }
           }
         }
-      }
+      },
     }))
-    
+
   if (import.meta.env.DEV) {
-    console.log(`📊 Column config for table ${props.tableId}:`, config.map(c => c.id))
+    console.log(
+      `📊 Column config for table ${props.tableId}:`,
+      config.map((c) => c.id)
+    )
   }
-  
+
   return config
 })
 
@@ -526,12 +544,12 @@ const showDateFilter = computed(() => props.showDateFilter ?? true)
 // Check if date range exceeds 7 days (a week)
 const isDateRangeExceedsWeek = computed(() => {
   if (!startDate.value || !endDate.value) return false
-  
+
   const start = new Date(startDate.value)
   const end = new Date(endDate.value)
   const diffTime = Math.abs(end.getTime() - start.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
+
   return diffDays > 7
 })
 
@@ -555,7 +573,9 @@ const autoRefreshIntervalMs = computed(() => {
 })
 
 const selectedStatuses = ref<{ label: string; value: string }[]>([{ label: 'all', value: '' }])
-const appliedSelectedStatuses = ref<{ label: string; value: string }[]>([{ label: 'all', value: '' }])
+const appliedSelectedStatuses = ref<{ label: string; value: string }[]>([
+  { label: 'all', value: '' },
+])
 const autoRefresh = ref(false)
 const isRefreshing = ref(false)
 
@@ -585,25 +605,16 @@ const tableData = computed(() => internalData.value)
 
 const onFilterPopoverToggle = (isOpen: boolean) => {
   if (isOpen) {
-    // Load column filters from localStorage when popover opens
-    const savedFilters = tableConfig.getColumnFilters(props.tableId)
-    if (savedFilters) {
-      columnFilters.value = { ...savedFilters }
-      appliedColumnFilters.value = { ...savedFilters }
-      
-      // Update selectedStatuses if there are status filters
-      const statusKeys = Object.keys(savedFilters).filter(key => key.includes('status') || key.includes('active'))
-      if (statusKeys.length > 0) {
-        const statusValues = statusKeys.map(key => savedFilters[key]).filter(val => val && val !== '')
-        if (statusValues.length > 0) {
-          selectedStatuses.value = statusValues.map(val => ({ label: val || '', value: val || '' }))
-          appliedSelectedStatuses.value = statusValues.map(val => ({ label: val || '', value: val || '' }))
-        }
-      }
-      
-      if (import.meta.env.DEV) {
-        console.log(`DEV: 📂 Loaded column filters for table ${props.tableId}:`, savedFilters)
-      }
+    // When popover opens, initialize with current applied filters (not saved filters)
+    // This ensures the popup shows what's currently applied
+    columnFilters.value = { ...appliedColumnFilters.value }
+    selectedStatuses.value = [...appliedSelectedStatuses.value]
+
+    if (import.meta.env.DEV) {
+      console.log(
+        `DEV: 📂 Loaded applied filters for popup in table ${props.tableId}:`,
+        appliedColumnFilters.value
+      )
     }
   }
 }
@@ -612,7 +623,7 @@ const onApplyColumnFilters = async () => {
   // Update applied filters when apply is clicked
   appliedColumnFilters.value = { ...columnFilters.value }
   appliedSelectedStatuses.value = [...selectedStatuses.value]
-  
+
   saveColumnFilters()
   showColumnFilterPopup.value = false
   if (props.fetchDataFn && mounted.value) {
@@ -671,8 +682,12 @@ const fetchData = async (refresh = false) => {
       search: search.value,
       // start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value, 'yyyy/MM/dd') : undefined,
       // end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value, 'yyyy/MM/dd') : undefined,
-      start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value, startDateFormatPattern.value) : undefined,
-      end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value, endDateFormatPattern.value) : undefined,
+      start_date: props.showDateFilter
+        ? formatDateForBackendRequest(startDate.value, startDateFormatPattern.value)
+        : undefined,
+      end_date: props.showDateFilter
+        ? formatDateForBackendRequest(endDate.value, endDateFormatPattern.value)
+        : undefined,
       statuses: selectedStatuses.value
         .filter((s) => s.value !== 'all' && s.value !== '')
         .map((s) => s.value),
@@ -766,7 +781,9 @@ const props = defineProps<{
 }>()
 
 // Computed helpers for customizable date formats
-const startDateFormatPattern = computed(() => props.startDateFormat || props.dateFormat || 'yyyy/MM/dd')
+const startDateFormatPattern = computed(
+  () => props.startDateFormat || props.dateFormat || 'yyyy/MM/dd'
+)
 const endDateFormatPattern = computed(() => props.endDateFormat || props.dateFormat || 'yyyy/MM/dd')
 
 // Watch for page size changes and refetch data
@@ -796,9 +813,24 @@ const allColumnIds = computed(() =>
 
 // Computed property for active filter count
 const activeFilterCount = computed(() => {
-  const columnFilterCount = Object.values(appliedColumnFilters.value).filter((val) => val !== '').length
+  // If filter popup is open, count based on current selections (columnFilters)
+  // Otherwise, count based on applied filters (appliedColumnFilters)
+  const filtersToCount = showColumnFilterPopup.value
+    ? columnFilters.value
+    : appliedColumnFilters.value
+  const statusesToCount = showColumnFilterPopup.value
+    ? selectedStatuses.value
+    : appliedSelectedStatuses.value
+
+  const columnFilterCount = Object.values(filtersToCount).filter(
+    (val) => val !== '' && val !== 'all'
+  ).length
   const sortFilterCount = selectedSortField.value ? 1 : 0
-  return columnFilterCount + sortFilterCount + (appliedSelectedStatuses.value.filter((s) => s.value !== 'all' && s.value !== '').length > 0 ? 1 : 0)
+  return (
+    columnFilterCount +
+    sortFilterCount +
+    (statusesToCount.filter((s) => s.value !== 'all' && s.value !== '').length > 0 ? 1 : 0)
+  )
 })
 
 const exportHeaders = computed(() =>
@@ -909,10 +941,10 @@ const filteredColumns = computed(() => {
         createSortableHeader(
           column,
           col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id),
-          col.sortableHeaderAlignment || 'left',
+          col.sortableHeaderAlignment || 'left'
         )
     } else {
-      col.header = col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id)
+      col.header = () => (col.headerText ? t(col.headerText) : getTranslationHeaderById(col.id))
     }
   })
 
@@ -1003,19 +1035,25 @@ onBeforeMount(() => {
   dateRange.value = initialDateRange
   columnFilters.value = initializeColumnFilters()
   sorting.value = initializeSorting()
-  
+
   // Initialize column visibility and ensure all columns are included
   const initialColumnVisibility = initializeColumnVisibility()
-  
+
   // Merge with default to ensure all columns are present
   columnVisibility.value = {
     ...defaultColumnVisibility.value,
-    ...initialColumnVisibility
+    ...initialColumnVisibility,
   }
 
   if (import.meta.env.DEV) {
-    console.log(`📊 Initialized column visibility for table ${props.tableId}:`, columnVisibility.value)
-    console.log(`📊 Default column visibility for table ${props.tableId}:`, defaultColumnVisibility.value)
+    console.log(
+      `📊 Initialized column visibility for table ${props.tableId}:`,
+      columnVisibility.value
+    )
+    console.log(
+      `📊 Default column visibility for table ${props.tableId}:`,
+      defaultColumnVisibility.value
+    )
   }
 
   // Parse the date strings to set calendar values and internal date values
@@ -1125,7 +1163,10 @@ watch(
             // Column might not exist in table API if it was previously hidden
             // This is expected behavior when reopening with hidden columns
             if (import.meta.env.DEV) {
-              console.log(`📊 Column '${columnId}' not found in table API during sync (likely hidden):`, error)
+              console.log(
+                `📊 Column '${columnId}' not found in table API during sync (likely hidden):`,
+                error
+              )
             }
           }
         })

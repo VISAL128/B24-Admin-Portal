@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
-     <CardsSummaryCards
-      v-show="!isTableFullscreen" 
+    <CardsSummaryCards
+      v-show="!isTableFullscreen"
       :cards="summarys"
       :is-loading="isLoading"
       :skeleton-count="3"
@@ -14,13 +14,13 @@
       :fetch-data-fn="fetchBanks"
       show-row-number
       @row-click="handleViewDetails"
-      @fullscreen-toggle="(val) => isTableFullscreen = val"
-      />
+      @fullscreen-toggle="(val) => (isTableFullscreen = val)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, onMounted, ref, resolveComponent } from 'vue'
+import { h, onMounted, ref, resolveComponent, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBankApi } from '~/composables/api/useBankApi'
 import type { Bank } from '~/models/bank'
@@ -48,7 +48,40 @@ const { statusCellBuilder } = useStatusBadge()
 const router = useRouter()
 const isTableFullscreen = ref(false)
 const isLoading = ref(false)
-const summarys = ref<SummaryCard[]>([])
+const bankData = ref<Bank[]>([])
+
+const summarys = computed<SummaryCard[]>(() => [
+  {
+    title: t('banks.total_banks'),
+    values: [
+      {
+        value: bankData.value.length,
+      },
+    ],
+    filterLabel: '',
+    dateRange: '',
+  },
+  {
+    title: t('banks.active_banks'),
+    values: [
+      {
+        value: bankData.value.filter((bank) => bank.active).length,
+      },
+    ],
+    filterLabel: '',
+    dateRange: '',
+  },
+  {
+    title: t('banks.inactive_banks'),
+    values: [
+      {
+        value: bankData.value.filter((bank) => !bank.active).length,
+      },
+    ],
+    filterLabel: '',
+    dateRange: '',
+  },
+])
 
 // Define table ID
 const TABLE_ID = 'banks-list'
@@ -56,34 +89,9 @@ const TABLE_ID = 'banks-list'
 // Fetch banks data from API
 const fetchBanks = async (params?: QueryParams): Promise<BankListTableFetchResult | undefined> => {
   try {
-     isLoading.value = true
-    const data = await getBanks(params) 
-    summarys.value = [
-      {
-        title: t('banks.total_banks'),
-        values: [{
-          value: data.data.length
-        }],
-        filterLabel: '',
-        dateRange: ''
-      },
-      {
-        title: t('banks.active_banks'),
-        values: [{
-          value: data.data.filter(bank => bank.active).length
-        }],
-        filterLabel: '',
-        dateRange: ''
-      },
-      {
-        title: t('banks.inactive_banks'),
-        values: [{
-          value: data.data.filter(bank => !bank.active).length
-        }],
-        filterLabel: '',
-        dateRange: ''
-      }
-    ]
+    isLoading.value = true
+    const data = await getBanks(params)
+    bankData.value = data.data
     return {
       data: data.data,
       total_page: data.total_pages || 0,
@@ -92,8 +100,7 @@ const fetchBanks = async (params?: QueryParams): Promise<BankListTableFetchResul
   } catch (error: unknown) {
     // Show error notification to user
     errorHandler.handleApiError(error)
-  }
-  finally {
+  } finally {
     isLoading.value = false
   }
 }
@@ -200,14 +207,15 @@ const columns: BaseTableColumn<Bank>[] = [
     id: 'active',
     accessorKey: 'active',
     header: () => t('table.banks-list.columns.status'),
-    cell: ({ row }) => statusCellBuilder(row.original.active === BankServiceStatus.Active ? 'active' : 'inactive'),
+    cell: ({ row }) =>
+      statusCellBuilder(row.original.active === BankServiceStatus.Active ? 'active' : 'inactive'),
     filterOptions: [
       { label: getTranslatedStatusLabel('active'), value: BankServiceStatus.Active },
-      { label: getTranslatedStatusLabel('inactive'), value: BankServiceStatus.Inactive }
+      { label: getTranslatedStatusLabel('inactive'), value: BankServiceStatus.Inactive },
     ],
     filterType: 'select',
     enableColumnFilter: true,
     size: 100,
-  }
+  },
 ]
 </script>

@@ -4,8 +4,148 @@
     <PageHeader :title="bank?.name_kh" :subtitle="bank?.name" />
 
     <!-- Content -->
-    <div v-if="loading" class="flex items-center justify-center flex-1">
-      <LoadingSpinner />
+    <div v-if="loading" class="flex-1 overflow-auto space-y-3">
+      <!-- Bank Information Cards Skeleton -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <!-- General Information Card Skeleton -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+        >
+          <!-- Card Header Skeleton -->
+          <div class="flex items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <USkeleton class="w-8 h-8 rounded-lg mr-2" />
+            <USkeleton class="h-5 w-32" />
+          </div>
+
+          <!-- Card Content Skeleton -->
+          <div class="space-y-4">
+            <!-- Avatar Skeleton -->
+            <USkeleton class="w-12 h-12 rounded-full" />
+
+            <!-- Bank Name Grid Skeleton -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <USkeleton class="h-3 w-20 mb-1" />
+                <USkeleton class="h-4 w-24" />
+              </div>
+              <div>
+                <USkeleton class="h-3 w-20 mb-1" />
+                <USkeleton class="h-4 w-28" />
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-gray-200 dark:border-gray-700" />
+
+            <!-- Status Grid Skeleton -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <USkeleton class="h-3 w-16 mb-1" />
+                <USkeleton class="h-5 w-16 rounded-full" />
+              </div>
+              <div>
+                <USkeleton class="h-3 w-24 mb-1" />
+                <USkeleton class="h-4 w-32" />
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-gray-200 dark:border-gray-700" />
+
+            <!-- Bank Type Grid Skeleton -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <USkeleton class="h-3 w-24 mb-1" />
+                <USkeleton class="h-5 w-12 rounded-full" />
+              </div>
+              <div>
+                <USkeleton class="h-3 w-24 mb-1" />
+                <USkeleton class="h-5 w-12 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Information Card Skeleton -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4"
+        >
+          <!-- Card Header Skeleton -->
+          <div class="flex items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <USkeleton class="w-8 h-8 rounded-lg mr-2" />
+            <USkeleton class="h-5 w-36" />
+          </div>
+
+          <!-- Account Items Skeleton -->
+          <div class="space-y-3">
+            <div
+              v-for="n in 2"
+              :key="n"
+              class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+            >
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <USkeleton class="h-3 w-20 mb-1" />
+                  <USkeleton class="h-4 w-32" />
+                </div>
+                <div>
+                  <USkeleton class="h-3 w-20 mb-1" />
+                  <USkeleton class="h-4 w-28" />
+                </div>
+                <div>
+                  <USkeleton class="h-3 w-16 mb-1" />
+                  <USkeleton class="h-4 w-12" />
+                </div>
+                <div>
+                  <USkeleton class="h-3 w-16 mb-1" />
+                  <USkeleton class="h-5 w-16 rounded-full" />
+                </div>
+              </div>
+              <div class="mt-2">
+                <USkeleton class="h-4 w-20 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settlement History Table Skeleton -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg shadow">
+        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-start">
+            <USkeleton class="w-8 h-8 rounded-lg mr-2" />
+            <div>
+              <USkeleton class="h-5 w-32 mb-1" />
+              <USkeleton class="h-3 w-48" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Skeleton -->
+        <div class="p-4">
+          <!-- Table Header -->
+          <div
+            class="grid grid-cols-5 gap-4 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700"
+          >
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-20" />
+            <USkeleton class="h-4 w-16" />
+            <USkeleton class="h-4 w-20" />
+            <USkeleton class="h-4 w-24" />
+          </div>
+
+          <!-- Table Rows -->
+          <div class="space-y-3">
+            <div v-for="n in 5" :key="n" class="grid grid-cols-5 gap-4 py-2">
+              <USkeleton class="h-4 w-20" />
+              <USkeleton class="h-4 w-16" />
+              <USkeleton class="h-5 w-14 rounded-full" />
+              <USkeleton class="h-4 w-18" />
+              <USkeleton class="h-4 w-20" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-else-if="bank" class="flex-1 overflow-auto space-y-3">
@@ -207,15 +347,12 @@ import { useBankApi } from '~/composables/api/useBankApi'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useErrorHandler } from '~/composables/useErrorHandler'
-import { useNotification } from '~/composables/useNotification'
 import type { Bank, BankAccount } from '~/models/bank'
 import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import type { QueryParams } from '~/models/baseModel'
-import type { StatusButtonConfig } from '~/components/PageHeader.vue'
 import { ColumnType } from '~/utils/enumModel'
 import { getTranslatedStatusLabel, formatAmountV2 } from '~/utils/helper'
-import LoadingSpinner from '~/components/LoadingSpinner.vue'
 import ExTable from '~/components/tables/ExTable.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import PageHeader from '~/components/PageHeader.vue'
@@ -240,11 +377,10 @@ definePageMeta({
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { getBankById, toggleBankStatus } = useBankApi()
+const { getBankById } = useBankApi()
 const { getSettlementHistory } = useSupplierApi()
 const { formatDateTime } = useFormat()
 const errorHandler = useErrorHandler()
-const notification = useNotification()
 
 const bank = ref<Bank | null>(null)
 const bankAccounts = ref<BankAccount[]>([])
@@ -252,18 +388,6 @@ const loading = ref(false)
 const tblFull = ref(false)
 
 const bankId = computed(() => route.params.id as string)
-
-// Status button configuration
-const statusButtonConfig = computed((): StatusButtonConfig | undefined => {
-  if (!bank.value) return undefined
-
-  return {
-    text: bank.value.active ? t('banks.deactivate_bank') : t('banks.activate_bank'),
-    color: bank.value.active ? 'error' : 'success',
-    icon: bank.value.active ? 'material-symbols:block' : 'material-symbols:play-circle-outline',
-    loading: false,
-  }
-})
 
 // Settlement table columns configuration
 const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[] => [
@@ -359,7 +483,7 @@ const fetchSettlements = async (
       start_date: params.start_date || undefined,
       end_date: params.end_date || undefined,
       status: params.statuses || undefined,
-      banks: [],
+      banks: bank.value?.bank_id ? [bank.value.bank_id] : [],
     }
 
     const response = await getSettlementHistory(query)
@@ -450,27 +574,6 @@ const fetchBankAccounts = async () => {
   } catch (error) {
     console.error('Error fetching bank accounts:', error)
     bankAccounts.value = []
-  }
-}
-
-const toggleStatus = async () => {
-  if (!bank.value) return
-
-  const newStatus = !bank.value.active
-  const confirmMessage = newStatus ? t('banks.confirm_activate') : t('banks.confirm_deactivate')
-
-  if (!confirm(confirmMessage)) return
-
-  try {
-    const updatedBank = await toggleBankStatus(bank.value.id, newStatus)
-    if (updatedBank) {
-      bank.value = updatedBank
-      notification.showSuccess({
-        title: newStatus ? t('banks.bank_activated') : t('banks.bank_deactivated'),
-      })
-    }
-  } catch (error) {
-    errorHandler.handleApiError(error)
   }
 }
 
