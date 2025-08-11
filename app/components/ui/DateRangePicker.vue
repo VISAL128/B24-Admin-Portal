@@ -99,7 +99,7 @@ const modelValue = computed({
   set: (value: DateRange) => emit('update:modelValue', value),
 })
 
-const allRanges = [
+const ranges = computed(() => [
   {
     label: t('wallet_page.date_ranges.today'),
     duration: { days: 0 },
@@ -140,11 +140,7 @@ const allRanges = [
     label: t('wallet_page.date_ranges.last_year'),
     duration: { years: 1 },
   },
-]
-
-const ranges = computed(() => {
-  return allRanges
-})
+])
 
 // Function to get date range preview
 function getDateRangePreview(
