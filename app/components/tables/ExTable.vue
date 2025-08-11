@@ -686,7 +686,6 @@ const fetchData = async (refresh = false) => {
       internalData.value = result.data as T[]
       internalTotal.value = result.total_record
       internalTotalPage.value = result.total_page
-      console.log('Fetched data:', result)
       // Emit data-changed event with the current data
       emit('data-changed', result)
     }

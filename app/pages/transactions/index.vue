@@ -215,7 +215,6 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
   total_page: number
 } | null> => {
   try {
-  
     const response = await getTransactionList(params)
     console.log('Fetched transactions:', response)
     return {
