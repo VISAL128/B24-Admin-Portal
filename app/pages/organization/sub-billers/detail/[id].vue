@@ -1,267 +1,291 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-3">
-    <!-- Tabs -->
-    <UTabs variant="link" v-model="activeTab" :items="tabs" />
+  <div class="w-full h-[calc(100vh-64px)] overflow-hidden">
+    <!-- Make this container relative so the floating expand tab can anchor to it -->
+    <div class="flex h-full flex-col lg:flex-row gap-4 relative">
+      <!-- Floating expand tab when collapsed -->
+      <button
+        v-if="isDetailsCollapsed"
+        @click="toggleDetails"
+        class="hidden lg:flex items-center justify-center absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 h-10 w-6 rounded-l bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+        :aria-expanded="!isDetailsCollapsed"
+        :title="t('expand')"
+      >
+        <UIcon name="i-heroicons-chevron-left-20-solid" class="w-6 h-6" />
+      </button>
 
-    <div
-      v-if="activeTab === 'details'"
-      class="flex justify-center"
-    >
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full">
-        <!-- Top Header Area with Blurred Background Image -->
+      <!-- SINGLE CARD with Wallets + Table -->
+      <section class="flex-1 min-h-0 overflow-hidden flex flex-col">
         <div
-          class="rounded-t-2xl px-8 py-6 flex flex-col items-center justify-center text-center space-y-4 relative bg-cover bg-center w-full"
-          :style="{
-            backgroundImage: `url('${supplierBackgroundImage}')`,
-          }"
+          class="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col bg-white dark:bg-gray-900"
         >
-          <!-- Blur overlay covering entire header -->
-          <div class="absolute inset-0 backdrop-blur-xs bg-black/20 dark:bg-black/40 w-full h-full"></div>
-          
-          <!-- Content (Avatar and Supplier Name) -->
-          <div class="relative z-10 flex flex-col items-center">
-            <!-- Perfect Circular Avatar -->
-            <div class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center">
-              <img
-                v-if="supplierProfileImage"
-                :src="supplierProfileImage"
-                alt="Supplier"
-                class="w-full h-full object-cover "
-              />
-              <span v-else class="leading-none text-3xl text-white font-semibold">
-                {{ supplierInitials }}
-              </span>
-            </div>
+          <div class="p-4">
+            <template v-if="isLoadingWallets">
+              <div class="flex gap-4 overflow-x-auto">
+                <USkeleton v-for="n in 2" :key="n" class="min-w-[320px] h-44 rounded-2xl" />
+              </div>
+            </template>
 
-            <!-- Supplier Name -->
-            <h4 class="text-2xl font-medium text-white mt-4">
-              {{ supplierData?.name ?? '-' }}
-            </h4>
-          </div>
-        </div>
-
-        <!-- Details Grid Section -->
-        <div class="grid grid-cols-1 gap-8 px-8 pb-8">
-          <!-- Left Column -->
-          <div class="space-y-0">
-            <div
-              v-for="(field, index) in supplierOverviewFields"
-              :key="index"
-              :class="[
-                'flex items-start py-4',
-                index !== supplierOverviewFields.length - 1
-                  ? 'border-b border-gray-200 dark:border-gray-700'
-                  : '',
-              ]"
-            >
-              <!-- Label -->
-              <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">
-                {{ field.label }}
-              </span>
-
-              <!-- Spacer & Value -->
-              <div class="flex-1 text-right">
-                <!-- Badge -->
-                <TransactionTypeBadge
-                  v-if="field.type === 'badge'"
-                  :transaction-type="field.value"
-                  size="sm"
-                />
-
-                <!-- Amount -->
-                <span
-                  v-else-if="field.type === 'amount'"
-                  class="text-sm text-gray-900 dark:text-white"
-                >
-                  {{ field.value }}
-                </span>
-
-                <!-- Copyable Code -->
-                <ClipboardBadge
-                  v-else-if="field.type === 'code' && field.copyable"
-                  :text="field.rawValue || field.value"
-                  :copied-tooltip-text="$t('clipboard.copied')"
-                />
-
-                <!-- Regular Text -->
-                <span
-                  v-else
-                  :class="[
-                    'text-sm text-gray-900 dark:text-white',
-                    field.type === 'code' ? 'font-mono break-all' : '',
-                  ]"
-                >
-                  {{ field.value }}
+            <template v-else>
+              <div
+                v-if="wallets.length === 0"
+                class="w-full rounded-xl border border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center text-center h-44 text-gray-400 dark:text-gray-500"
+              >
+                <UIcon name="i-heroicons-banknotes" class="w-10 h-10 mb-2" />
+                <span class="text-base font-medium">
+                  {{ t('wallet_page.no_wallets_found') }}
                 </span>
               </div>
-            </div>
+
+              <!-- Horizontal scroll row -->
+              <div v-else class="overflow-x-auto">
+                <div class="flex flex-nowrap gap-4 pr-2">
+                  <!-- Wallet cards -->
+                  <div
+                    v-for="(wallet, index) in wallets"
+                    :key="wallet.walletId"
+                    :class="[
+                      'min-w-[320px] rounded-2xl text-white p-6 relative overflow-hidden shadow-lg flex flex-col justify-between h-44',
+                      getCardGradientByIndex(index),
+                    ]"
+                  >
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="text-xl font-semibold">
+                        {{ wallet.bankName }}
+                      </div>
+                      <UIcon name="i-heroicons-banknotes" class="w-5 h-5 opacity-70" />
+                    </div>
+
+                    <div class="flex-1 flex flex-col justify-center items-center text-center">
+                      <div class="text-xs opacity-80 tracking-wide uppercase">
+                        {{ t('wallet_page.current_balance') }}
+                      </div>
+                      <div class="text-2xl font-bold tracking-wide mt-1">
+                        {{ useCurrency().formatAmount(wallet.balance ?? '0', wallet.currency) }}
+                        {{ wallet.currency }}
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-white opacity-90">
+                      <div class="flex flex-col">
+                        <span class="opacity-60">
+                          {{ t('wallet_page.bank_account_number') }}
+                        </span>
+                        <div class="flex items-center gap-2 font-mono mt-1">
+                          <span class="truncate">
+                            {{ wallet.accountNo }}
+                          </span>
+                          <button
+                            class="hover:text-yellow-300 transition"
+                            :title="t('wallet_page.copy_account_number')"
+                            @click="copyToClipboard(wallet.accountNo ?? '')"
+                          >
+                            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col items-end text-right">
+                        <span class="opacity-60">
+                          {{ t('wallet_page.wallet_number') }}
+                        </span>
+                        <div class="flex items-center gap-2 font-mono mt-1">
+                          <span class="truncate">
+                            {{ wallet.walletNo }}
+                          </span>
+                          <button
+                            class="hover:text-yellow-300 transition"
+                            :title="t('wallet_page.copy_wallet_number')"
+                            @click="copyToClipboard(wallet.walletNo ?? '')"
+                          >
+                            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Placeholder card -->
+                  <div
+                    v-if="wallets.length === 1"
+                    class="min-w-[320px] h-44 rounded-2xl border-1 border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500"
+                  >
+                    <div class="flex flex-col items-center">
+                      <UIcon name="i-heroicons-banknotes" class="w-8 h-8 mb-2" />
+                      <span class="text-sm">
+                        {{ t('wallet_page.more_wallets_coming') }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Spacer at end -->
+                  <div class="w-2 flex-none"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <div class="flex-1 overflow-auto">
+            <template v-if="isLoadingTable">
+              <div class="p-4 space-y-2">
+                <USkeleton v-for="n in 10" :key="n" class="h-10 w-full rounded" />
+              </div>
+            </template>
+            <template v-else>
+              <TablesExTable
+                ref="table"
+                :columns="columns"
+                table-id="sub-biller-transaction-table"
+                :fetch-data-fn="fetchTransactionHistory"
+                show-row-number
+                show-date-filter
+                enabled-auto-refresh
+                @row-click="handleViewDetails"
+              />
+            </template>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-<!-- Wallet Tab -->
-<div
-  v-else-if="activeTab === 'wallet'"
-  class="space-y-6"
->
-
-  <div
-    v-if="wallets.length === 0"
-    class="w-full rounded-2xl border border-gray-300 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center h-52 text-gray-400 dark:text-gray-500"
-  >
-    <UIcon name="i-heroicons-banknotes" class="w-10 h-10 mb-2" />
-    <span class="text-base font-medium">
-      {{ t('wallet_page.no_wallets_found') }}
-    </span>
-  </div>
-
-  <!-- Wallet Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <!-- Actual Wallet Cards -->
-  <div
-    v-for="(wallet, index) in wallets"
-    :key="wallet.walletId"
-    :class="[
-      'rounded-2xl text-white p-6 relative overflow-hidden shadow-lg flex flex-col justify-between h-52',
-      getCardGradientByIndex(index)
-    ]"
-  >
-    <!-- Top Section: Bank Info -->
-    <div class="flex items-center justify-between mb-2">
-      <div class="text-2xl font-semibold">
-        {{ wallet.bankName }}
-      </div>
-      <UIcon name="i-heroicons-banknotes" class="w-5 h-5 opacity-70" />
-    </div>
-
-    <!-- Center Section: Balance -->
-    <div class="flex-1 flex flex-col justify-center items-center text-center">
-      <div class="text-sm opacity-80 tracking-wide uppercase">
-        {{ t('wallet_page.current_balance') }}
-      </div>
-      <div class="text-3xl font-bold tracking-wide mt-1">
-        {{ useCurrency().formatAmount(wallet.balance ?? '0', wallet.currency) }} {{ wallet.currency }}
-      </div>
-    </div>
-
-    <!-- Bottom Section: Account & Wallet Number -->
-    <div class="flex items-center justify-between text-sm text-white opacity-90">
-      <!-- Left: Bank Account -->
-      <div class="flex flex-col">
-        <span class="text-xs opacity-60">
-          {{ t('wallet_page.bank_account_number') }}
-        </span>
-        <div class="flex items-center gap-2 font-mono mt-1">
-          <span class="truncate">
-            {{ wallet.accountNo }}
-          </span>
-          <button
-            class="hover:text-yellow-300 transition"
-            :title="t('wallet_page.copy_account_number')"
-            @click="copyToClipboard(wallet.accountNo ?? '')"
-          >
-            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <!-- Right: Wallet Number -->
-      <div class="flex flex-col items-end text-right">
-        <span class="text-xs opacity-60">
-          {{ t('wallet_page.wallet_number') }}
-        </span>
-        <div class="flex items-center gap-2 font-mono mt-1">
-          <span class="truncate">
-            {{ wallet.walletNo }}
-          </span>
-          <button
-            class="hover:text-yellow-300 transition"
-            :title="t('wallet_page.copy_wallet_number')"
-            @click="copyToClipboard(wallet.walletNo ?? '')"
-          >
-            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<!-- Placeholder Card -->
-<div
-  v-if="wallets.length === 1"
-  class="rounded-2xl border-1 border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center h-52 text-gray-400 dark:text-gray-500"
->
-  <UIcon name="i-heroicons-banknotes" class="w-8 h-8 mb-2" />
-  <span class="text-sm">
-    {{ t('wallet_page.more_wallets_coming') }}
-  </span>
-</div>
-</div>
-
-
-  <!-- Transaction Table Below Wallet Cards -->
-    <div class="overflow-x-auto">
-          <TablesExTable
-      ref="table"
-      :columns="columns"
-      table-id="sub-biller-transaction-table"
-      :fetch-data-fn="fetchTransactionHistory"
-      show-row-number
-      show-date-filter
-      enabled-auto-refresh
-      @row-click="handleViewDetails"
-    >
-    <template #trailingHeader>
-      <UTooltip :text="t('pages.transaction.repush_description')">
-          <UButton 
-            variant="outline"
-            size="sm"
-            @click="handleRepush()"> 
-            {{ t('pages.transaction.repush') }}
-            <template #trailing>
-              <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
-            </template>
-            
-          </UButton>
-        </UTooltip>
-    </template>
-    </TablesExTable>
-      <!-- <BaseTable
-        :data="transactions"
-        :columns="columns"
-        table-id="wallet-transaction-table"
-        border-class="border-gray-200 dark:border-gray-700"
-        @filter-change="handleFilterChange"
-@row-click="(row: { original: TransactionHistoryRecord }) => console.log('Clicked:', row)"
-        @search-change="(val) => (search = val)"
-        @date-range-change="
-          ({ start, end }) => {
-            startDate = start
-            endDate = end
-            fetchTransactionHistory()
-          }
-        "
-        :page="page"
-        :page-size="pageSize.value"
-        :total="total"
-        :total-page="totalPage"
-        @update:page="(val) => (page = val)"
-        @update:pageSize="
-          (val) => {
-            pageSize.value = val
-            page = 1
-          }
-        "
+      <!-- DETAILS (collapsible horizontally) -->
+      <section
+        class="overflow-hidden flex-shrink-0 transition-[width] duration-300 ease-in-out"
+        :class="isDetailsCollapsed ? 'w-0 lg:w-0 pointer-events-none' : 'w-full lg:w-[320px]'"
+        :aria-hidden="isDetailsCollapsed"
       >
-        <template #empty>
-          <TableEmptyState />
-        </template>
-      </BaseTable> -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full mx-auto h-full relative"
+        >
+          <!-- Collapse handle (visible when expanded) -->
+          <button
+            v-if="!isDetailsCollapsed"
+            @click="toggleDetails"
+            class="hidden lg:flex items-center justify-center absolute -left-3 top-1/2 -translate-y-1/2 h-10 w-6 rounded-r bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            :aria-expanded="!isDetailsCollapsed"
+            :title="t('collapse')"
+          >
+            <UIcon name="i-heroicons-chevron-right-20-solid" class="w-6 h-6" />
+          </button>
+
+          <template v-if="isLoadingSupplier">
+            <!-- Top image placeholder -->
+            <div
+              class="px-8 py-6 flex flex-col items-center justify-center space-y-4 bg-gray-100 dark:bg-gray-800"
+            >
+              <USkeleton class="w-24 h-24 rounded-full" />
+              <USkeleton class="h-6 w-32 rounded" />
+            </div>
+            <!-- Overview skeleton -->
+            <div class="p-8 space-y-4">
+              <div v-for="n in 6" :key="n" class="flex justify-between items-center">
+                <USkeleton class="w-24 h-4 rounded" />
+                <USkeleton class="w-32 h-4 rounded" />
+              </div>
+            </div>
+          </template>
+
+          <template v-else>
+            <div
+              class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full mx-auto h-full"
+            >
+              <!-- Top Header Area with Blurred Background Image -->
+              <div
+                class="rounded-t-2xl px-8 py-6 flex flex-col items-center justify-center text-center space-y-4 relative bg-cover bg-center w-full"
+                :style="{ backgroundImage: `url('${supplierBackgroundImage}')` }"
+              >
+                <div
+                  class="absolute inset-0 backdrop-blur-xs bg-black/20 dark:bg-black/40 w-full h-full"
+                ></div>
+
+                <!-- Deactivate Button (absolute top-right) -->
+                <button
+                  @click="handleDeactivate"
+                  class="absolute top-4 right-4 text-sm font-medium text-white hover:underline"
+                >
+                  {{ t('deactivate') }}
+                </button>
+
+                <div class="relative z-10 flex flex-col items-center">
+                  <div
+                    class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center"
+                  >
+                    <template v-if="supplierProfileImage">
+                      <img
+                        :src="supplierProfileImage"
+                        alt="Supplier"
+                        class="w-full h-full object-cover"
+                      />
+                    </template>
+                    <template v-else>
+                      <div class="w-full h-full flex items-center justify-center">
+                        <UIcon
+                          name="material-symbols:home-work-outline"
+                          class="w-10 h-10 text-white"
+                        />
+                      </div>
+                    </template>
+                  </div>
+
+                  <h4 class="text-2xl font-medium text-white mt-4">
+                    {{ supplierData?.name ?? '-' }}
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Details Grid Section -->
+              <div class="grid grid-cols-1 gap-8 px-8 pb-8">
+                <div class="space-y-0">
+                  <div
+                    v-for="(field, index) in supplierOverviewFields"
+                    :key="index"
+                    :class="[
+                      'flex items-start py-4',
+                      index !== supplierOverviewFields.length - 1
+                        ? 'border-b border-gray-200 dark:border-gray-700'
+                        : '',
+                    ]"
+                  >
+                    <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">
+                      {{ field.label }}
+                    </span>
+
+                    <div class="flex-1 text-right">
+                      <TransactionTypeBadge
+                        v-if="field.type === 'badge'"
+                        :transaction-type="field.value"
+                        size="sm"
+                      />
+
+                      <span
+                        v-else-if="field.type === 'amount'"
+                        class="text-sm text-gray-900 dark:text-white"
+                      >
+                        {{ field.value }}
+                      </span>
+
+                      <ClipboardBadge
+                        v-else-if="field.type === 'code' && field.copyable"
+                        :text="field.rawValue || field.value"
+                        :copied-tooltip-text="$t('clipboard.copied')"
+                      />
+
+                      <span
+                        v-else
+                        :class="[
+                          'text-sm text-gray-900 dark:text-white',
+                          field.type === 'code' ? 'font-mono break-all' : '',
+                        ]"
+                      >
+                        {{ field.value }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
     </div>
-</div>
-
-
   </div>
 </template>
 
@@ -277,15 +301,16 @@ import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import type { Supplier } from '~/models/supplier'
 import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
+import type { BaseTableColumn } from '~/components/tables/table'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
-import type { SubBillerWallet} from "~/models/subBiller"
+import type { SubBillerWallet } from '~/models/subBiller'
 import { useTable } from '~/composables/utils/useTable'
 import TablesExTable from '~/components/tables/ExTable.vue'
 import type { QueryParams } from '~/models/baseModel'
+import { useErrorHandler } from '~/composables/useErrorHandler' // ensure this exists
 
 definePageMeta({
   auth: false,
@@ -299,7 +324,7 @@ const { t } = useI18n()
 
 const tabs = [
   { label: t('wallet'), value: 'wallet' },
-  { label: t('details'), value: 'details' }
+  { label: t('details'), value: 'details' },
 ]
 
 const activeTab = ref('wallet')
@@ -307,13 +332,9 @@ const route = useRoute()
 const notification = useNotification()
 
 const transactionId = computed(() => route.params.id as string)
-const loading = ref(true)
 const showDownloadModal = ref(false)
 const page = ref(1)
-const pageSize = ref<{ label: string; value: number }>({
-  label: '10',
-  value: 10,
-})
+const pageSize = ref<{ label: string; value: number }>({ label: '10', value: 10 })
 const total = ref(0)
 const totalPage = ref(0)
 const search = ref('')
@@ -324,7 +345,14 @@ const errorMsg = ref('')
 const router = useRouter()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
-const { createSortableHeader, createRowNumberCell } = useTable()
+const { createSortableHeader } = useTable()
+const isLoadingSupplier = ref(true)
+const isLoadingWallets = ref(true)
+const isLoadingTable = ref(true)
+
+/** NEW: collapse state */
+const isDetailsCollapsed = ref(false)
+const toggleDetails = () => (isDetailsCollapsed.value = !isDetailsCollapsed.value)
 
 const getCardGradientByIndex = (index: number): string | undefined => {
   const gradients: string[] = [
@@ -338,22 +366,20 @@ const getCardGradientByIndex = (index: number): string | undefined => {
     'bg-gradient-to-r from-teal-500 to-cyan-500',
     'bg-gradient-to-r from-fuchsia-500 to-pink-600',
   ]
-
   const safeIndex = index % gradients.length
   return gradients[safeIndex]
 }
 
 const handleViewDetails = (record: TransactionHistoryRecord) => {
-  // Navigate to transaction details page
   navigateToDetails(record.id)
 }
 
 // Handle Repush Transaction
 const handleRepush = () => {
-    notification.showWarning({
-      title: t('pages.transaction.info'),
-      description: t('pages.transaction.info_des'),
-    })
+  notification.showWarning({
+    title: t('pages.transaction.info'),
+    description: t('pages.transaction.info_des'),
+  })
 }
 
 const navigateToDetails = (rowId: string) => {
@@ -362,32 +388,10 @@ const navigateToDetails = (rowId: string) => {
 
 const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
-    id: 'select',
-    header: ({ table }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all',
-      }),
-    cell: ({ row }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row',
-      }),
-    enableSorting: false,
-    enableColumnFilter: false,
-    enableHiding: false,
-  },
-  {
     id: 'created_date',
     accessorKey: 'created_date',
     headerText: t('pages.transaction.created_date'),
-    cell: ({ row }) =>
-      useFormat().formatDateTime(row.original.date),
+    cell: ({ row }) => useFormat().formatDateTime(row.original.date),
     enableSorting: true,
   },
   {
@@ -456,13 +460,8 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'total_customer',
     accessorKey: 'total_customer',
-    header : ({ column }) => createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
     headerText: t('pages.transaction.total_customer'),
-    cell: ({ row }) =>  h(
-        'div',
-        { class: 'text-right' },
-        row.original.numberOfCustomer || '-',
-      ),
+    cell: ({ row }) => h('div', { class: 'text-right' }, row.original.numberOfCustomer || '-'),
   },
   {
     id: 'status',
@@ -495,7 +494,6 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'total_amount',
     accessorKey: 'total_amount',
-    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
     headerText: t('total_amount'),
     cell: ({ row }) =>
       h(
@@ -509,8 +507,6 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     maxSize: 150,
   },
 ]
-
-
 
 const { getSubBillerById } = usePgwModuleApi()
 const { getSubBillerWalletList } = usePgwModuleApi()
@@ -530,8 +526,6 @@ const fetchSubBillerById = async () => {
     errorMsg.value = t('failed_to_load_data')
   }
 }
-
-
 
 const errorHandler = useErrorHandler()
 
@@ -557,30 +551,9 @@ const fetchWallets = async () => {
   }
 }
 
-
-// const wallets = ref([
-//   {
-//     id: 'wallet-aba',
-//     bankName: 'ABA Bank',
-//     accountNumber: '000111222',
-//     walletNumber: 'WLT-ABA-001',
-//     currency: 'KHR',
-//     balance: '1,000,000',
-//   },
-//   {
-//     id: 'wallet-acleda',
-//     bankName: 'Acleda Bank',
-//     accountNumber: '999888777',
-//     walletNumber: 'WLT-ACL-002',
-//     currency: 'USD',
-//     balance: '5,000',
-//   },
-// ])
-
 const wallets = ref<SubBillerWallet[]>([])
 
-
-// Push Back Transaction Data
+// Push Back Transaction Data (kept from your snippet)
 const webhookHistoryData = ref([
   {
     id: 'pushback-001',
@@ -625,16 +598,11 @@ const webhookColumns = [
     id: 'actions',
     header: () => 'Actions',
     cell: ({ row }: any) =>
-      h(
-        'div',
-        {
-          class: 'relative inline-block group',
-        },
-        [
-          h(
-            'button',
-            {
-              class: `
+      h('div', { class: 'relative inline-block group' }, [
+        h(
+          'button',
+          {
+            class: `
                 inline-flex items-center justify-center w-8 h-8 rounded transition-colors
                 ${
                   row.original.retrying
@@ -642,35 +610,34 @@ const webhookColumns = [
                     : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
                 }
               `,
-              disabled: row.original.retrying,
-              onClick: () => retryPushBack(row.original.id),
-              title: row.original.retrying ? 'Retrying...' : 'Retry Push Back',
-            },
-            [
-              row.original.retrying
-                ? h('svg', {
-                    class: 'animate-spin h-4 w-4',
-                    xmlns: 'http://www.w3.org/2000/svg',
-                    fill: 'none',
-                    viewBox: '0 0 24 24',
-                    innerHTML: `
+            disabled: row.original.retrying,
+            onClick: () => retryPushBack(row.original.id),
+            title: row.original.retrying ? 'Retrying...' : 'Retry Push Back',
+          },
+          [
+            row.original.retrying
+              ? h('svg', {
+                  class: 'animate-spin h-4 w-4',
+                  xmlns: 'http://www.w3.org/2000/svg',
+                  fill: 'none',
+                  viewBox: '0 0 24 24',
+                  innerHTML: `
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     `,
-                  })
-                : h('svg', {
-                    class: 'w-4 h-4',
-                    xmlns: 'http://www.w3.org/2000/svg',
-                    fill: 'none',
-                    viewBox: '0 0 24 24',
-                    'stroke-width': '1.5',
-                    stroke: 'currentColor',
-                    innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />`,
-                  }),
-            ]
-          ),
-        ]
-      ),
+                })
+              : h('svg', {
+                  class: 'w-4 h-4',
+                  xmlns: 'http://www.w3.org/2000/svg',
+                  fill: 'none',
+                  viewBox: '0 0 24 24',
+                  'stroke-width': '1.5',
+                  stroke: 'currentColor',
+                  innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />`,
+                }),
+          ]
+        ),
+      ]),
     size: 80,
   },
   {
@@ -722,31 +689,33 @@ const supplierInitials = computed(() => {
 const supplierProfileImage = computed(() => {
   try {
     const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
-    return ext.cpo.cpo_logo || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png'
+    return ext?.cpo?.cpo_logo || null // return null so v-if falls back to icon
   } catch {
-    return 'https://static.vecteezy.com/system/resources/previews/026/630/551/non_2x/profile-icon-symbol-design-illustration-vector.jpg'
+    return null
   }
 })
 
 const supplierBackgroundImage = computed(() => {
   try {
     const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
-    return ext.cpo.cpo_logo || 'https://t3.ftcdn.net/jpg/09/27/94/24/360_F_927942465_j6MgO2enbUJ3IHfr2hn8ZxGfY1Dshi8p.jpghttps://wallpapers.com/images/hd/profile-picture-background-10tprnkqwqif4lyv.jpg'
+    return (
+      ext.cpo.cpo_logo ||
+      'https://t3.ftcdn.net/jpg/09/27/94/24/360_F_927942465_j6MgO2enbUJ3IHfr2hn8ZxGfY1Dshi8p.jpghttps://wallpapers.com/images/hd/profile-picture-background-10tprnkqwqif4lyv.jpg'
+    )
   } catch {
     return 'https://i.pinimg.com/736x/3c/24/46/3c24462450c2a902bf7e18f3d9aada81.jpg'
   }
 })
 
-
-const fetchTransactionHistory = async (params?: QueryParams): Promise<{
+const fetchTransactionHistory = async (
+  params?: QueryParams
+): Promise<{
   data: TransactionHistoryRecord[]
   total_record: number
   total_page: number
 } | null> => {
   try {
-  
     const response = await getTransactions(params)
-    console.log('Fetched transactions:', response)
     return {
       data: response.results || [],
       total_record: response.param?.rowCount || 0,
@@ -757,6 +726,7 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
     return null
   }
 }
+
 const supplierOverviewFields = computed(() => [
   {
     label: 'Code',
@@ -765,48 +735,35 @@ const supplierOverviewFields = computed(() => [
     copyable: true,
     rawValue: supplierData.value?.syncCode,
   },
-  {
-    label: 'Phone',
-    value: supplierData.value?.phone || '-',
-    type: 'text',
-  },
-  {
-    label: 'Email',
-    value: supplierData.value?.email || '-',
-    type: 'text',
-  },
-  {
-    label: 'Address',
-    value: supplierData.value?.address || '-',
-    type: 'text',
-  },
-  {
-    label: 'TIN',
-    value: supplierData.value?.tinNumber || '-',
-    type: 'text',
-  },
-  {
-    label: 'Active',
-    value: supplierData.value?.isActive ? 'Yes' : 'No',
-    type: 'badge',
-  },
+  { label: 'Phone', value: supplierData.value?.phone || '-', type: 'text' },
+  { label: 'Email', value: supplierData.value?.email || '-', type: 'text' },
+  { label: 'Address', value: supplierData.value?.address || '-', type: 'text' },
+  { label: 'TIN', value: supplierData.value?.tinNumber || '-', type: 'text' },
+  { label: 'Active', value: supplierData.value?.isActive ? 'Yes' : 'No', type: 'badge' },
   {
     label: 'Created Date',
-    value: new Date(supplierData.value?.createdDate ?? '').toLocaleString('en-GB'),
+    value: supplierData.value?.createdDate
+      ? new Date(supplierData.value.createdDate).toLocaleString('en-GB')
+      : '-',
     type: 'text',
   },
 ])
-
 
 // Download functions
 const download = async () => {
   showDownloadModal.value = true
 }
 
-onMounted(() => {
-  fetchSubBillerById()
-  fetchWallets()
+onMounted(async () => {
+  isLoadingSupplier.value = true
+  isLoadingWallets.value = true
+  isLoadingTable.value = true
+
+  await Promise.all([
+    fetchSubBillerById().finally(() => (isLoadingSupplier.value = false)),
+    fetchWallets().finally(() => (isLoadingWallets.value = false)),
+  ])
+
+  isLoadingTable.value = false
 })
 </script>
-
-

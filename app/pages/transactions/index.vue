@@ -1,20 +1,20 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Info Banner -->
-    <InfoBanner 
-      v-show="!isTableFullscreen" 
-      :title="t('pages.transaction.tip')" 
-      :message="t('pages.transaction.tip_message')" 
+    <InfoBanner
+      v-show="!isTableFullscreen"
+      :title="t('pages.transaction.tip')"
+      :message="t('pages.transaction.tip_message')"
     />
     <!-- Transaction Summary Cards -->
-    <SummaryCards 
-      v-show="!isTableFullscreen" 
-      :cards="summarys" 
-      :is-loading="isLoading" 
-      :skeleton-count="skeletonCount" 
+    <SummaryCards
+      v-show="!isTableFullscreen"
+      :cards="summarys"
+      :is-loading="isLoading"
+      :skeleton-count="skeletonCount"
     />
     <TablesExTable
-    ref="table"
+      ref="table"
       :columns="columns"
       :table-id="TABLE_ID"
       :fetch-data-fn="fetchTransactionForTable"
@@ -25,18 +25,14 @@
       @row-click="handleViewDetails"
       @fullscreen-toggle="handleFullscreenToggle"
     >
-    <template #trailingHeader>
-      <!-- Repush Button - Only show when rows are selected -->
-      <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
-          <UButton 
-            variant="outline"
-            size="sm"
-            @click="handleRepush()"> 
+      <template #trailingHeader>
+        <!-- Repush Button - Only show when rows are selected -->
+        <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
+          <UButton variant="outline" size="sm" @click="handleRepush()">
             {{ t('pages.transaction.repush') }} ({{ selectedRows.length }})
             <template #trailing>
               <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
             </template>
-            
           </UButton>
         </UTooltip>
 
@@ -54,8 +50,7 @@
             <span v-if="modelValue" v-html="modelValue.label" />
           </template>
         </USelectMenu> -->
-
-    </template>
+      </template>
     </TablesExTable>
   </div>
 </template>
@@ -68,7 +63,16 @@ definePageMeta({
 
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { computed, h, onBeforeMount, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import {
+  computed,
+  h,
+  onBeforeMount,
+  onMounted,
+  ref,
+  resolveComponent,
+  shallowRef,
+  watch,
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import InfoBanner from '~/components/cards/InfoBanner.vue'
@@ -130,10 +134,10 @@ const dateOptions = computed(() => {
 
 // Handle Repush Transaction
 const handleRepush = () => {
-    notification.showWarning({
-      title: t('pages.transaction.info'),
-      description: t('pages.transaction.info_des'),
-    })
+  notification.showWarning({
+    title: t('pages.transaction.info'),
+    description: t('pages.transaction.info_des'),
+  })
 }
 
 const transactionSummary = ref<TransactionSummaryModel | null>(null)
@@ -177,10 +181,9 @@ const fetchTransactionSummary = async () => {
 }
 
 onMounted(async () => {
-  // Fetch transaction summary 
+  // Fetch transaction summary
   await fetchTransactionSummary()
 })
-
 
 // Wrapper function for TablesExTable
 const fetchTransactionForTable = async (params?: {
@@ -189,7 +192,7 @@ const fetchTransactionForTable = async (params?: {
   search?: string
   startDate?: string
   endDate?: string
-}) : Promise<TableFetchResult<TransactionHistoryRecord[]> | null>  => {
+}): Promise<TableFetchResult<TransactionHistoryRecord[]> | null> => {
   loading.value = true
   try {
     const banks = ['ABA', 'ACLEDA', 'AMK'] as const
@@ -223,7 +226,9 @@ const fetchTransactionForTable = async (params?: {
       currency_id: i % 2 === 0 ? 'USD' : 'KHR',
       status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
       total_customer: i + 1,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4]!,
+      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][
+        i % 4
+      ]!,
       sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)]!,
     }))
 
@@ -231,13 +236,14 @@ const fetchTransactionForTable = async (params?: {
     let filteredData = fullData
     if (params?.search) {
       const searchLower = params.search.toLowerCase()
-      filteredData = fullData.filter(item => 
-        item.bank_ref.toLowerCase().includes(searchLower) ||
-        item.collection_bank.toLowerCase().includes(searchLower) ||
-        item.settlement_bank.toLowerCase().includes(searchLower) ||
-        item.transaction_type.toLowerCase().includes(searchLower) ||
-        item.sub_biller.toLowerCase().includes(searchLower) ||
-        item.total_customer.toString().toLowerCase().includes(searchLower)
+      filteredData = fullData.filter(
+        (item) =>
+          item.bank_ref.toLowerCase().includes(searchLower) ||
+          item.collection_bank.toLowerCase().includes(searchLower) ||
+          item.settlement_bank.toLowerCase().includes(searchLower) ||
+          item.transaction_type.toLowerCase().includes(searchLower) ||
+          item.sub_biller.toLowerCase().includes(searchLower) ||
+          item.total_customer.toString().toLowerCase().includes(searchLower)
       )
     }
 
@@ -245,7 +251,7 @@ const fetchTransactionForTable = async (params?: {
     if (params?.startDate && params?.endDate) {
       const startDate = new Date(params.startDate)
       const endDate = new Date(params.endDate)
-      filteredData = filteredData.filter(item => {
+      filteredData = filteredData.filter((item) => {
         const itemDate = new Date(item.created_date)
         return itemDate >= startDate && itemDate <= endDate
       })
@@ -256,7 +262,7 @@ const fetchTransactionForTable = async (params?: {
     const currentPageSize = params?.pageSize || 10
     const totalRecords = filteredData.length
     const totalPages = Math.ceil(totalRecords / currentPageSize)
-    
+
     // Apply pagination
     const startIndex = (currentPage - 1) * currentPageSize
     const endIndex = startIndex + currentPageSize
@@ -390,7 +396,9 @@ const fetchTransactionHistory = async () => {
       currency_id: i % 2 === 0 ? 'USD' : 'KHR',
       status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
       total_customer: i + 1,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4]!,
+      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][
+        i % 4
+      ]!,
       sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)]!,
     }))
 
@@ -690,9 +698,9 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'created_date',
     accessorKey: 'created_date',
-    header: ({ column }) => createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
-    cell: ({ row }) =>
-      useFormat().formatDateTime(row.original.created_date),
+    header: ({ column }) =>
+      createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
+    cell: ({ row }) => useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
     size: 50,
     maxSize: 150,
@@ -763,12 +771,9 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'total_customer',
     accessorKey: 'total_customer',
-    header : ({ column }) => createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
-    cell: ({ row }) =>  h(
-        'div',
-        { class: 'text-right' },
-        row.original.total_customer || '-',
-      ),
+    header: ({ column }) =>
+      createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
+    cell: ({ row }) => h('div', { class: 'text-right' }, row.original.total_customer || '-'),
   },
   {
     id: 'status',
@@ -813,6 +818,5 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     size: 50,
     maxSize: 150,
   },
- 
 ]
 </script>
