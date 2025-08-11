@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, resolveComponent, shallowRef } from 'vue'
+import { h, ref, resolveComponent, shallowRef, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { CalendarDate } from '@internationalized/date'
@@ -93,6 +93,7 @@ const { statusCellBuilder } = useStatusBadge()
 const pref = useUserPreferences().getPreferences()
 const { formatAmount } = useCurrency()
 const { currentProfile } = useAuth()
+const { formatDate } = useFormat()
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const table = useTemplateRef<any>('table')
@@ -115,39 +116,47 @@ const modelValue = shallowRef({
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
 })
 
-const summarys = ref<SummaryCard[]>([
+const summarys = computed<SummaryCard[]>(() => [
   {
     key: 'total_amount',
     title: t('settlement.total_amount'),
     values: [
-      { value: 0, currency: 'KHR' },
-      { value: 0, currency: 'USD' },
+      { value: summaryData.value.total_amount_khr, currency: 'KHR' },
+      { value: summaryData.value.total_amount_usd, currency: 'USD' },
     ],
     filterLabel: '',
-    dateRange: '',
+    dateRange: dateRangeFilterDisplay.value,
   },
   {
     key: 'total_settled',
     title: t('settlement.total_settled'),
-    values: [{ value: 0 }],
+    values: [{ value: summaryData.value.total_settled }],
     filterLabel: '',
-    dateRange: '',
+    dateRange: dateRangeFilterDisplay.value,
   },
   {
     key: 'success',
     title: t('settlement.success'),
-    values: [{ value: 0 }],
+    values: [{ value: summaryData.value.success }],
     filterLabel: '',
-    dateRange: '',
+    dateRange: dateRangeFilterDisplay.value,
   },
   {
     key: 'failed',
     title: t('settlement.failed'),
-    values: [{ value: 0 }],
+    values: [{ value: summaryData.value.failed }],
     filterLabel: '',
-    dateRange: '',
+    dateRange: dateRangeFilterDisplay.value,
   },
 ])
+
+const summaryData = ref({
+  total_amount_khr: 0,
+  total_amount_usd: 0,
+  total_settled: 0,
+  success: 0,
+  failed: 0,
+})
 
 // Define table ID
 const TABLE_ID = 'settlement-history'
@@ -168,7 +177,7 @@ const fetchSettlementForTable = async (
 ): Promise<SettlementHistoryTableFetchResult | null> => {
   try {
     isLoading.value = true
-    dateRangeFilterDisplay.value = `${params?.start_date} - ${params?.end_date}`
+    dateRangeFilterDisplay.value = `${formatDate(params?.start_date)} - ${formatDate(params?.end_date)}`
 
     const payload: SettlementHistoryQuery = {
       search: params?.search || undefined,
@@ -227,26 +236,14 @@ const navigateToDetails = (settlementId: string) => {
 }
 
 const handleDataChanged = (result: SettlementHistoryTableFetchResult) => {
-  // Update summary with the result data
-  summarys.value = summarys.value.map((card) => {
-    card.dateRange = dateRangeFilterDisplay.value
-    if (card.title === t('settlement.total_amount')) {
-      return {
-        ...card,
-        values: [
-          { value: result.sum_total_amount_khr || 0, currency: 'KHR' },
-          { value: result.sum_total_amount_usd || 0, currency: 'USD' },
-        ],
-      }
-    } else if (card.title === t('settlement.total_settled')) {
-      return { ...card, values: [{ value: result.sum_total_settled || 0 }] }
-    } else if (card.title === t('settlement.success')) {
-      return { ...card, values: [{ value: result.sum_success || 0 }] }
-    } else if (card.key === 'failed') {
-      return { ...card, values: [{ value: result.sum_failed || 0 }] }
-    }
-    return card
-  })
+  // Update summary data with the result
+  summaryData.value = {
+    total_amount_khr: result.sum_total_amount_khr || 0,
+    total_amount_usd: result.sum_total_amount_usd || 0,
+    total_settled: result.sum_total_settled || 0,
+    success: result.sum_success || 0,
+    failed: result.sum_failed || 0,
+  }
 }
 
 const handleViewDetails = (rowData: SettlementHistoryRecord) => {
@@ -310,6 +307,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     id: 'created_by',
     accessorKey: 'created_by',
     header: () => t('settled_by'),
+    headerText: 'settled_by',
     cell: ({ row }) => row.original.created_by || '-',
   },
 

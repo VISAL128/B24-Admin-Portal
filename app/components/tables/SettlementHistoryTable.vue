@@ -13,6 +13,7 @@ import type {
 } from '~/models/settlement'
 import { useTable } from '~/composables/utils/useTable'
 import appConfig from '~~/app.config'
+import { UTooltip } from '#components'
 
 const { t } = useI18n()
 const format = useFormat()
@@ -229,7 +230,10 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     accessorKey: 'status',
     header: () => t('settlement.status'),
-    cell: ({ row }) => statusCellBuilder(row.original.status, true),
+    cell: ({ row }) =>
+      h(UTooltip, { text: row.original.reason }, () =>
+        statusCellBuilder(row.original.status, true)
+      ),
     // cell: ({ row }) => {
     //   return h(StatusBadgeV2, {
     //     status: row.original.status,

@@ -570,6 +570,7 @@ import type { WalletTransaction, SettlementWalletApiResponse, TopUpWalletApiResp
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'
 import type { QueryParams } from '~/models/baseModel'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
 import { StatusBadge } from '#components'
 
 // Define page meta
@@ -803,7 +804,7 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
         { label: t('dynamic_filter.tranType.wallet_payment'), value: t('wallet_payment') },
         { label: t('dynamic_filter.tranType.wallet_topup'), value: t('wallet_topup') },
        ],
-           enableSorting: true
+      enableSorting: true
     },
   {
     id: 'customerName',
@@ -813,26 +814,13 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
     enableSorting: true
   },
     {
-    id: 'currencyId',
-    accessorKey: 'currencyId',
-    header: t('currencyId'),
-    cell: ({ row }) => row.original.currency || '-',
-    enableSorting: true
-
-  },
-  {
-    id: 'totalAmount',
-    accessorKey: 'totalAmount',
-    header: t('settlement.amount'),
-        cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-center' },
-        useCurrency().formatAmount(row.original.amount, row.original.currency)
-      ),
-    enableSorting: true,
-  },
-   {
+      id: 'bankRefId',
+      accessorKey: 'bankRefId',
+      header: t('bank_ref_id'),
+      cell: ({ row }) => row.original.bank_ref_id || '-',
+      enableSorting: true,
+    },
+       {
     id: 'status',
     header: () => t('status.header'),
     cell: ({ row }) =>
@@ -851,12 +839,41 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
       { label: t('status.error'), value: 'error' },
     ],
     enableSorting: true
+  },
+  {
+    id: 'currencyId',
+    accessorKey: 'currencyId',
+    header: t('currencyId'),
+    cell: ({ row }) => row.original.currency || '-',
+    enableSorting: true,
+    // enableColumnFilter: true,
+    // filterType: 'select',
+    // filterOptions: [
+    //   { label: t('currency.usd'), value: 'USD' },
+    //   { label: t('currency.khr'), value: 'KHR' },
+    // ],
+  },
+  {
+    id: 'totalAmount',
+    accessorKey: 'totalAmount',
+    header: t('settlement.amount'),
+        cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-center' },
+        useCurrency().formatAmount(row.original.amount, row.original.currency)
+      ),
+    enableSorting: true,
   }
 ]
 })
 
 const fetchTransactionsForTable = async (params?: QueryParams) => {
+  console.log(" ============== param ============== ", params)
+
   isLoadingTransactions.value = true
+
+  // console.log("Fetching transactions for wallet:")
 
   const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
   
@@ -864,6 +881,26 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
     isLoadingTransactions.value = false
     throw new Error('No wallet selected')
   }
+
+  const currencyId = selectedWallet.currency
+  if (params) {
+    // Initialize filters array if it doesn't exist
+    if (!params.filters) {
+      params.filters = []
+    }
+    
+    // Add default currencyId filter based on wallet currency
+    params.filters.push({
+      field: 'currencyId',
+      operator: FilterOperatorPgwModule.Equals,
+      value: currencyId
+    })
+  }
+
+  console.log("======= Fetching transactions for wallet ========:", {
+    walletType: selectedWallet.walletType,
+    params,
+  })
 
   try {
     const response = selectedWallet.walletType === 'settlement_wallet'
