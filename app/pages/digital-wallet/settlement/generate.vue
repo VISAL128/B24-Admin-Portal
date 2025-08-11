@@ -18,6 +18,7 @@ import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import EmptyState from '~/components/TableEmptyState.vue'
 import SumTranDataUnderTable from '~/components/tables/SumTranDataUnderTable.vue'
+import TableShimmer from '~/components/tables/TableShimmer.vue'
 import type { SupplierProfile } from '~/models/supplier'
 import { useTable } from '~/composables/utils/useTable'
 import appConfig from '~~/app.config'
@@ -33,6 +34,7 @@ const userPreferences = useUserPreferences().getPreferences()
 const { createSortableHeader, createRowNumberCell } = useTable<Settlement>()
 
 const isLoadingCpoList = ref(false)
+const isLoadingInquiry = ref(false)
 
 // Create a CalendarDate for today in the local time zone
 const today = new Date()
@@ -219,6 +221,24 @@ const isConfirmModalShow = ref(false)
 const openCutoffDateSelect = ref(false)
 const isProcessWithMockupDate = false
 
+// Store original date/time values for cancel functionality
+const originalCutOffDatetime = ref<CalendarDateTime | null>(null)
+
+// Helper function to restore original datetime values
+const restoreOriginalDateTime = () => {
+  if (originalCutOffDatetime.value) {
+    cutOffDatetime.value = new CalendarDateTime(
+      originalCutOffDatetime.value.year,
+      originalCutOffDatetime.value.month,
+      originalCutOffDatetime.value.day,
+      originalCutOffDatetime.value.hour,
+      originalCutOffDatetime.value.minute,
+      originalCutOffDatetime.value.second
+    )
+  }
+  originalCutOffDatetime.value = null
+}
+
 // Add currency options computed property
 const currencyOptions = computed(() =>
   useCurrency().getAllCurrencies.value.map((currency) => ({
@@ -289,7 +309,7 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
       return cpo ? cpo.name : row.original.cpo.name
     },
   },
-  
+
   {
     accessorKey: 'settlement_bank_id',
     header: () => t('settlement.generate.form.settle_to_bank'),
@@ -305,7 +325,7 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
       return transactions.length > 0 ? transactions.length : '-'
     },
   },
-  
+
   {
     accessorKey: 'currency',
     header: () => t('settlement.generate.form.currency'),
@@ -351,6 +371,30 @@ const tranDetailsSorting = ref([
   },
 ])
 
+const exportHeaders = computed(() =>
+  cpoSettlementTransactionColumns
+    .filter((col) => col.id !== 'row_number')
+    .map((col) => ({
+      key: String(col.id || ''),
+      label:
+        typeof col.header === 'string'
+          ? col.header
+          : (col.id ? String(col.id) : '')
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, (l) => l.toUpperCase()),
+    }))
+)
+
+const resolvedExportOptions = computed(() => ({
+  fileName: `transaction-history-${Date.now()}`,
+  title: `transaction-history-${Date.now()}`,
+  subtitle: '',
+  currency: selectedCpoSettlement.value?.currency,
+  startDate: '',
+  endDate: '',
+  totalAmount: selectedCpoSettlement.value?.amount || 0,
+}))
+
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   {
     id: 'row_number',
@@ -362,6 +406,7 @@ const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
     enableSorting: false,
   },
   {
+    id: 'transaction_date',
     accessorKey: 'transaction_date',
     header: ({ column }) => createSortableHeader(column, t('settlement.generate.form.date')),
     size: 150,
@@ -375,6 +420,7 @@ const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
     // sortDescFirst: true,
   },
   {
+    id: 'amount',
     accessorKey: 'amount',
     header: () => h('div', { class: 'text-right' }, t('settlement.generate.form.amount')),
     cell: ({ row }) =>
@@ -465,6 +511,7 @@ const loadSubBillers = async () => {
 // Fetch inquiry settlement CPOs
 const fetchInquirySettlementCpo = async () => {
   try {
+    isLoadingInquiry.value = true
     const request: InitQuerySettlement = {
       parties:
         selectedCpo.value?.map((cpo) => ({
@@ -484,7 +531,7 @@ const fetchInquirySettlementCpo = async () => {
   } catch (error) {
     console.error('Failed to fetch CPOs:', error)
   } finally {
-    // Optionally handle loading state or errors
+    isLoadingInquiry.value = false
   }
 }
 
@@ -530,12 +577,32 @@ const getCpoById = (cpoId: string): Cpo | undefined => {
 
 // Handle cutoff date confirmation
 const onCutOffDateConfimed = async () => {
+  // Clear original value to indicate confirmation
+  originalCutOffDatetime.value = null
   openCutoffDateSelect.value = false
   // Auto-refresh settlement data when cutoff date is confirmed
   if (selectedCurrency.value && cutOffDatetime.value && selectedCpo.value.length > 0) {
     await fetchInquirySettlementCpo()
   }
 }
+
+// Handle cutoff date cancellation - restore original values
+const onCutOffDateCancelled = () => {
+  restoreOriginalDateTime()
+  openCutoffDateSelect.value = false
+}
+
+// Watch for popup open/close to store/restore original values
+watch(openCutoffDateSelect, (isOpen, wasOpen) => {
+  if (isOpen && !wasOpen) {
+    // Store original value when popup opens
+    originalCutOffDatetime.value = cutOffDatetime.value
+  } else if (!isOpen && wasOpen && originalCutOffDatetime.value) {
+    // If popup closes and we still have an original value, it means the user
+    // didn't confirm the changes (clicked outside, pressed ESC, etc.)
+    restoreOriginalDateTime()
+  }
+})
 
 definePageMeta({
   auth: true,
@@ -628,14 +695,11 @@ definePageMeta({
                             variant="outline"
                             color="neutral"
                             size="sm"
-                            @click="openCutoffDateSelect = false"
+                            @click="onCutOffDateCancelled"
                           >
                             {{ t('cancel') }}
                           </UButton>
-                          <UButton
-                            size="sm"
-                            @click="onCutOffDateConfimed"
-                          >
+                          <UButton size="sm" @click="onCutOffDateConfimed">
                             {{ t('confirm') }}
                           </UButton>
                         </div>
@@ -668,16 +732,18 @@ definePageMeta({
               </div>
 
               <!-- Load Settlement Button or Auto-loading indicator -->
-              <div class="flex justify-between items-center mb-4 flex-shrink-0">
+              <div class="flex justify-between items-center flex-shrink-0">
                 <div class="flex items-center gap-3">
-                  <h3 class="text-sm font-semibold">{{ t('settlement.generate.steps.reconciliation.title') }}</h3>
+                  <h3 class="text-sm font-semibold">
+                    {{ t('settlement.generate.steps.reconciliation.title') }}
+                  </h3>
                   <UButton
                     v-if="selectedCurrency && cutOffDatetime"
                     size="sm"
                     color="primary"
                     variant="outline"
-                    icon="i-lucide-refresh-cw"
-                    :loading="!listInquirySettlement"
+                    icon="material-symbols:sync"
+                    :loading="isLoadingInquiry"
                     @click="fetchInquirySettlementCpo"
                   >
                     {{ t('settlement.refresh') }}
@@ -685,8 +751,10 @@ definePageMeta({
                 </div>
               </div>
               <!-- Summary -->
-               <CardsSummaryCards
-               :cards="[
+              <CardsSummaryCards
+                :is-loading="isLoadingInquiry"
+                :skeleton-count="3"
+                :cards="[
                   {
                     title: t('settlement.generate.form.total_biller'),
                     values: [
@@ -695,44 +763,58 @@ definePageMeta({
                       },
                     ],
                     dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: ''
+                    filterLabel: '',
                   },
                   {
                     title: t('settlement.generate.form.total_transactions'),
                     values: [
                       {
-                        value: listInquirySettlement?.settlements?.reduce((acc, curr) => acc + (curr.transaction_allocations?.length || 0), 0) || 0,
+                        value:
+                          listInquirySettlement?.settlements?.reduce(
+                            (acc, curr) => acc + (curr.transaction_allocations?.length || 0),
+                            0
+                          ) || 0,
                       },
                     ],
                     dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: ''
+                    filterLabel: '',
                   },
                   {
                     title: t('settlement.generate.form.total_amount'),
                     values: [
                       {
-                        value: listInquirySettlement?.settlements?.reduce((acc, curr) => acc + (curr.amount || 0), 0) || 0,
+                        value:
+                          listInquirySettlement?.settlements?.reduce(
+                            (acc, curr) => acc + (curr.amount || 0),
+                            0
+                          ) || 0,
                         currency: selectedCurrency?.value.code || defaultCurrency.code,
                       },
                     ],
                     dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: ''
+                    filterLabel: '',
                   },
-               ]" />
+                ]"
+              />
               <!-- Settlement List and Transaction Details -->
-              <div class="flex sm:flex-col lg:flex-row gap-6 flex-1 min-h-0">
+              <div class="flex flex-1 sm:flex-col lg:flex-row gap-6 min-h-0">
                 <!-- Master Table -->
                 <div
-                  class="flex-2 overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
+                  class="flex-2 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
                 >
-                  <div class="overflow-x-auto h-full">
+                  <div class="h-full overflow-auto">
+                    <!-- Table Skeleton -->
+                    <TableShimmer v-if="isLoadingInquiry" :rows="5" :show-row-number="true" />
+                    <!-- Actual Table -->
                     <UTable
+                      v-else
                       ref="table"
+                      :loading="false"
                       :data="listInquirySettlement?.settlements || []"
                       :columns="cpoSettlementColumns"
                       :ui="appConfig.ui.table.slots"
                       sticky
-                      class="min-w-[800px] w-full h-full"
+                      class="min-w-[800px] w-full"
                       @row:click="handleRowClick"
                     >
                       <template #empty>
@@ -751,13 +833,14 @@ definePageMeta({
                   enter-to-class="transform translate-x-0 opacity-100"
                   leave-from-class="transform translate-x-0 opacity-100"
                   leave-to-class="transform translate-x-full opacity-0"
-                  class="flex flex-col flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+                  class="flex flex-col flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-h-0"
                 >
                   <div
                     v-if="
                       selectedCpoSettlement?.transaction_allocations &&
                       (selectedCpoSettlement.transaction_allocations.length || 0) > 0
                     "
+                    class="flex flex-col h-full min-h-0 max-h-full"
                   >
                     <!-- Fixed Header -->
                     <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
@@ -765,14 +848,21 @@ definePageMeta({
                         <h3 class="text-lg font-semibold">
                           {{ t('settlement.generate.form.transaction_history') }}
                         </h3>
-                        <UButton
-                          icon="i-lucide-x"
-                          size="xs"
-                          color="gray"
-                          variant="ghost"
-                          class="hover:bg-gray-100 transition-colors duration-200"
-                          @click="selectedCpoSettlement = null"
-                        />
+                        <div class="flex gap-4">
+                          <ButtonsExportButton
+                            :data="selectedCpoSettlement.transaction_allocations"
+                            :headers="exportHeaders"
+                            :export-options="resolvedExportOptions"
+                          />
+                          <UButton
+                            icon="i-lucide-x"
+                            size="xs"
+                            color="gray"
+                            variant="ghost"
+                            class="hover:bg-gray-100 transition-colors duration-200"
+                            @click="selectedCpoSettlement = null"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -784,7 +874,7 @@ definePageMeta({
                       :columns="cpoSettlementTransactionColumns"
                       :ui="appConfig.ui.table.slots"
                       sticky
-                      class="w-full animate-fade-in flex-1 min-h-0 overflow-auto"
+                      class="flex h-80 w-full animate-fade-in min-h-0 overflow-auto"
                     />
 
                     <!-- Fixed Footer -->
@@ -836,7 +926,7 @@ definePageMeta({
               >
                 {{ t('settlement.generate.form.confirm_settlement') }}
               </UButton>
-              
+
               <!-- Show confirm modal to confirm settlement -->
               <UModal
                 v-if="item.title === t('settlement.generate.steps.reconciliation.title')"

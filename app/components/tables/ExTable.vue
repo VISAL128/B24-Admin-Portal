@@ -215,7 +215,7 @@
                     :id="col.id"
                     :key="col.id"
                     :label="getTranslationHeaderById(col.id)"
-                    :model-value="col.getIsVisible()"
+                    :model-value="columnVisibility[col.id] ?? true"
                     :ui="appConfig.ui.checkbox.slots"
                     variant="list"
                     class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -357,7 +357,7 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { CalendarDate } from '@internationalized/date'
 import type { TableRow } from '@nuxt/ui'
-import { computed, onMounted, readonly, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, readonly, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -389,7 +389,23 @@ const defaultColumnVisibility = ref<Record<string, boolean>>({})
 // Initialize column visibility from localStorage or defaults
 const initializeColumnVisibility = (): Record<string, boolean> => {
   const savedConfig = tableConfig.getColumnConfig(props.tableId)
-  return savedConfig || defaultColumnVisibility.value
+  if (savedConfig && Object.keys(savedConfig).length > 0) {
+    return savedConfig
+  }
+  
+  // If no saved config or empty, use current defaultColumnVisibility
+  if (Object.keys(defaultColumnVisibility.value).length > 0) {
+    return { ...defaultColumnVisibility.value }
+  }
+  
+  // Fallback: create default visibility for all columns
+  const defaultVisibility: Record<string, boolean> = {}
+  columnsWithRowNumber.value.forEach((col) => {
+    if (col.id) {
+      defaultVisibility[col.id] = true
+    }
+  })
+  return defaultVisibility
 }
 
 // Initialize column filters from localStorage or defaults
@@ -462,14 +478,38 @@ watch(columnVisibility, saveColumnVisibility, { deep: true })
 watch(dateRange, saveDateRange, { deep: true })
 watch(sorting, saveSorting, { deep: true })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const columnConfig = computed((): any[] => {
-  return (
-    tableRef?.value?.tableApi
-      ?.getAllColumns()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((column: any) => column.getCanHide()) ?? []
-  )
+// Create column config based on actual columns instead of table API
+const columnConfig = computed(() => {
+  const config = columnsWithRowNumber.value
+    .filter((col) => col.enableHiding !== false && col.id !== 'select' && col.id !== 'row_number')
+    .map((col) => ({
+      id: col.id,
+      getCanHide: () => col.enableHiding !== false,
+      toggleVisibility: (visible: boolean) => {
+        // Update table API if available
+        const tableApi = tableRef?.value?.tableApi
+        if (tableApi && col.id) {
+          try {
+            const column = tableApi.getColumn(col.id)
+            if (column && column.getCanHide()) {
+              column.toggleVisibility(visible)
+            }
+          } catch (error) {
+            // Column might not exist in table API if it was previously hidden
+            // This is expected behavior - we'll rely on our columnVisibility state
+            if (import.meta.env.DEV) {
+              console.log(`📊 Column '${col.id}' not found in table API (likely hidden):`, error)
+            }
+          }
+        }
+      }
+    }))
+    
+  if (import.meta.env.DEV) {
+    console.log(`📊 Column config for table ${props.tableId}:`, config.map(c => c.id))
+  }
+  
+  return config
 })
 
 const getTranslationHeaderById = (id: string) => {
@@ -629,8 +669,8 @@ const fetchData = async (refresh = false) => {
       page: internalPage.value,
       page_size: pageSize.value.value,
       search: search.value,
-      start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value) : undefined,
-      end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value) : undefined,
+      start_date: props.showDateFilter ? formatDateForBackendRequest(startDate.value, 'yyyy/MM/dd') : undefined,
+      end_date: props.showDateFilter ? formatDateForBackendRequest(endDate.value, 'yyyy/MM/dd') : undefined,
       statuses: selectedStatuses.value
         .filter((s) => s.value !== 'all' && s.value !== '')
         .map((s) => s.value),
@@ -646,7 +686,7 @@ const fetchData = async (refresh = false) => {
       internalData.value = result.data as T[]
       internalTotal.value = result.total_record
       internalTotalPage.value = result.total_page
-
+      console.log('Fetched data:', result)
       // Emit data-changed event with the current data
       emit('data-changed', result)
     }
@@ -881,21 +921,19 @@ const filteredColumns = computed(() => {
     //   }
     // }
   })
-  const visibleColumnIds = computed(() =>
-    columnConfig.value
-      .filter((col) => col.getIsVisible())
-      .map((col) => col.id)
-      .filter((id): id is string => !!id)
-  )
+  // Use columnVisibility ref directly instead of relying on table API
+  const visibleColumnIds = Object.entries(columnVisibility.value)
+    .filter(([_, isVisible]) => isVisible)
+    .map(([columnId]) => columnId)
 
   // If no visible ids are selected, fallback to showing all
-  if (visibleColumnIds.value.length === 0 && allColumnIds.value.length > 0) {
+  if (visibleColumnIds.length === 0 && allColumnIds.value.length > 0) {
     return columns
   }
 
   return columns.filter((col) => {
     if (!col.id) return true
-    return visibleColumnIds.value.includes(col.id)
+    return visibleColumnIds.includes(col.id)
   })
 })
 
@@ -939,11 +977,36 @@ const columnsWithRowNumber = computed(() => {
 })
 
 onBeforeMount(() => {
+  // Set up default column visibility first - include all columns that might be added
+  defaultColumnVisibility.value = columnsWithRowNumber.value.reduce(
+    (acc, col) => {
+      if (col.id) {
+        acc[col.id] = true // Default to visible
+      }
+      return acc
+    },
+    {} as Record<string, boolean>
+  )
+
   // Initialize date range from localStorage or defaults
   const initialDateRange = initializeDateRange()
   dateRange.value = initialDateRange
   columnFilters.value = initializeColumnFilters()
   sorting.value = initializeSorting()
+  
+  // Initialize column visibility and ensure all columns are included
+  const initialColumnVisibility = initializeColumnVisibility()
+  
+  // Merge with default to ensure all columns are present
+  columnVisibility.value = {
+    ...defaultColumnVisibility.value,
+    ...initialColumnVisibility
+  }
+
+  if (import.meta.env.DEV) {
+    console.log(`📊 Initialized column visibility for table ${props.tableId}:`, columnVisibility.value)
+    console.log(`📊 Default column visibility for table ${props.tableId}:`, defaultColumnVisibility.value)
+  }
 
   // Parse the date strings to set calendar values and internal date values
   try {
@@ -997,23 +1060,12 @@ onBeforeMount(() => {
 let autoRefreshInterval: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
-  defaultColumnVisibility.value = props.columns.reduce(
-    (acc, col) => {
-      if (col.id) {
-        acc[col.id] = true // Default to visible
-      }
-      return acc
-    },
-    {} as Record<string, boolean>
-  )
-
   // Initialize auto-refresh state from table config
   const isAutoRefresh = tableConfig.getIsAutoRefresh(props.tableId)
   if (isAutoRefresh !== null) {
     autoRefresh.value = isAutoRefresh
   }
 
-  columnVisibility.value = initializeColumnVisibility()
   // Initialize applied filters with current values
   appliedColumnFilters.value = { ...columnFilters.value }
   appliedSelectedStatuses.value = [...selectedStatuses.value]
@@ -1044,6 +1096,34 @@ onMounted(() => {
 
   mounted.value = true
 })
+
+// Watch for table API column visibility changes and sync back to our ref
+watch(
+  () => tableRef?.value?.tableApi,
+  (tableApi) => {
+    if (tableApi) {
+      // Set up a listener for column visibility changes from the table API
+      nextTick(() => {
+        // Sync our localStorage state to the table API when it becomes available
+        Object.entries(columnVisibility.value).forEach(([columnId, isVisible]) => {
+          try {
+            const column = tableApi.getColumn(columnId)
+            if (column && column.getCanHide()) {
+              column.toggleVisibility(isVisible)
+            }
+          } catch (error) {
+            // Column might not exist in table API if it was previously hidden
+            // This is expected behavior when reopening with hidden columns
+            if (import.meta.env.DEV) {
+              console.log(`📊 Column '${columnId}' not found in table API during sync (likely hidden):`, error)
+            }
+          }
+        })
+      })
+    }
+  },
+  { immediate: true }
+)
 
 watch(autoRefresh, (val) => {
   if (val) {

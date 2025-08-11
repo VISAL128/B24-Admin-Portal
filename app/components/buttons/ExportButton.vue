@@ -140,7 +140,7 @@ const exportToPDFHandler = async () => {
       })
       return
     }
-    const totalAmount = props.data.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0)
+    const totalAmount = props.data.reduce((sum, item) => sum + (Number((item.total_amount || item.amount)) || 0), 0)
     const currentLocale = locale.value as 'km' | 'en'
     const periodText = `${props.exportOptions?.startDate} ${t('to')} ${props.exportOptions?.endDate}`
 
@@ -153,7 +153,7 @@ const exportToPDFHandler = async () => {
         props.exportOptions?.subtitle || '',
         periodText,
         {
-          totalAmount,
+          totalAmount: props.exportOptions?.totalAmount || totalAmount,
           locale: currentLocale,
           t,
         }

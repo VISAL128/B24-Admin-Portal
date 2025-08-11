@@ -1,6 +1,7 @@
 {
   "yes": "Yes",
   "no": "No",
+  "close": "Close",
   "seconds": "seconds",
   "yes_logout": "Yes, Logout",
   "hello": "Hello",
@@ -139,19 +140,22 @@
         "created_by": "Settled By"
       }
     },
-    "transactions-history-table": {
+    "transaction-history-table": {
       "columns": {
-        "collection_bank": "Collection Bank",
-        "settlement_bank": "Settlement Bank",
-        "settlement_type": "Settlement Type",
-        "transaction_type": "Transaction Type",
-        "currency_id": "Currency",
+        "collectionBank": "Collection Bank",
+        "settlementBank": "Settlement Bank",
+        "settlementType": "Settlement Type",
+        "transactionType": "Transaction Type",
+        "currency": "Currency",
         "status": "Status",
-        "created_date": "Transaction Date",
-        "bank_ref": "Bank Reference",
-        "sub_biller": "Sub Biller",
-        "total_amount": "Total Amount",
-        "total_customer": "Total Customer"
+        "date": "Transaction Date",
+        "bankReference": "Bank Reference",
+        "subBiller": "Sub Biller",
+        "subSupplier": "Sub Biller",
+        "totalAmount": "Total Amount",
+        "totalCustomer": "Total Customer",
+        "numberOfCustomer": "Total Customer",
+        "transactionAmount": "Total Amount"
       }
     },
     "wallet-transactions-table-top_up_wallet":{
@@ -225,7 +229,7 @@
   "row_selected": "row(s) selected",
   "total": "Total",
   "to": "to",
-  "generate_settlement": "Generate Settlement",
+  "generate_settlement": "Generate",
   "search_by_settler": "Search by Settler...",
   "pick_a_date": "Pick a Date",
   "user_profile": "User Profile",
@@ -545,6 +549,7 @@
     }
   },
   "settlement": {
+    "no_transaction_allocations": "No transaction allocations found.",
     "settlement_details_description": "Details of the settlement",
     "refresh": "Refresh",
     "auto_refresh": "Auto Refresh",
@@ -956,6 +961,7 @@
   "additional_information": "Additional Information",
   "metadata": "Metadata",
   "back": "Back",
-  "customer_name": "Customer Name"
+  "customer_name": "Customer Name",
+  "deactivate": "Deactivate"
   }
 

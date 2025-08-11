@@ -80,4 +80,44 @@ enum BankServiceStatus {
   Active = 1,
   Inactive = 2
 }
-export { SortDirection, FilterOperator, FilterOperatorPgwModule, FilterType, PartyType, Status, SettlementStatus, SettlementHistoryStatus, FeeType, Currency, BankServiceStatus  };
+
+
+export enum TransactionStatus {
+  Cancel = 'cancel',
+  Error = 'error',
+  Expire = 'expire',
+  Failed = 'failed',
+  Pending = 'pending',
+  Reversed = 'reversed',
+  Success = 'success',
+}
+
+export enum TransactionType {
+  Activate = 'activate',
+  Checkout = 'checkout',
+  Deeplink = 'deeplink',
+  Deposit = 'deposit',
+  DirectDebit = 'direct_debit',
+  PayBill = 'pay_bill',
+  PayPersonalBill = 'pay_personal_bill',
+  Proxy = 'proxy',
+  QrPay = 'qr_pay',
+  WalletPayment = 'wallet_payment',
+  WalletTopup = 'wallet_topup',
+}
+
+export enum SettlementType {
+  HUB = 'HUB',
+  DIRECT = 'DIRECT',
+}
+export enum VoidPaymentRequestStatus {
+  Pending = 'pending'
+}
+
+export enum RepushToBillerType {
+  Webhook = 'webhook',
+  RMQ = 'rmq',
+}
+
+export { BankServiceStatus, Currency, FeeType, FilterOperator, FilterOperatorPgwModule, FilterType, PartyType, SettlementHistoryStatus, SettlementStatus, SortDirection, Status };
+

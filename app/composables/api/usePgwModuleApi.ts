@@ -1,8 +1,8 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { SubBillerListResponse, WalletListResponse } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
-import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 import type { TransactionListResponse } from '~/models/transaction'
+import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 
 import type {
   FeeSummaryResponse,

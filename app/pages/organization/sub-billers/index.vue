@@ -1,6 +1,6 @@
 <template>
-      <div class="overflow-x-auto">
-          <TablesExTable
+  <div class="overflow-x-auto">
+    <TablesExTable
       ref="table"
       :columns="columns"
       table-id="sub-billers-table"
@@ -10,7 +10,7 @@
       enabled-repush
       @row-click="handleViewDetailss"
     />
-    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -46,13 +46,13 @@ import type { QueryParams } from '~/models/baseModel'
 
 const showSidebar = ref(false)
 const selectedRecord = ref<SettlementHistoryRecord | null>(null)
-const filters = ref<{ field: string; operator: FilterOperatorPgwModule; value: string; manualFilter?: boolean }[]>(
-  []
-)
+const filters = ref<
+  { field: string; operator: FilterOperatorPgwModule; value: string; manualFilter?: boolean }[]
+>([])
 
 definePageMeta({
   auth: false,
-  breadcrumbs: [{ label: 'sub_biller', to: '/transactions' }],
+  breadcrumbs: [{ label: 'sub_biller', to: '/organization/sub-billers' }],
 })
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
@@ -142,13 +142,14 @@ const onDateFilterChange = (payload: { label: string; value: string }) => {
   }
 }
 
-const fetchSubBiller = async (params?: QueryParams): Promise<{
+const fetchSubBiller = async (
+  params?: QueryParams
+): Promise<{
   data: Supplier[]
   total_record: number
   total_page: number
 } | null> => {
   try {
-  
     const response = await getSubBillers(params)
 
     return {
@@ -161,7 +162,6 @@ const fetchSubBiller = async (params?: QueryParams): Promise<{
     return null
   }
 }
-
 
 const onPageSizeChange = () => {
   page.value = 1
@@ -405,7 +405,7 @@ const handleExport = (item: { click: () => void }) => {
 }
 
 const handleViewDetailss = (record: Supplier) => {
-    navigateToDetails(record.id)
+  navigateToDetails(record.id)
 }
 const handleFilterChange = (columnId: string, value: string) => {
   console.log('Filter changed:', columnId, value)
@@ -413,24 +413,34 @@ const handleFilterChange = (columnId: string, value: string) => {
 }
 
 const columns: BaseTableColumn<Supplier>[] = [
-{
-  id: 'syncCode',
-  accessorKey: 'syncCode',
-  headerText: t('code'),
-  cell: ({ row }) => {
-    const syncCode = row.original.syncCode
+  {
+    id: 'syncCode',
+    accessorKey: 'syncCode',
+    headerText: t('code'),
+    cell: ({ row }) => {
+      const syncCode = row.original.syncCode
+      const Icon = resolveComponent('Icon') // Ensure globally registered or imported
 
-    return h('div', { class: 'flex items-center gap-3' }, [
-      h('img', {
-        src: 'https://static.vecteezy.com/system/resources/previews/026/630/551/non_2x/profile-icon-symbol-design-illustration-vector.jpg',
-        alt: 'Profile',
-        class: 'w-6 h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700',
-      }),
-      h('span', {}, syncCode ?? ''), // ✅ Safe fallback
-    ])
+      return h('div', { class: 'flex items-center gap-3' }, [
+        // Circular background wrapper
+        h(
+          'div',
+          {
+            class:
+              'w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center',
+          },
+          [
+            h(Icon, {
+              name: 'material-symbols:home-work-outline',
+              class: 'w-4 h-4 text-primary',
+            }),
+          ]
+        ),
+        h('span', {}, syncCode ?? ''),
+      ])
+    },
+    enableSorting: true,
   },
-      enableSorting: true,
-},
   {
     id: 'name',
     accessorKey: 'name',

@@ -1,6 +1,7 @@
 {
   "yes": "បាទ",
   "no": "ទេ",
+  "close": "បិទ",
   "seconds": "វិនាទី",
   "yes_logout": "បាទ, ចាកចេញ",
   "hello": "សួស្តី",
@@ -355,7 +356,7 @@
   "bank_name": "ឈ្មោះធនាគារ",
   "search_by_settler": "ស្វែងរកតាមអ្នកទូទាត់...",
   "pick_a_date": "ជ្រើសរើសកាលបរិច្ឆេទ",
-  "generate_settlement": "បង្កើតការទូទាត់",
+  "generate_settlement": "បង្កើត",
   "export": "ទាញយក",
   "of": "ពី",
   "row_selected": "ជួរដេកបានជ្រើស",
@@ -416,6 +417,7 @@
     }
   },
   "settlement": {
+    "no_transaction_allocations": "គ្មានការបែងចែកប្រតិបត្តិការ",
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
     "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
@@ -702,17 +704,20 @@
     },
     "transactions-history-table": {
       "columns": {
-        "collection_bank": "ធនាគារប្រមូលប្រាក់",
-        "settlement_bank": "ធនាគារទូទាត់",
-        "settlement_type": "ប្រភេទទូទាត់",
-        "transaction_type": "ប្រភេទប្រតិបត្តិការ",
-        "currency_id": "រូបិយប័ណ្ណ",
+        "collectionBank": "ធនាគារប្រមូលប្រាក់",
+        "settlementBank": "ធនាគារទូទាត់",
+        "settlementType": "ប្រភេទទូទាត់",
+        "transactionType": "ប្រភេទប្រតិបត្តិការ",
+        "currency": "រូបិយប័ណ្ណ",
         "status": "ស្ថានភាព",
-        "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
-        "bank_ref": "លេខយោងធនាគារ",
-        "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-        "total_customer": "ចំនួនអតិថិជន"
+        "date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "bankReference": "លេខយោងធនាគារ",
+        "subBiller": "ម្ចាស់អាជីវកម្មរង",
+        "totalAmount": "ចំនួនទឹកប្រាក់",
+        "numberOfCustomer": "ចំនួនអតិថិជន",
+        "totalCustomer": "ចំនួនអតិថិជន",
+        "subSupplier": "ម្ចាស់អាជីវកម្មរង",
+        "transactionAmount": "ចំនួនទឹកប្រាក់"
       }
     }
   },
@@ -964,5 +969,6 @@
   "ascending": "តាមលំដាប់ឡើង",
   "descending": " តាមលំដាប់ចុះ",
   "clear": "សម្អាត",
-  "customer_name": "ឈ្មោះអតិថិជន"
+  "customer_name": "ឈ្មោះអតិថិជន",
+  "deactivate": "បិទដំណើរការ"
 }

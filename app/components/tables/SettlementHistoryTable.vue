@@ -136,35 +136,6 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
   },
   {
-    accessorKey: 'settle_amount',
-    header: ({ column }) => createSortableHeader(column, t('settlement.amount'), 'right'),
-    cell: ({ row }) =>
-      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
-    size: 150,
-    maxSize: 150,
-    meta: {
-      class: {
-        td(cell) {
-          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
-        },
-      },
-    },
-  },
-  {
-    accessorKey: 'currency',
-    header: () => h('p', { class: 'w-full' }, t('settlement.currency')),
-    cell: () => h('span', { class: '' }, props.currency || 'N/A'),
-    size: 10,
-    maxSize: 30,
-    meta: {
-      class: {
-        td(cell) {
-          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
-        },
-      },
-    },
-  },
-  {
     accessorKey: 'tran_date',
     header: ({ column }) => createSortableHeader(column, t('transaction_date')),
     cell: ({ row }) => {
@@ -268,6 +239,35 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     // },
     size: 120,
     maxSize: 120,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
+  },
+  {
+    accessorKey: 'settle_amount',
+    header: ({ column }) => createSortableHeader(column, t('settlement.amount'), 'right'),
+    cell: ({ row }) =>
+      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
+    size: 150,
+    maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
+  },
+  {
+    accessorKey: 'currency',
+    header: () => h('p', { class: 'w-full' }, t('settlement.currency')),
+    cell: () => h('span', { class: '' }, props.currency || 'N/A'),
+    size: 10,
+    maxSize: 30,
     meta: {
       class: {
         td(cell) {
@@ -507,6 +507,21 @@ const valueClass = 'text-sm font-bold'
               <p>{{ t('settlement.no_transaction_allocations') }}</p>
             </div>
           </div>
+        </div>
+      </template>
+
+      <template #close>
+        <div class="flex justify-end w-52">
+          <UTooltip :text="t('close')" :kbds="['esc']">
+            <UButton variant="ghost" class="w-8 h-8">
+              <UIcon
+                name="material-symbols:close"
+                size="30"
+                class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                @click="closeSlideover"
+              />
+            </UButton>
+          </UTooltip>
         </div>
       </template>
     </USlideover>
