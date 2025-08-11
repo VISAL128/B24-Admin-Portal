@@ -1,6 +1,8 @@
 {
   "yes": "Yes",
   "no": "No",
+  "close": "Close",
+  "seconds": "seconds",
   "yes_logout": "Yes, Logout",
   "hello": "Hello",
   "cancel": "Cancel",
@@ -84,6 +86,10 @@
     "currency_id": {
       "USD": "USD - US Dollar",
       "KHR": "KHR - Cambodian Riel"
+    },
+    "tranType": {
+      "wallet_payment": "Payment",
+      "wallet_topup": "Top Up"
     }
   },
   "table": {
@@ -98,6 +104,7 @@
     "column_config": {
       "tooltip": "Hide/Show Columns",
       "reset": "Reset",
+      "apply": "Apply",
       "reset_description": "Reset columns and sorting to defaults",
       "columns": "Columns"
       },
@@ -133,28 +140,31 @@
         "created_by": "Settled By"
       }
     },
-    "transactions-history-table": {
+    "transaction-history-table": {
       "columns": {
-        "collection_bank": "Collection Bank",
-        "settlement_bank": "Settlement Bank",
-        "settlement_type": "Settlement Type",
-        "transaction_type": "Transaction Type",
-        "currency_id": "Currency",
+        "collectionBank": "Collection Bank",
+        "settlementBank": "Settlement Bank",
+        "settlementType": "Settlement Type",
+        "transactionType": "Transaction Type",
+        "currency": "Currency",
         "status": "Status",
-        "created_date": "Transaction Date",
-        "bank_ref": "Bank Reference",
-        "sub_biller": "Sub Biller",
-        "total_amount": "Total Amount",
-        "total_customer": "Total Customer"
+        "date": "Transaction Date",
+        "bankReference": "Bank Reference",
+        "subBiller": "Sub Biller",
+        "subSupplier": "Sub Biller",
+        "totalAmount": "Total Amount",
+        "totalCustomer": "Total Customer",
+        "numberOfCustomer": "Total Customer",
+        "transactionAmount": "Total Amount"
       }
     },
     "wallet-transactions-table":{
       "columns": {
-        "tran_date": "Transaction Date",
+        "tranDate": "Transaction Date",
         "wallet_type": "Wallet Type",
         "transaction_type": "Transaction Type",
         "status": "Status",
-        "amount": "Amount",
+        "totalAmount": "Total Amount",
         "currency_id": "Currency",
         "fee_amount": "Fee Amount",
         "net_amount": "Net Amount",
@@ -163,9 +173,12 @@
         "merchant": "Merchant",
         "channel": "Channel",
         "customer_name":"Customer Name",
-        "actions":"Actions"
+        "actions":"Actions",
+        "currency": "Currency",
+        "tranType": "Transaction Type"
       }
     }
+
   },
   "status": {
     "all": "All status",
@@ -196,7 +209,7 @@
   "row_selected": "row(s) selected",
   "total": "Total",
   "to": "to",
-  "generate_settlement": "Generate Settlement",
+  "generate_settlement": "Generate",
   "search_by_settler": "Search by Settler...",
   "pick_a_date": "Pick a Date",
   "user_profile": "User Profile",
@@ -272,7 +285,7 @@
     "no_wallets_found": "No wallets found",
     "loading": "Loading",
     "auto_refresh": "Auto Refresh",
-    "auto_refresh_tooltip": "Automatically refresh data every 30 seconds",
+    "auto_refresh_tooltip": "Automatically refresh data based on your configured interval",
     "biller_categories": "Biller Categories",
     "view_all": "View All",
     "recent_transactions": "Recent Transactions",
@@ -423,6 +436,9 @@
     "default_currency": "Default Currency",
     "default_page_size": "Default Page Size",
     "default_page_size_description": "Set the default number of items to display per page in tables",
+    "auto_refresh_interval": "Auto Refresh Interval",
+    "auto_refresh_interval_description": "Set the time interval (in seconds) for automatic data refresh. Range: 30-300 seconds.",
+    "seconds": "seconds",
     "preview": "Preview",
     "preview_date": "Date:",
     "preview_time": "Time:",
@@ -513,10 +529,12 @@
     }
   },
   "settlement": {
+    "no_transaction_allocations": "No transaction allocations found.",
     "settlement_details_description": "Details of the settlement",
     "refresh": "Refresh",
     "auto_refresh": "Auto Refresh",
-    "auto_refresh_desc": "Automatically refresh the settlement history every 30 seconds.",
+    "auto_refresh_desc": "Automatically refresh the settlement history based on your configured interval.",
+    "auto_refresh_disabled_long_range": "Auto refresh is disabled for date ranges longer than 7 days to improve performance.",
     "transaction": "Transaction",
     "title": "Settlement",
     "settlement_list": "Settlement List",
@@ -581,6 +599,7 @@
       },
       "form": {
         "type": "Type",
+        "total_biller": "Total Biller",
         "total_transactions": "Total Transactions",
         "no_cpo_settlement_title": "No CPO",
         "no_cpo_settlement_message": "No CPO available for settlement.",
@@ -865,6 +884,7 @@
     "name_kh": "Khmer Name",
     "active_banks": "Active Banks",
     "inactive_banks": "Inactive Banks",
+    "default_account": "Default Account",
     "bank_short_name": "Short Name",
     "swift_code": "SWIFT Code",
     "description": "Description",

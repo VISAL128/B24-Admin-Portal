@@ -33,6 +33,7 @@ const userPreferences = useUserPreferences().getPreferences()
 const { createSortableHeader, createRowNumberCell } = useTable<Settlement>()
 
 const isLoadingCpoList = ref(false)
+const isLoadingInquiry = ref(false)
 
 // Create a CalendarDate for today in the local time zone
 const today = new Date()
@@ -185,12 +186,6 @@ const formatTimeDisplay = computed(() => {
 
 const items = computed<StepperItem[]>(() => [
   {
-    value: 'Supplier',
-    title: t('settlement.generate.steps.supplier.title'),
-    description: t('settlement.generate.steps.supplier.description'),
-    icon: 'i-lucide-users',
-  },
-  {
     value: 'Reconciliation',
     title: t('settlement.generate.steps.reconciliation.title'),
     description: t('settlement.generate.steps.reconciliation.description'),
@@ -211,8 +206,6 @@ const selectedSupplier = ref<{ label: string; value: SupplierProfile }>({
   value: defaultSupplier.value!,
 })
 
-const selectedSuppliers = ref<{ label: string; value: SupplierProfile }[]>([selectedSupplier.value])
-
 const cpoList = ref<Cpo[]>([])
 const selectedCurrency = ref<{ label: string; value: CurrencyConfig } | undefined>(undefined)
 const defaultCurrency: CurrencyConfig = {
@@ -224,7 +217,26 @@ const defaultCurrency: CurrencyConfig = {
 }
 
 const isConfirmModalShow = ref(false)
+const openCutoffDateSelect = ref(false)
 const isProcessWithMockupDate = false
+
+// Store original date/time values for cancel functionality
+const originalCutOffDatetime = ref<CalendarDateTime | null>(null)
+
+// Helper function to restore original datetime values
+const restoreOriginalDateTime = () => {
+  if (originalCutOffDatetime.value) {
+    cutOffDatetime.value = new CalendarDateTime(
+      originalCutOffDatetime.value.year,
+      originalCutOffDatetime.value.month,
+      originalCutOffDatetime.value.day,
+      originalCutOffDatetime.value.hour,
+      originalCutOffDatetime.value.minute,
+      originalCutOffDatetime.value.second
+    )
+  }
+  originalCutOffDatetime.value = null
+}
 
 // Add currency options computed property
 const currencyOptions = computed(() =>
@@ -259,173 +271,13 @@ const setDefaultCurrency = () => {
   }
 }
 
-// Step 2 reconciliation
+// Auto-load all CPOs (no manual selection needed)
 const selectedCpo = ref<Cpo[]>([])
-const selectedCpoIds = ref<Set<string>>(new Set())
 
-// Add search functionality
-const searchQuery = ref('')
-
-// Add computed property for filtered CPO list
-const filteredCpoList = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return cpoList.value
-  }
-
-  const query = searchQuery.value.toLowerCase().trim()
-  return cpoList.value.filter(
-    (cpo) =>
-      cpo.code.toLowerCase().includes(query) ||
-      cpo.name.toLowerCase().includes(query) ||
-      cpo.email?.includes(query) ||
-      cpo.address?.includes(query)
-  )
-})
-
-// Add methods to handle selection
-const isRowSelected = (cpo: Cpo) => {
-  return selectedCpoIds.value.has(cpo.id)
-}
-
-const toggleRowSelection = (cpo: Cpo) => {
-  if (selectedCpoIds.value.has(cpo.id)) {
-    selectedCpoIds.value.delete(cpo.id)
-    selectedCpo.value = selectedCpo.value.filter((item) => item.id !== cpo.id)
-  } else {
-    selectedCpoIds.value.add(cpo.id)
-    selectedCpo.value.push(cpo)
-  }
-}
-
-const toggleAllSelection = (selectAll: boolean) => {
-  if (selectAll) {
-    selectedCpoIds.value = new Set(cpoList.value.map((cpo) => cpo.id))
-    selectedCpo.value = [...cpoList.value]
-  } else {
-    selectedCpoIds.value.clear()
-    selectedCpo.value = []
-  }
-}
-
-const isAllSelected = computed(() => {
-  return (
-    (cpoList.value.length || 0) > 0 && selectedCpoIds.value.size === (cpoList.value.length || 0)
-  )
-})
-
-const isSomeSelected = computed(() => {
-  return selectedCpoIds.value.size > 0 && selectedCpoIds.value.size < (cpoList.value.length || 0)
-})
-
-const columns: TableColumn<Cpo>[] = [
-  {
-    id: 'select',
-    header: () =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: isSomeSelected.value ? 'indeterminate' : isAllSelected.value,
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => toggleAllSelection(!!value),
-        'aria-label': 'Select all',
-      }),
-    cell: ({ row }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: isRowSelected(row.original),
-        'onUpdate:modelValue': () => toggleRowSelection(row.original),
-        'aria-label': 'Select row',
-      }),
-    enableSorting: false,
-    enableHiding: false,
-    // size: 40,
-    // maxSize: 40
-  },
-  // {
-  //   id: 'row_number',
-  //   header: () => '#',
-  //   cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
-  //   size: 30,
-  //   maxSize: 50,
-  //   enableSorting: false,
-  // },
-  // {
-  //   accessorKey: "parent_supplier.code",
-  //   header: () => t("settlement.generate.form.supplier_code"),
-  //   size: 120,
-  //   maxSize: 120,
-  // },
-  // {
-  //   accessorKey: "parent_supplier.name",
-  //   header: () => t("settlement.generate.form.supplier_name"),
-  //   size: 180,
-  //   maxSize: 200,
-  // },
-  {
-    accessorKey: 'code',
-    header: () => t('settlement.generate.form.biller_code'),
-    size: 120,
-    maxSize: 120,
-  },
-  {
-    accessorKey: 'name',
-    header: () => t('settlement.generate.form.biller_name'),
-    size: 200,
-    maxSize: 250,
-  },
-  {
-    accessorKey: 'type',
-    header: () => {
-      return t('settlement.generate.form.type')
-      // const isSorted = column.getIsSorted()
-
-      // return h(UButton, {
-      //   color: 'neutral',
-      //   variant: 'ghost',
-      //   label: t('settlement.generate.form.type'),
-      //   icon: isSorted
-      //     ? isSorted === 'asc'
-      //       ? 'i-solar:sort-from-top-to-bottom-bold'
-      //       : 'i-solar:sort-from-bottom-to-top-outline'
-      //     : 'i-lucide-arrow-up-down',
-      //   class: '-mx-2.5',
-      //   onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-      // })
-    },
-    size: 130,
-    maxSize: 130,
-    sortDescFirst: true,
-    sortingFn: (a, b) => {
-      const typeA = a.original.type
-      const typeB = b.original.type
-      if (typeA === 'CSMS') return -1 // CSMS first
-      if (typeB === 'CSMS') return 1 // CSMS first
-      if (typeA === 'CPO' && typeB === 'CSMS') return -1 // CPO before CSMS
-      if (typeB === 'CPO' && typeA === 'CSMS') return 1 // CPO before CSMS
-      return typeA.localeCompare(typeB) // Default alphabetical sorting
-    },
-  },
-  // {
-  //   accessorKey: 'email',
-  //   header: () => t('settlement.generate.form.email'),
-  //   size: 200,
-  //   maxSize: 250,
-  // },
-  // {
-  //   accessorKey: "address",
-  //   header: () => t("settlement.generate.form.address"),
-  //   size: 200,
-  //   maxSize: 300,
-  // },
-]
-
-const rowPinning = ref({
-  top: [],
-  bottom: [],
-})
-
-const sorting = ref([
-  {
-    id: 'type',
-    desc: false,
-  },
-])
+// Remove unused table configurations for sub biller selection
+// const columns: TableColumn<Cpo>[] = []
+// const rowPinning = ref({ top: [], bottom: [] })
+// const sorting = ref([{ id: 'type', desc: false }])
 
 const cpoSettlementColumns: TableColumn<Settlement>[] = [
   {
@@ -456,24 +308,7 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
       return cpo ? cpo.name : row.original.cpo.name
     },
   },
-  {
-    accessorKey: 'amount',
-    header: () => h('div', { class: 'text-right' }, t('settlement.generate.form.amount')),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        useCurrency().formatAmount(row.original.amount, row.original.currency || 'USD')
-      ),
-    size: 140,
-    maxSize: 140,
-  },
-  {
-    accessorKey: 'currency',
-    header: () => t('settlement.generate.form.currency'),
-    size: 80,
-    maxSize: 80,
-  },
+
   {
     accessorKey: 'settlement_bank_id',
     header: () => t('settlement.generate.form.settle_to_bank'),
@@ -488,6 +323,25 @@ const cpoSettlementColumns: TableColumn<Settlement>[] = [
       const transactions = row.original.transaction_allocations || []
       return transactions.length > 0 ? transactions.length : '-'
     },
+  },
+
+  {
+    accessorKey: 'currency',
+    header: () => t('settlement.generate.form.currency'),
+    size: 80,
+    maxSize: 80,
+  },
+  {
+    accessorKey: 'amount',
+    header: () => h('div', { class: 'text-right' }, t('settlement.generate.form.amount')),
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-right' },
+        useCurrency().formatAmount(row.original.amount, row.original.currency || 'USD')
+      ),
+    size: 140,
+    maxSize: 140,
   },
   {
     id: 'actions',
@@ -516,6 +370,28 @@ const tranDetailsSorting = ref([
   },
 ])
 
+const exportHeaders = computed(() =>
+  cpoSettlementTransactionColumns.filter((col) => col.id !== 'row_number').map((col) => ({
+    key: String(col.id || ''),
+    label:
+      typeof col.header === 'string'
+        ? col.header
+        : (col.id ? String(col.id) : '')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase()),
+  }))
+)
+
+const resolvedExportOptions = computed(() => ({
+  fileName: `transaction-history-${Date.now()}`,
+  title: `transaction-history-${Date.now()}`,
+  subtitle: '',
+  currency: selectedCpoSettlement.value?.currency,
+  startDate: '',
+  endDate: '',
+  totalAmount: selectedCpoSettlement.value?.amount || 0,
+}))
+
 const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
   {
     id: 'row_number',
@@ -527,6 +403,7 @@ const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
     enableSorting: false,
   },
   {
+    id: 'transaction_date',
     accessorKey: 'transaction_date',
     header: ({ column }) => createSortableHeader(column, t('settlement.generate.form.date')),
     size: 150,
@@ -540,6 +417,7 @@ const cpoSettlementTransactionColumns: TableColumn<TransactionAllocation>[] = [
     // sortDescFirst: true,
   },
   {
+    id: 'amount',
     accessorKey: 'amount',
     header: () => h('div', { class: 'text-right' }, t('settlement.generate.form.amount')),
     cell: ({ row }) =>
@@ -559,22 +437,6 @@ const stepper = ref<{
   hasNext?: boolean
   hasPrev?: boolean
 } | null>(null)
-const currentStepIndex = ref(0)
-
-// Computed property to validate if current step can proceed
-const canProceedToNext = computed(() => {
-  const currentStepTitle = items.value[currentStepIndex.value]?.title
-  // Check if can proceed to Reconcile
-  if (currentStepTitle === t('settlement.generate.steps.supplier.title')) {
-    return (
-      (selectedSuppliers.value.length || 0) > 0 &&
-      cutOffDatetime.value !== null &&
-      selectedCurrency.value !== undefined &&
-      (selectedCpo.value.length || 0) > 0
-    )
-  }
-  return true // Allow proceeding for other steps
-})
 const listInquirySettlement = ref<SettlementInquiryResponse>()
 const confirmSettlementResponse = ref<ConfirmSettlementResponse | null>(null)
 const selectedCpoSettlement = ref<Settlement | null>(null)
@@ -588,11 +450,15 @@ function handleViewCpo(cpo: Settlement) {
   selectedCpoSettlement.value = cpo
 }
 
-onMounted(() => {
+onMounted(async () => {
   // Set default currency based on user preferences
   setDefaultCurrency()
   // Auto-load CPOs with default supplier
-  handleSupplierMenuChanged()
+  await loadSubBillers()
+  // Auto-fetch inquiry settlement data after currency and CPOs are loaded
+  if (selectedCurrency.value && selectedCpo.value.length > 0) {
+    await fetchInquirySettlementCpo()
+  }
 })
 
 // Watch for currency options changes to set default currency
@@ -604,39 +470,25 @@ watch(
   { immediate: true }
 )
 
-// Remove supplier-related reactive variables
-// const supplierKeys = ref<Supplier[]>([])
-// const isLoadingSupplier = ref(false)
-// const selectedSuppliers = ref<{ label: string; value: Supplier }[]>([])
-// const selectedSupplier = ref<{ label: string; value: Supplier } | undefined>(undefined)
+// Watch for currency or cutoff date changes to auto-refresh settlement data
+watch(
+  selectedCurrency,
+  async () => {
+    if (selectedCurrency.value && cutOffDatetime.value && selectedCpo.value.length > 0) {
+      await fetchInquirySettlementCpo()
+    }
+  },
+  { deep: true }
+)
 
-// Remove supplier fetching logic
-// const fetchSuppliers = async () => {
-//   try {
-//     isLoadingSupplier.value = true
-//     supplierKeys.value = await supplierApi.getSuppliers()
-//     if (isProcessWithMockupDate) {
-//       // Simulate loading delay
-//       await new Promise((resolve) => setTimeout(resolve, 2000))
-//     }
-//     await new Promise((resolve) => setTimeout(resolve, 2000))
-//   } catch (error) {
-//     console.error('Failed to fetch suppliers:', error)
-//   } finally {
-//     isLoadingSupplier.value = false
-//   }
-// }
-
-// Update handleSupplierMenuChanged to work with default supplier
-const handleSupplierMenuChanged = async () => {
+// Update loadSubBillers to auto-load all CPOs
+const loadSubBillers = async () => {
   isLoadingCpoList.value = true
   // Reset CPO list and selection when suppliers change
   cpoList.value = []
   selectedCpo.value = []
-  selectedCpoIds.value.clear()
-  searchQuery.value = '' // Clear search when supplier changes
 
-  // Use default supplier instead of checking selectedSupplier
+  // Use default supplier to get all CPOs
   const result = await supplierApi.getListCPOApi({
     parent_supplier_ids: [selectedSupplier.value.value.id],
   })
@@ -644,14 +496,10 @@ const handleSupplierMenuChanged = async () => {
   // Prevent error if result is undefined
   if (result) {
     cpoList.value = result
+    // Auto-select all CPOs by default
+    selectedCpo.value = [...result]
   } else {
     cpoList.value = []
-  }
-
-  // Auto-select all CPOs by default
-  if ((cpoList.value.length || 0) > 0) {
-    toggleAllSelection(true)
-    selectedCpo.value = [...cpoList.value]
   }
 
   isLoadingCpoList.value = false
@@ -660,6 +508,7 @@ const handleSupplierMenuChanged = async () => {
 // Fetch inquiry settlement CPOs
 const fetchInquirySettlementCpo = async () => {
   try {
+    isLoadingInquiry.value = true
     const request: InitQuerySettlement = {
       parties:
         selectedCpo.value?.map((cpo) => ({
@@ -675,17 +524,12 @@ const fetchInquirySettlementCpo = async () => {
 
     const response = await supplierApi.getInquirySettlement(request)
     if (isProcessWithMockupDate) await new Promise((resolve) => setTimeout(resolve, 2000))
-    listInquirySettlement.value = response
+    listInquirySettlement.value = response || undefined
   } catch (error) {
     console.error('Failed to fetch CPOs:', error)
   } finally {
-    // Optionally handle loading state or errors
+    isLoadingInquiry.value = false
   }
-}
-
-const onReconciliationNext = async () => {
-  await fetchInquirySettlementCpo()
-  stepper.value?.next()
 }
 
 const router = useRouter()
@@ -723,23 +567,39 @@ const handleSubmitSettlement = async () => {
   }
 }
 
-// Clear reconciliation data when going back to supplier selection
-const clearReconciliationData = () => {
-  listInquirySettlement.value = undefined
-  selectedCpoSettlement.value = null
-  confirmSettlementResponse.value = null
-}
-
-// Handle back navigation from reconciliation step
-const handleBackToSupplierSelection = () => {
-  clearReconciliationData()
-  stepper.value?.prev()
-}
-
 // Get Cpo by cpo id
 const getCpoById = (cpoId: string): Cpo | undefined => {
   return cpoList.value.find((cpo) => cpo.id === cpoId)
 }
+
+// Handle cutoff date confirmation
+const onCutOffDateConfimed = async () => {
+  // Clear original value to indicate confirmation
+  originalCutOffDatetime.value = null
+  openCutoffDateSelect.value = false
+  // Auto-refresh settlement data when cutoff date is confirmed
+  if (selectedCurrency.value && cutOffDatetime.value && selectedCpo.value.length > 0) {
+    await fetchInquirySettlementCpo()
+  }
+}
+
+// Handle cutoff date cancellation - restore original values
+const onCutOffDateCancelled = () => {
+  restoreOriginalDateTime()
+  openCutoffDateSelect.value = false
+}
+
+// Watch for popup open/close to store/restore original values
+watch(openCutoffDateSelect, (isOpen, wasOpen) => {
+  if (isOpen && !wasOpen) {
+    // Store original value when popup opens
+    originalCutOffDatetime.value = cutOffDatetime.value
+  } else if (!isOpen && wasOpen && originalCutOffDatetime.value) {
+    // If popup closes and we still have an original value, it means the user
+    // didn't confirm the changes (clicked outside, pressed ESC, etc.)
+    restoreOriginalDateTime()
+  }
+})
 
 definePageMeta({
   auth: true,
@@ -749,38 +609,6 @@ definePageMeta({
     { label: 'generate_settlement', active: true },
   ],
 })
-
-// function useWindowSize(): { height: Ref<number> } {
-//   if (typeof window === 'undefined') {
-//     return { height: ref(0) } // Return 0 if not in browser context
-//   }
-//   const height = ref(window.innerHeight)
-
-//   const updateHeight = () => {
-//     height.value = window.innerHeight
-//   }
-
-//   onMounted(() => {
-//     window.addEventListener('resize', updateHeight)
-//     updateHeight()
-//   })
-
-//   onUnmounted(() => {
-//     window.removeEventListener('resize', updateHeight)
-//   })
-
-//   return { height }
-// }
-
-// function onCpoListTableSelect(row: TableRow<Cpo>, e?: Event) {
-//   row.toggleSelected(!row.getIsSelected())
-//   // Add row data to selectedCpo
-//   if (row.getIsSelected()) {
-//     selectedCpo.value.push(row.original)
-//   } else {
-//     selectedCpo.value = selectedCpo.value.filter(cpo => cpo.id !== row.original.id)
-//   }
-// }
 </script>
 <template>
   <div
@@ -790,18 +618,19 @@ definePageMeta({
       <template #content="{ item }">
         <div class="flex flex-col h-full gap-2">
           <div class="flex-1 h-full overflow-y-auto">
-            <!-- Step 1: Sub Biller Selection -->
-            <div v-if="item.value === 'Supplier'" class="flex h-full flex-col gap-4">
+            <!-- Step 1: Reconciliation with Cutoff Date and Currency Selection -->
+            <div v-if="item.value === 'Reconciliation'" class="flex flex-col h-full gap-4">
+              <!-- Cutoff Date and Currency Selection -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-shrink-0">
                 <!-- Cutoff Date -->
                 <div>
                   <h1 class="text-sm mb-2 font-semibold">
                     {{ t('settlement.generate.form.select_cutoff_date') }}
                   </h1>
-                  <UPopover class="w-full">
+                  <UPopover v-model:open="openCutoffDateSelect" class="w-full">
                     <UButton
                       color="neutral"
-                      variant="subtle"
+                      variant="outline"
                       icon="i-lucide-calendar"
                       size="sm"
                       class="w-full justify-start"
@@ -813,15 +642,15 @@ definePageMeta({
                       }}
                     </UButton>
                     <template #content>
-                      <div class="p-4 space-y-4">
-                        <UCalendar v-model="cutOffDatetime" />
-                        <div class="border-t pt-4">
+                      <div class="p-4 space-y-4 lg:min-w-96 sm:min-w-80">
+                        <UCalendar v-model="cutOffDatetime" :max-value="now" />
+                        <Divider />
+                        <div>
                           <label class="block text-sm font-semibold mb-2">
                             {{ t('settlement.generate.form.select_time') }}
                           </label>
                           <div class="flex gap-2">
                             <USelectMenu
-
                               v-model="cutOffDateHour"
                               :items="getHourOptions"
                               :placeholder="t('settlement.generate.form.hour')"
@@ -856,6 +685,21 @@ definePageMeta({
                             />
                           </div>
                         </div>
+                        <Divider />
+                        <!-- Action Buttons Footer -->
+                        <div class="flex justify-end gap-2">
+                          <UButton
+                            variant="outline"
+                            color="neutral"
+                            size="sm"
+                            @click="onCutOffDateCancelled"
+                          >
+                            {{ t('cancel') }}
+                          </UButton>
+                          <UButton size="sm" @click="onCutOffDateConfimed">
+                            {{ t('confirm') }}
+                          </UButton>
+                        </div>
                       </div>
                     </template>
                   </UPopover>
@@ -883,73 +727,77 @@ definePageMeta({
                   </USelectMenu>
                 </div>
               </div>
-              <!-- Cpo List Table -->
-              <div class="flex flex-col flex-1 min-h-0">
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center justify-between pl-2 mb-2 gap-4 flex-shrink-0"
-                >
-                  <div class="gap-2 flex items-center">
-                    <UChip :text="cpoList.length || 0" size="3xl">
-                      <UIcon
-                        name="material-symbols:group-outline-rounded"
-                        class="text-lg text-gray-600"
-                      />
-                    </UChip>
-                    <p class="text-sm font-bold">{{ t('settlement.generate.form.biller_list') }}</p>
-                  </div>
-                  <!--                  <h1 class="text-sm font-semibold flex-shrink-0">-->
-                  <!--                    {{ t('settlement.generate.form.biller_list') }} ({{-->
-                  <!--                      filteredCpoList.length || 0-->
-                  <!--                    }})-->
-                  <!--                    <span-->
-                  <!--                      v-if="searchQuery && (filteredCpoList.length || 0) !== (cpoList.length || 0)"-->
-                  <!--                      class="text-gray-500"-->
-                  <!--                    >-->
-                  <!--                      of {{ cpoList.length || 0 }}-->
-                  <!--                    </span>-->
-                  <!--                  </h1>-->
 
-                  <!-- Search Input -->
-                  <div class="w-full sm:w-64 flex-shrink-0">
-                    <UInput
-                      v-model="searchQuery"
-                      size="sm"
-                      icon="i-lucide-search"
-                      :placeholder="t('settlement.generate.form.search_biller')"
-                      class="w-full"
-                      :trailing="searchQuery ? true : false"
-                    >
-                      <template v-if="searchQuery" #trailing>
-                        <UButton
-                          icon="i-lucide-x"
-                          size="xs"
-                          color="gray"
-                          variant="ghost"
-                          @click="searchQuery = ''"
-                        />
-                      </template>
-                    </UInput>
-                  </div>
+              <!-- Load Settlement Button or Auto-loading indicator -->
+              <div class="flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-3">
+                  <h3 class="text-sm font-semibold">
+                    {{ t('settlement.generate.steps.reconciliation.title') }}
+                  </h3>
+                  <UButton
+                    v-if="selectedCurrency && cutOffDatetime"
+                    size="sm"
+                    color="primary"
+                    variant="outline"
+                    icon="material-symbols:sync"
+                    :loading="!listInquirySettlement"
+                    @click="fetchInquirySettlementCpo"
+                  >
+                    {{ t('settlement.refresh') }}
+                  </UButton>
                 </div>
-
-                <!-- Table Container with proper responsive overflow handling -->
+              </div>
+              <!-- Summary -->
+               <CardsSummaryCards
+               :cards="[
+                  {
+                    title: t('settlement.generate.form.total_biller'),
+                    values: [
+                      {
+                        value: listInquirySettlement?.settlements?.length || 0,
+                      },
+                    ],
+                    dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
+                    filterLabel: ''
+                  },
+                  {
+                    title: t('settlement.generate.form.total_transactions'),
+                    values: [
+                      {
+                        value: listInquirySettlement?.settlements?.reduce((acc, curr) => acc + (curr.transaction_allocations?.length || 0), 0) || 0,
+                      },
+                    ],
+                    dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
+                    filterLabel: ''
+                  },
+                  {
+                    title: t('settlement.generate.form.total_amount'),
+                    values: [
+                      {
+                        value: listInquirySettlement?.settlements?.reduce((acc, curr) => acc + (curr.amount || 0), 0) || 0,
+                        currency: selectedCurrency?.value.code || defaultCurrency.code,
+                      },
+                    ],
+                    dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
+                    filterLabel: ''
+                  },
+               ]" />
+              <!-- Settlement List and Transaction Details -->
+              <div class="flex flex-1 sm:flex-col lg:flex-row gap-6 min-h-0">
+                <!-- Master Table -->
                 <div
-                  class="flex-1 min-h-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg"
+                  class="flex-2 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
                 >
-                  <div class="h-full overflow-y-hidden">
+                  <div class="h-full overflow-auto">
                     <UTable
                       ref="table"
-                      v-model:sorting="sorting"
-                      v-model:row-pinning="rowPinning"
-                      :data="filteredCpoList"
-                      :columns="columns"
-                      :loading="isLoadingCpoList"
-                      :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
-                      :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
+                      :loading="isLoadingInquiry"
+                      :data="listInquirySettlement?.settlements || []"
+                      :columns="cpoSettlementColumns"
                       :ui="appConfig.ui.table.slots"
                       sticky
                       class="min-w-[800px] w-full"
-                      @row:click="(row: Cpo) => toggleRowSelection(row)"
+                      @row:click="handleRowClick"
                     >
                       <template #empty>
                         <EmptyState />
@@ -957,95 +805,76 @@ definePageMeta({
                     </UTable>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <!-- Step 2: Reconciliation -->
-            <div
-              v-if="item.value === 'Reconciliation'"
-              class="flex sm:flex-col lg:flex-row gap-6 h-[calc(100vh-260px)]"
-            >
-              <!-- Master Table -->
-              <div
-                class="flex-2 overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
-              >
-                <div class="overflow-x-auto h-full">
-                  <UTable
-                    ref="table"
-                    :data="listInquirySettlement?.settlements || []"
-                    :columns="cpoSettlementColumns"
-                    :ui="appConfig.ui.table.slots"
-                    sticky
-                    class="min-w-[800px] w-full h-full"
-                    @row:click="handleRowClick"
-                  >
-                    <template #empty>
-                      <EmptyState />
-                    </template>
-                  </UTable>
-                </div>
-              </div>
-
-              <!-- Detail Table -->
-              <Transition
-                name="slide-left"
-                enter-active-class="transition-all duration-300 ease-out"
-                leave-active-class="transition-all duration-300 ease-in"
-                enter-from-class="transform translate-x-full opacity-0"
-                enter-to-class="transform translate-x-0 opacity-100"
-                leave-from-class="transform translate-x-0 opacity-100"
-                leave-to-class="transform translate-x-full opacity-0"
-                class="flex flex-col flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
-              >
-                <div
-                  v-if="
-                    selectedCpoSettlement?.transaction_allocations &&
-                    (selectedCpoSettlement.transaction_allocations.length || 0) > 0
-                  "
+                <!-- Detail Table -->
+                <Transition
+                  name="slide-left"
+                  enter-active-class="transition-all duration-300 ease-out"
+                  leave-active-class="transition-all duration-300 ease-in"
+                  enter-from-class="transform translate-x-full opacity-0"
+                  enter-to-class="transform translate-x-0 opacity-100"
+                  leave-from-class="transform translate-x-0 opacity-100"
+                  leave-to-class="transform translate-x-full opacity-0"
+                  class="flex flex-col flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-h-0"
                 >
-                  <!-- Fixed Header -->
-                  <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
-                    <div class="flex justify-between items-center">
-                      <h3 class="text-lg font-semibold">
-                        {{ t('settlement.generate.form.transaction_history') }}
-                      </h3>
-                      <UButton
-                        icon="i-lucide-x"
-                        size="xs"
-                        color="gray"
-                        variant="ghost"
-                        class="hover:bg-gray-100 transition-colors duration-200"
-                        @click="selectedCpoSettlement = null"
+                  <div
+                    v-if="
+                      selectedCpoSettlement?.transaction_allocations &&
+                      (selectedCpoSettlement.transaction_allocations.length || 0) > 0
+                    "
+                    class="flex flex-col h-full min-h-0 max-h-full"
+                  >
+                    <!-- Fixed Header -->
+                    <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+                      <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">
+                          {{ t('settlement.generate.form.transaction_history') }}
+                        </h3>
+                        <div class="flex gap-4">
+                          <ButtonsExportButton 
+                            :data="selectedCpoSettlement.transaction_allocations"
+                            :headers="exportHeaders"
+                            :export-options="resolvedExportOptions"
+                          />
+                          <UButton
+                          icon="i-lucide-x"
+                          size="xs"
+                          color="gray"
+                          variant="ghost"
+                          class="hover:bg-gray-100 transition-colors duration-200"
+                          @click="selectedCpoSettlement = null"
+                        />
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Scrollable Table Container -->
+                    <UTable
+                      ref="table"
+                      v-model:sorting="tranDetailsSorting"
+                      :data="selectedCpoSettlement.transaction_allocations"
+                      :columns="cpoSettlementTransactionColumns"
+                      :ui="appConfig.ui.table.slots"
+                      sticky
+                      class="flex h-80 w-full animate-fade-in min-h-0 overflow-auto"
+                    />
+
+                    <!-- Fixed Footer -->
+                    <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
+                      <SumTranDataUnderTable
+                        :total-transactions="
+                          selectedCpoSettlement.transaction_allocations?.length || 0
+                        "
+                        :amount="selectedCpoSettlement.amount"
+                        :currency="selectedCpoSettlement.currency"
                       />
                     </div>
                   </div>
-
-                  <!-- Scrollable Table Container -->
-                  <UTable
-                    ref="table"
-                    v-model:sorting="tranDetailsSorting"
-                    :data="selectedCpoSettlement.transaction_allocations"
-                    :columns="cpoSettlementTransactionColumns"
-                    :ui="appConfig.ui.table.slots"
-                    sticky
-                    class="w-full animate-fade-in flex-1 min-h-0 overflow-auto"
-                  />
-
-                  <!-- Fixed Footer -->
-                  <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
-                    <SumTranDataUnderTable
-                      :total-transactions="
-                        selectedCpoSettlement.transaction_allocations?.length || 0
-                      "
-                      :amount="selectedCpoSettlement.amount"
-                      :currency="selectedCpoSettlement.currency"
-                    />
-                  </div>
-                </div>
-              </Transition>
+                </Transition>
+              </div>
             </div>
 
-            <!-- Step 3: Settlement Request Success -->
+            <!-- Step 2: Settlement Request Success -->
             <div
               v-if="item.value === 'Confirmation'"
               class="flex flex-1 items-center justify-center h-full"
@@ -1069,49 +898,26 @@ definePageMeta({
             </div>
           </div>
           <!-- Navigation Buttons -->
-          <div
-            class="flex-shrink-0 flex flex-row items-center"
-            :class="item.value === 'Supplier' ? 'justify-between' : 'justify-end'"
-          >
-            <div v-if="item.value === 'Supplier'">
-              <p class="text-sm text-gray-500">
-                {{ selectedCpo.length || 0 }} of {{ cpoList.length || 0 }} {{ t('row_selected') }}
-              </p>
-            </div>
+          <div class="flex-shrink-0 flex flex-row items-center justify-end">
             <div class="flex flex-col sm:flex-row justify-end gap-3">
               <UButton
                 v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
-                :disabled="!stepper?.hasPrev"
-                @click="handleBackToSupplierSelection"
+                :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
+                loading-auto
+                @click="isConfirmModalShow = true"
               >
-                {{ t('settlement.generate.form.back') }}
+                {{ t('settlement.generate.form.confirm_settlement') }}
               </UButton>
 
-              <UButton
-                v-if="item.title === t('settlement.generate.steps.supplier.title')"
-                :disabled="!stepper?.hasNext || !canProceedToNext"
-                loading-auto
-                @click="onReconciliationNext"
-              >
-                {{ t('settlement.generate.form.reconcile_settle') }}
-              </UButton>
               <!-- Show confirm modal to confirm settlement -->
               <UModal
-                v-if="
-                  item.title === t('settlement.generate.steps.reconciliation.title') //&& showConfirmModal
-                "
+                v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
                 transition
                 :open="isConfirmModalShow"
                 :close="false"
                 :title="t('settlement.generate.form.confirm_settlement_title')"
                 :body="t('settlement.generate.form.confirm_settlement_body')"
               >
-                <UButton
-                  :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
-                  :label="t('settlement.generate.form.confirm_settlement')"
-                  @click="isConfirmModalShow = true"
-                />
-
                 <template #body>
                   <div class="flex flex-col items-center text-center py-6">
                     <!-- Icon with circle background using Bill24 colors -->

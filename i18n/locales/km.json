@@ -1,6 +1,8 @@
 {
   "yes": "បាទ",
   "no": "ទេ",
+  "close": "បិទ",
+  "seconds": "វិនាទី",
   "yes_logout": "បាទ, ចាកចេញ",
   "hello": "សួស្តី",
   "cancel": "បោះបង់",
@@ -280,6 +282,9 @@
     "default_currency": "រូបិយប័ណ្ណលំនាំដើម",
     "default_page_size": "ចំនួនធាតុក្នុងទំព័រលំនាំដើម",
     "default_page_size_description": "កំណត់ចំនួនធាតុលំនាំដើមដែលត្រូវបង្ហាញក្នុងមួយទំព័រនៃតារាង",
+    "auto_refresh_interval": "ចន្លោះពេលធ្វើបច្ចុប្បន្នភាពស្វ័យប្រវត្តិ",
+    "auto_refresh_interval_description": "កំណត់ចន្លោះពេល (គិតជាវិនាទី) សម្រាប់ការធ្វើបច្ចុប្បន្នភាពទិន្នន័យដោយស្វ័យប្រវត្តិ។ ជួរ: ៣០-៣០០ វិនាទី។",
+    "seconds": "វិនាទី",
     "preview": "មើលជាមុន",
     "preview_date": "កាលបរិច្ឆេទ:",
     "preview_time": "ម៉ោង:",
@@ -351,7 +356,7 @@
   "bank_name": "ឈ្មោះធនាគារ",
   "search_by_settler": "ស្វែងរកតាមអ្នកទូទាត់...",
   "pick_a_date": "ជ្រើសរើសកាលបរិច្ឆេទ",
-  "generate_settlement": "បង្កើតការទូទាត់",
+  "generate_settlement": "បង្កើត",
   "export": "ទាញយក",
   "of": "ពី",
   "row_selected": "ជួរដេកបានជ្រើស",
@@ -412,10 +417,12 @@
     }
   },
   "settlement": {
+    "no_transaction_allocations": "គ្មានការបែងចែកប្រតិបត្តិការ",
     "settlement_details_description": "ព័ត៌មានលម្អិតនៃការទូទាត់",
     "refresh": "ធ្វើឲ្យថ្មី",
     "auto_refresh": "ធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិ",
-    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិរៀងរាល់ 30 វិនាទី។",
+    "auto_refresh_desc": "ធ្វើឲ្យប្រវត្តិការទូទាត់ថ្មីដោយស្វ័យប្រវត្តិតាមចន្លោះពេលដែលបានកំណត់។",
+    "auto_refresh_disabled_long_range": "ការធ្វើឲ្យថ្មីដោយស្វ័យប្រវត្តិត្រូវបានបិទសម្រាប់ជួរកាលបរិច្ឆេទលើសពី 7 ថ្ងៃ ដើម្បីកែលម្អដំណើរការ។",
     "transaction": "ប្រតិបត្តិការ",
     "title": "ការទូទាត់",
     "settlement_list": "បញ្ជីការទូទាត់",
@@ -480,6 +487,7 @@
       },
       "form": {
         "type": "ប្រភេទ",
+        "total_biller": "ចំនួនម្ចាស់អាជីវកម្មរង",
         "total_transactions": "ប្រតិបត្តិការសរុប",
         "no_cpo_settlement_title": "មិនមាន CPO",
         "no_cpo_settlement_message": "មិនមាន CPO សម្រាប់ការទូទាត់។",
@@ -599,16 +607,20 @@
     "currency_id": {
       "USD": "USD - ដុល្លារអាមេរិក",
       "KHR": "KHR - រៀលកម្ពុជា"
+    },
+    "tranType": {
+      "wallet_payment": "បង់ប្រាក់ពីកាបូប",
+      "wallet_topup": "បញ្ចូលប្រាក់ពីកាបូប"
     }
   },
   "table": {
     "wallet-transactions-table": {
       "columns": {
-        "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ",
         "wallet_type": "ប្រភេទកាបូប",
         "transaction_type": "ប្រភេទប្រតិបត្តិការ",
         "status": "ស្ថានភាព",
-        "amount": "ចំនួន",
+        "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
         "currency_id": "រូបិយប័ណ្ណ",
         "fee_amount": "ចំនួនថ្លៃកក់",
         "net_amount": "ចំនួនសុទ្ធ",
@@ -617,7 +629,10 @@
         "merchant": "អ្នកលក់",
         "channel": "បណ្តាញ",
         "customer_name": "ឈ្មោះអតិថិជន",
-        "action": "សកម្មភាព"
+        "action": "សកម្មភាព",
+        "currency":"រូបិយប័ណ្ណ",
+        "tranType": "ប្រភេទប្រតិបត្តិការ"
+
       }
     },
     "more_options": "ជម្រើសផ្សេងទៀត",
@@ -631,6 +646,7 @@
     "column_config": {
       "tooltip": "លាក់/បង្ហាញជួរឈរ",
       "reset": "កំណត់ឡើងវិញ",
+      "apply": "អនុវត្ត",
       "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
       "columns": "ជួរឈរ"
     },
@@ -668,17 +684,20 @@
     },
     "transactions-history-table": {
       "columns": {
-        "collection_bank": "ធនាគារប្រមូលប្រាក់",
-        "settlement_bank": "ធនាគារទូទាត់",
-        "settlement_type": "ប្រភេទទូទាត់",
-        "transaction_type": "ប្រភេទប្រតិបត្តិការ",
-        "currency_id": "រូបិយប័ណ្ណ",
+        "collectionBank": "ធនាគារប្រមូលប្រាក់",
+        "settlementBank": "ធនាគារទូទាត់",
+        "settlementType": "ប្រភេទទូទាត់",
+        "transactionType": "ប្រភេទប្រតិបត្តិការ",
+        "currency": "រូបិយប័ណ្ណ",
         "status": "ស្ថានភាព",
-        "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
-        "bank_ref": "លេខយោងធនាគារ",
-        "sub_biller": "ម្ចាស់អាជីវកម្មរង",
-        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
-        "total_customer": "ចំនួនអតិថិជន"
+        "date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "bankReference": "លេខយោងធនាគារ",
+        "subBiller": "ម្ចាស់អាជីវកម្មរង",
+        "totalAmount": "ចំនួនទឹកប្រាក់",
+        "numberOfCustomer": "ចំនួនអតិថិជន",
+        "totalCustomer": "ចំនួនអតិថិជន",
+        "subSupplier": "ម្ចាស់អាជីវកម្មរង",
+        "transactionAmount": "ចំនួនទឹកប្រាក់"
       }
     }
   },
@@ -872,6 +891,7 @@
     "active_banks": "ធនាគារសកម្ម",
     "inactive_banks": "ធនាគារអសកម្ម",
     "swift_code": "លេខកូដ SWIFT",
+    "default_account": "គណនីចម្បង",
     "description": "ការពិពណ៌នា",
     "country_code": "ប្រទេស",
     "currency_code": "រូបិយប័ណ្ណ",

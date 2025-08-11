@@ -509,6 +509,21 @@ const valueClass = 'text-sm font-bold'
           </div>
         </div>
       </template>
+
+      <template #close>
+        <div class="flex justify-end w-52">
+          <UTooltip :text="t('close')" :kbds="['esc']">
+            <UButton variant="ghost">
+              <UIcon
+              name="material-symbols:close"
+              size="20"
+              class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              @click="closeSlideover"
+            />
+            </UButton>
+          </UTooltip>
+        </div>
+      </template>
     </USlideover>
     <!-- <template #footer>
       <div v-if="false" class="flex items-center gap-4">

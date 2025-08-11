@@ -1,8 +1,8 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { SubBillerListResponse, WalletListResponse } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
-import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 import type { TransactionListResponse } from '~/models/transaction'
+import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 
 import type {
   FeeSummaryResponse,
@@ -146,13 +146,13 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
     console.log('Fetching settlement wallet transactions with params:', params)
     const url = `/api/pgw-module/walletmgnt/settlement/transactions`
 
-    // return await executeV2(() =>
-    //   $fetch(url, {
-    //     method: 'GET',
-    //     onResponseError() {},
-    //     query: params
-    //   })
-    // )
+    return await executeV2(() =>
+      $fetch(url, {
+        method: 'GET',
+        onResponseError() {},
+        query: params
+      })
+    )
   }
 
   /**
@@ -163,13 +163,13 @@ const getSubBillerWalletList = async (subBillerSupplierId: string) => {
   
     const url = `/api/pgw-module/walletmgnt/top-up/transactions`
 
-    // return await executeV2(() =>
-    //   $fetch(url, {
-    //     method: 'GET',
-    //     onResponseError() {},
-    //     query: params
-    //   })
-    // )
+    return await executeV2(() =>
+      $fetch(url, {
+        method: 'GET',
+        onResponseError() {},
+        query: params
+      })
+    )
   }
   // const getTopUpWalletTransactions = async (params?: QueryParams) => {
   //   // Convert params object to URLSearchParams

@@ -2,6 +2,7 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { Bank } from '~/models/bank'
 import type { SettlementHistoryRecord } from '~/models/settlement'
+import type { TransactionModel } from '~~/server/model/pgw_module_api/transactions/transaction'
 
 export type BaseTableColumn<T> = TableColumn<T> & {
   id: string // ✅ Make `id` required
@@ -45,3 +46,5 @@ export interface SettlementHistoryTableFetchResult extends TableFetchResult<Sett
 }
 
 export type BankListTableFetchResult = TableFetchResult<Bank[]>
+
+export type TransactionListTableFetchResult = TableFetchResult<TransactionModel[]>

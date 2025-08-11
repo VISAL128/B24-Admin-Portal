@@ -1,6 +1,8 @@
 import { ColumnType } from '@/utils/enumModel'
 import { format } from 'date-fns/format'
 import { useCurrency } from '~/composables/utils/useCurrency'
+import { useFormat  } from '~/composables/utils/useFormat'
+import type {FormatOptions} from '~/composables/utils/useFormat';
 // import { useI18n } from 'vue-i18n'
 
 // Helper to support nested accessors like "supplier.code"
@@ -191,6 +193,25 @@ export function formatColumnValue(
     case ColumnType.Text:
     default:
       return String(value)
+  }
+}
+
+export const formatDateForBackendRequest = (dateStr: string, formatStr: string = 'dd/MM/yyyy') => {
+  try {
+    // Create Date object from input
+    const date = new Date(dateStr);
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid date provided to formatDateForBackendRequest:", dateStr);
+      return typeof dateStr === "string" ? dateStr : "-";
+    }
+
+    // Format as dd/MM/yyyy
+    return format(date, formatStr);
+  } catch (error) {
+    console.error("Error formatting date:", error, "Input:", dateStr);
+    return '-';
   }
 }
 
