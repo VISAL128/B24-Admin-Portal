@@ -542,6 +542,7 @@
           show-row-number
           show-date-filter
           search-tooltip="Search transactions"
+          date-format="dd/MM/yyyy"
           @row-click="handleViewDetails"
         />
       </div>
@@ -843,9 +844,11 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
     enableColumnFilter: true,
     filterType: 'select',
     filterOptions: [
-      { label: t('completed'), value: t('completed') },
-      { label: t('pending'), value: t('pending') },
-      { label: t('failed'), value: t('failed') },
+      { label: t('status.success'), value: 'success' },
+      { label: t('status.pending'), value: 'pending'},
+      { label: t('status.failed'), value: 'failed' },
+      { label: t('status.cancel'), value: 'cancel' },
+      { label: t('status.error'), value: 'error' },
     ],
     enableSorting: true
   }
