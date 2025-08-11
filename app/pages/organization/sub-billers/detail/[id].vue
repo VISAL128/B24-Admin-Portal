@@ -193,14 +193,14 @@
                 :style="{ backgroundImage: `url('${supplierBackgroundImage}')` }"
               >
                 <div
-                  class="absolute inset-0 backdrop-blur-xs bg-black/20 dark:bg-black/40 w-full h-full pointer-events-none z-0"
+                  class="absolute inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40 w-full h-full pointer-events-none z-0"
                 ></div>
 
                 <!-- TOP-RIGHT EDIT BUTTON (global) -->
                 <div class="absolute top-2 right-2 z-30">
                   <button
                     @click="openEditModal"
-                    class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white/90 bg-white/10 hover:bg-white/20 backdrop-blur px-3 py-1.5 rounded-full border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    class="inline-flex items-center m-1 gap-2 px-3 py-2 text-xs font-medium text-white/90 bg-white/10 hover:bg-white/20 backdrop-blur px-3 py-1.5 rounded-full border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
                     :aria-label="t('edit')"
                   >
                     <UIcon name="i-heroicons-pencil-square-20-solid" class="w-4 h-4" />
