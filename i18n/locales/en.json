@@ -90,6 +90,10 @@
     "tranType": {
       "wallet_payment": "Payment",
       "wallet_topup": "Top Up"
+    },
+    "currencyId": {
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
     }
   },
   "table": {
@@ -175,7 +179,8 @@
         "customerName":"Customer Name",
         "actions":"Actions",
         "currencyId": "Currency",
-        "tranType": "Transaction Type"
+        "tranType": "Transaction Type",
+        "bankRefId": "Bank Reference ID"
       }
     },
     "wallet-transactions-table-settlement_wallet":{
@@ -212,7 +217,8 @@
     "error": "Error",
     "processing": "Processing",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "cancel": "Cancel"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",

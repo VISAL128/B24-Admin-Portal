@@ -82,7 +82,8 @@
     "error": "កំហុស",
     "processing": "កំពុងដំណើរការ",
     "yes": "បាទ",
-    "no": "ទេ"
+    "no": "ទេ",
+    "cancel": "បោះបង់"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
@@ -631,8 +632,8 @@
         "customerName": "ឈ្មោះអតិថិជន",
         "action": "សកម្មភាព",
         "currencyId":"រូបិយប័ណ្ណ",
-        "tranType": "ប្រភេទប្រតិបត្តិការ"
-
+        "tranType": "ប្រភេទប្រតិបត្តិការ",
+        "bankRefId": "លេខយោងធនាគារ"
       }
     },
     "wallet-transactions-table-settlement_wallet": {
