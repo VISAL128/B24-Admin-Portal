@@ -1,20 +1,20 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Info Banner -->
-    <InfoBanner 
-      v-show="!isTableFullscreen" 
-      :title="t('pages.transaction.tip')" 
-      :message="t('pages.transaction.tip_message')" 
+    <InfoBanner
+      v-show="!isTableFullscreen"
+      :title="t('pages.transaction.tip')"
+      :message="t('pages.transaction.tip_message')"
     />
     <!-- Transaction Summary Cards -->
-    <SummaryCards 
-      v-show="!isTableFullscreen" 
-      :cards="summarys" 
-      :is-loading="isLoading" 
-      :skeleton-count="skeletonCount" 
+    <SummaryCards
+      v-show="!isTableFullscreen"
+      :cards="summarys"
+      :is-loading="isLoading"
+      :skeleton-count="skeletonCount"
     />
     <TablesExTable
-    ref="table"
+      ref="table"
       :columns="columns"
       :table-id="TABLE_ID"
       :fetch-data-fn="fetchTransactionHistory"
@@ -25,18 +25,14 @@
       @row-click="handleViewDetails"
       @fullscreen-toggle="handleFullscreenToggle"
     >
-    <template #trailingHeader>
-      <!-- Repush Button - Only show when rows are selected -->
-      <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
-          <UButton 
-            variant="outline"
-            size="sm"
-            @click="handleRepush()"> 
+      <template #trailingHeader>
+        <!-- Repush Button - Only show when rows are selected -->
+        <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
+          <UButton variant="outline" size="sm" @click="handleRepush()">
             {{ t('pages.transaction.repush') }} ({{ selectedRows.length }})
             <template #trailing>
               <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
             </template>
-            
           </UButton>
         </UTooltip>
 
@@ -54,8 +50,7 @@
             <span v-if="modelValue" v-html="modelValue.label" />
           </template>
         </USelectMenu> -->
-
-    </template>
+      </template>
     </TablesExTable>
   </div>
 </template>
@@ -103,10 +98,10 @@ const showInfoBanner = ref(true)
 
 // Handle Repush Transaction
 const handleRepush = () => {
-    notification.showWarning({
-      title: t('pages.transaction.info'),
-      description: t('pages.transaction.info_des'),
-    })
+  notification.showWarning({
+    title: t('pages.transaction.info'),
+    description: t('pages.transaction.info_des'),
+  })
 }
 
 const transactionSummary = ref<TransactionSummaryModel | null>(null)
@@ -150,10 +145,9 @@ const fetchTransactionSummary = async () => {
 }
 
 onMounted(async () => {
-  // Fetch transaction summary 
+  // Fetch transaction summary
   await fetchTransactionSummary()
 })
-
 
 // Fetch function for TablesExTable following sub-billers structure
 // const fetchTransactionList = async (params?: QueryParams): Promise<{
@@ -672,6 +666,5 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     size: 50,
     maxSize: 150,
   },
- 
 ]
 </script>

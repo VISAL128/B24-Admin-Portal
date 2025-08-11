@@ -1,6 +1,6 @@
 {
   "cSpell.words": ["heroicons", "topup", "vueuse", "លេខគណនីត្រូវបានចម្លងទៅក្ដារឈូស"],
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "eslint.validate": ["javascript", "typescript", "vue"],
   "editor.codeActionsOnSave": {
