@@ -1,4 +1,11 @@
-export type PeriodType = 'today' | 'week' | 'month' | 'year' | 'custom'
+import { PeriodType } from "~/utils/enumModel"
+
+
+export interface SummaryParams {
+  PeriodType?: PeriodType | number
+  FromDate?: string // DD/MM/YYYY
+  ToDate?: string   // DD/MM/YYYY
+}
 
 export interface SummaryValue {
   value: number

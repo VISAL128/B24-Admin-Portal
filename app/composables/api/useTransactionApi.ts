@@ -19,40 +19,24 @@ export const useTransactionApi = () => {
     )
   }
 
+  
+
   /**
    * Get paginated transaction list from transaction API
    */
-  // const getTransactionList = async (query?: QueryParams): Promise<ApiResponse<TransactionModel[]>> => {
-  //   console.log('Fetching transactions with query:', query)
-  //   return await execute<TransactionModel[]>(() =>
-  //     $fetch<ApiResponse<TransactionModel[]>>(`/api/pgw-module/transaction/list/v2`, {
-  //       method: 'GET',
-  //       query
-  //     })
-  //   )
-  // }
+  const getTransactionList = async (query?: QueryParams) => {
+    console.log('Fetching transactions with query:', query)
+    const rep = await executeV2(() =>
+      $fetch<TransactionListResponse>(`/api/pgw-module/transaction/list/v2`, {
+        method: 'GET',
+        query
+      })
+    )
+    return rep
+  }
 
-    // const getTransactionList = async (query?: QueryParams) => {
-    //   console.log('Fetching transactions with query:', query)
-    //   const rep = await executeV2(() =>
-    //     $fetch<TransactionListResponse>(`/api/pgw-module/transaction/list/v2`, {
-    //       method: 'GET'
-    //     })
-    //   )
-    //   return rep
-    // }
 
-      const getTransactionList = async (query?: QueryParams) => {
-        console.log('Fetching transactions with query:', query)
-        const rep = await executeV2(() =>
-          $fetch<TransactionListResponse>(`/api/pgw-module/transaction/list/v2`, {
-            method: 'GET',
-            query
-          })
-        )
-        return rep
-      }
-  
+
 
   
 

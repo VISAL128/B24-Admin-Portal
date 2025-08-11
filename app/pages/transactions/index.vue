@@ -19,6 +19,7 @@
       :table-id="TABLE_ID"
       :fetch-data-fn="fetchTransactionHistory"
       show-row-number
+      date-format="dd/MM/yyyy" 
       show-date-filter
       enabled-auto-refresh
       enabled-repush
@@ -35,22 +36,7 @@
             </template>
           </UButton>
         </UTooltip>
-
-        <!-- <USelectMenu
-          v-model="selectedDateFilter"
-          :items="dateOptions"
-          class="w-auto min-w-[200px]"
-          :search-input="false"
-          @update:model-value="onDateFilterChange"
-        >
-          <template #item="{ item }">
-            <span v-html="item.label" />
-          </template>
-          <template #default="{ modelValue }">
-            <span v-if="modelValue" v-html="modelValue.label" />
-          </template>
-        </USelectMenu> -->
-      </template>
+    </template>
     </TablesExTable>
   </div>
 </template>
@@ -215,6 +201,7 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
   total_page: number
 } | null> => {
   try {
+    // params.filter
     const response = await getTransactionList(params)
     console.log('Fetched transactions:', response)
     return {
@@ -289,11 +276,6 @@ const TABLE_ID = 'transaction-history-table'
 //   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
 // })
 
-// // Initial load handled in the main onMounted above
-
-// const onGenerateSettlement = () => {
-//   router.push('/digital-wallet/settlement/generate')
-// }
 
 // Handle navigation to details page
 const navigateToDetails = (rowId: string) => {
