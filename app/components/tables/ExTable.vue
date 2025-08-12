@@ -46,112 +46,105 @@
             </UTooltip>
             <template #content>
               <div
-                class="rounded-lg shadow-md overflow-hidden py-2 min-w-[200px] space-y-4 min-h-48 max-h-96"
+                class="rounded-lg shadow-md py-2 min-w-[260px] w-[320px] max-h-[70vh] flex flex-col"
               >
-                <!-- Column Filters -->
-                <div class="space-y-2 flex flex-col min-h-48 h-full">
-                  <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">
-                    {{ t('table.filters') }}
-                  </h4>
+                 <!-- Column Filters -->
+                 <div class="space-y-2 flex flex-col min-h-48 h-full">
+                   <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">
+                     {{ t('table.filters') }}
+                   </h4>
                   <div class="flex flex-col flex-1 gap-2">
-                    <Divider />
-                    <div class="px-2 flex flex-col flex-1 min-h-0">
-                      <template v-for="col in filteredColumns" :key="col.id">
-                        <template v-if="col.enableColumnFilter">
-                          <div class="space-y-1">
-                            <!-- Filter Label -->
-                            <label
-                              :for="`filter-${col.id}`"
-                              class="text-xs font-medium text-gray-700 dark:text-gray-300"
-                            >
-                              {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
-                            </label>
-
-                            <template v-if="'filterType' in col && col.filterType === 'status'">
-                              <StatusSelection
-                                :id="`filter-${col.id}`"
-                                :model-value="selectedStatuses"
-                                :multiple="true"
-                                :available-statuses="[
-                                  'all',
-                                  ...(getColumnFilterOptions(col).map((status) =>
-                                    status.value.toString()
-                                  ) || []),
-                                ]"
-                                :include-all-statuses="false"
-                                :placeholder="t('settlement.select_status')"
-                                :searchable="false"
-                                @update:model-value="
-                                  (val) => {
-                                    val = val as { label: string; value: string }[]
-                                    selectedStatuses = val
-                                    emit('filter-change', col.id, val.map((s) => s.value).join(','))
-                                  }
-                                "
-                              />
-                            </template>
-                            <template v-else>
-                              <USelectMenu
-                                :id="`filter-${col.id}`"
-                                :model-value="{
-                                  label: columnFilters[col.id]
-                                    ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
-                                    : t('all'),
-                                  value: columnFilters[col.id] || '',
-                                }"
-                                :default-value="{ label: t('all'), value: '' }"
-                                :items="[
-                                  { label: t('all'), value: '' },
-                                  ...getColumnFilterOptions(col),
-                                ]"
-                                option-attribute="label"
-                                value-attribute="value"
-                                size="sm"
-                                class="w-full"
-                                :search-input="false"
-                                @update:model-value="
-                                  (val) => {
-                                    columnFilters[col.id] = String(val?.value || '')
-                                    emit('filter-change', col.id, columnFilters[col.id] || '')
-                                  }
-                                "
-                              />
-                            </template>
-                          </div>
-                        </template>
-                      </template>
-                    </div>
-                    <Divider />
-                  </div>
-                  <div class="flex flex-wrap justify-between px-2">
-                    <UButton
-                      variant="link"
-                      size="xs"
-                      color="neutral"
-                      class="underline"
-                      :ui="{
-                        ...appConfig.ui.button.slots,
-                        leadingIcon: 'shrink-0 size-3 text-muted',
-                      }"
-                      @click="() => resetColumnFilters()"
-                    >
-                      <template #default>
-                        {{ t('table.column_config.reset') }}
-                      </template>
-                    </UButton>
-                    <UButton
-                      size="sm"
-                      :ui="appConfig.ui.button.slots"
-                      @click="onApplyColumnFilters"
-                    >
-                      <template #default>
-                        {{ t('table.column_config.apply') }}
-                      </template>
-                    </UButton>
-                  </div>
-                </div>
-              </div>
-            </template>
+                     <Divider />
+                    <div class="px-2 flex flex-col flex-1 min-h-0 overflow-y-auto pr-1">
+                       <template v-for="col in filteredColumns" :key="col.id">
+                         <template v-if="col.enableColumnFilter">
+                           <div class="space-y-1">
+                             <!-- Filter Label -->
+                             <label 
+                               :for="`filter-${col.id}`" 
+                               class="text-xs font-medium text-gray-700 dark:text-gray-300"
+                             >
+                               {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
+                             </label>
+                             
+                             <template v-if="'filterType' in col && col.filterType === 'status'">
+                               <StatusSelection
+                                 :id="`filter-${col.id}`"
+                                 :model-value="selectedStatuses"
+                                 :multiple="true"
+                                 :available-statuses="['all' , ...getColumnFilterOptions(col).map((status) => status.value.toString()) || []]"
+                                 :include-all-statuses="false"
+                                 :placeholder="t('settlement.select_status')"
+                                 :searchable="false"
+                                 @update:model-value="(val) => {
+                                   val = val as { label: string; value: string }[]
+                                   selectedStatuses = val
+                                   emit('filter-change', col.id, val.map((s) => s.value).join(','))
+                                 }"
+                               />
+                             </template>
+                             <template v-else>
+                               <USelectMenu
+                                 :id="`filter-${col.id}`"
+                                 :model-value="{
+                                   label: columnFilters[col.id]
+                                     ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
+                                     : t('all'),
+                                   value: columnFilters[col.id] || '',
+                                 }"
+                                 :default-value="{ label: t('all'), value: '' }"
+                                 :items="[
+                                   { label: t('all'), value: '' },
+                                   ...getColumnFilterOptions(col),
+                                 ]"
+                                 option-attribute="label"
+                                 value-attribute="value"
+                                 size="sm"
+                                 class="w-full"
+                                 :search-input="false"
+                                 @update:model-value="
+                                   (val) => {
+                                     columnFilters[col.id] = String(val?.value || '')
+                                     emit('filter-change', col.id, columnFilters[col.id] || '')
+                                   }
+                                 "
+                               />
+                             </template>
+                           </div>
+                         </template>
+                       </template>
+                     </div>
+                     <Divider />
+                   </div>
+                  <div class="flex flex-wrap justify-between px-2 sticky bottom-0 bg-default pt-2 border-t border-gray-200 dark:border-gray-700">
+                     <UButton
+                       variant="link"
+                       size="xs"
+                       color="neutral"
+                       class="underline"
+                       :ui="{
+                         ...appConfig.ui.button.slots,
+                         leadingIcon: 'shrink-0 size-3 text-muted',
+                       }"
+                       @click="() => resetColumnFilters()"
+                     >
+                       <template #default>
+                         {{ t('table.column_config.reset') }}
+                       </template>
+                     </UButton>
+                     <UButton
+                       size="sm"
+                       :ui="appConfig.ui.button.slots"
+                       @click="onApplyColumnFilters"
+                     >
+                       <template #default>
+                         {{ t('table.column_config.apply') }}
+                       </template>
+                     </UButton>
+                   </div>
+                 </div>
+               </div>
+             </template>
           </UPopover>
           <!-- Auto Refresh -->
           <div v-if="props.enabledAutoRefresh" class="flex items-center gap-1">
@@ -303,7 +296,7 @@
 
     <!-- 📋 Main Table -->
     <UTable
-      :key="props.tableId"
+      :key="tableKey"
       ref="tableRef"
       v-model:sorting="sorting"
       :data="filteredData"
@@ -501,22 +494,19 @@ const columnConfig = computed(() => {
       id: col.id,
       getCanHide: () => col.enableHiding !== false,
       toggleVisibility: (visible: boolean) => {
-        // Update table API if available
-        const tableApi = tableRef?.value?.tableApi
-        if (tableApi && col.id) {
-          try {
-            const column = tableApi.getColumn(col.id)
-            if (column && column.getCanHide()) {
-              column.toggleVisibility(visible)
-            }
-          } catch (error) {
-            // Column might not exist in table API if it was previously hidden
-            // This is expected behavior - we'll rely on our columnVisibility state
-            if (import.meta.env.DEV) {
-              console.log(`📊 Column '${col.id}' not found in table API (likely hidden):`, error)
-            }
-          }
+        // Update our reactive state first
+        if (col.id) {
+          columnVisibility.value[col.id] = visible
         }
+
+        // Force table to rebuild by updating the key
+        nextTick(() => {
+          // The table will rebuild automatically due to filteredColumns computed dependency
+          // on columnVisibility.value
+          if (import.meta.env.DEV) {
+            console.log(`📊 Column visibility changed for '${col.id}': ${visible}`)
+          }
+        })
       },
     }))
 
@@ -600,6 +590,16 @@ const internalTotal = ref(0)
 const internalTotalPage = ref(0)
 const loading = ref(false)
 
+// Table key to force rebuild when needed
+const tableKey = computed(() => {
+  // Include column visibility in the key to force table rebuild
+  const visibilityHash = Object.entries(columnVisibility.value)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}:${value}`)
+    .join('|')
+  return `${props.tableId}-${visibilityHash}`
+})
+
 // Use internal data if no data prop is provided
 const tableData = computed(() => internalData.value)
 
@@ -648,13 +648,6 @@ const fetchData = async (refresh = false) => {
         field: sort.id,
         direction: sort.desc ? 'desc' : ('asc' as 'desc' | 'asc'),
       })) || []
-
-    // sorts.push(
-    //   {
-    //     field: 'created_at',
-    //     direction: 'desc' // Default sort by created_at
-    //   }
-    // )
 
     // Convert to direct sorting string
     let sortingStr = ''
@@ -922,8 +915,11 @@ const handlePageChange = async (val: number) => {
 }
 
 const filteredColumns = computed(() => {
-  // Force reactivity by accessing sorting state
-  const columns = columnsWithRowNumber.value
+  // Force reactivity by accessing columnVisibility state
+  const _ = columnVisibility.value
+
+  // Create a fresh copy of columns to avoid mutation issues
+  const columns = columnsWithRowNumber.value.map((col) => ({ ...col }))
 
   columns.forEach((col) => {
     if (
@@ -963,6 +959,7 @@ const filteredColumns = computed(() => {
     //   }
     // }
   })
+
   // Use columnVisibility ref directly instead of relying on table API
   const visibleColumnIds = Object.entries(columnVisibility.value)
     .filter(([_, isVisible]) => isVisible)
@@ -1145,32 +1142,13 @@ onMounted(() => {
   mounted.value = true
 })
 
-// Watch for table API column visibility changes and sync back to our ref
+// Watch for table API changes but don't sync column visibility
+// as we manage it through our reactive state
 watch(
   () => tableRef?.value?.tableApi,
   (tableApi) => {
-    if (tableApi) {
-      // Set up a listener for column visibility changes from the table API
-      nextTick(() => {
-        // Sync our localStorage state to the table API when it becomes available
-        Object.entries(columnVisibility.value).forEach(([columnId, isVisible]) => {
-          try {
-            const column = tableApi.getColumn(columnId)
-            if (column && column.getCanHide()) {
-              column.toggleVisibility(isVisible)
-            }
-          } catch (error) {
-            // Column might not exist in table API if it was previously hidden
-            // This is expected behavior when reopening with hidden columns
-            if (import.meta.env.DEV) {
-              console.log(
-                `📊 Column '${columnId}' not found in table API during sync (likely hidden):`,
-                error
-              )
-            }
-          }
-        })
-      })
+    if (tableApi && import.meta.env.DEV) {
+      console.log('📊 Table API available for table:', props.tableId)
     }
   },
   { immediate: true }
@@ -1238,9 +1216,12 @@ watch(modelValue, (val) => {
 })
 
 const onResetColumnVisibility = () => {
-  // Reset table API columns
-  tableRef?.value?.tableApi?.resetColumnVisibility()
+  // Reset to default visibility state
   columnVisibility.value = { ...defaultColumnVisibility.value }
+
+  if (import.meta.env.DEV) {
+    console.log('📊 Reset column visibility to defaults:', columnVisibility.value)
+  }
 }
 
 const resetColumnFilters = () => {

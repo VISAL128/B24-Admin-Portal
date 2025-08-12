@@ -7,7 +7,7 @@ services:
     #   dockerfile: Dockerfile
     #   no_cache: true
     restart: always
-    image: registry.bill24.io/b24/admin-portal:beta-1.0.11
+    image: registry.bill24.io/b24/admin-portal:beta-1.0.13
     ports:
       - '21018:3000'
     # env_file:
@@ -24,5 +24,5 @@ services:
       - NUXT_MANAGEMENT_API_URL=https://managementapi-staging.bill24.io
       - NUXT_PGW_MODULE_API_URL=http://172.16.81.141:22043
       - NUXT_SECURITY_API_URL=https://staging.bill24.io:22030
-      - NUXT_PUBLIC_APP_VERSION=1.0.11
+      - NUXT_PUBLIC_APP_VERSION=1.0.13
       - NUXT_PUBLIC_USER_PROFILE_URL=https://ids.oone.bz/realms/EP-Staging-ids/account

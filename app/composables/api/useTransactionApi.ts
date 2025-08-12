@@ -10,11 +10,24 @@ export const useTransactionApi = () => {
   /**
    * Get transaction summary from transaction API
    */
-  const getTransactionSummary = async (query?: { FromDate?: string; ToDate?: string; PeriodType?: number }) => {
+  const getTransactionSummary = async (
+    query?: { FromDate?: string; ToDate?: string; PeriodType?: number },
+    locale?: string
+  ) => {
+    const headers: Record<string, string> = {}
+    
+    // Map locale to Accept-Language header
+    if (locale) {
+      // Convert 'km' to 'km-KH' and 'en' to 'en-US' format
+      const acceptLanguage = locale === 'km' ? 'km-KH' : locale === 'en' ? 'en-US' : locale
+      headers['Accept-Language'] = acceptLanguage
+    }
+
     return await executeV2(() =>
       $fetch<TransactionSummaryModel>(`/api/pgw-module/transaction/summary`, {
         method: 'GET',
         query,
+        headers,
         onResponseError() {},
       })
     )

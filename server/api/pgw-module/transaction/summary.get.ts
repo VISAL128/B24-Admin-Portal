@@ -14,10 +14,21 @@ export default defineEventHandler(async (event) => {
     const qs = urlParams.toString()
     const endpoint = `/transaction/summary${qs ? `?${qs}` : ''}`
 
+    // Get Accept-Language header from the client request
+    const acceptLanguage = getHeader(event, 'accept-language')
+    const headers: Record<string, string> = {}
+    
+    // Forward Accept-Language header if provided
+    if (acceptLanguage) {
+      headers['Accept-Language'] = acceptLanguage
+    }
+
     const response = await requestToPgwModuleApi(
       event,
       endpoint,
-      'GET'
+      'GET',
+      undefined,
+      headers
     )
     return response
   } catch (error: any) {

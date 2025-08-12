@@ -603,7 +603,10 @@
       "failed": "បរាជ័យ",
       "success": "ជោគជ័យ",
       "error": "កំហុស",
-      "processing": "កំពុងដំណើរការ"
+      "processing": "កំពុងដំណើរការ",
+      "cancel": "បានលុបចោល",
+      "expire": "ផុតកំណត់",
+      "reversed": "បានបង់ត្រឡប់វិញ"
     },
     "active": {
       "1": "សកម្ម",
@@ -619,6 +622,24 @@
     }
   },
   "table": {
+      "transaction-history-table": {
+      "columns": {
+        "collectionBank": "ធនាគារប្រមូលប្រាក់",
+        "settlementBank": "ធនាគារទូទាត់",
+        "settlementType": "ប្រភេទទូទាត់",
+        "transactionType": "ប្រភេទប្រតិបត្តិការ",
+        "currency": "រូបិយប័ណ្ណ",
+        "status": "ស្ថានភាព",
+        "date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+        "bankReference": "លេខយោងធនាគារ",
+        "subBiller": "ម្ចាស់អាជីវកម្ម",
+        "subSupplier": "ម្ចាស់អាជីវកម្ម",
+        "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
+        "totalCustomer": "ចំនួនអតិថិជនសរុប",
+        "numberOfCustomer": "ចំនួនអតិថិជន",
+        "transactionAmount": "ចំនួនទឹកប្រាក់ប្រតិបត្តិការ"
+      }
+    },
     "wallet-transactions-table-top_up_wallet": {
       "columns": {
         "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ",
@@ -919,12 +940,30 @@
       "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
       "total_customer": "ចំនួនអតិថិជន",
       "bank_ref": "លេខយោងធនាគារ",
+      "collection_bank": "ធនាគារប្រមូលប្រាក់",
+      "settlement_bank": "ធនាគារទូទាត់",
+      "settlement_type": "ប្រភេទទូទាត់",
+      "transaction_type": "ប្រភេទប្រតិបត្តិការ",
+      "sub_biller": "ម្ចាស់អាជីវកម្មរង",
+      "status": "ស្ថានភាព",
+      "currency": "រូបិយប័ណ្ណ",
       "repush": "បញ្ជូនម្តងទៀត",
       "repush_description": "បញ្ជូនប្រតិបត្តិការទៅកាន់ម្ចាស់អាជីវកម្ម",
       "info": "បញ្ជាក់",
       "info_des": "សូមជ្រើសរើសប្រតិបត្តិការដែលលោកអ្នកចង់បញ្ជូន",
       "tip": "គន្លិះ",
-      "tip_message": "អនុវត្តតម្រងដើម្បីឆ្លុះបញ្ចាំងពីការផ្លាស់ប្តូរទាំងនៅក្នុងសេចក្តីសង្ខេបប្រតិបត្តិការ និងប្រតិបត្តិការ"
+      "tip_message": "អនុវត្តតម្រងដើម្បីឆ្លុះបញ្ចាំងពីការផ្លាស់ប្តូរទាំងនៅក្នុងសេចក្តីសង្ខេបប្រតិបត្តិការ និងប្រតិបត្តិការ",
+      "summary": {
+        "total_transaction": "ប្រតិបត្តិការសរុប",
+        "total_amount": "ចំនួនទឹកប្រាក់សរុប",
+        "total_settlement": "ចំនួនទឹកប្រាក់ទូទាត់សរុប",
+        "success_transaction": "ប្រតិបត្តិការជោគជ័យ",
+        "failed_transaction": "ប្រតិបត្តិការបរាជ័យ",
+        "pending_transaction": "ប្រតិបត្តិការរង់ចាំ",
+        "cancel_transaction": "ប្រតិបត្តិការបានលុបចោល",
+        "total_customer": "ចំនួនអតិថិជនសរុប",
+        "average_amount": "ចំនួនទឹកប្រាក់មធ្យម"
+      }
     }
   },
   "banks": {
