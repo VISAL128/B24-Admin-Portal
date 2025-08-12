@@ -30,24 +30,6 @@
             <div class="font-medium text-primary">{{ $t('settings.title') }}</div>
             <div class="text-sm text-gray-600">{{ $t('index.settings_desc') }}</div>
           </NuxtLink>
-          <NuxtLink
-            v-if="isDevelopment"
-            to="/organization/banks/68c4db96-0fa2-45de-8141-5b63f0ff6799"
-            class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-[#EAF6FC] dark:hover:bg-gray-500 transition-colors"
-          >
-            <div class="font-medium text-primary">{{ $t('view_transaction_details') }}</div>
-            <div class="text-sm text-gray-600">{{ $t('index.view_transaction_details_desc') }}</div>
-          </NuxtLink>
-          <!-- <button
-            @click="openTransactionDrawer"
-            class="block p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-[#EAF6FC] dark:hover:bg-gray-500 transition-colors w-full text-left"
-            @click="openTransactionDrawer"
-          >
-            <div class="font-medium text-primary">View Transaction Details</div>
-            <div class="text-sm text-gray-600">
-              Click to View Transaction Details Sideover ID X001
-            </div>
-          </button> -->
         </div>
       </UCard>
 
@@ -76,7 +58,6 @@ import { useAuth } from '~/composables/useAuth'
 
 const { t } = useI18n()
 const { user } = useAuth()
-const isDevelopment = process.env.NODE_ENV === 'development'
 
 // const showTransactionDrawer = ref(false)
 // const selectedTransactionId = ref('X001')

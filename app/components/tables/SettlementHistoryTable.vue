@@ -354,7 +354,17 @@ const valueClass = 'text-sm font-bold'
   >
     <template #header>
       <div class="flex flex-row items-center w-full justify-between">
-        <p class="text-md font-bold">{{ $t('settlement.settlement_list') }}</p>
+        <div class="flex items-center">
+          <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+            <UIcon
+              name="material-symbols:patient-list-outline-rounded"
+              class="w-4 h-4 text-primary"
+            />
+          </div>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ $t('settlement.settlement_list') }}
+          </h3>
+        </div>
         <ExSearch
           v-model="settlementHistoryQuery.search"
           :placeholder="$t('settlement.search_placeholder')"
