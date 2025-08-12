@@ -77,7 +77,8 @@
       "failed": "Failed",
       "success": "Success",
       "error": "Error",
-      "processing": "Processing"
+      "processing": "Processing",
+      "reversed": "Reversed"
     },
     "active": {
       "1": "Active",

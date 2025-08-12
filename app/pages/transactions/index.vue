@@ -67,7 +67,7 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import type { QueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import { TransactionType } from '~/utils/enumModel'
+import { TransactionStatus, TransactionType } from '~/utils/enumModel'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 
 // Helper function to get the enum key from enum value
@@ -189,7 +189,11 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
   total_page: number
 } | null> => {
   try {
-    const response = await getTransactionList(params)
+    const response = await getTransactionList({
+      ...params,
+      statuses: params?.statuses || [], // Pass statuses as array like settlement page
+      filters: params?.filters || [], // Ensure filters is always an array
+    })
     console.log('Fetched transactions:', response)
     return {
       data: response.results || [],
@@ -218,55 +222,20 @@ const notification = useNotification()
 
 const TABLE_ID = 'transaction-history-table'
 
-// // Date range for filtering (still needed for manual date selection)
-// const startDate = ref('')
-// const endDate = ref('')
-// const errorMsg = ref('')
-
-// const df = new DateFormatter('en-US', { dateStyle: 'medium' })
-// const today = new Date()
-// const modelValue = shallowRef({
-//   start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-//   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-// })
-
-// const userPreference = useUserPreferences().getPreferences()
-// const selectedDateFilter = ref({
-//   label: t('this_month'),
-//   value: 'this_month',
-// })
-
-// // ...existing code for watchers, functions, etc...
-// // Note: TablesExTable handles data fetching automatically, no manual watchers needed
-
-// const onDateFilterChange = (payload: { label: string; value: string }) => {
-//   if (!payload?.value) return
-//   const value = payload.value
-//   switch (value) {
-//     case 'today':
-//     case 'this_week':
-//     case 'this_month':
-//     case 'this_year':
-//       // your existing logic here...
-//       break
-//   }
-// }
-
-// onBeforeMount(() => {
-//   // Get last day of current month
-//   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
-//   // Set default date range to current month
-//   startDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1).toString()
-//   endDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth).toString()
-//   modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-//   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
-// })
-
-
-// Handle navigation to details page
+// Restore navigation helper for details page
 const navigateToDetails = (rowId: string) => {
   router.push(`/transactions/detail/${rowId}`)
 }
+
+// Build status filter options from enum
+const statusLabel = (s: string) => {
+  const key = `status.${s}`
+  const translated = t(key)
+  return translated !== key ? translated : s.charAt(0).toUpperCase() + s.slice(1)
+}
+const transactionStatusFilterOptions = computed(() =>
+  Object.values(TransactionStatus).map((s) => ({ label: statusLabel(s), value: s }))
+)
 
 const exportHeaders = [
   { key: 'currency_id', label: t('settlement.currency') },
@@ -600,12 +569,8 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
         size: 'sm',
       }),
     enableColumnFilter: true,
-    filterType: 'select',
-    filterOptions: [
-      { label: t('completed'), value: t('completed') },
-      { label: t('pending'), value: t('pending') },
-      { label: t('failed'), value: t('failed') },
-    ],
+    filterType: 'status',
+    filterOptions: transactionStatusFilterOptions.value,
   },
   {
     id: 'currency',
