@@ -46,108 +46,118 @@
             </UTooltip>
             <template #content>
               <div
-                class="rounded-lg shadow-md overflow-hidden py-2 min-w-[200px] space-y-4 min-h-48 max-h-96"
+                class="rounded-lg shadow-md overflow-hidden py-2 min-w-[200px] space-y-4 min-h-40 max-h-96"
               >
                 <!-- Column Filters -->
-                <div class="space-y-2 flex flex-col min-h-48 h-full">
-                  <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">
-                    {{ t('table.filters') }}
-                  </h4>
-                  <div class="flex flex-col flex-1 gap-2">
+                <div class="space-y-2 flex flex-col justify-between min-h-40 h-full">
+                  <div class="space-y-2">
+                    <h4
+                      class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white"
+                    >
+                      {{ t('table.filters') }}
+                    </h4>
                     <Divider />
-                    <div class="px-2 flex flex-col flex-1 min-h-0">
-                      <template v-for="col in filteredColumns" :key="col.id">
-                        <template v-if="col.enableColumnFilter">
-                          <div class="space-y-1">
-                            <!-- Filter Label -->
-                            <label
-                              :for="`filter-${col.id}`"
-                              class="text-xs font-medium text-gray-700 dark:text-gray-300"
-                            >
-                              {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
-                            </label>
+                    <div class="flex flex-col max-h-72 overflow-auto gap-2">
+                      <div class="px-2 flex flex-col flex-1 min-h-0">
+                        <template v-for="col in filteredColumns" :key="col.id">
+                          <template v-if="col.enableColumnFilter">
+                            <div class="space-y-1">
+                              <!-- Filter Label -->
+                              <label
+                                :for="`filter-${col.id}`"
+                                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+                              >
+                                {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
+                              </label>
 
-                            <template v-if="'filterType' in col && col.filterType === 'status'">
-                              <StatusSelection
-                                :id="`filter-${col.id}`"
-                                :model-value="selectedStatuses"
-                                :multiple="true"
-                                :available-statuses="[
-                                  'all',
-                                  ...(getColumnFilterOptions(col).map((status) =>
-                                    status.value.toString()
-                                  ) || []),
-                                ]"
-                                :include-all-statuses="false"
-                                :placeholder="t('settlement.select_status')"
-                                :searchable="false"
-                                @update:model-value="
-                                  (val) => {
-                                    val = val as { label: string; value: string }[]
-                                    selectedStatuses = val
-                                    emit('filter-change', col.id, val.map((s) => s.value).join(','))
-                                  }
-                                "
-                              />
-                            </template>
-                            <template v-else>
-                              <USelectMenu
-                                :id="`filter-${col.id}`"
-                                :model-value="{
-                                  label: columnFilters[col.id]
-                                    ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
-                                    : t('all'),
-                                  value: columnFilters[col.id] || '',
-                                }"
-                                :default-value="{ label: t('all'), value: '' }"
-                                :items="[
-                                  { label: t('all'), value: '' },
-                                  ...getColumnFilterOptions(col),
-                                ]"
-                                option-attribute="label"
-                                value-attribute="value"
-                                size="sm"
-                                class="w-full"
-                                :search-input="false"
-                                @update:model-value="
-                                  (val) => {
-                                    columnFilters[col.id] = String(val?.value || '')
-                                    emit('filter-change', col.id, columnFilters[col.id] || '')
-                                  }
-                                "
-                              />
-                            </template>
-                          </div>
+                              <template v-if="'filterType' in col && col.filterType === 'status'">
+                                <StatusSelection
+                                  :id="`filter-${col.id}`"
+                                  :model-value="selectedStatuses"
+                                  :multiple="true"
+                                  :available-statuses="[
+                                    'all',
+                                    ...(getColumnFilterOptions(col).map((status) =>
+                                      status.value.toString()
+                                    ) || []),
+                                  ]"
+                                  :include-all-statuses="false"
+                                  :placeholder="t('settlement.select_status')"
+                                  :searchable="false"
+                                  @update:model-value="
+                                    (val) => {
+                                      val = val as { label: string; value: string }[]
+                                      selectedStatuses = val
+                                      emit(
+                                        'filter-change',
+                                        col.id,
+                                        val.map((s) => s.value).join(',')
+                                      )
+                                    }
+                                  "
+                                />
+                              </template>
+                              <template v-else>
+                                <USelectMenu
+                                  :id="`filter-${col.id}`"
+                                  :model-value="{
+                                    label: columnFilters[col.id]
+                                      ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
+                                      : t('all'),
+                                    value: columnFilters[col.id] || '',
+                                  }"
+                                  :default-value="{ label: t('all'), value: '' }"
+                                  :items="[
+                                    { label: t('all'), value: '' },
+                                    ...getColumnFilterOptions(col),
+                                  ]"
+                                  option-attribute="label"
+                                  value-attribute="value"
+                                  size="sm"
+                                  class="w-full"
+                                  :search-input="false"
+                                  @update:model-value="
+                                    (val) => {
+                                      columnFilters[col.id] = String(val?.value || '')
+                                      emit('filter-change', col.id, columnFilters[col.id] || '')
+                                    }
+                                  "
+                                />
+                              </template>
+                            </div>
+                          </template>
                         </template>
-                      </template>
+                      </div>
                     </div>
-                    <Divider />
                   </div>
-                  <div class="flex flex-wrap justify-between px-2">
-                    <UButton
-                      variant="link"
-                      size="xs"
-                      color="neutral"
-                      class="underline"
-                      :ui="{
-                        ...appConfig.ui.button.slots,
-                        leadingIcon: 'shrink-0 size-3 text-muted',
-                      }"
-                      @click="() => resetColumnFilters()"
-                    >
-                      <template #default>
-                        {{ t('table.column_config.reset') }}
-                      </template>
-                    </UButton>
-                    <UButton
-                      size="sm"
-                      :ui="appConfig.ui.button.slots"
-                      @click="onApplyColumnFilters"
-                    >
-                      <template #default>
-                        {{ t('table.column_config.apply') }}
-                      </template>
-                    </UButton>
+                  <div class="space-y-2">
+                    <Divider />
+                    <div class="flex flex-wrap justify-between px-2">
+                      <UButton
+                        variant="link"
+                        size="xs"
+                        color="neutral"
+                        class="underline"
+                        :ui="{
+                          ...appConfig.ui.button.slots,
+                          leadingIcon: 'shrink-0 size-3 text-muted',
+                        }"
+                        @click="() => resetColumnFilters()"
+                      >
+                        <template #default>
+                          {{ t('table.column_config.reset') }}
+                        </template>
+                      </UButton>
+                      <UButton
+                        size="sm"
+                        :ui="appConfig.ui.button.slots"
+                        @click="onApplyColumnFilters"
+                      >
+                        <template #default>
+                          {{ t('table.column_config.apply') }}
+                        </template>
+                      </UButton>
+                    </div>
                   </div>
                 </div>
               </div>
