@@ -98,7 +98,22 @@ const transactionSummary = ref<TransactionSummaryModel | null>(null)
 
 // Reactive computed property that updates when transactionSummary changes
 const summarys = computed(() => {
-  return transactionSummary.value?.summarys || []
+  const rawSummary = transactionSummary.value?.summarys || []
+  
+  // Manual mapping for summary card titles with translations
+  const titleMapping: Record<string, string> = {
+    'Total Transaction': t('pages.transaction.summary.total_transaction'),
+    'Total Amount': t('pages.transaction.summary.total_amount'), 
+    'Failed Transactions': t('pages.transaction.summary.failed_transaction'),
+    'Total Settlement': t('pages.transaction.summary.total_settlement'),
+    // Add more mappings as needed
+  }
+  
+  // Map the summary data with translated titles
+  return rawSummary.map((summary: any) => ({
+    ...summary,
+    title: titleMapping[summary.title] || summary.title // Use mapped translation or fallback to original
+  }))
 })
 
 // Dynamic skeleton count based on expected number of summary cards
@@ -152,7 +167,7 @@ const toYMD = (dateStr?: string): string | undefined => {
 const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: string; PeriodType?: number }) => {
   try {
     isLoading.value = true
-    const response = await getTransactionSummary(params)
+    const response = await getTransactionSummary(params, locale.value)
     transactionSummary.value = response
     isLoading.value = false
     console.log('✅ Frontend: Transaction summary loaded successfully')

@@ -920,12 +920,30 @@
       "created_date": "Transaction Date",
       "total_customer": "Total Customer",
       "bank_ref": "Bank Reference",
+      "collection_bank": "Collection Bank",
+      "settlement_bank": "Settlement Bank",
+      "settlement_type": "Settlement Type",
+      "transaction_type": "Transaction Type",
+      "sub_biller": "Sub Biller",
+      "status": "Status",
+      "currency": "Currency",
       "repush": "Repush",
       "repush_description": "Repush Transaction to Biller",
       "info": "Confirmation",
       "info_des": "Please select transaction before repush",
       "tip": "Tip",
-      "tip_message": "Apply filters to reflect changes in both the Transaction Summary and the Transaction."
+      "tip_message": "Apply filters to reflect changes in both the Transaction Summary and the Transaction.",
+      "summary": {
+        "total_transaction": "Total Transaction",
+        "total_settlement": "Total Settlement Amount",
+        "total_amount": "Total Amount",
+        "success_transaction": "Successful Transactions",
+        "failed_transaction": "Failed Transactions",
+        "pending_transaction": "Pending Transactions",
+        "cancel_transaction": "Cancelled Transactions",
+        "total_customer": "Total Customers",
+        "average_amount": "Average Amount"
+      }
     }
   },
   "banks": {

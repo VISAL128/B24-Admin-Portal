@@ -43,7 +43,8 @@ export async function requestToPgwModuleApi<T>(
   event: H3Event,
   endpoint: string,
   method: string = 'POST',
-  body?: unknown
+  body?: unknown,
+  additionalHeaders?: Record<string, string>
 ): Promise<T> {
   try {
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
@@ -87,6 +88,7 @@ export async function requestToPgwModuleApi<T>(
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${event.context.auth?.token || ''}`,
+        ...additionalHeaders, // Merge additional headers (like Accept-Language)
       },
       signal: AbortSignal.timeout(30000),
     }
