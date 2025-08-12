@@ -78,7 +78,17 @@
       "success": "Success",
       "error": "Error",
       "processing": "Processing",
-      "reversed": "Reversed"
+      "reversed": "Reversed",
+      "cancel": "Cancel",
+      "expire": "Expired"
+    },
+    "settlementType": {
+      "HUB": "HUB",
+      "DIRECT": "DIRECT"
+    },
+    "currency": {
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
     },
     "active": {
       "1": "Active",
@@ -245,7 +255,9 @@
     "processing": "Processing",
     "yes": "Yes",
     "no": "No",
-    "cancel": "Cancel"
+    "cancel": "Cancelled",
+    "expire": "Expired",
+    "reversed": "Reversed"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",

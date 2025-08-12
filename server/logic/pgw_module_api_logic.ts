@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import type { QueryParams } from '~/models/baseModel'
+import type { QueryParams, TransactionQueryParams } from '~/models/baseModel'
 import { mapQueryParamsToPgwModule, serializePgwModuleParams } from '../utils/queryParamsMapper'
 
 // export async function requestToPgwModuleApi<T>(
@@ -44,42 +44,96 @@ export async function requestToPgwModuleApi<T>(
   endpoint: string,
   method: string = 'POST',
   body?: unknown,
-  additionalHeaders?: Record<string, string>
+  additionalHeaders?: Record<string, string>,
+  useRawQueryParams: boolean = false
 ): Promise<T> {
   try {
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
-    const query = getQuery<QueryParams>(event)
+    const query = getQuery<QueryParams | TransactionQueryParams>(event)
     
-    // Check if the query is type of QueryParams for GET requests
-    const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query && method === 'GET'
-
-    // Only use QueryParams mapping for GET list requests
-    if (isQueryParams) {
-      const pgwParams = mapQueryParamsToPgwModule(query)
-      const serializedParams = serializePgwModuleParams(pgwParams)
+    // Check if we should use raw query params (for endpoints like transaction list with Statuses)
+    if (useRawQueryParams && method === 'GET') {
+      // Hybrid approach: Use QueryParams mapping for standard params + raw handling for special params
+      const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query
       
-      // Convert serialized params to URL query string
-      const urlParams = new URLSearchParams()
-      for (const [key, value] of Object.entries(serializedParams)) {
-        if (value !== undefined && value !== null && value !== '') {
+      let finalParams = new URLSearchParams()
+      
+      if (isQueryParams) {
+        // First, process standard QueryParams (pagination, filters, sorting)
+        const pgwParams = mapQueryParamsToPgwModule(query as QueryParams)
+        const serializedParams = serializePgwModuleParams(pgwParams)
+        
+        // Add standard parameters
+        for (const [key, value] of Object.entries(serializedParams)) {
+          if (value !== undefined && value !== null && value !== '') {
+            if (Array.isArray(value)) {
+              finalParams.append(key, JSON.stringify(value))
+            } else {
+              finalParams.append(key, String(value))
+            }
+          }
+        }
+        
+        console.log('Processed standard QueryParams:', serializedParams)
+      }
+      
+      // Then, add raw query params for special transaction parameters (Statuses, Types)
+      const specialParams = ['Statuses', 'Types']
+      for (const [key, value] of Object.entries(query)) {
+        if (specialParams.includes(key) && value !== undefined && value !== null && value !== '') {
           if (Array.isArray(value)) {
-            urlParams.append(key, JSON.stringify(value))
+            // For arrays (like Statuses, Types), add each item as a separate parameter
+            value.forEach(item => {
+              if (item !== undefined && item !== null && item !== '') {
+                finalParams.append(key, String(item))
+              }
+            })
           } else {
-            urlParams.append(key, String(value))
+            finalParams.append(key, String(value))
           }
         }
       }
       
-      const queryString = urlParams.toString()
+      const queryString = finalParams.toString()
       url = `${url}${queryString ? `?${queryString}` : ''}`
       
-      console.log(`Requesting PGW Module API with query params: ${url}`, { 
+      console.log(`Requesting PGW Module API with hybrid query params: ${url}`, { 
         method,
-        pgwParams: serializedParams, 
+        hybridQuery: query,
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' }
       })
     } else {
-      console.log(`Requesting PGW Module API: ${url}`, { method, hasBody: !!body })
+      // Check if the query is type of QueryParams for GET requests
+      const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query && method === 'GET'
+
+      // Only use QueryParams mapping for GET list requests
+      if (isQueryParams) {
+        const pgwParams = mapQueryParamsToPgwModule(query as QueryParams)
+        const serializedParams = serializePgwModuleParams(pgwParams)
+        
+        // Convert serialized params to URL query string
+        const urlParams = new URLSearchParams()
+        for (const [key, value] of Object.entries(serializedParams)) {
+          if (value !== undefined && value !== null && value !== '') {
+            if (Array.isArray(value)) {
+              urlParams.append(key, JSON.stringify(value))
+            } else {
+              urlParams.append(key, String(value))
+            }
+          }
+        }
+        
+        const queryString = urlParams.toString()
+        url = `${url}${queryString ? `?${queryString}` : ''}`
+        
+        console.log(`Requesting PGW Module API with query params: ${url}`, { 
+          method,
+          pgwParams: serializedParams, 
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' }
+        })
+      } else {
+        console.log(`Requesting PGW Module API: ${url}`, { method, hasBody: !!body })
+      }
     }
 
     console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' } })

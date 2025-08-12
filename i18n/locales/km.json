@@ -83,7 +83,9 @@
     "processing": "កំពុងដំណើរការ",
     "yes": "បាទ",
     "no": "ទេ",
-    "cancel": "បោះបង់"
+    "cancel": "បានបោះបង់",
+    "expire": "ផុតកំណត់",
+    "reversed": "បានបង់ត្រឡប់វិញ"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
@@ -602,11 +604,19 @@
       "completed": "បានបញ្ចប់",
       "failed": "បរាជ័យ",
       "success": "ជោគជ័យ",
-      "error": "កំហុស",
+      "error": "កំហុសssssss",
       "processing": "កំពុងដំណើរការ",
-      "cancel": "បានលុបចោល",
+      "cancel": "បានបោះបង់",
       "expire": "ផុតកំណត់",
       "reversed": "បានបង់ត្រឡប់វិញ"
+    },
+     "settlementType": {
+      "HUB": "HUB",
+      "DIRECT": "DIRECT"
+    },
+    "currency": {
+      "USD": "USD - ដុល្លារអាមេរិក",
+      "KHR": "KHR - រៀលកម្ពុជា"
     },
     "active": {
       "1": "សកម្ម",

@@ -33,6 +33,30 @@ export const useBankApi = () => {
   }
 
   /**
+   * Get TBanks from real API (http://172.16.81.141:22043/bank/list)
+   */
+  const getTBanks = async (query?: QueryParams): Promise<ApiResponse<Bank[]>> => {
+    const response = await execute<Bank[]>(() =>
+      $fetch<ApiResponse<Bank[]>>('/api/pgw-module/bank/tbanks', {
+        method: 'GET',
+        query,
+      })
+    )
+    if (response.code !== 'SUCCESS') {
+      return {
+        code: 'ERROR',
+        message: 'Failed to retrieve TBanks',
+        data: [],
+        total_records: 0,
+        total_pages: 0,
+        page: 1,
+        page_size: 25,
+      }
+    }
+    return response
+  }
+
+  /**
    * Get banks by service ID from PGW Module API (Direct API call)
         total_page: 0,
         current_page: 1,
@@ -180,6 +204,7 @@ export const useBankApi = () => {
 
   return {
     getBanks,
+    getTBanks,
     getBanksByServiceId,
     getBanksFromPgwModule,
     getBankById,
