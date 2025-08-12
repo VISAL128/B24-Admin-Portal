@@ -1,20 +1,58 @@
 <template>
   <div class="w-full h-[calc(100vh-64px)] overflow-hidden">
+    <!-- Mobile Tabs (Wallet / Details) -->
+    <div class="lg:hidden px-4 pt-3">
+      <div class="grid grid-cols-2 gap-1 rounded-xl p-1 bg-gray-100 dark:bg-gray-800">
+        <button
+          type="button"
+          @click="activeTab = 'wallet'"
+          :class="[
+            'py-2 rounded-lg text-sm font-medium transition',
+            activeTab === 'wallet'
+              ? 'bg-white dark:bg-gray-900 shadow text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-300',
+          ]"
+        >
+          {{ t('wallet') }}
+        </button>
+        <button
+          type="button"
+          @click="activeTab = 'details'"
+          :class="[
+            'py-2 rounded-lg text-sm font-medium transition',
+            activeTab === 'details'
+              ? 'bg-white dark:bg-gray-900 shadow text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-300',
+          ]"
+        >
+          {{ t('details') }}
+        </button>
+      </div>
+    </div>
+
     <!-- Make this container relative so the floating expand tab can anchor to it -->
     <div class="flex h-full flex-col lg:flex-row gap-4 relative">
-      <!-- Floating expand tab when collapsed -->
+      <!-- Floating expand tab when collapsed (desktop only) -->
       <button
         v-if="isDetailsCollapsed"
         @click="toggleDetails"
-        class="hidden lg:flex items-center justify-center absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 h-10 w-6 rounded-l bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+        class="hidden lg:flex absolute right-1 top-1/2 -translate-y-1/2 z-50 p-2 /* bigger click area, still transparent */ text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-full"
         :aria-expanded="!isDetailsCollapsed"
         :title="t('expand')"
       >
-        <UIcon name="i-heroicons-chevron-left-20-solid" class="w-6 h-6" />
+        <UIcon name="i-heroicons-chevron-left-20-solid" class="w-8 h-8" />
       </button>
 
       <!-- SINGLE CARD with Wallets + Table -->
-      <section class="flex-1 min-h-0 overflow-hidden flex flex-col">
+      <section
+        :class="[
+          'min-h-0 overflow-hidden flex flex-col',
+          /* mobile: only show when wallet tab active */
+          activeTab === 'wallet' ? 'block' : 'hidden',
+          /* desktop: always show as the left pane */
+          'lg:flex lg:block flex-1',
+        ]"
+      >
         <div
           class="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col bg-white dark:bg-gray-900"
         >
@@ -148,9 +186,15 @@
 
       <!-- DETAILS (collapsible horizontally) -->
       <section
-        class="overflow-hidden flex-shrink-0 transition-[width] duration-300 ease-in-out"
-        :class="isDetailsCollapsed ? 'w-0 lg:w-0 pointer-events-none' : 'w-full lg:w-[320px]'"
-        :aria-hidden="isDetailsCollapsed"
+        :class="[
+          'overflow-hidden flex-shrink-0 transition-[width] duration-300 ease-in-out',
+          /* mobile: only show when details tab active */
+          activeTab === 'details' ? 'block' : 'hidden',
+          /* desktop: keep original collapse behavior/width */
+          isDetailsCollapsed ? 'lg:w-0 pointer-events-none' : 'lg:w-[320px]',
+          'lg:block w-full',
+        ]"
+        :aria-hidden="activeTab !== 'details' && !isDetailsCollapsed"
       >
         <div
           class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full mx-auto h-full relative"
@@ -159,11 +203,11 @@
           <button
             v-if="!isDetailsCollapsed"
             @click="toggleDetails"
-            class="hidden lg:flex items-center justify-center absolute -left-3 top-1/2 -translate-y-1/2 h-10 w-6 rounded-r bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            class="hidden lg:flex absolute -left-2 top-1/2 -translate-y-1/2 z-50 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-full"
             :aria-expanded="!isDetailsCollapsed"
             :title="t('collapse')"
           >
-            <UIcon name="i-heroicons-chevron-right-20-solid" class="w-6 h-6" />
+            <UIcon name="i-heroicons-chevron-right-20-solid" class="w-8 h-8" />
           </button>
 
           <template v-if="isLoadingSupplier">
@@ -196,16 +240,55 @@
                   class="absolute inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40 w-full h-full pointer-events-none z-0"
                 ></div>
 
-                <!-- TOP-RIGHT EDIT BUTTON (global) -->
-                <div class="absolute top-2 right-2 z-30">
-                  <button
-                    @click="openEditModal"
-                    class="inline-flex items-center m-1 gap-2 px-3 py-2 text-xs font-medium text-white/90 bg-white/10 hover:bg-white/20 backdrop-blur px-3 py-1.5 rounded-full border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
-                    :aria-label="t('edit')"
-                  >
-                    <UIcon name="i-heroicons-pencil-square-20-solid" class="w-4 h-4" />
-                    <span>{{ t('edit') }}</span>
-                  </button>
+                <!-- TOP-RIGHT ACTIONS (kebab menu via UPopover) -->
+                <div class="absolute top-2 right-2 z-50">
+                  <UPopover placement="bottom-end" :offset="[0, 10]">
+                    <UButton
+                      variant="ghost"
+                      size="sm"
+                      class="px-2 rounded-full"
+                      :aria-label="t('actions')"
+                    >
+                      <UIcon
+                        name="i-heroicons-ellipsis-horizontal-20-solid"
+                        class="w-5 h-5 text-white"
+                      />
+                    </UButton>
+
+                    <template #content>
+                      <div class="flex flex-col gap-1 p-2 w-36">
+                        <UButton
+                          variant="ghost"
+                          size="sm"
+                          class="justify-start text-left"
+                          block
+                          @click="
+                            () => {
+                              openEditModal()
+                            }
+                          "
+                        >
+                          <UIcon name="i-heroicons-pencil-square-20-solid" class="w-4 h-4 mr-2" />
+                          {{ t('edit') }}
+                        </UButton>
+
+                        <UButton
+                          variant="ghost"
+                          size="sm"
+                          class="justify-start text-left text-red-600 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30"
+                          block
+                          @click="
+                            () => {
+                              isShowDeactivateConfirmModal = true
+                            }
+                          "
+                        >
+                          <UIcon name="i-heroicons-no-symbol-20-solid" class="w-4 h-4 mr-2" />
+                          {{ t('deactivate') }}
+                        </UButton>
+                      </div>
+                    </template>
+                  </UPopover>
                 </div>
 
                 <div class="relative z-10 flex flex-col items-center">
@@ -336,20 +419,6 @@
             {{ t('edit') }}
           </h3>
           <div class="flex items-center gap-2">
-            <!-- Deactivate button near close -->
-            <UButton
-              :label="t('deactivate')"
-              color="error"
-              variant="outline"
-              size="xs"
-              class="justify-center"
-              @click="
-                () => {
-                  isShowEditModal = false
-                  isShowDeactivateConfirmModal = true
-                }
-              "
-            />
             <UButton
               icon="i-heroicons-x-mark-20-solid"
               color="neutral"
@@ -418,29 +487,93 @@
           </div>
 
           <!-- Form -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UFormGroup :label="t('name')" :required="true" :error="formErrors.name">
-              <UInput v-model="editForm.name" :placeholder="t('enter_name')" />
+          <div class="grid grid-cols-2 gap-4 w-full">
+            <!-- Row 1 -->
+            <UFormGroup
+              :label="t('name')"
+              :required="true"
+              :error="formErrors.name"
+              class="min-w-0"
+            >
+              <UInput
+                v-model="editForm.name"
+                :placeholder="t('enter_name')"
+                size="md"
+                icon="i-heroicons-user-20-solid"
+                autocomplete="organization"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
             </UFormGroup>
 
-            <UFormGroup :label="t('code')" :error="formErrors.syncCode">
-              <UInput v-model="editForm.syncCode" :placeholder="t('enter_code')" />
+            <UFormGroup
+              :label="t('code')"
+              :error="formErrors.syncCode"
+              help="Managed by system"
+              class="min-w-0"
+            >
+              <UInput
+                v-model="editForm.syncCode"
+                size="md"
+                icon="i-heroicons-hashtag-20-solid"
+                readonly
+                disabled
+                :ui="{ base: 'rounded-xl text-gray-500 dark:text-gray-400' }"
+                input-class="px-3 py-2.5 w-full"
+              >
+              </UInput>
             </UFormGroup>
 
-            <UFormGroup :label="t('phone')" :error="formErrors.phone">
-              <UInput v-model="editForm.phone" :placeholder="t('enter_phone')" />
+            <!-- Row 2 -->
+            <UFormGroup :label="t('phone')" :error="formErrors.phone" class="min-w-0">
+              <UInput
+                v-model="editForm.phone"
+                :placeholder="t('enter_phone')"
+                size="md"
+                icon="i-heroicons-phone-20-solid"
+                inputmode="tel"
+                autocomplete="tel"
+                maxlength="20"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
             </UFormGroup>
 
-            <UFormGroup :label="t('email')" :error="formErrors.email">
-              <UInput v-model="editForm.email" :placeholder="t('enter_email')" />
+            <UFormGroup :label="t('email')" :error="formErrors.email" class="min-w-0">
+              <UInput
+                v-model="editForm.email"
+                :placeholder="t('enter_email')"
+                type="email"
+                size="md"
+                icon="i-heroicons-envelope-20-solid"
+                autocomplete="email"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
             </UFormGroup>
 
-            <UFormGroup :label="t('tin')" :error="formErrors.tinNumber">
-              <UInput v-model="editForm.tinNumber" :placeholder="t('enter_tin')" />
+            <!-- Row 3 -->
+            <UFormGroup :label="t('tin')" :error="formErrors.tinNumber" class="min-w-0">
+              <UInput
+                v-model="editForm.tinNumber"
+                :placeholder="t('enter_tin')"
+                size="md"
+                icon="i-heroicons-identification-20-solid"
+                maxlength="30"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
             </UFormGroup>
 
-            <UFormGroup :label="t('address')" class="md:col-span-2" :error="formErrors.address">
-              <UTextarea v-model="editForm.address" :placeholder="t('enter_address')" :rows="3" />
+            <UFormGroup :label="t('address')" :error="formErrors.address" class="min-w-0">
+              <UInput
+                v-model="editForm.address"
+                :placeholder="t('enter_address')"
+                size="md"
+                icon="i-heroicons-map-pin-20-solid"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
             </UFormGroup>
           </div>
         </div>
@@ -503,12 +636,13 @@ definePageMeta({
 
 const { t } = useI18n()
 
+/** Tabs & active tab (already existed) */
 const tabs = [
   { label: t('wallet'), value: 'wallet' },
   { label: t('details'), value: 'details' },
 ]
-
 const activeTab = ref('wallet')
+
 const route = useRoute()
 const notification = useNotification()
 
@@ -531,7 +665,7 @@ const isLoadingSupplier = ref(true)
 const isLoadingWallets = ref(true)
 const isLoadingTable = ref(true)
 
-/** NEW: collapse state */
+/** collapse state (desktop only) */
 const isDetailsCollapsed = ref(false)
 const toggleDetails = () => (isDetailsCollapsed.value = !isDetailsCollapsed.value)
 
@@ -588,6 +722,24 @@ const onAvatarSelected = (e: Event) => {
   reader.onload = () => (avatarPreview.value = String(reader.result || ''))
   reader.readAsDataURL(file)
 }
+
+const isActionMenuOpen = ref(false)
+
+const actionsMenuFlat = [
+  {
+    label: t('edit'),
+    icon: 'i-heroicons-pencil-square-20-solid',
+    click: () => openEditModal(),
+  },
+  {
+    label: t('deactivate'),
+    icon: 'i-heroicons-no-symbol-20-solid',
+    class: 'text-red-600',
+    click: () => {
+      isShowDeactivateConfirmModal.value = true
+    },
+  },
+]
 
 const removeAvatar = () => {
   avatarFile.value = null
@@ -648,37 +800,44 @@ const confirmDeactivateSubBiller = async () => {
     isDeactivating.value = false
   }
 }
-
 const handleSaveEdit = async () => {
   if (!validateEditForm()) return
   try {
     isSavingEdit.value = true
     const id = transactionId.value
+    const current = supplierData.value
 
+    // 1) Decide logoUrl action
     let logoUrl: string | null = null
     if (avatarFile.value) {
-      logoUrl = await uploadImageAndGetUrl(avatarFile.value)
+      logoUrl = await uploadImageAndGetUrl(avatarFile.value) // set new logo
     } else if (avatarPreview.value === null) {
-      // user removed image
-      logoUrl = '' // or null, depending on API to clear logo
-    } // else keep existing (omit field)
+      logoUrl = '' // explicit clear
+    } // else: null means keep existing
 
-    const payload: Record<string, any> = {
+    // 2) Build the request from existing Supplier to avoid losing fields
+    const request: Supplier = {
+      ...(current ?? ({} as Supplier)),
+      id: current?.id ?? id,
       name: editForm.value.name,
       syncCode: editForm.value.syncCode || null,
       phone: editForm.value.phone || null,
       email: editForm.value.email || null,
       tinNumber: editForm.value.tinNumber || null,
       address: editForm.value.address || null,
-    }
-    if (logoUrl !== null) {
-      // match your backend field; if it's nested extData, map accordingly
-      payload.logoUrl = logoUrl
+      // safely update extData with possible new/cleared logo
     }
 
-    // await updateSubBillerById(id, payload)
+    // 3) ✅ Update via API
+    const updated = await updateSubBiller(request)
 
-    await fetchSubBillerById()
+    // 4) Refresh UI (use API return if it returns Supplier, otherwise refetch)
+    if (updated) {
+      supplierData.value = updated.data as unknown as Supplier
+    } else {
+      await fetchSubBillerById()
+    }
+
     isShowEditModal.value = false
     notification.showSuccess({
       title: t('saved'),
@@ -686,7 +845,10 @@ const handleSaveEdit = async () => {
     })
   } catch (err) {
     console.error('Save sub-biller failed:', err)
-    notification.showError({ title: t('failed'), description: t('failed_to_save_changes') })
+    notification.showError({
+      title: t('failed'),
+      description: t('failed_to_save_changes'),
+    })
   } finally {
     isSavingEdit.value = false
   }
@@ -867,8 +1029,8 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   },
 ]
 
-const { getSubBillerById, getSubBillerWalletList, deactivateSubBiller } = usePgwModuleApi()
-// const { getTransactions } = usePgwModuleApi()
+const { getSubBillerById, getSubBillerWalletList, deactivateSubBiller, updateSubBiller } =
+  usePgwModuleApi()
 const { getTransactionList } = useTransactionApi()
 
 const supplierData = ref<Supplier | null>(null)

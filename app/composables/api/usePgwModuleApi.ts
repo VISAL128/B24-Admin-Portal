@@ -215,6 +215,16 @@ export const usePgwModuleApi = () => {
     )
   }
 
+      const updateSubBiller = async (request: Supplier) => {
+    return await executeV2(() =>
+      $fetch<WalletBalanceResponse>(`/api/pgw-module/sub-biller/update`, {
+        method: 'POST',
+        body: request,
+        onResponseError() {},
+      })
+    )
+  }
+
   return {
     getProfile,
     getWalletTypes,
@@ -228,6 +238,7 @@ export const usePgwModuleApi = () => {
     getSubBillerById,
     getSubBillerWalletList,
     getTransactions,
-    deactivateSubBiller
+    deactivateSubBiller,
+    updateSubBiller
   }
 }
