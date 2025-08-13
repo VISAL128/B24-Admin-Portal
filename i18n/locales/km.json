@@ -1,4 +1,6 @@
 {
+  "date_range": "ជួរកាលបរិច្ឆេទ",
+  "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
   "yes": "បាទ",
   "no": "ទេ",
   "close": "បិទ",
@@ -103,6 +105,16 @@
   "copy_failed": "ចម្លងបរាជ័យ",
   "copy_failed_message": "បរាជ័យក្នុងការចម្លងទៅក្ដារឈូស",
   "wallet_page": {
+    "transaction_report": "របាយការណ៍ប្រតិបត្តិការ",
+    "settlement_amount": "ចំនួនទូទាត់",
+    "description": "ការពិពណ៌នា",
+    "bank_ref_id": "លេខយោងធនាគារ",
+    "transaction_id": "លេខអត្តសញ្ញាណប្រតិបត្តិការ",
+    "currency": "រូបិយប័ណ្ណ",
+    "customer_email": "អ៊ីមែលអតិថិជន",
+    "customer_phone": "លេខទូរស័ព្ទអតិថិជន",
+    "customer_name": "ឈ្មោះអតិថិជន",
+    "customer_info": "ព័ត៌មានអតិថិជន",
     "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
     "title": "កាបូបឌីជីថល",
     "subtitle": "គ្រប់គ្រងសមតុល្យកាបូប និងប្រតិបត្តិការរបស់អ្នក",
@@ -657,11 +669,13 @@
         "customerName": "ឈ្មោះអតិថិជន",
         "action": "សកម្មភាព",
         "currencyId": "រូបិយប័ណ្ណ",
-        "tranType": "ប្រភេទប្រតិបត្តិការ"
+        "tranType": "ប្រភេទប្រតិបត្តិការ",
+        "bankRefId": "លេខយោងធនាគារ"
       }
     },
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",
+    "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
