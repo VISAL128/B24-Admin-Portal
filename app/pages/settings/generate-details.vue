@@ -15,8 +15,8 @@ useHead({
 })
 
 const isSaving = ref(false)
-const showSuccessMessage = ref(false)
-const showErrorMessage = ref(false)
+// const showSuccessMessage = ref(false)
+// const showErrorMessage = ref(false)
 
 // Initialize storage composable
 const storage = useStorage<UserPreferences>()
@@ -90,6 +90,7 @@ const currencyOptions = computed(() => [
 
 const pageSizeOptions = computed(() => DEFAULT_PAGE_SIZE_OPTIONS)
 
+const notification = useNotification()
 // Watch for theme changes and update color mode
 watch(
   () => preferences.value.theme,
@@ -180,7 +181,7 @@ const savePreferences = async () => {
   if (isSaving.value) return
 
   isSaving.value = true
-  showErrorMessage.value = false
+  // showErrorMessage.value = false
 
   try {
     // Ensure the theme preference is synchronized with current color mode
@@ -197,10 +198,14 @@ const savePreferences = async () => {
     // Auto-saves are silent to avoid being intrusive
   } catch (error) {
     console.error('Failed to save preferences:', error)
-    showErrorMessage.value = true
-    setTimeout(() => {
-      showErrorMessage.value = false
-    }, 5000)
+    // showErrorMessage.value = true
+    // setTimeout(() => {
+    //   showErrorMessage.value = false
+    // }, 5000)
+    notification.showError({
+      title: t('settings.save_error'),
+      description: error as string,
+    })
   } finally {
     isSaving.value = false
   }
@@ -234,10 +239,14 @@ const resetToDefaults = async () => {
   }, 100)
 
   // Show success message for manual reset operation
-  showSuccessMessage.value = true
-  setTimeout(() => {
-    showSuccessMessage.value = false
-  }, 3000)
+  // showSuccessMessage.value = true
+  // setTimeout(() => {
+  //   showSuccessMessage.value = false
+  // }, 3000)
+  notification.showSuccess({
+    title: t('settings.reset_success'),
+    description: t('settings.reset_success_desc'),
+  })
 }
 
 // Function to refresh UI elements after reset
@@ -433,7 +442,7 @@ onMounted(() => {
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-6">
       <!-- Success Message -->
-      <div
+      <!-- <div
         v-if="showSuccessMessage"
         class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 flex items-center"
       >
@@ -451,10 +460,10 @@ onMounted(() => {
         <span class="text-green-800 dark:text-green-200 font-medium">{{
           $t('settings.preferences_saved')
         }}</span>
-      </div>
+      </div> -->
 
       <!-- Error Message -->
-      <div
+      <!-- <div
         v-if="showErrorMessage"
         class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 flex items-center"
       >
@@ -472,7 +481,7 @@ onMounted(() => {
         <span class="text-red-800 dark:text-red-200 font-medium">{{
           $t('settings.preferences_save_error')
         }}</span>
-      </div>
+      </div> -->
 
       <!-- User Preferences Section -->
       <div

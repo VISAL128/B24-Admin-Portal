@@ -473,6 +473,10 @@
     "developer_tools": "Developer Tools"
   },
   "settings": {
+    "reset_success": "Preferences reset successfully!",
+    "reset_error": "Failed to reset preferences. Please try again.",
+    "reset_success_desc": "Your preferences have been reset to default values.",
+    "save_error": "Failed to save preferences. Please try again.",
     "generate_details": "General Details",
     "fee_config": "Fee Configuration",
     "date_format_short": "Short (DD/MM/YYYY)",
