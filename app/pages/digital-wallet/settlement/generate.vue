@@ -922,6 +922,7 @@ definePageMeta({
                 v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
                 :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
                 loading-auto
+                size="sm"
                 @click="isConfirmModalShow = true"
               >
                 {{ t('settlement.generate.form.confirm_settlement') }}
@@ -934,7 +935,6 @@ definePageMeta({
                 :open="isConfirmModalShow"
                 :close="false"
                 :title="t('settlement.generate.form.confirm_settlement_title')"
-                :body="t('settlement.generate.form.confirm_settlement_body')"
               >
                 <template #body>
                   <div class="flex flex-col items-center text-center py-6">
@@ -963,6 +963,7 @@ definePageMeta({
                   <div class="flex justify-end gap-3 w-full">
                     <UButton
                       variant="outline"
+                      size="sm"
                       style="border-color: #d0c8c1"
                       class="w-16 justify-center"
                       @click="isConfirmModalShow = false"
@@ -972,6 +973,7 @@ definePageMeta({
                     <UButton
                       color="primary"
                       variant="solid"
+                      size="sm"
                       loading-auto
                       @click="handleSubmitSettlement"
                     >

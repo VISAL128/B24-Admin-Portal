@@ -79,7 +79,18 @@
       "failed": "Failed",
       "success": "Success",
       "error": "Error",
-      "processing": "Processing"
+      "processing": "Processing",
+      "reversed": "Reversed",
+      "cancel": "Cancel",
+      "expire": "Expired"
+    },
+    "settlementType": {
+      "HUB": "HUB",
+      "DIRECT": "DIRECT"
+    },
+    "currency": {
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
     },
     "active": {
       "1": "Active",
@@ -248,7 +259,9 @@
     "processing": "Processing",
     "yes": "Yes",
     "no": "No",
-    "cancel": "Cancel"
+    "cancel": "Cancelled",
+    "expire": "Expired",
+    "reversed": "Reversed"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -474,6 +487,10 @@
     "developer_tools": "Developer Tools"
   },
   "settings": {
+    "reset_success": "Preferences reset successfully!",
+    "reset_error": "Failed to reset preferences. Please try again.",
+    "reset_success_desc": "Your preferences have been reset to default values.",
+    "save_error": "Failed to save preferences. Please try again.",
     "generate_details": "General Details",
     "fee_config": "Fee Configuration",
     "date_format_short": "Short (DD/MM/YYYY)",
@@ -934,15 +951,34 @@
       "created_date": "Transaction Date",
       "total_customer": "Total Customer",
       "bank_ref": "Bank Reference",
+      "collection_bank": "Collection Bank",
+      "settlement_bank": "Settlement Bank",
+      "settlement_type": "Settlement Type",
+      "transaction_type": "Transaction Type",
+      "sub_biller": "Sub Biller",
+      "status": "Status",
+      "currency": "Currency",
       "repush": "Repush",
       "repush_description": "Repush Transaction to Biller",
       "info": "Confirmation",
       "info_des": "Please select transaction before repush",
       "tip": "Tip",
-      "tip_message": "Apply filters to reflect changes in both the Transaction Summary and the Transaction."
+      "tip_message": "Apply filters to reflect changes in both the Transaction Summary and the Transaction.",
+      "summary": {
+        "total_transaction": "Total Transaction",
+        "total_settlement": "Total Settlement Amount",
+        "total_amount": "Total Amount",
+        "success_transaction": "Successful Transactions",
+        "failed_transaction": "Failed Transactions",
+        "pending_transaction": "Pending Transactions",
+        "cancel_transaction": "Cancelled Transactions",
+        "total_customer": "Total Customers",
+        "average_amount": "Average Amount"
+      }
     }
   },
   "banks": {
+    "no_accounts_found": "No accounts found",
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
     "search_placeholder": "Search by bank name",

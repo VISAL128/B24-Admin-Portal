@@ -1,5 +1,5 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
-import type { QueryParams } from '~/models/baseModel'
+import type { TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionListResponse } from '~/models/transaction'
 import type { TransactionAllocationResponse } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
@@ -10,11 +10,24 @@ export const useTransactionApi = () => {
   /**
    * Get transaction summary from transaction API
    */
-  const getTransactionSummary = async (query?: { FromDate?: string; ToDate?: string; PeriodType?: number }) => {
+  const getTransactionSummary = async (
+    query?: { FromDate?: string; ToDate?: string; PeriodType?: number },
+    locale?: string
+  ) => {
+    const headers: Record<string, string> = {}
+    
+    // Map locale to Accept-Language header
+    if (locale) {
+      // Convert 'km' to 'km-KH' and 'en' to 'en-US' format
+      const acceptLanguage = locale === 'km' ? 'km-KH' : locale === 'en' ? 'en-US' : locale
+      headers['Accept-Language'] = acceptLanguage
+    }
+
     return await executeV2(() =>
       $fetch<TransactionSummaryModel>(`/api/pgw-module/transaction/summary`, {
         method: 'GET',
         query,
+        headers,
         onResponseError() {},
       })
     )
@@ -25,12 +38,50 @@ export const useTransactionApi = () => {
   /**
    * Get paginated transaction list from transaction API
    */
-  const getTransactionList = async (query?: QueryParams) => {
+  const getTransactionList = async (query?: TransactionQueryParams, locale?: string) => {
     console.log('Fetching transactions with query:', query)
+    
+    const headers: Record<string, string> = {}
+    
+    // Map locale to Accept-Language header
+    if (locale) {
+      // Convert 'km' to 'km-KH' and 'en' to 'en-US' format
+      const acceptLanguage = locale === 'km' ? 'km-KH' : locale === 'en' ? 'en-US' : locale
+      headers['Accept-Language'] = acceptLanguage
+    }
+
+    // Format the query parameters for Transaction API v2
+    let formattedQuery: any = { ...query }
+    
+    // Map client-side parameters to API-specific parameters
+    if (query?.statuses && Array.isArray(query.statuses) && query.statuses.length > 0) {
+      // Remove the client-side statuses and replace with API-expected Statuses
+      delete formattedQuery.statuses
+      formattedQuery.Statuses = query.statuses
+    }
+    
+    // Types parameter is already in the correct format for the API
+    // No mapping needed - just ensure it's properly formatted
+    if (query?.Types && Array.isArray(query.Types) && query.Types.length > 0) {
+      formattedQuery.Types = query.Types
+    }
+    
+    // Map date parameters for transaction API compatibility
+    // if (query?.start_date && !formattedQuery.fromDate) {
+    //   formattedQuery.fromDate = query.start_date
+    // }
+    
+    // if (query?.end_date && !formattedQuery.toDate) {
+    //   formattedQuery.toDate = query.end_date
+    // }
+    
+    console.log('Final formatted query for transaction API:', formattedQuery)
+    
     const rep = await executeV2(() =>
       $fetch<TransactionListResponse>(`/api/pgw-module/transaction/list/v2`, {
         method: 'GET',
-        query
+        query: formattedQuery,
+        headers
       })
     )
     return rep

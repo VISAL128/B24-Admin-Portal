@@ -63,3 +63,13 @@ export interface QueryParams {
     value: string | number | boolean | Date
   }[]
 }
+
+/**
+ * Transaction-specific query parameters for Transaction List v2 API
+ * Extends QueryParams and adds transaction-specific parameters
+ */
+export interface TransactionQueryParams extends QueryParams {
+  // API-specific parameter names (what the backend expects)
+  Statuses?: string[] // Multiple status filters: Statuses=pending&Statuses=failed
+  Types?: string[] // Multiple transaction type filters: Types=wallet_topup&Types=qr_pay
+}

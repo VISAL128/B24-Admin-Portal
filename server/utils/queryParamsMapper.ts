@@ -1,7 +1,7 @@
 import type { QueryParams } from '~/models/baseModel'
-import { QueryParamsPgwModuleApi } from '../model/pgw_module_api/base'
-import type { ParamFilterPgwModuleApi } from '../model/pgw_module_api/base'
 import { FilterOperatorPgwModule } from '~/utils/enumModel'
+import type { ParamFilterPgwModuleApi } from '../model/pgw_module_api/base'
+import { QueryParamsPgwModuleApi } from '../model/pgw_module_api/base'
 
 /**
  * Maps client-side QueryParams to PGW Module API format
@@ -114,17 +114,9 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
   }
   console.log('Mapped filters:', filters)
 
-  // Map status filters if any
-  //   if (clientParams.statuses && clientParams.statuses.length > 0) {
-  //     // Assuming status is mapped to a search filter for PGW
-  //     for (const status of clientParams.statuses) {
-  //       filters.push({
-  //         field: 'search',
-  //         operator: 'eq',
-  //         value: status
-  //       })
-  //     }
-  //   }
+  // Note: Do NOT map statuses/types here since they need special handling as separate query parameters
+  // Statuses and Types should be handled as raw query parameters to maintain the format:
+  // Statuses=pending&Statuses=failed&Types=wallet_topup&Types=qr_pay
 
   pgwParams.filter = filters
 
@@ -163,3 +155,5 @@ export function serializePgwModuleParams(
     Filter: pgwParams.filter,
   }
 }
+
+

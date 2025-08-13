@@ -1,6 +1,7 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
   Bank,
+  BankAccount,
   BankListResponse,
 } from '~/models/bank'
 import type { ApiResponse, QueryParams } from '~/models/baseModel'
@@ -22,6 +23,30 @@ export const useBankApi = () => {
       return {
         code: 'ERROR',
         message: 'Failed to retrieve banks',
+        data: [],
+        total_records: 0,
+        total_pages: 0,
+        page: 1,
+        page_size: 25,
+      }
+    }
+    return response
+  }
+
+  /**
+   * Get TBanks from real API (http://172.16.81.141:22043/bank/list)
+   */
+  const getTBanks = async (query?: QueryParams): Promise<ApiResponse<Bank[]>> => {
+    const response = await execute<Bank[]>(() =>
+      $fetch<ApiResponse<Bank[]>>('/api/pgw-module/bank/tbanks', {
+        method: 'GET',
+        query,
+      })
+    )
+    if (response.code !== 'SUCCESS') {
+      return {
+        code: 'ERROR',
+        message: 'Failed to retrieve TBanks',
         data: [],
         total_records: 0,
         total_pages: 0,
@@ -117,6 +142,27 @@ export const useBankApi = () => {
   }
 
   /**
+   * Get accounts by supplier bank service id
+   */
+  const getAccountsBySupplierBankServiceId = async (sbs_id: string): Promise<BankAccount[]> => {
+    try {
+      const response = await execute<BankAccount[]>(() =>
+      $fetch<ApiResponse<BankAccount[]>>(`/api/pgw-module/bank/${sbs_id}/accounts`, {
+        method: 'GET',
+      })
+    )
+
+    if (response.code !== 'SUCCESS') {
+      return []
+    }
+    return response.data
+  } catch (error) {
+    if (import.meta.env.MODE === 'development') console.error('Error fetching accounts by supplier bank service ID:', error)
+    return []
+  }
+}
+
+  /**
    * Delete a bank
    */
   const deleteBank = async (id: string): Promise<boolean> => {
@@ -180,6 +226,7 @@ export const useBankApi = () => {
 
   return {
     getBanks,
+    getTBanks,
     getBanksByServiceId,
     getBanksFromPgwModule,
     getBankById,
@@ -187,5 +234,6 @@ export const useBankApi = () => {
     toggleBankStatus,
     getSettlementBanks,
     getCollectionBanks,
+    getAccountsBySupplierBankServiceId
   }
 }

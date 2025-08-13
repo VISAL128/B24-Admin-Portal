@@ -11,19 +11,23 @@
         <!-- Left column skeleton -->
         <div class="flex flex-1 flex-col gap-4">
           <!-- Total amount card skeleton -->
-          <div class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+          >
             <USkeleton class="h-4 w-32 mb-3" />
             <USkeleton class="h-8 w-48" />
           </div>
-          
+
           <!-- Settlement card skeleton -->
-          <div class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex-1">
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex-1"
+          >
             <!-- Header skeleton -->
             <div class="flex items-center justify-between mb-6 pb-4">
               <USkeleton class="h-6 w-24" />
               <USkeleton class="h-6 w-16 rounded-full" />
             </div>
-            
+
             <!-- Stats grid skeleton -->
             <div class="flex flex-row justify-between gap-4">
               <div v-for="i in 4" :key="i" class="flex flex-col items-start text-center">
@@ -34,14 +38,16 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Right column skeleton (Statistics card) -->
-        <div class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex-1">
+        <div
+          class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex-1"
+        >
           <!-- Header skeleton -->
           <div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <USkeleton class="h-6 w-20" />
           </div>
-          
+
           <!-- Stats cards skeleton -->
           <div class="grid grid-rows-1 md:grid-rows-3 gap-3">
             <div v-for="i in 3" :key="i" class="rounded-xl p-3 bg-gray-100 dark:bg-gray-700">
@@ -56,9 +62,11 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Table skeleton -->
-      <div class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div
+        class="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+      >
         <!-- Table header skeleton -->
         <div class="flex items-center justify-between mb-4">
           <USkeleton class="h-8 w-64" />
@@ -67,10 +75,14 @@
             <USkeleton class="h-8 w-24" />
           </div>
         </div>
-        
+
         <!-- Table rows skeleton -->
         <div class="space-y-3">
-          <div v-for="i in 5" :key="i" class="flex items-center gap-4 py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+          <div
+            v-for="i in 5"
+            :key="i"
+            class="flex items-center gap-4 py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+          >
             <USkeleton class="h-4 w-24" />
             <USkeleton class="h-4 w-32" />
             <USkeleton class="h-4 w-20" />
@@ -128,11 +140,16 @@
         <UCard class="flex-1" :ui="appConfig.ui.card.slots">
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-md font-semibold text-gray-900 dark:text-white">
-                {{ $t('settlement.title') }}
-              </h2>
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+                  <UIcon name="material-symbols:contract-edit-outline-rounded" class="w-4 h-4 text-primary" />
+                </div>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                  {{ $t('settlement.title') }}
+                </h3>
+              </div>
               <StatusBadgeV2
-              v-if="settlementDetails.records.success || settlementDetails.records.failed"
+                v-if="settlementDetails.records.success || settlementDetails.records.failed"
                 :status="
                   settlementDetails.records.success > settlementDetails.records.failed
                     ? 'success'
@@ -211,9 +228,14 @@
       <!-- Settlement stats card -->
       <UCard class="flex-1" :ui="appConfig.ui.card.slots">
         <template #header>
-          <h2 class="text-md font-semibold text-gray-900 dark:text-white">
-            {{ $t('settlement.statistics') }}
-          </h2>
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+              <UIcon name="material-symbols:chat-info-outline" class="w-4 h-4 text-primary" />
+            </div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ $t('settlement.statistics') }}
+            </h3>
+          </div>
         </template>
 
         <div class="grid grid-rows-1 md:grid-rows-3 gap-3">
