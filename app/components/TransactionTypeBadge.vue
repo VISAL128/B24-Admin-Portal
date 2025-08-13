@@ -1,11 +1,12 @@
 <template>
   <UBadge :color="badgeColor" variant="soft" :size="size">
-    {{ transactionType }}
+    {{ formattedTransactionType }}
   </UBadge>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
+import { TransactionType } from '~/utils/enumModel';
 
 interface Props {
   transactionType: string
@@ -16,41 +17,30 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'sm',
 })
 
-// Get badge color based on transaction type
+// Get badge color - using primary for all transaction types as requested
 const badgeColor = computed(() => {
   return getTransactionTypeBadgeColor(props.transactionType)
 })
 
-// Helper function to get transaction type badge color
+// Format transaction type text from enum key to readable format
+const formattedTransactionType = computed(() => {
+  // Find the enum key that matches the value
+  const enumKey = Object.entries(TransactionType).find(([key, value]) => value === props.transactionType)?.[0]
+  
+  if (enumKey) {
+    // Convert camelCase to readable format (same as filter options)
+    return enumKey.replace(/([A-Z])/g, ' $1').trim()
+  }
+  
+  // Fallback to original value if not found in enum
+  return props.transactionType
+})
+
+// Helper function to get transaction type badge color - now returns primary for all types
 function getTransactionTypeBadgeColor(
   type: string
 ): 'primary' | 'success' | 'error' | 'warning' | 'secondary' | 'info' | 'neutral' {
-  switch (type) {
-    case 'Wallet Top up':
-    case 'Wallet Topup':
-    case 'Top up':
-    case 'Topup':
-      return 'info'
-    case 'Deeplink / Checkout':
-    case 'Deeplink':
-    case 'Checkout':
-      return 'primary'
-    case 'Wallet Payment':
-    case 'Payment':
-      return 'success'
-    case 'QR Pay':
-    case 'QR Payment':
-    case 'QR':
-      return 'secondary'
-    case 'Transfer':
-    case 'Bank Transfer':
-      return 'warning'
-    case 'Refund':
-      return 'error'
-    case 'Subscription':
-      return 'info'
-    default:
-      return 'neutral'
-  }
+  // Return primary for all transaction types as requested
+  return 'primary'
 }
 </script>

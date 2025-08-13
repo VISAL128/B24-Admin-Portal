@@ -53,7 +53,7 @@ interface ExportHeader {
 }
 
 export async function exportToExcel(
-  data: any[],
+  data: Record<string, unknown>[],
   headers: ExportHeader[],
   filename = 'export.xlsx'
 ) {
@@ -169,14 +169,14 @@ export async function exportToExcel(
 
 
 export async function exportToExcelStyled(
-  data: any[],
+  data: Record<string, unknown>[],
   headers: { key: string, label: string }[],
   filename = 'export.xlsx',
   title = 'Settlement History',
   subtitle = '',
   options: {
     locale?: 'km' | 'en';
-    t?: Function;
+    t?: (key: string, ...args: any[]) => string;
     currency?: string;
     totalAmount?: number;
     period?: string;
@@ -332,18 +332,18 @@ export async function exportToExcelStyled(
 
 
 export async function exportToPDFStyled(
-  data: any[],
+  data: Record<string, unknown>[],
   headers: ExportHeader[],
-  filename = 'settlement-report.pdf',
-  title = 'Settlement Report',
-  subtitle = 'Direct Debit Settlement Summary Report',
+  filename: string,
+  title: string,
+  subtitle: string,
   period = '',
   options: {
     company?: string;
     currency?: string;
     totalAmount?: number;
     locale?: 'km' | 'en';
-    t?: Function; // Translation function
+    t?: (key: string, ...args: unknown[]) => string; // Translation function
   } = {}
 ) {
   // Use dynamic imports to avoid SSR issues
@@ -510,186 +510,491 @@ export async function exportToPDFStyled(
  * Enhanced PDF export with better Unicode/Khmer support using HTML rendering
  * This approach renders HTML content with proper fonts to canvas, then converts to PDF
  */
+// export async function exportToPDFWithUnicodeSupport(
+//   data: Record<string, unknown>[],
+//   headers: ExportHeader[],
+//   filename = 'settlement-report.pdf',
+//   title = 'Settlement Report',
+//   subtitle = 'Direct Debit Settlement Summary Report',
+//   period = '',
+//   options: {
+//     company?: string;
+//     currency?: string;
+//     totalAmount?: number;
+//     locale?: 'km' | 'en';
+//     t?: (key: string, ...args: unknown[]) => string;
+//   } = {}
+// ) {
+//   try {
+//     console.log('test export....')
+//     // Dynamic imports for better SSR support
+//     const html2canvas = (await import('html2canvas')).default;
+    
+//     const jsPDF = (await import('jspdf')).default;
+    
+//     // Get dynamic titles if translation function is available
+// const displayTitle = title?.trim() ? title : (options.t ? options.t('pdf_export.settlement_report') : '');
+//     const displaySubtitle = options.t ? options.t('pdf_export.direct_debit_settlement_summary') : subtitle;
+    
+//     // Create a temporary container with proper fonts
+//     const container = document.createElement('div');
+//     container.style.cssText = `
+//       position: absolute;
+//       top: -9999px;
+//       left: -9999px;
+//       width: 210mm;
+//       padding: 20px;
+//       font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//       background: white;
+//       color: black;
+//     `;
+    
+//     // Build HTML content with clean, formal styling
+//     let htmlContent = `
+//       <div style="
+//         text-align: center; 
+//         margin-bottom: 30px;
+//         padding: 20px;
+//         border-bottom: 2px solid #333;
+//       ">
+//         <h1 style="
+//           font-size: 18px; 
+//           font-weight: bold; 
+//           margin: 0 0 8px 0; 
+//           font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//           color: #333;
+//         ">${displayTitle}</h1>
+//         <h2 style="
+//           font-size: 12px; 
+//           margin: 0 0 15px 0; 
+//           font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//           color: #666;
+//           font-weight: normal;
+//         ">${displaySubtitle}</h2>
+//     `;
+    
+//     // Add metadata section with clean styling
+//     if (period || options.company || options.currency) {
+//       htmlContent += `
+//         <div style="
+//           background: #f8f9fa;
+//           border: 1px solid #dee2e6;
+//           border-radius: 4px;
+//           padding: 10px;
+//           margin-top: 10px;
+//           text-align: left;
+//         ">
+//       `;
+      
+//       if (period && options.t) {
+//         const periodText = getPeriodText(options.t, period.split(' to ')[0] || period, period.split(' to ')[1] || '');
+//         htmlContent += `
+//           <p style="
+//             font-size: 11px; 
+//             margin: 0 0 5px 0;
+//             color: #333;
+//             font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//           ">${periodText}</p>
+//         `;
+//       }
+      
+//       if (options.company && options.t) {
+//         const companyText = getCompanyText(options.t, options.company);
+//         htmlContent += `
+//           <p style="
+//             font-size: 11px; 
+//             margin: 0 0 5px 0;
+//             color: #333;
+//             font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//           ">${companyText}</p>
+//         `;
+//       }
+      
+//       if (options.currency && options.t) {
+//         const currencyText = getCurrencyText(options.t, options.currency);
+//         htmlContent += `
+//           <p style="
+//             font-size: 11px; 
+//             margin: 0;
+//             color: #333;
+//             font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//           ">${currencyText}</p>
+//         `;
+//       }
+      
+//       htmlContent += `</div>`;
+//     }
+    
+//     htmlContent += `</div>`;
+    
+//     // Create table with improved styling and proper Khmer font support
+//     htmlContent += `
+//       <table style="
+//         width: 100%; 
+//         border-collapse: collapse; 
+//         font-size: 10px; 
+//         font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//         margin: 20px 0;
+//         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+//         border: 1px solid #ddd;
+//       ">
+//         <thead>
+//           <tr style="background: #f8f9fa; color: #333; border-bottom: 2px solid #dee2e6;">
+//             ${headers.map(h => `
+//               <th style="
+//                 border: 1px solid #ddd; 
+//                 padding: 12px 8px; 
+//                 text-align: center; 
+//                 font-weight: bold;
+//                 font-size: 11px;
+//                 font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//                 background: #f8f9fa;
+//                 color: #495057;
+//               ">${h.label}</th>
+//             `).join('')}
+//           </tr>
+//         </thead>
+//         <tbody>
+//     `;
+    
+//     // Add table rows with proper Khmer font support
+//     data.forEach((item, index) => {
+//       const isEven = index % 2 === 0;
+//       const rowStyle = isEven ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;';
+      
+//       htmlContent += `<tr style="${rowStyle}">`;
+      
+//       headers.forEach((h, colIndex) => {
+//         let value = item[h.key];
+//         let cellAlign = 'center';
+//         let cellStyle = '';
+        
+//         // Format specific fields
+//         if (h.key.includes('date') && value) {
+//           value = new Date(value).toLocaleDateString(options.locale === 'km' ? 'km-KH' : 'en-US');
+//           cellStyle = 'color: #666;';
+//         }
+//         if (h.key.includes('amount') && typeof value === 'number') {
+//           value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US');
+//           cellAlign = 'right';
+//           cellStyle = 'color: #333; font-weight: 600;';
+//         }
+//         if (h.key.includes('status')) {
+//           cellStyle = 'font-weight: 500;';
+//         }
+        
+//         htmlContent += `
+//           <td style="
+//             border: 1px solid #ddd; 
+//             padding: 8px; 
+//             text-align: ${cellAlign};
+//             font-size: 10px;
+//             font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//             color: #333;
+//             ${cellStyle}
+//           ">${value?.toString() || '-'}</td>
+//         `;
+//       });
+      
+//       htmlContent += '</tr>';
+//     });
+    
+//     htmlContent += '</tbody></table>';
+    
+//     // Add clean total section
+//     if (options.totalAmount !== undefined && options.t) {
+//       const totalText = getTotalText(
+//         options.t,
+//         options.totalAmount,
+//         options.currency || '',
+//         options.locale || 'en'
+//       );
+      
+//       htmlContent += `
+//         <div style="
+//           margin-top: 20px;
+//           padding: 15px;
+//           background: #f8f9fa;
+//           border: 1px solid #dee2e6;
+//           border-radius: 4px;
+//         ">
+//           <table style="width: 100%; margin: 0;">
+//             <tr>
+//               <td style="
+//                 text-align: right;
+//                 font-weight: bold;
+//                 font-size: 14px;
+//                 color: #333;
+//                 padding: 5px;
+//                 font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
+//               ">
+//                 ${totalText}
+//               </td>
+//             </tr>
+//           </table>
+//         </div>
+//       `;
+//     }
+    
+//     // Add clean footer
+//     if (options.t) {
+//       const footerText = getFooterText(options.t, options.locale || 'en');
+//       htmlContent += `
+//         <div style="
+//           margin-top: 30px; 
+//           padding: 15px;
+//           border-top: 1px solid #dee2e6;
+//         ">
+//         </div>
+//       `;
+//     }
+    
+//     container.innerHTML = htmlContent;
+//     document.body.appendChild(container);
+    
+//     // Convert to canvas with high quality
+//     const canvas = await html2canvas(container, {
+//       scale: 2, // Higher resolution
+//       useCORS: true,
+//       allowTaint: false,
+//       backgroundColor: '#ffffff'
+//     });
+    
+//     // Remove temporary container
+//     document.body.removeChild(container);
+    
+//     // Create PDF from canvas
+//     const pdf = new jsPDF('p', 'mm', 'a4');
+//     const imgData = canvas.toDataURL('image/png');
+    
+//     const pdfWidth = pdf.internal.pageSize.getWidth();
+//     const pdfHeight = pdf.internal.pageSize.getHeight();
+//     const imgWidth = pdfWidth - 20; // 10mm margin on each side
+//     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+//     let heightLeft = imgHeight;
+//     let position = 10; // 10mm top margin
+    
+//     // Add image to PDF, handling multiple pages if needed
+//     pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+//     heightLeft -= pdfHeight;
+    
+//     while (heightLeft >= 0) {
+//       position = heightLeft - imgHeight + 10;
+//       pdf.addPage();
+//       pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+//       heightLeft -= pdfHeight;
+//     }
+    
+//     // Save the PDF
+//     pdf.save(filename);
+    
+//   } catch (error) {
+//     console.error('Error generating PDF with Unicode support:', error);
+//     // Fallback to regular PDF export
+//     throw new Error('Failed to generate PDF with Unicode support. Please try again.');
+//   }
+// }
+
+
+// ...existing code...
 export async function exportToPDFWithUnicodeSupport(
-  data: any[],
+  data: Record<string, unknown>[],
   headers: ExportHeader[],
-  filename = 'settlement-report.pdf',
-  title = 'Settlement Report',
-  subtitle = 'Direct Debit Settlement Summary Report',
-  period = '',
+  filename: string,
+  title: string,
+  subtitle?: string,
   options: {
     company?: string;
     currency?: string;
     totalAmount?: number;
     locale?: 'km' | 'en';
-    t?: Function;
+    t?: (key: string, ...args: unknown[]) => string;
+    filter?: Record<string, string>;
   } = {}
 ) {
   try {
+
+    console.log("-----filter-----", options.filter)
+
+    // 1. Dynamic Orientation & Font Sizing Configuration
+    const COLUMN_THRESHOLD_FOR_LANDSCAPE = 7;
+    const isLandscape = headers.length > COLUMN_THRESHOLD_FOR_LANDSCAPE;
+    const orientation = isLandscape ? 'l' : 'p';
+    const containerWidth = isLandscape ? '297mm' : '210mm';
+    
+    // Adjust font size based on column count for readability
+    let tableFontSize = '9px';
+    if (headers.length > 8) tableFontSize = '8px';
+    if (headers.length > 10) tableFontSize = '7px';
+
     // Dynamic imports for better SSR support
     const html2canvas = (await import('html2canvas')).default;
-    
     const jsPDF = (await import('jspdf')).default;
-    
+
     // Get dynamic titles if translation function is available
-const displayTitle = title?.trim() ? title : (options.t ? options.t('pdf_export.settlement_report') : '');
-    const displaySubtitle = options.t ? options.t('pdf_export.direct_debit_settlement_summary') : subtitle;
-    
+    const displayTitle = title;
+    const displaySubtitle = subtitle;
+
+    // Khmer-inspired color palette (from Cambodian flag)
+    const KHMER_BLUE = '#032ea1';
+    const KHMER_RED = '#da251d';
+    const KHMER_WHITE = '#ffffff';
+    const KHMER_TEXT_DARK = '#2c3e50';
+    const KHMER_TEXT_LIGHT = '#555';
+    const KHMER_BORDER = '#d1d8e0';
+    const KHMER_BG_LIGHT = '#f7f9fc';
+
     // Create a temporary container with proper fonts
     const container = document.createElement('div');
     container.style.cssText = `
       position: absolute;
       top: -9999px;
       left: -9999px;
-      width: 210mm;
-      padding: 20px;
-      font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-      background: white;
-      color: black;
+      width: ${containerWidth};
+      padding: 15mm;
+      font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : '"Helvetica Neue", Arial, sans-serif'};
+      background: ${KHMER_WHITE};
+      color: ${KHMER_TEXT_DARK};
     `;
-    
-    // Build HTML content with clean, formal styling
-    let htmlContent = `
-      <div style="
-        text-align: center; 
-        margin-bottom: 30px;
-        padding: 20px;
-        border-bottom: 2px solid #333;
-      ">
-        <h1 style="
-          font-size: 18px; 
-          font-weight: bold; 
-          margin: 0 0 8px 0; 
-          font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-          color: #333;
-        ">${displayTitle}</h1>
-        <h2 style="
-          font-size: 12px; 
-          margin: 0 0 15px 0; 
-          font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-          color: #666;
-          font-weight: normal;
-        ">${displaySubtitle}</h2>
+
+    // Build HTML content with Cambodian-inspired styling
+      let htmlContent = `
+      <div style="padding: 10px;">
+        <div style="
+          text-align: center; 
+          padding-bottom: 15px;
+          border-bottom: 3px double ${KHMER_BLUE};
+          margin-bottom: 15px;
+        ">
+          <h1 style="
+            font-size: 22px; 
+            font-weight: bold; 
+            margin: 0 0 8px 0; 
+            font-family: ${options.locale === 'km' ? '"Khmer OS Muol Light", "Noto Sans Khmer"' : '"Times New Roman", serif'};
+            color: ${KHMER_BLUE};
+          ">${displayTitle}</h1>
+          <h2 style="
+            font-size: 14px; 
+            margin: 0; 
+            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
+            color: ${KHMER_TEXT_LIGHT};
+            font-weight: normal;
+          ">${displaySubtitle}</h2>
+        </div>
     `;
-    
-    // Add metadata section with clean styling
-    if (period || options.company || options.currency) {
+
+    // Add Filter Information
+    if (options.filter && Object.keys(options.filter).length > 0 && options.t) {
+      const t = options.t;
+      
+      console.log('Filter data to display:', options.filter);
+
+      // Always show filters section if filters exist, regardless of values
       htmlContent += `
         <div style="
-          background: #f8f9fa;
-          border: 1px solid #dee2e6;
-          border-radius: 4px;
-          padding: 10px;
-          margin-top: 10px;
-          text-align: left;
+          margin-bottom: 20px;
+          padding: 12px 15px;
+          background: ${KHMER_BG_LIGHT};
+          border: 1px solid ${KHMER_BORDER};
+          border-left: 4px solid ${KHMER_BLUE};
+          border-radius: 5px;
         ">
+          <h3 style="
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            font-weight: bold;
+            color: ${KHMER_BLUE};
+            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
+          ">${t('filters_applied')}</h3>
+          <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
       `;
-      
-      if (period && options.t) {
-        const periodText = getPeriodText(options.t, period.split(' to ')[0] || period, period.split(' to ')[1] || '');
+
+      // Display all filter values, even if they are "All" or "all_time"
+      for (const [key, value] of Object.entries(options.filter)) {
+        const displayValue = String(value || 'N/A');
         htmlContent += `
-          <p style="
-            font-size: 11px; 
-            margin: 0 0 5px 0;
-            color: #333;
-            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-          ">${periodText}</p>
+          <tr style="border-bottom: 1px solid ${KHMER_BORDER};">
+            <td style="padding: 6px 0; font-weight: 600; color: ${KHMER_TEXT_DARK}; width: 150px;">${key}</td>
+            <td style="padding: 6px 0; color: ${KHMER_TEXT_LIGHT};">${displayValue}</td>
+          </tr>
         `;
       }
-      
-      if (options.company && options.t) {
-        const companyText = getCompanyText(options.t, options.company);
-        htmlContent += `
-          <p style="
-            font-size: 11px; 
-            margin: 0 0 5px 0;
-            color: #333;
-            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-          ">${companyText}</p>
-        `;
-      }
-      
-      if (options.currency && options.t) {
-        const currencyText = getCurrencyText(options.t, options.currency);
-        htmlContent += `
-          <p style="
-            font-size: 11px; 
-            margin: 0;
-            color: #333;
-            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-          ">${currencyText}</p>
-        `;
-      }
-      
-      htmlContent += `</div>`;
+
+      htmlContent += `
+          </table>
+        </div>
+      `;
     }
-    
-    htmlContent += `</div>`;
     
     // Create table with improved styling and proper Khmer font support
     htmlContent += `
       <table style="
         width: 100%; 
         border-collapse: collapse; 
-        font-size: 10px; 
-        font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-        margin: 20px 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border: 1px solid #ddd;
+        font-size: ${tableFontSize}; 
+        font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
       ">
         <thead>
-          <tr style="background: #f8f9fa; color: #333; border-bottom: 2px solid #dee2e6;">
+          <tr style="background: ${KHMER_BLUE}; color: ${KHMER_WHITE};">
             ${headers.map(h => `
               <th style="
-                border: 1px solid #ddd; 
-                padding: 12px 8px; 
+                border: 1px solid ${KHMER_BLUE}; 
+                padding: 10px 8px; 
                 text-align: center; 
                 font-weight: bold;
-                font-size: 11px;
-                font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-                background: #f8f9fa;
-                color: #495057;
+                font-size: calc(${tableFontSize} + 1px);
+                font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
               ">${h.label}</th>
             `).join('')}
           </tr>
         </thead>
         <tbody>
     `;
-    
+
     // Add table rows with proper Khmer font support
     data.forEach((item, index) => {
-      const isEven = index % 2 === 0;
-      const rowStyle = isEven ? 'background-color: #ffffff;' : 'background-color: #f8f9fa;';
+      const rowStyle = index % 2 === 0 ? `background-color: ${KHMER_WHITE};` : `background-color: ${KHMER_BG_LIGHT};`;
       
       htmlContent += `<tr style="${rowStyle}">`;
       
-      headers.forEach((h, colIndex) => {
+      headers.forEach((h) => {
         let value = item[h.key];
-        let cellAlign = 'center';
+        let cellAlign = 'left';
         let cellStyle = '';
         
         // Format specific fields
         if (h.key.includes('date') && value) {
-          value = new Date(value).toLocaleDateString(options.locale === 'km' ? 'km-KH' : 'en-US');
-          cellStyle = 'color: #666;';
+          if (
+            typeof value === 'string' ||
+            typeof value === 'number' ||
+            value instanceof Date
+          ) {
+            value = new Date(value).toLocaleDateString(
+              options.locale === 'km' ? 'km-KH' : 'en-US',
+              { year: 'numeric', month: 'short', day: 'numeric' }
+            );
+          }
+          cellAlign = 'center';
         }
-        if (h.key.includes('amount') && typeof value === 'number') {
-          value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US');
+
+        if (h.key.includes('amount') && (typeof value === 'number' || value instanceof Date)) {
+          value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           cellAlign = 'right';
-          cellStyle = 'color: #333; font-weight: 600;';
+          cellStyle = 'font-weight: 600;';
         }
         if (h.key.includes('status')) {
-          cellStyle = 'font-weight: 500;';
+          cellAlign = 'center';
+          cellStyle = 'font-weight: 500; text-transform: capitalize;';
         }
         
         htmlContent += `
           <td style="
-            border: 1px solid #ddd; 
+            border: 1px solid ${KHMER_BORDER}; 
             padding: 8px; 
             text-align: ${cellAlign};
-            font-size: 10px;
-            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-            color: #333;
+            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
+            color: ${KHMER_TEXT_DARK};
             ${cellStyle}
           ">${value?.toString() || '-'}</td>
         `;
@@ -699,7 +1004,7 @@ const displayTitle = title?.trim() ? title : (options.t ? options.t('pdf_export.
     });
     
     htmlContent += '</tbody></table>';
-    
+
     // Add clean total section
     if (options.totalAmount !== undefined && options.t) {
       const totalText = getTotalText(
@@ -712,45 +1017,48 @@ const displayTitle = title?.trim() ? title : (options.t ? options.t('pdf_export.
       htmlContent += `
         <div style="
           margin-top: 20px;
-          padding: 15px;
-          background: #f8f9fa;
-          border: 1px solid #dee2e6;
-          border-radius: 4px;
+          text-align: right;
         ">
-          <table style="width: 100%; margin: 0;">
-            <tr>
-              <td style="
-                text-align: right;
-                font-weight: bold;
-                font-size: 14px;
-                color: #333;
-                padding: 5px;
-                font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS", "Arial Unicode MS"' : 'Arial, sans-serif'};
-              ">
-                ${totalText}
-              </td>
-            </tr>
-          </table>
+          <p style="
+            display: inline-block;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            color: ${KHMER_RED};
+            background: ${KHMER_BG_LIGHT};
+            border: 1px solid ${KHMER_BORDER};
+            border-right: 3px solid ${KHMER_RED};
+            border-radius: 4px;
+            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
+          ">
+            ${totalText}
+          </p>
         </div>
       `;
     }
-    
+
     // Add clean footer
     if (options.t) {
       const footerText = getFooterText(options.t, options.locale || 'en');
       htmlContent += `
         <div style="
-          margin-top: 30px; 
-          padding: 15px;
-          border-top: 1px solid #dee2e6;
+          margin-top: 25px; 
+          padding-top: 10px;
+          border-top: 1px solid ${KHMER_BORDER};
+          text-align: center;
+          font-size: 10px;
+          color: ${KHMER_TEXT_LIGHT};
         ">
+          ${footerText}
         </div>
       `;
     }
     
+    htmlContent += `</div>`; // Close main wrapper
+    
     container.innerHTML = htmlContent;
     document.body.appendChild(container);
-    
+
     // Convert to canvas with high quality
     const canvas = await html2canvas(container, {
       scale: 2, // Higher resolution
@@ -758,33 +1066,36 @@ const displayTitle = title?.trim() ? title : (options.t ? options.t('pdf_export.
       allowTaint: false,
       backgroundColor: '#ffffff'
     });
-    
+
     // Remove temporary container
     document.body.removeChild(container);
-    
+
     // Create PDF from canvas
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdf = new jsPDF(orientation, 'mm', 'a4');
     const imgData = canvas.toDataURL('image/png');
     
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pdfWidth - 20; // 10mm margin on each side
+    
+    // Calculate image dimensions to fit within page margins
+    const margin = 10; // 10mm margin
+    const imgWidth = pdfWidth - (margin * 2);
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     
     let heightLeft = imgHeight;
-    let position = 10; // 10mm top margin
+    let position = margin;
     
     // Add image to PDF, handling multiple pages if needed
-    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
+    pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+    heightLeft -= (pdfHeight - (margin * 2));
     
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight + 10;
+    while (heightLeft > 0) {
+      position = -heightLeft - margin;
       pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
+      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+      heightLeft -= (pdfHeight - (margin * 2));
     }
-    
+
     // Save the PDF
     pdf.save(filename);
     
@@ -794,7 +1105,7 @@ const displayTitle = title?.trim() ? title : (options.t ? options.t('pdf_export.
     throw new Error('Failed to generate PDF with Unicode support. Please try again.');
   }
 }
-
+ 
 /**
  * Enhanced Excel export with better Unicode/Khmer support
  */

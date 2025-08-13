@@ -3,8 +3,8 @@
     <!-- Main Layout: Left and Right Sections -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <!-- Left Section: Transaction Detail (50% width) -->
-      <div class="lg:col-span-1">
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+      <div class="lg:col-span-1 flex flex-col h-full">
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3 flex-1 flex flex-col">
           <!-- Header -->
           <div class="flex justify-between items-center mb-3">
             <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
@@ -37,8 +37,36 @@
             </div>
           </div>
           <!-- Transaction Content -->
-          <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4">
-            <div class="space-y-0">
+          <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4 flex-1 flex flex-col">
+            <!-- Loading State -->
+            <div v-if="loading || apiError" class="space-y-3 flex-1 flex flex-col">
+              <div v-if="loading" v-for="n in 9" :key="`skeleton-${n}`" class="flex justify-between items-center py-3 animate-pulse">
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              </div>
+              
+              <!-- Error State -->
+              <div v-if="apiError && !loading" class="flex-1 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-red-500 mb-2">
+                    <UIcon name="material-symbols:error-outline" class="w-12 h-12 mx-auto" />
+                  </div>
+                  <p class="text-red-600 dark:text-red-400 font-medium">{{ apiError }}</p>
+                  <UButton
+                    variant="outline"
+                    color="error"
+                    size="sm"
+                    class="mt-3"
+                    @click="fetchTransactionData"
+                  >
+                    Retry
+                  </UButton>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Actual Data -->
+            <div v-else class="space-y-0">
               <div
                 v-for="(field, index) in allFields"
                 :key="index"
@@ -93,27 +121,45 @@
           </h4>
           <!-- Horizontal line below header -->
           <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3 py-1" />
-          <div class="space-y-3">
+          
+          <!-- Loading State -->
+          <div v-if="loading || apiError" class="space-y-3">
+            <div v-if="loading" v-for="n in 3" :key="`settlement-skeleton-${n}`" class="flex justify-between items-center animate-pulse">
+              <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+              </div>
+            </div>
+            
+            <!-- Error State -->
+            <div v-if="apiError && !loading" class="text-center py-4">
+              <p class="text-red-600 dark:text-red-400 text-sm">{{ apiError }}</p>
+            </div>
+          </div>
+          
+          <!-- Actual Data -->
+          <div v-else class="space-y-3">
             <!-- Bank Name -->
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-600 dark:text-gray-400">Bank Name</span>
               <div class="flex items-center space-x-2">
                 <UAvatar
-                  src="https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png"
-                  alt="ACLEDA Bank"
+                  :src="computedTransactionData.settlementBankLogo || 'https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png'"
+                  :alt="computedTransactionData.settlementBank || 'Bank'"
                   size="sm"
                 />
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ transactionData.settlementBank }}
+                  {{ computedTransactionData.settlementBank || 'N/A' }}
                 </span>
               </div>
             </div>
 
-            <!-- Bank Reference -->
+            <!-- Account Number -->
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-600 dark:text-gray-400">Account Number</span>
               <ClipboardBadge
-                :text="maskAccountNumber(transactionData.accountNumber)"
+                :text="maskAccountNumber(computedTransactionData.accountNumber)"
                 :copied-tooltip-text="$t('clipboard.copied')"
                 class="mt-1"
               />
@@ -123,8 +169,8 @@
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Amount</span>
               <span class="text-lg font-bold">
-                {{ useCurrency().formatAmount(transactionData.settlementAmount) }}
-                {{ transactionData.currency }}
+                {{ useCurrency().formatAmount(computedTransactionData.settlementAmount) }}
+                {{ computedTransactionData.currency }}
               </span>
             </div>
           </div>
@@ -140,7 +186,44 @@
           </h4>
           <!-- Horizontal line below header -->
           <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
+          
+          <!-- Loading State -->
+          <div v-if="loading || apiError" class="flex-1 flex flex-col">
+            <div v-if="loading" class="animate-pulse p-4">
+              <!-- Table Header Shimmer -->
+              <div class="flex space-x-4 mb-4">
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-8"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+              </div>
+              <!-- Table Rows Shimmer -->
+              <div v-for="n in 3" :key="`table-skeleton-${n}`" class="flex space-x-4 mb-3">
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              </div>
+            </div>
+            
+            <!-- Error State -->
+            <div v-if="apiError && !loading" class="flex-1 flex items-center justify-center py-8">
+              <div class="text-center">
+                <div class="text-red-500 mb-2">
+                  <UIcon name="material-symbols:error-outline" class="w-8 h-8 mx-auto" />
+                </div>
+                <p class="text-red-600 dark:text-red-400 text-sm">Failed to load transaction details</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Actual Data -->
           <UTable
+            v-else
             ref="table"
             :data="customerDetails"
             :columns="customerColumns"
@@ -167,7 +250,46 @@
       </h4>
       <!-- Horizontal line below header -->
       <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
+      
+      <!-- Loading State -->
+      <div v-if="loading || apiError">
+        <div v-if="loading" class="animate-pulse p-4">
+          <!-- Table Header Shimmer -->
+          <div class="flex space-x-4 mb-4">
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-8"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-28"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+          </div>
+          <!-- Table Rows Shimmer -->
+          <div v-for="n in 4" :key="`allocation-skeleton-${n}`" class="flex space-x-4 mb-3">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-28"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+          </div>
+        </div>
+        
+        <!-- Error State -->
+        <div v-if="apiError && !loading" class="text-center py-8">
+          <div class="text-red-500 mb-2">
+            <UIcon name="material-symbols:error-outline" class="w-8 h-8 mx-auto" />
+          </div>
+          <p class="text-red-600 dark:text-red-400 text-sm">Failed to load transaction allocation data</p>
+        </div>
+      </div>
+      
+      <!-- Actual Data -->
       <UTable
+        v-else
         ref="table"
         :data="transactionAllocateData"
         :columns="transactionAllocateColumns"
@@ -729,12 +851,14 @@ import CopyableCodeBlock from '~/components/CopyableCodeBlock.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import ExTab from '~/components/tabs/ExTab.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
+import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { TransactionHistoryRecord } from '~/models/transaction'
 import appConfig from '~~/app.config'
 import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
@@ -751,6 +875,7 @@ const router = useRouter()
 const { t } = useI18n()
 const { copy } = useClipboard()
 const notification = useNotification()
+const { getTransactionById } = useTransactionApi()
 const { createRowNumberCell, createSortableHeader } = useTable()
 const format = useFormat()
 const userPreferences = useUserPreferences().getPreferences()
@@ -758,6 +883,8 @@ const userPreferences = useUserPreferences().getPreferences()
 const isTransactionSelected = ref(false)
 const transactionId = computed(() => route.params.id as string)
 const loading = ref(true)
+const transactionData = ref<TransactionHistoryRecord | null>(null)
+const apiError = ref<string | null>(null)
 const showDownloadModal = ref(false)
 const showPushBackDetail = ref(false)
 const selectedPushBackTransaction = ref<any>(null)
@@ -788,6 +915,28 @@ const repushTabs = [
 const customerSorting = ref([])
 const transactionAllocationSorting = ref([])
 const webhookSorting = ref([{ id: 'date', desc: true }])
+
+// API Functions
+const fetchTransactionData = async () => {
+  try {
+    loading.value = true
+    apiError.value = null
+    
+    console.log('🔍 Fetching transaction data for ID:', transactionId.value)
+    const response = await getTransactionById(transactionId.value)
+    transactionData.value = response
+  } catch (error) {
+    console.error('❌ Error fetching transaction:', error)
+    apiError.value = 'Network error occurred while fetching transaction data'
+    
+    notification.showError({
+      title: 'Network Error',
+      description: 'Unable to connect to the server. Please check your connection and try again.',
+    })
+  } finally {
+    loading.value = false
+  }
+}
 
 // Direct Debit Summary Data
 const summaryDirectDebit = ref<DirectDebitSummary>({
@@ -885,24 +1034,34 @@ interface CustomerDetail {
   [key: string]: any
 }
 
-const customerDetails: CustomerDetail[] = [
-  {
-    id: '1',
-    customerName: 'So Sorphorn',
-    customerCode: 'CUST-001',
-    billNumber: 'INV-000001A',
-    amount: 150,
-    currency: 'USD',
-  },
-   {
-    id: '2',
-    customerName: 'So Sorphorn',
-    customerCode: 'CUST-002',
-    billNumber: 'INV-000002B',
-    amount: 150,
-    currency: 'USD',
-  },
-]
+// Customer Details Data - computed from transaction data or fallback to mock data
+const customerDetails = computed(() => {
+  // For now, return mock data since customer details might come from a separate API call
+  // In a real implementation, this could be derived from transactionData.value or fetched separately
+  if (!transactionData.value) {
+    return []
+  }
+  
+  // Mock data based on transaction info - this would typically come from a separate customer API call
+  return [
+    {
+      id: '1',
+      customerName: 'Customer from Transaction',
+      customerCode: 'CUST-001',
+      billNumber: 'INV-000001A',
+      amount: transactionData.value.transactionAmount || 150,
+      currency: transactionData.value.currency || transactionData.value.currencyId || 'USD',
+    },
+    {
+      id: '2',
+      customerName: 'Customer from Transaction',
+      customerCode: 'CUST-002',
+      billNumber: 'INV-000002B',
+      amount: transactionData.value.transactionAmount || 150,
+      currency: transactionData.value.currency || transactionData.value.currencyId || 'USD',
+    },
+  ]
+})
 
 const customerColumns = [
   {
@@ -964,30 +1123,42 @@ interface TransactionAllocateData {
   [key: string]: any
 }
 
-const transactionAllocateData: TransactionAllocateData[] = [
-  {
-    id: '1',
-    customer: 'So Sorphorn',
-    transactionAmount: 150.0,
-    billerName: 'Charge Station A',
-    amount: 75.0,
-    outstandingAmount: 75.0,
-    currency: 'USD',
-    date: '2025-07-15T10:30:00+07:00',
-    status: 'pending',
-  },
-  {
-    id: '2',
-    customer: 'So Sorphorn',
-    transactionAmount: 150.0,
-    billerName: 'Oone Go EV Charger',
-    amount: 75.0,
-    outstandingAmount: 75.0,
-    currency: 'USD',
-    date: '2025-07-15T12:00:00+07:00',
-    status: 'pending',
-  },
-]
+// Transaction Allocation Data - computed from transaction data or fallback to mock data
+const transactionAllocateData = computed(() => {
+  // For now, return mock data since allocation details might come from a separate API call
+  // In a real implementation, this would be fetched using getTransactionAllocationList(transactionId)
+  if (!transactionData.value) {
+    return []
+  }
+  
+  const txData = transactionData.value
+  
+  // Mock data based on transaction info - this would typically come from getTransactionAllocationList API call
+  return [
+    {
+      id: '1',
+      customer: 'Customer from Transaction',
+      transactionAmount: txData.transactionAmount || 150.0,
+      billerName: txData.biller || txData.billerNameKh || 'Charge Station A',
+      amount: (txData.transactionAmount || 150.0) / 2,
+      outstandingAmount: (txData.transactionAmount || 150.0) / 2,
+      currency: txData.currency || txData.currencyId || 'USD',
+      date: txData.date || '2025-07-15T10:30:00+07:00',
+      status: txData.status || 'pending',
+    },
+    {
+      id: '2',
+      customer: 'Customer from Transaction',
+      transactionAmount: txData.transactionAmount || 150.0,
+      billerName: 'Secondary Biller',
+      amount: (txData.transactionAmount || 150.0) / 2,
+      outstandingAmount: (txData.transactionAmount || 150.0) / 2,
+      currency: txData.currency || txData.currencyId || 'USD',
+      date: txData.date || '2025-07-15T12:00:00+07:00',
+      status: txData.status || 'pending',
+    },
+  ]
+})
 
 const transactionAllocateColumns = [
   {
@@ -1313,103 +1484,115 @@ const repushDetailsColumns = [
   },
 ]
 
-// Transaction data
-const transactionData = {
-  transactionNo: transactionId.value || 'TXN-20250729001',
-  date: '2025-07-15T12:00:00+07:00',
-  transactionType: 'Wallet Payment',
-  currency: 'USD',
-  status: 'success',
-  transactionAmount: 150,
-  settlementAmount: 147, // 150 - 3 fee
-  customerFee: 0.0,
-  supplierFee: 3.0,
-  bankReference: 'AC0123243253',
-  collectionBank: 'ACLEDA',
-  settlementBank: 'ACLEDA',
-  accountNumber: 'BANK-12345678',
-  biller: 'Charge Station A',
-  transactionReference: 'DC0123243253',
-  settlementStatus: 'success',
-}
+// Transaction data computed from API response
+const computedTransactionData = computed(() => {
+  if (!transactionData.value) {
+    return {
+      transactionNo: '',
+      date: '',
+      transactionType: '',
+      currency: '',
+      status: '',
+      transactionAmount: 0,
+      settlementAmount: 0,
+      customerFee: 0,
+      supplierFee: 0,
+      bankReference: '',
+      collectionBank: '',
+      settlementBank: '',
+      settlementBankLogo: '',
+      accountNumber: '',
+      biller: '',
+      transactionReference: '',
+      settlementStatus: '',
+    }
+  }
 
-// Helper function to mask account number
-const maskAccountNumber = (accountNumber: string): string => {
-  if (!accountNumber || accountNumber.length < 4) return accountNumber
-  const lastFour = accountNumber.slice(-4)
-  const maskedPart = '*'.repeat(accountNumber.length - 4)
-  return `${maskedPart}${lastFour}`
-}
+  const data = transactionData.value
+  
+  return {
+    transactionNo: data.transactionNo || transactionId.value,
+    date: data.date || '',
+    transactionType: data.transactionType || '',
+    currency: data.currency || data.currencyId || '',
+    status: data.status || '',
+    transactionAmount: data.transactionAmount || 0,
+    settlementAmount: parseFloat(data.settlementAmount || '0'),
+    customerFee: data.customerFee || 0,
+    supplierFee: data.billerFee || 0,
+    bankReference: data.bankReference || '',
+    collectionBank: data.collectionBank || '',
+    settlementBank: data.settlementBank || '',
+    settlementBankLogo: data.settlementBankLogo || '',
+    accountNumber: data.walletAccountDisplay || data.walletAccount || '',
+    biller: data.biller || data.billerNameKh || '',
+    transactionReference: data.bankReference || '',
+    settlementStatus: data.status || '',
+  }
+})
+
 
 // Transaction overview fields
-const transactionOverviewFields = computed(() => [
-  // {
-  //   label: 'Transaction No',
-  //   value: transactionData.transactionNo,
-  //   type: 'code',
-  //   copyable: true,
-  //   rawValue: transactionData.transactionNo,
-  // },
-  {
-    label: 'Status',
-    value: transactionData.status,
-    type: 'status',
-    status: transactionData.status,
-  },
-  {
-    label: 'Transaction Amount',
-    value: `${useCurrency().formatAmount(transactionData.transactionAmount)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Transaction Type',
-    value: transactionData.transactionType,
-    type: 'badge',
-  },
-  {
-    label: 'Date',
-    value: format.formatDateTime(transactionData.date, {
-      dateStyle: userPreferences?.dateFormat || 'medium',
-      timeStyle: userPreferences?.timeFormat || 'short',
-    }),
-    type: 'text',
-  },
-  {
-    label: 'Customer Fee',
-    value: `${useCurrency().formatAmount(transactionData.customerFee)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Supplier Fee',
-    value: `${useCurrency().formatAmount(transactionData.supplierFee)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Biller Name',
-    value: `${transactionData.biller}`,
-    type: 'text',
-  },
-  {
-    label: 'Bank Name',
-    value: `${transactionData.collectionBank}`,
-    type: 'text',
-  },
-  {
-    label: 'Bank Reference',
-    value: `${transactionData.transactionReference}`,
-    type: 'code',
-    copyable: true,
-    rawValue: transactionData.transactionReference,
-  }
-])
+const transactionOverviewFields = computed(() => {
+  const txData = computedTransactionData.value
+  
+  return [
+    {
+      label: 'Status',
+      value: txData.status,
+      type: 'status',
+      status: txData.status,
+    },
+    {
+      label: 'Transaction Amount',
+      value: `${useCurrency().formatAmount(txData.transactionAmount)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: 'Transaction Type',
+      value: txData.transactionType,
+      type: 'badge',
+    },
+    {
+      label: 'Date',
+      value: txData.date ? format.formatDateTime(txData.date, {
+        dateStyle: userPreferences?.dateFormat || 'medium',
+        timeStyle: userPreferences?.timeFormat || 'short',
+      }) : '',
+      type: 'text',
+    },
+    {
+      label: 'Customer Fee',
+      value: `${useCurrency().formatAmount(txData.customerFee)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: 'Supplier Fee',
+      value: `${useCurrency().formatAmount(txData.supplierFee)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: 'Biller Name',
+      value: txData.biller,
+      type: 'text',
+    },
+    {
+      label: 'Bank Name',
+      value: txData.collectionBank,
+      type: 'text',
+    },
+    {
+      label: 'Bank Reference',
+      value: txData.transactionReference,
+      type: 'code',
+      copyable: true,
+      rawValue: txData.transactionReference,
+    }
+  ]
+})
 
 // Show all fields in a single column
 const allFields = computed(() => transactionOverviewFields.value)
-
-// Download functions
-const download = async () => {
-  showDownloadModal.value = true
-}
 
 // Push Back Transaction Detail function
 const onRowSelect = (row: any) => {
@@ -1472,12 +1655,6 @@ const getSelectedActivityLogDetail = () => {
     payload: data.metaData?.responsePayload || {},
     statusCode: data.metaData?.statusCode || null
   }
-}
-
-// Helper function to determine if the selected data is repush detail (from activity logs)
-const isRepushDetailData = () => {
-  // This function is no longer needed since we're using separate slidevers
-  return false
 }
 
 
@@ -1684,9 +1861,19 @@ const openDirectDebitDetail = () => {
   })
 }
 
-onMounted(() => {
-  loading.value = false
+// Helper function to mask account number
+const maskAccountNumber = (accountNumber: string): string => {
+  if (!accountNumber || accountNumber.length < 4) return accountNumber
+  const lastFour = accountNumber.slice(-4)
+  const maskedPart = '*'.repeat(accountNumber.length - 4)
+  return `${maskedPart}${lastFour}`
+}
+
+
+onMounted(async () => {
+  await fetchTransactionData()
 })
+
 </script>
 
 <style scoped>

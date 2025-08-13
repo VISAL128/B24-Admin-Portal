@@ -543,6 +543,8 @@
           show-date-filter
           search-tooltip="Search transactions"
           date-format="dd/MM/yyyy"
+          enabled-auto-refresh
+          :export-options="exportOptions"
           @row-click="handleViewDetails"
         />
       </div>
@@ -552,16 +554,27 @@
         <TableShimmer :rows="10" show-row-number />
       </div>
     </div>
+    <USlideover 
+      v-model:open="isSlideoverOpen"
+      :title="t('wallet_page.transaction_details')"
+      @close="closeAllocationSlideover"
+      >
+      <template #body>
+        <TransactionDetailContent :transaction="selectedTransaction" />
+      </template>
+    </USlideover>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { h, computed, ref, watch, onMounted, onUnmounted, resolveComponent } from 'vue'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useTransactionTypeIcon } from '~/composables/useTransactionTypeIcon'
 import TableShimmer from '~/components/tables/TableShimmer.vue'
+import TransactionDetailContent from '~/pages/digital-wallet/wallet/detail/TransactionDetailContent.vue'
 
 import { useWalletStore } from '~/stores/wallet'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
@@ -587,6 +600,11 @@ const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getSet
 const { formatDateTime } = useFormat()
 const { t } = useI18n()
 const errorHandler = useErrorHandler()
+const { 
+  getTransactionTypeIcon, 
+  getTransactionTypeIconStyle, 
+  getTransactionTypeIconColor 
+} = useTransactionTypeIcon()
 
 // Wallet store
 const walletStore = useWalletStore()
@@ -601,6 +619,9 @@ const summaryDisplayCurrency = ref('KHR')
 const isLoadingWalletTypes = ref(false)
 const isLoadingSummary = ref(false)
 const isLoadingTransactions = ref(false)
+const isSlideoverOpen = ref(false)
+const selectedTransaction = ref<WalletTransaction | null>(null)
+const lastFetchParams = ref<QueryParams>()
 
 // Auto refresh state
 const isAutoRefreshEnabled = ref(false)
@@ -788,16 +809,27 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
   return [
     {
       id: 'tranDate',
-      accessorKey: 'tranDate',
+      accessorKey: 'tran_date',
       header: t('wallet_page.date'),
       cell: ({ row }) => formatDateTime(row.original.tran_date),
       enableSorting: true,
     },
     {
       id: 'tranType',
-      accessorKey: 'tranType',
+      accessorKey: 'transaction_type',
       header: t('wallet_page.transaction_type'),
-      cell: ({ row }) => row.original.transaction_type || '-',
+      cell: ({ row }) => 
+        h('div', { class: 'flex items-center gap-2' }, [
+          h('div', { 
+            class: `w-6 h-6 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transaction_type)}`
+          }, [
+            h(resolveComponent('UIcon'), {
+              name: getTransactionTypeIcon(row.original.transaction_type),
+              class: `w-3 h-3 ${getTransactionTypeIconColor(row.original.transaction_type)}`
+            })
+          ]),
+          h('span', { class: 'text-sm font-medium' }, row.original.transaction_type || '-')
+        ]),
       enableColumnFilter: !isSettlementWallet, // Disable filtering for settlement wallets
       filterType: 'select',
       filterOptions: [
@@ -808,14 +840,14 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
     },
   {
     id: 'customerName',
-    accessorKey: 'customerName',
+    accessorKey: 'customer_name',
     header: t('customerName'),
     cell: ({ row }) => row.original.customer_name || '-',
     enableSorting: true
   },
     {
       id: 'bankRefId',
-      accessorKey: 'bankRefId',
+      accessorKey: 'bank_ref_id',
       header: t('bank_ref_id'),
       cell: ({ row }) => row.original.bank_ref_id || '-',
       enableSorting: true,
@@ -823,6 +855,7 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
        {
     id: 'status',
     header: () => t('status.header'),
+    accessorKey: 'status',
     cell: ({ row }) =>
       h(StatusBadge, {
         status: row.original.status,
@@ -842,7 +875,7 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
   },
   {
     id: 'currencyId',
-    accessorKey: 'currencyId',
+    accessorKey: 'currency',
     header: t('currencyId'),
     cell: ({ row }) => row.original.currency || '-',
     enableSorting: true,
@@ -855,7 +888,7 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
   },
   {
     id: 'totalAmount',
-    accessorKey: 'totalAmount',
+    accessorKey: 'amount',
     header: t('settlement.amount'),
         cell: ({ row }) =>
       h(
@@ -868,9 +901,50 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
 ]
 })
 
-const fetchTransactionsForTable = async (params?: QueryParams) => {
-  console.log(" ============== param ============== ", params)
+const exportOptions = computed(() => {
+  if (!selectedWalletTypeData.value) {
+    return {
+      fileName: 'transactions',
+      title: 'Transaction Report',
+    }
+  }
 
+  const walletName = selectedWalletTypeData.value.label || 'Wallet'
+  const currency = selectedWalletTypeData.value.currency
+
+  const getFilterValue = (field: string, defaultValue: string = t('all')) => {
+    const filter = lastFetchParams.value?.filters?.find(f => f.field === field)
+    return filter?.value ? String(filter.value) : defaultValue
+  }
+
+  const getMultipleFilterValues = (field: string) => {
+    const filters = lastFetchParams.value?.filters?.filter(f => f.field === field)
+    if (!filters || filters.length === 0) return t('all')
+    
+    // Capitalize each status value
+    return filters.map(f => {
+      const valueStr = String(f.value)
+      return `${valueStr.charAt(0).toUpperCase()}${valueStr.slice(1)}`
+    }).join(', ')
+  }
+
+  const dateRange =   `${lastFetchParams.value?.start_date} ${t('to')} ${lastFetchParams.value?.end_date}`
+  return {
+    fileName: `Transaction_Report_${walletName.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}`,
+    title: `${t('wallet_page.transaction_report')}`,
+    subtitle: `${walletName}`,
+    currency: currency,
+    filter: {
+      [t('date_range')]: dateRange,
+      [t('search')]: getFilterValue('search'),
+      [t('status.header')]: getMultipleFilterValues('status'),
+      [t('wallet_page.transaction_type')]: getMultipleFilterValues('tranType'),
+    },
+  }
+})
+
+const fetchTransactionsForTable = async (params?: QueryParams) => {
+  lastFetchParams.value = params
   isLoadingTransactions.value = true
 
   // console.log("Fetching transactions for wallet:")
@@ -954,7 +1028,13 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
 }
 
 const handleViewDetails = (row: WalletTransaction) => {
+  selectedTransaction.value = row
+  isSlideoverOpen.value = true
   console.log('View details for...:', row)
+}
+
+const closeAllocationSlideover = () => {
+  isSlideoverOpen.value = false
 }
 
 const selectedWalletTypeData = computed(() => {

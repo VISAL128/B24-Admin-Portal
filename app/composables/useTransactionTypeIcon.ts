@@ -1,0 +1,148 @@
+/**
+ * Composable for handling transaction type icons and styling
+ * Provides consistent icons, colors, and styles for different transaction types
+ */
+
+export const useTransactionTypeIcon = () => {
+  const getTransactionTypeIcon = (transactionType: string): string => {
+    switch (transactionType.toLowerCase()) {
+      case 'top-up':
+      case 'topup':
+      case 'top up':
+      case 'wallet topup':
+      case 'wallet top-up':
+      case 'wallet top up':
+        return 'i-heroicons-arrow-down-circle' // Incoming money
+      case 'settlement':
+      case 'wallet payment':
+      case 'payment':
+        return 'i-heroicons-arrow-up-circle' // Outgoing money
+      case 'transfer':
+      case 'bank transfer':
+        return 'i-heroicons-arrow-right-circle' // Transfer
+      case 'refund':
+        return 'i-heroicons-arrow-uturn-left' // Refund/Return
+      case 'qr pay':
+      case 'qr payment':
+      case 'qr':
+        return 'i-heroicons-qr-code' // QR Code
+      case 'deeplink':
+      case 'checkout':
+      case 'deeplink / checkout':
+        return 'i-heroicons-link' // Link/Web
+      case 'subscription':
+        return 'i-heroicons-calendar-date-range' // Recurring
+      default:
+        return 'i-heroicons-banknotes' // Default money icon
+    }
+  }
+
+  const getTransactionTypeIconStyle = (transactionType: string): string => {
+    switch (transactionType.toLowerCase()) {
+      case 'top-up':
+      case 'topup':
+      case 'top up':
+      case 'wallet topup':
+      case 'wallet top-up':
+      case 'wallet top up':
+        return 'bg-green-100 dark:bg-green-900/30' // Green for incoming
+      case 'settlement':
+      case 'wallet payment':
+      case 'payment':
+        return 'bg-blue-100 dark:bg-blue-900/30' // Blue for payments
+      case 'transfer':
+      case 'bank transfer':
+        return 'bg-orange-100 dark:bg-orange-900/30' // Orange for transfers
+      case 'refund':
+        return 'bg-red-100 dark:bg-red-900/30' // Red for refunds
+      case 'qr pay':
+      case 'qr payment':
+      case 'qr':
+        return 'bg-purple-100 dark:bg-purple-900/30' // Purple for QR
+      case 'deeplink':
+      case 'checkout':
+      case 'deeplink / checkout':
+        return 'bg-indigo-100 dark:bg-indigo-900/30' // Indigo for web
+      case 'subscription':
+        return 'bg-teal-100 dark:bg-teal-900/30' // Teal for subscriptions
+      default:
+        return 'bg-gray-100 dark:bg-gray-700' // Gray for unknown
+    }
+  }
+
+  const getTransactionTypeIconColor = (transactionType: string): string => {
+    switch (transactionType.toLowerCase()) {
+      case 'top-up':
+      case 'topup':
+      case 'top up':
+      case 'wallet topup':
+      case 'wallet top-up':
+      case 'wallet top up':
+        return 'text-green-600 dark:text-green-400'
+      case 'settlement':
+      case 'wallet payment':
+      case 'payment':
+        return 'text-blue-600 dark:text-blue-400'
+      case 'transfer':
+      case 'bank transfer':
+        return 'text-orange-600 dark:text-orange-400'
+      case 'refund':
+        return 'text-red-600 dark:text-red-400'
+      case 'qr pay':
+      case 'qr payment':
+      case 'qr':
+        return 'text-purple-600 dark:text-purple-400'
+      case 'deeplink':
+      case 'checkout':
+      case 'deeplink / checkout':
+        return 'text-indigo-600 dark:text-indigo-400'
+      case 'subscription':
+        return 'text-teal-600 dark:text-teal-400'
+      default:
+        return 'text-gray-600 dark:text-gray-400'
+    }
+  }
+
+  /**
+   * Get a semantic description of the transaction type for accessibility
+   */
+  const getTransactionTypeDescription = (transactionType: string): string => {
+    switch (transactionType.toLowerCase()) {
+      case 'top-up':
+      case 'topup':
+      case 'top up':
+      case 'wallet topup':
+      case 'wallet top-up':
+      case 'wallet top up':
+        return 'Incoming transaction - Money added to wallet'
+      case 'settlement':
+      case 'wallet payment':
+      case 'payment':
+        return 'Outgoing transaction - Payment made from wallet'
+      case 'transfer':
+      case 'bank transfer':
+        return 'Transfer transaction - Money moved between accounts'
+      case 'refund':
+        return 'Refund transaction - Money returned'
+      case 'qr pay':
+      case 'qr payment':
+      case 'qr':
+        return 'QR Payment - Payment made via QR code'
+      case 'deeplink':
+      case 'checkout':
+      case 'deeplink / checkout':
+        return 'Online payment - Payment made via web checkout'
+      case 'subscription':
+        return 'Subscription payment - Recurring payment'
+      default:
+        return 'Transaction'
+    }
+  }
+
+  return {
+    getTransactionTypeIcon,
+    getTransactionTypeIconStyle,
+    getTransactionTypeIconColor,
+    getTransactionTypeDescription,
+  }
+}

@@ -1,4 +1,6 @@
 {
+  "date_range": "Date Range",
+  "filters_applied": "Filters Applied",
   "yes": "Yes",
   "no": "No",
   "close": "Close",
@@ -110,6 +112,7 @@
   "table": {
     "more_options": "More Options",
     "filters": "Filters",
+    "filters_applied": "Filters Applied",
     "empty_state_message": "No data available.",
     "loading": "Loading...",
     "no_records_found": "No records found",
@@ -238,7 +241,8 @@
         "customerName": "Customer Name",
         "actions": "Actions",
         "currencyId": "Currency",
-        "tranType": "Transaction Type"
+        "tranType": "Transaction Type",
+        "bankRefId":"Bank Reference ID"
       }
     }
   },
@@ -287,6 +291,16 @@
   "copy_failed": "Copy Failed",
   "copy_failed_message": "Failed to copy to clipboard",
   "wallet_page": {
+    "transaction_report": "Transaction Report",
+    "settle_amount": "Settlement Amount",
+    "description":"Description",
+    "bank_ref_id": "Bank Reference ID",
+    "transaction_id": "Transaction ID",
+    "currency": "Currency",
+    "customer_email": "Customer Email",
+    "customer_phone": "Customer Phone",
+    "customer_name":"Customer Name",
+    "customer_info": "Customer Information",
     "tran_date": "Transaction Date",
     "title": "Digital Wallet",
     "subtitle": "Manage your wallet balances and transactions",
@@ -920,6 +934,7 @@
   "sort_by": "Sort by",
   "clear": "Clear",
   "all": "All",
+  "all_time": "All Time",
   "transaction_summary": "Transaction Summary",
   "today": "Today",
   "this_week": "This Week",
