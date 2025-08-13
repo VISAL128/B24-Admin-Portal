@@ -1,7 +1,10 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
     <!-- Header -->
-    <PageHeader :title="bank?.name_kh" :subtitle="bank?.name" />
+    <PageHeader
+      :title="bank?.supplier_bank_service?.name_kh"
+      :subtitle="bank?.supplier_bank_service?.name"
+    />
 
     <!-- Content -->
     <div class="flex-1 overflow-auto space-y-3">
@@ -69,20 +72,28 @@
           </div>
 
           <!-- General Information Content -->
-          <div v-else-if="bank" class="space-y-4">
-            <UAvatar :name="bank.name" :src="bank.logo" size="3xl" />
+          <div v-else-if="bank?.supplier_bank_service" class="space-y-4">
+            <UAvatar
+              :name="bank.supplier_bank_service.name"
+              :src="bank.supplier_bank_service.logo"
+              size="3xl"
+            />
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.bank_name') }}
                 </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.name }}</p>
+                <p class="text-sm text-gray-900 dark:text-white">
+                  {{ bank.supplier_bank_service.name }}
+                </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.name_kh') }}
                 </label>
-                <p class="text-sm text-gray-900 dark:text-white">{{ bank.name_kh || '-' }}</p>
+                <p class="text-sm text-gray-900 dark:text-white">
+                  {{ bank.supplier_bank_service.name_kh || '-' }}
+                </p>
               </div>
             </div>
             <Divider />
@@ -91,14 +102,17 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.is_active') }}
                 </label>
-                <StatusBadge :status="bank.active ? 'active' : 'inactive'" size="sm" />
+                <StatusBadge
+                  :status="bank.supplier_bank_service.active ? 'active' : 'inactive'"
+                  size="sm"
+                />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ t('banks.activated_date') }}
                 </label>
                 <p class="text-sm text-gray-900 dark:text-white">
-                  {{ formatDateTime(bank.activated_date) }}
+                  {{ formatDateTime(bank.supplier_bank_service.activated_date) }}
                 </p>
               </div>
             </div>
@@ -109,7 +123,7 @@
                   {{ t('banks.is_settlement_bank') }}
                 </label>
                 <StatusBadge
-                  :status="bank.is_settlement_bank ? 'yes' : 'no'"
+                  :status="bank.supplier_bank_service.is_settlement_bank ? 'yes' : 'no'"
                   :use-translation="true"
                   size="sm"
                 />
@@ -119,7 +133,7 @@
                   {{ t('banks.is_collection_bank') }}
                 </label>
                 <StatusBadge
-                  :status="bank.is_collection_bank ? 'yes' : 'no'"
+                  :status="bank.supplier_bank_service.is_collection_bank ? 'yes' : 'no'"
                   :use-translation="true"
                   size="sm"
                 />
@@ -145,7 +159,7 @@
           </template>
 
           <!-- Account Information Card Skeleton -->
-          <div v-if="loadingBankAccounts" class="space-y-3">
+          <div v-if="loadingBankInfo" class="space-y-3">
             <div
               v-for="n in 2"
               :key="n"
@@ -286,7 +300,7 @@
 
     <!-- Error State -->
     <div
-      v-if="!loading && !loadingBankInfo && !bank"
+      v-if="!loading && !loadingBankInfo && !bank?.supplier_bank_service"
       class="flex items-center justify-center flex-1"
     >
       <div class="text-center">
@@ -310,7 +324,7 @@ import { useBankApi } from '~/composables/api/useBankApi'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useErrorHandler } from '~/composables/useErrorHandler'
-import type { Bank, BankAccount } from '~/models/bank'
+import type { BankAccount, BankDetailsResponse } from '~/models/bank'
 import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import type { QueryParams } from '~/models/baseModel'
@@ -340,15 +354,14 @@ definePageMeta({
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { getBankById, getAccountsBySupplierBankServiceId } = useBankApi()
+const { getBankById } = useBankApi()
 const { getSettlementHistory } = useSupplierApi()
 const { formatDateTime } = useFormat()
 const errorHandler = useErrorHandler()
 
-const bank = ref<Bank | null>(null)
+const bank = ref<BankDetailsResponse | null>(null)
 const bankAccounts = ref<BankAccount[]>([])
 const loading = ref(false)
-const loadingBankAccounts = ref(false)
 const loadingBankInfo = ref(false)
 const tblFull = ref(false)
 
@@ -448,7 +461,9 @@ const fetchSettlements = async (
       start_date: params.start_date || undefined,
       end_date: params.end_date || undefined,
       status: params.statuses || undefined,
-      banks: bank.value?.bank_id ? [bank.value.bank_id] : [],
+      banks: bank.value?.supplier_bank_service?.bank_id
+        ? [bank.value.supplier_bank_service.bank_id]
+        : [],
     }
 
     const response = await getSettlementHistory(query)
@@ -490,6 +505,10 @@ const fetchBank = async () => {
   try {
     const response = await getBankById(supplierBankServiceId.value)
     bank.value = response
+    // Extract bank accounts from the response
+    if (response?.accounts) {
+      bankAccounts.value = response.accounts
+    }
   } catch (error) {
     errorHandler.handleApiError(error)
     router.push('/organization/banks')
@@ -498,23 +517,7 @@ const fetchBank = async () => {
   }
 }
 
-const fetchBankAccounts = async () => {
-  if (!supplierBankServiceId.value) return
-
-  loadingBankAccounts.value = true
-  try {
-    const res = await getAccountsBySupplierBankServiceId(supplierBankServiceId.value)
-    bankAccounts.value = res || []
-  } catch (error) {
-    console.error('Error fetching bank accounts:', error)
-    bankAccounts.value = []
-  } finally {
-    loadingBankAccounts.value = false
-  }
-}
-
 onMounted(() => {
   fetchBank()
-  fetchBankAccounts()
 })
 </script>
