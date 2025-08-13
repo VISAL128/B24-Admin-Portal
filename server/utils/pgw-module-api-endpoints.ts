@@ -10,7 +10,9 @@ export const PGW_MODULE_API_ENDPOINTS = {
   TRANSACTION: {
     SUMMARY: '/transaction/summary',
     GET_TRANSACTION_LIST: '/transaction/list/v2',
+    GET_BY_ID: '/transaction/{id}/v2',
     ALLOCATION: '/transaction/allocation',
     ALLOCATION_DETAILS: '/transaction/allocation/details/{id}',
   },
 }
+
