@@ -963,6 +963,7 @@
     }
   },
   "banks": {
+    "no_accounts_found": "No accounts found",
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
     "search_placeholder": "Search by bank name",

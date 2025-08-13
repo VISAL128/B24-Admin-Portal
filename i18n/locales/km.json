@@ -614,7 +614,7 @@
       "expire": "ផុតកំណត់",
       "reversed": "បានបង់ត្រឡប់វិញ"
     },
-     "settlementType": {
+    "settlementType": {
       "HUB": "HUB",
       "DIRECT": "DIRECT"
     },
@@ -636,7 +636,7 @@
     }
   },
   "table": {
-      "transaction-history-table": {
+    "transaction-history-table": {
       "columns": {
         "collectionBank": "ធនាគារប្រមូលប្រាក់",
         "settlementBank": "ធនាគារទូទាត់",
@@ -670,7 +670,7 @@
         "channel": "បណ្តាញ",
         "customerName": "ឈ្មោះអតិថិជន",
         "action": "សកម្មភាព",
-        "currencyId":"រូបិយប័ណ្ណ",
+        "currencyId": "រូបិយប័ណ្ណ",
         "tranType": "ប្រភេទប្រតិបត្តិការ",
         "bankRefId": "លេខយោងធនាគារ"
       }
@@ -781,9 +781,9 @@
     },
     "sub-billers-table": {
       "columns": {
-        "syncCode":"លេខកូដ",
-        "name":"ឈ្មោះ",
-        "address":"អាសយដ្ឋាន"
+        "syncCode": "លេខកូដ",
+        "name": "ឈ្មោះ",
+        "address": "អាសយដ្ឋាន"
       }
     }
   },
@@ -981,6 +981,7 @@
     }
   },
   "banks": {
+    "no_accounts_found": "រកមិនឃើញគណនី",
     "title": "ធនាគារ",
     "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់រចនាសម្ព័ន្ធធនាគារ",
     "search_placeholder": "ស្វែងរកតាមឈ្មោះធនាគារ",

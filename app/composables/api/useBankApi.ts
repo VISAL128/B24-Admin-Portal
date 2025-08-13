@@ -1,6 +1,7 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
   Bank,
+  BankAccount,
   BankListResponse,
 } from '~/models/bank'
 import type { ApiResponse, QueryParams } from '~/models/baseModel'
@@ -141,6 +142,27 @@ export const useBankApi = () => {
   }
 
   /**
+   * Get accounts by supplier bank service id
+   */
+  const getAccountsBySupplierBankServiceId = async (sbs_id: string): Promise<BankAccount[]> => {
+    try {
+      const response = await execute<BankAccount[]>(() =>
+      $fetch<ApiResponse<BankAccount[]>>(`/api/pgw-module/bank/${sbs_id}/accounts`, {
+        method: 'GET',
+      })
+    )
+
+    if (response.code !== 'SUCCESS') {
+      return []
+    }
+    return response.data
+  } catch (error) {
+    if (import.meta.env.MODE === 'development') console.error('Error fetching accounts by supplier bank service ID:', error)
+    return []
+  }
+}
+
+  /**
    * Delete a bank
    */
   const deleteBank = async (id: string): Promise<boolean> => {
@@ -212,5 +234,6 @@ export const useBankApi = () => {
     toggleBankStatus,
     getSettlementBanks,
     getCollectionBanks,
+    getAccountsBySupplierBankServiceId
   }
 }
