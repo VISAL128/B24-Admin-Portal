@@ -505,19 +505,6 @@ const fetchBankAccounts = async () => {
   try {
     const res = await getAccountsBySupplierBankServiceId(supplierBankServiceId.value)
     bankAccounts.value = res || []
-    bankAccounts.value.push({
-      id: '',
-      code: '123456',
-      name: 'MOCK ACCOUNT',
-      title: '',
-      currency_id: '',
-      status: 'active',
-      is_default: false,
-      account_type_id: '',
-      bank_id: bank.value?.bank_id || '',
-      created_date: '',
-      updated_date: '',
-    })
   } catch (error) {
     console.error('Error fetching bank accounts:', error)
     bankAccounts.value = []

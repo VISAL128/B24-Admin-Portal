@@ -9,11 +9,11 @@
     >
       <template v-if="modelValue.start">
         <template v-if="modelValue.end">
-          {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }} -
-          {{ df.format(modelValue.end.toDate(getLocalTimeZone())) }}
+          {{ formatDate(modelValue.start.toDate(getLocalTimeZone())) }} -
+          {{ formatDate(modelValue.end.toDate(getLocalTimeZone())) }}
         </template>
         <template v-else>
-          {{ df.format(modelValue.start.toDate(getLocalTimeZone())) }}
+          {{ formatDate(modelValue.start.toDate(getLocalTimeZone())) }}
         </template>
       </template>
       <template v-else>
@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { CalendarDate, DateFormatter, getLocalTimeZone, isSameDay } from '@internationalized/date'
+import { CalendarDate, getLocalTimeZone, isSameDay } from '@internationalized/date'
 import { sub } from 'date-fns'
 import type { Duration } from 'date-fns'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -91,7 +91,7 @@ const { t } = useI18n()
 const { formatDate } = useFormat()
 
 const open = ref(false)
-const df = new DateFormatter('en-US', { dateStyle: 'medium' })
+// const df = new DateFormatter('en-US', { dateStyle: 'medium' })
 
 // Create a computed property for v-model support
 const modelValue = computed({
