@@ -387,6 +387,7 @@ export interface ExportOptions {
   startDate?: string
   endDate?: string
   totalAmount?: number
+  filter?: Record<string, string>
 }
 
 // Use table configuration composable
@@ -795,6 +796,7 @@ const resolvedExportOptions = computed(() => ({
   startDate: props.exportOptions?.startDate ?? startDate.value,
   endDate: props.exportOptions?.endDate ?? endDate.value,
   totalAmount: props.exportOptions?.totalAmount,
+  filter: props.exportOptions?.filter,
 }))
 
 const tableRef = useTemplateRef('tableRef')
@@ -828,11 +830,11 @@ const activeFilterCount = computed(() => {
 
 const exportHeaders = computed(() =>
   filteredColumns.value.map((col) => ({
-    key: String(col.accessorKey || col.id || ''),
+    key: String(col.accessorKey),
     label:
       typeof col.header === 'string'
         ? col.header
-        : (col.id ? String(col.id) : '')
+        : (col.id ? String(getTranslationHeaderById(col.id)) : '')
             .replace(/_/g, ' ')
             .replace(/\b\w/g, (l) => l.toUpperCase()),
   }))

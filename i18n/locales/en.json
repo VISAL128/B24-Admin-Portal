@@ -1,4 +1,6 @@
 {
+  "date_range": "Date Range",
+  "filters_applied": "Filters Applied",
   "yes": "Yes",
   "no": "No",
   "close": "Close",
@@ -78,7 +80,17 @@
       "success": "Success",
       "error": "Error",
       "processing": "Processing",
-      "reversed": "Reversed"
+      "reversed": "Reversed",
+      "cancel": "Cancel",
+      "expire": "Expired"
+    },
+    "settlementType": {
+      "HUB": "HUB",
+      "DIRECT": "DIRECT"
+    },
+    "currency": {
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
     },
     "active": {
       "1": "Active",
@@ -100,6 +112,7 @@
   "table": {
     "more_options": "More Options",
     "filters": "Filters",
+    "filters_applied": "Filters Applied",
     "empty_state_message": "No data available.",
     "loading": "Loading...",
     "no_records_found": "No records found",
@@ -230,7 +243,8 @@
         "customerName": "Customer Name",
         "actions": "Actions",
         "currencyId": "Currency",
-        "tranType": "Transaction Type"
+        "tranType": "Transaction Type",
+        "bankRefId":"Bank Reference ID"
       }
     }
   },
@@ -247,7 +261,9 @@
     "processing": "Processing",
     "yes": "Yes",
     "no": "No",
-    "cancel": "Cancel"
+    "cancel": "Cancelled",
+    "expire": "Expired",
+    "reversed": "Reversed"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -277,6 +293,16 @@
   "copy_failed": "Copy Failed",
   "copy_failed_message": "Failed to copy to clipboard",
   "wallet_page": {
+    "transaction_report": "Transaction Report",
+    "settle_amount": "Settlement Amount",
+    "description":"Description",
+    "bank_ref_id": "Bank Reference ID",
+    "transaction_id": "Transaction ID",
+    "currency": "Currency",
+    "customer_email": "Customer Email",
+    "customer_phone": "Customer Phone",
+    "customer_name":"Customer Name",
+    "customer_info": "Customer Information",
     "tran_date": "Transaction Date",
     "title": "Digital Wallet",
     "subtitle": "Manage your wallet balances and transactions",
@@ -463,6 +489,10 @@
     "developer_tools": "Developer Tools"
   },
   "settings": {
+    "reset_success": "Preferences reset successfully!",
+    "reset_error": "Failed to reset preferences. Please try again.",
+    "reset_success_desc": "Your preferences have been reset to default values.",
+    "save_error": "Failed to save preferences. Please try again.",
     "generate_details": "General Details",
     "fee_config": "Fee Configuration",
     "date_format_short": "Short (DD/MM/YYYY)",
@@ -906,6 +936,7 @@
   "sort_by": "Sort by",
   "clear": "Clear",
   "all": "All",
+  "all_time": "All Time",
   "transaction_summary": "Transaction Summary",
   "today": "Today",
   "this_week": "This Week",
@@ -949,6 +980,7 @@
     }
   },
   "banks": {
+    "no_accounts_found": "No accounts found",
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
     "search_placeholder": "Search by bank name",

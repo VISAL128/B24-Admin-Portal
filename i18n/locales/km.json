@@ -1,4 +1,6 @@
 {
+  "date_range": "ជួរកាលបរិច្ឆេទ",
+  "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
   "yes": "បាទ",
   "no": "ទេ",
   "close": "បិទ",
@@ -83,7 +85,9 @@
     "processing": "កំពុងដំណើរការ",
     "yes": "បាទ",
     "no": "ទេ",
-    "cancel": "បោះបង់"
+    "cancel": "បានបោះបង់",
+    "expire": "ផុតកំណត់",
+    "reversed": "បានបង់ត្រឡប់វិញ"
   },
   "no_transactions_found": "រកមិនឃើញប្រតិបត្តិការ",
   "no_transactions_found_desc": "មិនមានប្រតិបត្តិការណាមួយសម្រាប់បង្ហាញ។",
@@ -103,6 +107,16 @@
   "copy_failed": "ចម្លងបរាជ័យ",
   "copy_failed_message": "បរាជ័យក្នុងការចម្លងទៅក្ដារឈូស",
   "wallet_page": {
+    "transaction_report": "របាយការណ៍ប្រតិបត្តិការ",
+    "settlement_amount": "ចំនួនទូទាត់",
+    "description": "ការពិពណ៌នា",
+    "bank_ref_id": "លេខយោងធនាគារ",
+    "transaction_id": "លេខអត្តសញ្ញាណប្រតិបត្តិការ",
+    "currency": "រូបិយប័ណ្ណ",
+    "customer_email": "អ៊ីមែលអតិថិជន",
+    "customer_phone": "លេខទូរស័ព្ទអតិថិជន",
+    "customer_name": "ឈ្មោះអតិថិជន",
+    "customer_info": "ព័ត៌មានអតិថិជន",
     "tran_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
     "title": "កាបូបឌីជីថល",
     "subtitle": "គ្រប់គ្រងសមតុល្យកាបូប និងប្រតិបត្តិការរបស់អ្នក",
@@ -255,6 +269,10 @@
   "user_profile": "អាជីវកម្មអ្នកប្រើប្រាស់",
   "details": "ព័ត៌មានលម្អិត",
   "settings": {
+    "reset_success": "ការកំណត់ឡើងវិញបានជោគជ័យ!",
+    "reset_success_desc": "ការកំណត់របស់អ្នកត្រូវបានកំណត់ឡើងវិញទៅតម្លៃលំនាំដើម។",
+    "reset_error": "បរាជ័យក្នុងការកំណត់ឡើងវិញ។ សូមព្យាយាមម្តងទៀត។",
+    "save_error": "បរាជ័យក្នុងការរក្សាទុកចំណូលចិត្ត។ សូមព្យាយាមម្តងទៀត។",
     "generate_details": "ព័ត៌មានទូទៅ",
     "fee_config": "ការកំណត់ថ្លៃសេវា",
     "date_format_short": "ខ្លី (DD/MM/YYYY)",
@@ -602,11 +620,19 @@
       "completed": "បានបញ្ចប់",
       "failed": "បរាជ័យ",
       "success": "ជោគជ័យ",
-      "error": "កំហុស",
+      "error": "កំហុសssssss",
       "processing": "កំពុងដំណើរការ",
-      "cancel": "បានលុបចោល",
+      "cancel": "បានបោះបង់",
       "expire": "ផុតកំណត់",
       "reversed": "បានបង់ត្រឡប់វិញ"
+    },
+    "settlementType": {
+      "HUB": "HUB",
+      "DIRECT": "DIRECT"
+    },
+    "currency": {
+      "USD": "USD - ដុល្លារអាមេរិក",
+      "KHR": "KHR - រៀលកម្ពុជា"
     },
     "active": {
       "1": "សកម្ម",
@@ -622,7 +648,7 @@
     }
   },
   "table": {
-      "transaction-history-table": {
+    "transaction-history-table": {
       "columns": {
         "collectionBank": "ធនាគារប្រមូលប្រាក់",
         "settlementBank": "ធនាគារទូទាត់",
@@ -656,7 +682,7 @@
         "channel": "បណ្តាញ",
         "customerName": "ឈ្មោះអតិថិជន",
         "action": "សកម្មភាព",
-        "currencyId":"រូបិយប័ណ្ណ",
+        "currencyId": "រូបិយប័ណ្ណ",
         "tranType": "ប្រភេទប្រតិបត្តិការ",
         "bankRefId": "លេខយោងធនាគារ"
       }
@@ -678,11 +704,13 @@
         "customerName": "ឈ្មោះអតិថិជន",
         "action": "សកម្មភាព",
         "currencyId": "រូបិយប័ណ្ណ",
-        "tranType": "ប្រភេទប្រតិបត្តិការ"
+        "tranType": "ប្រភេទប្រតិបត្តិការ",
+        "bankRefId": "លេខយោងធនាគារ"
       }
     },
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",
+    "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
@@ -768,9 +796,9 @@
     },
     "sub-billers-table": {
       "columns": {
-        "syncCode":"លេខកូដ",
-        "name":"ឈ្មោះ",
-        "address":"អាសយដ្ឋាន"
+        "syncCode": "លេខកូដ",
+        "name": "ឈ្មោះ",
+        "address": "អាសយដ្ឋាន"
       }
     }
   },
@@ -968,6 +996,7 @@
     }
   },
   "banks": {
+    "no_accounts_found": "រកមិនឃើញគណនី",
     "title": "ធនាគារ",
     "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់រចនាសម្ព័ន្ធធនាគារ",
     "search_placeholder": "ស្វែងរកតាមឈ្មោះធនាគារ",

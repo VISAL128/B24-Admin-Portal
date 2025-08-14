@@ -54,20 +54,21 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import InfoBanner from '~/components/cards/InfoBanner.vue'
 import SummaryCards from '~/components/cards/SummaryCards.vue'
-import StatusBadge from '~/components/StatusBadge.vue'
 import TablesExTable from '~/components/tables/ExTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
-import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useBankApi } from '~/composables/api/useBankApi'
 import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useErrorHandler } from '~/composables/useErrorHandler'
 import { useNotification } from '~/composables/useNotification'
+import { useStatusBadge } from '~/composables/useStatusBadge'
 import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
-import type { QueryParams } from '~/models/baseModel'
+import type { Bank } from '~/models/bank'
+import type { TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import { TransactionStatus, TransactionType } from '~/utils/enumModel'
+import { SettlementType, TransactionStatus, TransactionType } from '~/utils/enumModel'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 
 // Helper function to get the enum key from enum value
@@ -76,9 +77,8 @@ const getTransactionTypeKey = (value: string): string => {
   return entry ? entry[0] : value
 }
 
-const pgwModuleApi = usePgwModuleApi()
-const transactionApi = useTransactionApi()
 const {getTransactionList, getTransactionSummary} = useTransactionApi()
+const { getTBanks } = useBankApi()
 
 const showInfoBanner = ref(true)
 const isLoading = ref(true)
@@ -95,6 +95,7 @@ const handleRepush = () => {
 }
 
 const transactionSummary = ref<TransactionSummaryModel | null>(null)
+const bankData = ref<Bank[]>([])
 
 // Reactive computed property that updates when transactionSummary changes
 const summarys = computed(() => {
@@ -177,6 +178,25 @@ const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: st
   }
 }
 
+// Function to fetch bank data from API
+const fetchBankData = async () => {
+  try {
+    const response = await getTBanks()
+    if (response.code === 'SUCCESS' && response.data) {
+      bankData.value = response.data
+      console.log('✅ Frontend: Bank data loaded successfully', response.data)
+    }
+  } catch (error) {
+    console.error('❌ Frontend: Error fetching bank data:', error)
+    // Fallback to hardcoded options if API fails
+    // bankData.value = [
+    //   { id: '1', bank_id: 'ABA', name: 'ABA Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' },
+    //   { id: '2', bank_id: 'ACLEDA', name: 'ACLEDA Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' },
+    //   { id: '3', bank_id: 'AMK', name: 'AMK Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' }
+    // ]
+  }
+}
+
 // New handler: get the exact dates used by the table fetch and apply to summary
 const handleDataChanged = (result: Record<string, any>) => {
   const FromDate = toYMD(result?.start_date)
@@ -195,21 +215,47 @@ onMounted(async () => {
   const FromDate = `${first.getFullYear()}-${pad(first.getMonth() + 1)}-${pad(first.getDate())}`
   const ToDate = `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`
 
-  await fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 })
+  // Load both transaction summary and bank data
+  await Promise.all([
+    fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 }),
+    fetchBankData()
+  ])
 })
 
-const fetchTransactionHistory = async (params?: QueryParams): Promise<{
+const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise<{
   data: TransactionHistoryRecord[]
   total_record: number
   total_page: number
 } | null> => {
   try {
+    // Extract transactionType from filters and move to Types parameter
+    let cleanedFilters = params?.filters || []
+    let transactionTypes: string[] = []
+    
+    // Find and extract transactionType filters
+    if (cleanedFilters.length > 0) {
+      cleanedFilters = cleanedFilters.filter(filter => {
+        if (filter.field === 'transactionType') {
+          // Extract transaction type values and add to Types array
+          if (Array.isArray(filter.value)) {
+            transactionTypes.push(...filter.value)
+          } else {
+            transactionTypes.push(String(filter.value))
+          }
+          return false // Remove from filters array
+        }
+        return true // Keep other filters
+      })
+    }
+    
     const response = await getTransactionList({
       ...params,
-      statuses: params?.statuses || [], // Pass statuses as array like settlement page
-      filters: params?.filters || [], // Ensure filters is always an array
-    })
-    console.log('Fetched transactions:', response)
+      statuses: params?.statuses || [], // Pass statuses as array
+      Types: transactionTypes, // Pass transaction types directly as Types parameter
+      filters: cleanedFilters, // Pass cleaned filters without transactionType
+    }, locale.value) // Pass current locale
+    
+    console.log('Fetched transactions with Types:', transactionTypes, 'and filters:', cleanedFilters)
     return {
       data: response.results || [],
       total_record: response.param?.rowCount || 0,
@@ -226,6 +272,7 @@ const fetchTransactionHistory = async (params?: QueryParams): Promise<{
 
 
 const { createSortableHeader, createRowNumberCell } = useTable()
+const { transactionStatusCellBuilder, getTransactionStatusTranslationKey } = useStatusBadge()
 const { t, locale } = useI18n()
 const errorHandler = useErrorHandler()
 const table = ref<any>(null)
@@ -237,19 +284,69 @@ const notification = useNotification()
 
 const TABLE_ID = 'transaction-history-table'
 
-// Restore navigation helper for details page
-const navigateToDetails = (rowId: string) => {
-  router.push(`/transactions/detail/${rowId}`)
+// Navigation to Transaction Detail Page
+const navigateToDetails = (transactionId: string) => {
+  router.push(`/transactions/detail/${transactionId}`)
 }
 
-// Build status filter options from enum
-const statusLabel = (s: string) => {
-  const key = `status.${s}`
+// Build status filter options from TransactionStatus enum
+const getTranslatedTransactionStatusLabel = (status: string) => {
+  const key = getTransactionStatusTranslationKey(status)
   const translated = t(key)
-  return translated !== key ? translated : s.charAt(0).toUpperCase() + s.slice(1)
+  return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
 }
+
 const transactionStatusFilterOptions = computed(() =>
-  Object.values(TransactionStatus).map((s) => ({ label: statusLabel(s), value: s }))
+  Object.values(TransactionStatus).map((status) => ({
+    label: getTranslatedTransactionStatusLabel(status),
+    value: status
+  }))
+)
+
+// Build transaction type filter options from TransactionType enum
+const transactionTypeFilterOptions = computed(() =>
+  Object.entries(TransactionType).map(([key, value]) => ({
+    label: key.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to readable format
+    value: value
+  }))
+)
+
+// Build settlement type filter options from SettlementType enum
+const settlementTypeFilterOptions = computed(() =>
+  Object.values(SettlementType).map((type) => ({
+    label: type,
+    value: type
+  }))
+)
+
+// Build bank filter options from API data
+const bankFilterOptions = computed(() =>
+  bankData.value
+    //.filter(bank => bank.active === 'ACTIVE')
+    .map((bank) => ({
+      label: bank.name || bank.name_kh || 'Unknown Bank',
+      value: bank.bank_id || bank.id || bank.name
+    }))
+)
+
+// Build collection bank filter options (only banks that can be used for collection)
+const collectionBankFilterOptions = computed(() =>
+  bankData.value
+   // .filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_collection_bank)
+    .map((bank) => ({
+      label: bank.name || bank.name_kh || 'Unknown Bank',
+      value: bank.bank_id || bank.id || bank.name
+    }))
+)
+
+// Build settlement bank filter options (only banks that can be used for settlement)
+const settlementBankFilterOptions = computed(() =>
+  bankData.value
+    //.filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_settlement_bank)
+    .map((bank) => ({
+      label: bank.name || bank.name_kh || 'Unknown Bank',
+      value: bank.bank_id || bank.id || bank.name
+    }))
 )
 
 const exportHeaders = [
@@ -460,9 +557,9 @@ const translations = {
 //   }
 // }
 
-const handleViewDetails = (record: TransactionHistoryRecord) => {
+const handleViewDetails = (transaction: TransactionHistoryRecord) => {
   // Navigate to transaction details page
-  navigateToDetails(record.id)
+  navigateToDetails(transaction.id)
 }
 const handleFilterChange = (columnId: string, value: string) => {
   console.log('Filter changed:', columnId, value)
@@ -514,11 +611,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     header: () => t('pages.transaction.collection_bank'),
     cell: ({ row }) => row.original.collectionBank || '-',
     enableColumnFilter: true,
-    filterOptions: [
-      { label: 'ABA', value: 'ABA' },
-      { label: 'ACLEDA', value: 'ACLEDA' },
-      { label: 'AMK', value: 'AMK' },
-    ],
+    filterOptions: collectionBankFilterOptions.value,
   },
   {
     id: 'settlementBank',
@@ -526,11 +619,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     header: () => t('page.transaction.settlement_bank'),
     cell: ({ row }) => row.original.settlementBank || '-',
     enableColumnFilter: true,
-    filterOptions: [
-      { label: 'ABA', value: 'ABA' },
-      { label: 'ACLEDA', value: 'ACLEDA' },
-      { label: 'AMK', value: 'AMK' },
-    ],
+    filterOptions: settlementBankFilterOptions.value,
   },
   {
     id: 'settlementType',
@@ -538,10 +627,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     header: () => t('pages.transaction.settlement_type'),
     cell: ({ row }) => row.original.settlementType || '-',
     enableColumnFilter: true,
-    filterOptions: [
-      { label: 'Auto', value: 'Auto' },
-      { label: 'Manual', value: 'Manual' },
-    ],
+    filterOptions: settlementTypeFilterOptions.value,
   },
   {
     id: 'transactionType',
@@ -550,12 +636,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
     enableSorting: true,
     enableColumnFilter: true,
-    filterOptions: [
-      { label: 'Wallet Top up', value: 'Wallet Top up' },
-      { label: 'Deeplink / Checkout', value: 'Deeplink / Checkout' },
-      { label: 'Wallet Payment', value: 'Wallet Payment' },
-      { label: 'QR Pay', value: 'QR Pay' },
-    ],
+    filterOptions: transactionTypeFilterOptions.value,
   },
   {
     id: 'subSupplier',
@@ -577,16 +658,24 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'status',
     header: () => t('pages.transaction.status'),
-    cell: ({ row }) =>
-      h(StatusBadge, {
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
+    cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
     enableColumnFilter: true,
     filterType: 'status',
     filterOptions: transactionStatusFilterOptions.value,
   },
+  // {
+  //   id: 'status',
+  //   header: () => t('pages.transaction.status'),
+  //   cell: ({ row }) =>
+  //     h(StatusBadge, {
+  //       status: row.original.status,
+  //       variant: 'subtle',
+  //       size: 'sm',
+  //     }),
+  //   enableColumnFilter: true,
+  //   filterType: 'status',
+  //   filterOptions: transactionStatusFilterOptions.value,
+  // },
   {
     id: 'currency',
     accessorKey: 'currency',

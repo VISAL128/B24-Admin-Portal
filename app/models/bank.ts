@@ -1,4 +1,4 @@
-import type { BankServiceStatus } from "#imports"
+import type { BankServiceStatus } from '#imports'
 
 export interface Bank {
   id: string
@@ -32,4 +32,9 @@ export interface BankListResponse {
   total_page: number
   current_page: number
   page_size: number
+}
+
+export interface BankDetailsResponse {
+  supplier_bank_service: Bank | null
+  accounts: BankAccount[]
 }

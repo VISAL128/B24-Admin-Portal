@@ -24,7 +24,7 @@ export interface TransactionHistoryRecord {
   // transactionType: string
   // subSupplier: string
 
-   id: string;
+    id: string;
     transactionNo: string;
     transactionType: TransactionType | string;
   
