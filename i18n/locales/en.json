@@ -948,7 +948,40 @@
     "install_instruction": "Run: npm install lottie-web"
   },
   "pages": {
+    "transaction_detail": {
+      "customer": "Customer",
+      "customerCode": "Customer Code",
+      "currency": "Currency",
+      "billNo": "Bill No",
+      "amount": "Amount",
+      "title": "Transaction Detail",
+      "settlement_bank": "Settlement Bank",
+      "bank_name": "Bank Name",
+      "account_number": "Account Number",
+      "settlement_amount": "Settlement Amount",
+      "error_transaction_detail": "Failed to load transaction details",
+      "error_allocation": "Failed to load Transaction Allocation"
+    },
+    "transaction_allocation": {
+      "title": "Transaction Allocation",
+      "id": "ID",
+      "customer": "Customer",
+      "transaction_amount": "Transaction Amount",
+      "allocation_party": "Allocation Party",
+      "amount": "Received Amount",
+      "outstanding_amount": "Outstanding Balance",
+      "currency": "Currency",
+      "date": "Transaction Date",
+      "status": {
+        "status": "Status",
+        "complete": "Complete",
+        "pending": "Pending"
+      }
+    },
     "transaction": {
+      "supplier_fee": "Supplier Fee",
+      "customer_fee": "Customer Fee",
+      "amount": "Total Amount",
       "title": "Transaction",
       "created_date": "Transaction Date",
       "total_customer": "Total Customer",

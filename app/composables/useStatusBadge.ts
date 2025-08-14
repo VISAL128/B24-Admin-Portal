@@ -48,6 +48,21 @@ export const useStatusBadge = () => {
   }
 
   /**
+   * Get the translation key for a Transaction Allocation status
+   */
+  const getTransactionAllocationStatusTranslationKey = (status: string): string => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'status.completed'
+      case 'pending':
+        return 'status.pending'
+      default:
+        return 'status.pending'
+    }
+  }
+
+
+  /**
    * Get an icon name for a settlement status (for use with icon libraries)
    */
   const getSettlementStatusIcon = (status: string): string => {
@@ -110,6 +125,20 @@ export const useStatusBadge = () => {
     return t(getTransactionStatusTranslationKey(status))
   }
 
+   /**
+   * Format transaction allocation status for display
+   */
+  const formatTransactionAllocationStatus = (status: string, useTranslation: boolean = true): string => {
+    if (!useTranslation) {
+      return status.charAt(0).toUpperCase() + status.slice(1)
+    }
+
+    const { t } = useI18n()
+    return t(getTransactionAllocationStatusTranslationKey(status))
+  }
+
+
+
   const statusCellBuilder = (status: string, useTranslation: boolean = true) => {
 
     return h(StatusBadgeV2, {
@@ -130,14 +159,27 @@ export const useStatusBadge = () => {
     })
   }
 
+  const transactionAllocationStatusCellBuilder = (status: string, useTranslation: boolean = true) => {
+
+    return h(StatusBadgeV2, {
+      status,
+      variant: 'subtle',
+      size: 'sm',
+      useTranslation
+    })
+  }
+
   return {
     getSettlementStatusTranslationKey,
     getTransactionStatusTranslationKey,
+    getTransactionAllocationStatusTranslationKey,
     getSettlementStatusIcon,
     getTransactionStatusIcon,
     formatSettlementStatus,
     formatTransactionStatus,
+    formatTransactionAllocationStatus,
     statusCellBuilder,
-    transactionStatusCellBuilder
+    transactionStatusCellBuilder,
+    transactionAllocationStatusCellBuilder
   }
 }

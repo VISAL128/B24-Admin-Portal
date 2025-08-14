@@ -663,19 +663,6 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     filterType: 'status',
     filterOptions: transactionStatusFilterOptions.value,
   },
-  // {
-  //   id: 'status',
-  //   header: () => t('pages.transaction.status'),
-  //   cell: ({ row }) =>
-  //     h(StatusBadge, {
-  //       status: row.original.status,
-  //       variant: 'subtle',
-  //       size: 'sm',
-  //     }),
-  //   enableColumnFilter: true,
-  //   filterType: 'status',
-  //   filterOptions: transactionStatusFilterOptions.value,
-  // },
   {
     id: 'currency',
     accessorKey: 'currency',
