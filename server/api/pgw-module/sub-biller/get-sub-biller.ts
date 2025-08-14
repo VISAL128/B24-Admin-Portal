@@ -7,10 +7,10 @@ export default defineEventHandler(async (event) => {
 
     return response
   } catch (error) {
-    console.error('Error fetching fee summary transactions:', error)
-    throw createError({
+    console.error('Error fetching sub biller:', error)
+    throw createError({ 
       statusCode: 500,
-      statusMessage: 'Failed to fetch fee summary transactions',
+      statusMessage: 'Failed to sub biller',
     })
   }
 })

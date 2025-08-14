@@ -176,6 +176,7 @@
                 :fetch-data-fn="fetchTransactionHistory"
                 show-row-number
                 show-date-filter
+                date-format="dd/MM/yyyy"
                 enabled-auto-refresh
                 @row-click="handleViewDetails"
               />
@@ -912,8 +913,13 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     id: 'createdDate',
     accessorKey: 'created_date',
     headerText: t('pages.transaction.created_date'),
-    cell: ({ row }) => useFormat().formatDateTime(row.original.date),
+    cell: ({ row }) => row.original.date,
     enableSorting: true,
+  },
+  {
+    id: 'transactionNo',
+    accessorKey: 'transactionNo',
+    headerText: t('wallet_page.transaction_no'),
   },
   {
     id: 'bankReference',
