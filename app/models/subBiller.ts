@@ -6,7 +6,7 @@ export interface SubBillerQuery {
   PageSize?: number
 }
 
-export interface SubBillerResponse {
+export interface SubBillerListResponse {
   param: PaginationParam
   result: Supplier[]
 }
@@ -18,4 +18,32 @@ export interface PaginationParam {
   rowCount: number
   sorts: string
   filter: string
+}
+
+
+export interface SubBillerWallet {
+  walletId?: string;
+  name?: string;
+  nameKh?: string;
+  walletNo?: string;
+  activateDate?: string; // ISO date string (e.g., "2025-08-04T10:00:00Z")
+  accountNo?: string;
+  accountName?: string;
+  currency?: string;
+  balance?: number;
+  bankName?: string;
+  bankNameKh?: string;
+  createdAt?: string; // ISO date string
+}
+
+
+export interface WalletListResponse {
+  code: string
+  message: string
+  message_kh: string
+  data: SubBillerWallet[]
+}
+
+export interface DeactivateSubBillerReq {
+  subBillerId: string
 }

@@ -1,5 +1,8 @@
 import { ColumnType } from '@/utils/enumModel'
 import { format } from 'date-fns/format'
+import { useCurrency } from '~/composables/utils/useCurrency'
+import { useFormat  } from '~/composables/utils/useFormat'
+import type {FormatOptions} from '~/composables/utils/useFormat';
 // import { useI18n } from 'vue-i18n'
 
 // Helper to support nested accessors like "supplier.code"
@@ -84,6 +87,10 @@ export function formatAmount(
   }
 }
 
+export function formatAmountV2(amount: number | string, currency?: string) {
+  return useCurrency().formatAmount(amount, currency)
+}
+
 /**
  * Get currency symbol for a given currency code
  * @param currency - Currency code
@@ -142,7 +149,7 @@ export function formatAmountWithSymbolTest(
 
 export function formatColumnValue(
   type: ColumnType = ColumnType.Text,
-  row: Record<string, any>,
+  row: Record<string, unknown>,
   accessorKey: string,
   currencyKey?: string
 ): string {
@@ -186,5 +193,47 @@ export function formatColumnValue(
     case ColumnType.Text:
     default:
       return String(value)
+  }
+}
+
+export const formatDateForBackendRequest = (dateStr: string, formatStr: string = 'dd/MM/yyyy') => {
+  try {
+    // Create Date object from input
+    const date = new Date(dateStr);
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid date provided to formatDateForBackendRequest:", dateStr);
+      return typeof dateStr === "string" ? dateStr : "-";
+    }
+
+    // Format as dd/MM/yyyy
+    return format(date, formatStr);
+  } catch (error) {
+    console.error("Error formatting date:", error, "Input:", dateStr);
+    return '-';
+  }
+}
+
+export const getTranslatedStatusLabel = (statusValue: string): string => {
+  const { t } = useI18n()
+
+  if (statusValue === '') return t('status.all')
+
+  switch (statusValue.toLowerCase()) {
+    case 'pending':
+      return t('status.pending')
+    case 'processing':
+      return t('status.processing')
+    case 'completed':
+      return t('status.completed')
+    case 'failed':
+      return t('status.failed')
+    case 'active':
+      return t('status.active')
+    case 'inactive':
+      return t('status.inactive')
+    default:
+      return statusValue
   }
 }

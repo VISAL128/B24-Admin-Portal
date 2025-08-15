@@ -64,23 +64,25 @@
             />
 
             <!-- History Icon -->
-            <UIcon
+            <!-- <UIcon
               name="material-symbols:history"
               class="w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200"
               :title="t('wallet_page.history')"
               @click="navigateToHistory"
-            />
+            /> -->
           </div>
         </div>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-3 rounded">
-      <!-- Selected Wallet Display -->
-      <div v-if="walletTypes.length > 0 && walletBalanceItems.length > 0" class="mb-6">
-        <!-- Main Wallet Card -->
+
+    <div class="mx-auto px-0 sm:px-0 lg:px-0 py-3 rounded">
+      <!-- Main Wallet Display -->
+      <div v-if="walletTypes.length > 0 || isLoadingWalletTypes" class="mb-6">
+        <!-- Wallet Data Loaded -->
         <div
+          v-if="walletBalanceItems.length > 0 && !isWalletLoading"
           class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300"
         >
           <!-- Header Section -->
@@ -186,11 +188,10 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Loading State for Main Wallet -->
-      <div v-else-if="isWalletLoading || isLoadingWalletTypes" class="mb-6">
+        <!-- Loading State for Main Wallet -->
         <div
+          v-else
           class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-xl animate-pulse"
         >
           <!-- Header Section -->
@@ -262,10 +263,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div
-              v-if="!isLoadingSummary && !isLoadingWalletTypes"
-              class="flex items-center justify-between mb-4"
-            >
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.today') }}
               </h3>
@@ -345,7 +343,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_week') }}
               </h3>
@@ -359,7 +357,7 @@
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary" class="space-y-3">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
               <div>
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
                   {{ currentSummaryData.week.totalTransactions }}
@@ -428,7 +426,7 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
           >
-            <div v-if="!isLoadingSummary" class="flex items-center justify-between mb-4">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_month') }}
               </h3>
@@ -442,7 +440,7 @@
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary" class="space-y-3">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
               <div>
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
                   {{ currentSummaryData.month.totalTransactions }}
@@ -533,59 +531,60 @@
       </div>
 
       <!-- Transaction List Section -->
-      <div v-if="walletTypes.length > 0 && selectedWalletType && !isWalletLoading" class="mt-8">
-        <BaseTable
-          :data="transactions"
-          :columns="transactionColumns"
-          table-id="wallet-transactions"
-          border-class="border-gray-200 dark:border-gray-700"
-          :page="currentPage"
-          :page-size="pageSize"
-          :total="totalTransactions"
-          :total-page="Math.ceil(totalTransactions / pageSize)"
-          @filter-change="handleTransactionFilterChange"
-          @row-click="openTransactionDetail"
-          @search-change="
-            (val: string) => {
-              transactionFilters.search = val
-              debouncedSearch()
-            }
-          "
-          @update:page="
-            (val: number) => {
-              currentPage = val
-              loadTransactions(false)
-            }
-          "
-          @update:page-size="
-            (val: number) => {
-              pageSize = val
-              currentPage = 1
-              loadTransactions(true)
-            }
-          "
-        >
-          <template #empty>
-            <TableEmptyState />
-          </template>
-        </BaseTable>
+      <div v-if="walletTypes.length > 0 && selectedWalletType" class="mt-8">
+        <TablesExTable
+          :key="`${TABLE_ID}-${selectedWalletType}`"
+          ref="tableRef"
+          :columns="columns"
+          :table-id="TABLE_ID"
+          :fetch-data-fn="fetchTransactionsForTable"
+          :loading="isLoadingTransactions"
+          show-row-number
+          show-date-filter
+          search-tooltip="Search transactions"
+          date-format="dd/MM/yyyy"
+          enabled-auto-refresh
+          :export-options="exportOptions"
+          @row-click="handleViewDetails"
+        />
+      </div>
+      
+      <!-- Transaction List Shimmer (when wallet types are loading) -->
+      <div v-else-if="isLoadingWalletTypes" class="mt-8">
+        <TableShimmer :rows="10" show-row-number />
       </div>
     </div>
+    <USlideover 
+      v-model:open="isSlideoverOpen"
+      :title="t('wallet_page.transaction_details')"
+      @close="closeAllocationSlideover"
+      >
+      <template #body>
+        <TransactionDetailContent :transaction="selectedTransaction" />
+      </template>
+    </USlideover>
   </div>
 </template>
 
 <script setup lang="ts">
+import { h, computed, ref, watch, onMounted, onUnmounted, resolveComponent } from 'vue'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useTransactionTypeIcon } from '~/composables/useTransactionTypeIcon'
+import TableShimmer from '~/components/tables/TableShimmer.vue'
+import TransactionDetailContent from '~/pages/digital-wallet/wallet/detail/TransactionDetailContent.vue'
+
 import { useWalletStore } from '~/stores/wallet'
-import { useDebounceFn } from '@vueuse/core'
-import type { BaseTableColumn } from '~/components/tables/table'
 import type { WalletBalanceItem } from '~~/server/model/pgw_module_api/wallet'
-import type { WalletSummaryData } from '~~/server/model/pgw_module_api/transactionSummary'
-import type { WalletTransaction } from '~~/server/model/pgw_module_api/walletTransactions'
-import BaseTable from '~/components/tables/BaseTable.vue'
+import type { WalletSummaryData } from '~~/server/model/pgw_module_api/wallet_transaction_summary'
+import type { WalletTransaction, SettlementWalletApiResponse, TopUpWalletApiResponse } from '~/models/wallet'
+import type { BaseTableColumn } from '~/components/tables/table'
+import { useFormat } from '~/composables/utils/useFormat'
+import type { QueryParams } from '~/models/baseModel'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
+import { StatusBadge } from '#components'
 
 // Define page meta
 definePageMeta({
@@ -597,12 +596,21 @@ definePageMeta({
 const { formatCurrency } = useCurrency()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
-const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getWalletTransactions } =
-  usePgwModuleApi()
+const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getSettlementWalletTransactions, getTopUpWalletTransactions } = usePgwModuleApi()
+const { formatDateTime } = useFormat()
 const { t } = useI18n()
+const errorHandler = useErrorHandler()
+const { 
+  getTransactionTypeIcon, 
+  getTransactionTypeIconStyle, 
+  getTransactionTypeIconColor 
+} = useTransactionTypeIcon()
 
 // Wallet store
 const walletStore = useWalletStore()
+
+// Component Refs
+const tableRef = ref()
 
 // Reactive data
 const isRefreshing = ref(false)
@@ -610,6 +618,10 @@ const isWalletLoading = ref(false)
 const summaryDisplayCurrency = ref('KHR')
 const isLoadingWalletTypes = ref(false)
 const isLoadingSummary = ref(false)
+const isLoadingTransactions = ref(false)
+const isSlideoverOpen = ref(false)
+const selectedTransaction = ref<WalletTransaction | null>(null)
+const lastFetchParams = ref<QueryParams>()
 
 // Auto refresh state
 const isAutoRefreshEnabled = ref(false)
@@ -632,34 +644,22 @@ const walletTypes = ref<
     id: string
     label: string
     name: string
-    walletType: string
-    currency: string
+    walletType: 'settlement_wallet' | 'top_up_wallet'
+    currency: 'KHR' | 'USD'
     nameKey: string
     icon: string
     walletId: string
+    supplierId?: string // For top-up wallets
   }>
 >([])
 
-// Selected wallet type (single source of truth)
 const selectedWalletType = ref('')
 
-// Transaction list state
-const transactions = ref<WalletTransaction[]>([])
-const isLoadingTransactions = ref(false)
-const isLoadingMore = ref(false)
-const hasMoreTransactions = ref(true)
-const currentPage = ref(1)
-const pageSize = ref(20)
-const totalTransactions = ref(0)
-
-// Transaction filters
-const transactionFilters = ref({
-  type: '',
-  status: '',
-  search: '',
+const TABLE_ID = computed(() => {
+  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  const walletType = selectedWallet?.walletType || 'default'
+  return `wallet-transactions-table-${walletType}`
 })
-
-// Transaction list ref for infinite scroll
 
 // API methods
 const loadWalletTypes = async () => {
@@ -667,35 +667,43 @@ const loadWalletTypes = async () => {
     isLoadingWalletTypes.value = true
     const response = await getWalletTypes()
 
+    console.log("======= loadWalletTypes response ========:", response)
+
     if (response.data?.wallet_type) {
       // Update wallet types from API - new format where keys are wallet IDs and values are objects
       const walletTypeData = response.data.wallet_type
       walletTypes.value = Object.entries(walletTypeData).map(([walletId, walletInfo]) => {
-        const info = walletInfo as unknown as { type: string; name: string; currency: string }
+        
+        const info = walletInfo as unknown as {
+          type: 'settlement_wallet' | 'top_up_wallet'
+          name: string
+          currency: 'KHR' | 'USD'
+          supplier_id?: string
+        }
+
         const cleanType = info.name.split(' - ')[0] || info.name
+
         return {
-          id: walletId, // Use the wallet ID as the identifier
-          label: info.name, // Full name with ID (e.g., "Settlement Wallet - 000000229")
-          name: cleanType, // Clean type name for display (e.g., "Settlement Wallet")
-          walletType: info.type, // API type (e.g., "settlement_wallet")
-          currency: info.currency, // Wallet currency (e.g., "KHR")
+          id: walletId, 
+          label: info.name,
+          name: cleanType,
+          walletType: info.type,
+          currency: info.currency,
           nameKey: `wallet_page.${cleanType.toLowerCase().replace(/\s+/g, '_')}`,
           icon: getWalletTypeIcon(cleanType),
-          walletId: walletId, // Store the wallet ID for API calls
+          walletId: walletId,
+          supplierId: info.supplier_id,
         }
       })
 
-      // Set default wallet type
       if (walletTypes.value.length > 0) {
         selectedWalletType.value = walletTypes.value[0]?.id || ''
         selectedWalletTypeAPI.value = walletTypes.value[0]?.name || ''
 
-        // Set initial currency based on first wallet
         if (walletTypes.value[0]?.currency) {
           summaryDisplayCurrency.value = walletTypes.value[0].currency
         }
 
-        // Sync with store
         walletStore.setSelectedWalletType(selectedWalletType.value, selectedWalletTypeAPI.value)
       }
     }
@@ -709,14 +717,14 @@ const loadWalletTypes = async () => {
 const loadWalletBalance = async () => {
   if (!selectedWalletType.value) return
 
-  // Get the selected wallet data
   const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  
   if (!selectedWallet) return
 
   try {
     isWalletLoading.value = true
     const response = await getWalletBalance({
-      wallet_ids: [selectedWallet.walletId], // Use the specific wallet ID
+      wallet_ids: [selectedWallet.walletId],
       page: 1,
       page_size: 50,
     })
@@ -738,7 +746,6 @@ const loadTransactionSummary = async () => {
   try {
     isLoadingSummary.value = true
 
-    // Get the selected wallet to determine type and currency
     const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
     if (!selectedWallet) {
       console.warn('No selected wallet found for summary')
@@ -748,9 +755,7 @@ const loadTransactionSummary = async () => {
     const currency = selectedWallet.currency
     const isSettlementWallet = selectedWallet.walletType === 'settlement_wallet'
 
-    // Call appropriate endpoint based on wallet type
     if (isSettlementWallet) {
-      // Call fee summary endpoint for settlement wallets
       const feeResponse = await getFeeSummary(currency).catch((error) => {
         console.error('Fee summary API error:', error)
         return { data: null }
@@ -762,7 +767,6 @@ const loadTransactionSummary = async () => {
         console.warn('No settlement wallet data received')
       }
     } else {
-      // Call top-up summary endpoint for top-up wallets
       const topUpResponse = await getTopUpSummary(currency).catch((error) => {
         console.error('Top-up summary API error:', error)
         return { data: null }
@@ -798,209 +802,241 @@ const getWalletTypeIcon = (type: string) => {
   }
 }
 
-// Transaction helper methods
-const getTransactionTypeIcon = (type: string) => {
-  switch (type) {
-    case 'top_up':
-      return 'i-heroicons-arrow-down-circle'
-    case 'settlement':
-      return 'i-heroicons-banknotes'
-    case 'transfer':
-      return 'i-heroicons-arrow-right-circle'
-    case 'payment':
-      return 'i-heroicons-credit-card'
-    default:
-      return 'i-heroicons-document-text'
-  }
-}
+const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
+  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+  const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
 
-const getTransactionTypeColor = (type: string) => {
-  switch (type) {
-    case 'top_up':
-      return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-    case 'settlement':
-      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-    case 'transfer':
-      return 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
-    case 'payment':
-      return 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-    default:
-      return 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400'
-  }
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'completed':
-      return 'success'
-    case 'pending':
-      return 'warning'
-    case 'failed':
-      return 'error'
-    case 'cancelled':
-      return 'neutral'
-    default:
-      return 'neutral'
-  }
-}
-
-const getAmountColor = (type: string, amount: number) => {
-  if (type === 'top_up' && amount > 0) {
-    return 'text-green-600 dark:text-green-400'
-  } else if (type === 'payment' || type === 'transfer') {
-    return 'text-red-600 dark:text-red-400'
-  }
-  return 'text-gray-900 dark:text-white'
-}
-
-const formatTransactionAmount = (amount: number, currency: string, type: string) => {
-  const prefix = type === 'top_up' ? '+' : type === 'payment' || type === 'transfer' ? '-' : ''
-  return `${prefix}${formatCurrency(amount, currency)}`
-}
-
-const formatTransactionDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  }).format(date)
-}
-
-// Transaction Table Columns
-const transactionColumns = computed<BaseTableColumn<WalletTransaction>[]>(() => [
-  {
-    id: 'type',
-    accessorKey: 'transaction_type',
-    header: t('wallet_page.transaction_type'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('wallet_page.transaction_types.all'), value: '' },
-      { label: t('wallet_page.transaction_types.top_up'), value: 'top_up' },
-      { label: t('wallet_page.transaction_types.settlement'), value: 'settlement' },
-      { label: t('wallet_page.transaction_types.transfer'), value: 'transfer' },
-      { label: t('wallet_page.transaction_types.payment'), value: 'payment' },
-    ],
-    cell: ({ row }) => {
-      const transaction = row.original
-      return h('div', { class: 'flex items-center space-x-3' }, [
-        h(
-          'div',
-          {
-            class: `w-8 h-8 rounded-lg flex items-center justify-center ${getTransactionTypeColor(transaction.transaction_type)}`,
-          },
-          [
-            h('UIcon', {
-              name: getTransactionTypeIcon(transaction.transaction_type),
-              class: 'w-4 h-4',
-            }),
-          ]
-        ),
-        h(
-          'span',
-          { class: 'font-medium' },
-          t(`wallet_page.transaction_types.${transaction.transaction_type}`)
-        ),
-      ])
+  return [
+    {
+      id: 'tranDate',
+      accessorKey: 'tran_date',
+      header: t('wallet_page.date'),
+      cell: ({ row }) => formatDateTime(row.original.tran_date),
+      enableSorting: true,
     },
-  },
-  {
-    id: 'details',
-    header: t('wallet_page.transaction_details'),
-    cell: ({ row }) => {
-      const transaction = row.original
-      return h('div', { class: 'space-y-1' }, [
-        h(
-          'div',
-          { class: 'font-medium text-sm' },
-          transaction.description || transaction.transaction_no
-        ),
-        h('div', { class: 'text-xs text-gray-500 space-x-2' }, [
-          h('span', {}, transaction.transaction_no),
-          transaction.counterparty_name && h('span', {}, ` • ${transaction.counterparty_name}`),
+    {
+      id: 'tranType',
+      accessorKey: 'transaction_type',
+      header: t('wallet_page.transaction_type'),
+      cell: ({ row }) => 
+        h('div', { class: 'flex items-center gap-2' }, [
+          h('div', { 
+            class: `w-6 h-6 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transaction_type)}`
+          }, [
+            h(resolveComponent('UIcon'), {
+              name: getTransactionTypeIcon(row.original.transaction_type),
+              class: `w-3 h-3 ${getTransactionTypeIconColor(row.original.transaction_type)}`
+            })
+          ]),
+          h('span', { class: 'text-sm font-medium' }, row.original.transaction_type || '-')
         ]),
-      ])
+      enableColumnFilter: !isSettlementWallet, // Disable filtering for settlement wallets
+      filterType: 'select',
+      filterOptions: [
+        { label: t('dynamic_filter.tranType.wallet_payment'), value: t('wallet_payment') },
+        { label: t('dynamic_filter.tranType.wallet_topup'), value: t('wallet_topup') },
+       ],
+      enableSorting: true
     },
-  },
   {
+    id: 'customerName',
+    accessorKey: 'customer_name',
+    header: t('customerName'),
+    cell: ({ row }) => row.original.customer_name || '-',
+    enableSorting: true
+  },
+    {
+      id: 'bankRefId',
+      accessorKey: 'bank_ref_id',
+      header: t('bank_ref_id'),
+      cell: ({ row }) => row.original.bank_ref_id || '-',
+      enableSorting: true,
+    },
+       {
     id: 'status',
+    header: () => t('status.header'),
     accessorKey: 'status',
-    header: t('wallet_page.status'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('wallet_page.transaction_statuses.all'), value: '' },
-      { label: t('wallet_page.transaction_statuses.pending'), value: 'pending' },
-      { label: t('wallet_page.transaction_statuses.completed'), value: 'completed' },
-      { label: t('wallet_page.transaction_statuses.failed'), value: 'failed' },
-      { label: t('wallet_page.transaction_statuses.cancelled'), value: 'cancelled' },
-    ],
-    cell: ({ row }) => {
-      const transaction = row.original
-      return h('UBadge', {
-        label: t(`wallet_page.transaction_statuses.${transaction.status}`),
-        color: getStatusColor(transaction.status),
+    cell: ({ row }) =>
+      h(StatusBadge, {
+        status: row.original.status,
         variant: 'subtle',
-        size: 'xs',
-      })
-    },
+        size: 'sm',
+      }),
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: t('status.success'), value: 'success' },
+      { label: t('status.pending'), value: 'pending'},
+      { label: t('status.failed'), value: 'failed' },
+      { label: t('status.cancel'), value: 'cancel' },
+      { label: t('status.error'), value: 'error' },
+    ],
+    enableSorting: true
   },
   {
-    id: 'amount',
+    id: 'currencyId',
+    accessorKey: 'currency',
+    header: t('currencyId'),
+    cell: ({ row }) => row.original.currency || '-',
+    enableSorting: true,
+    // enableColumnFilter: true,
+    // filterType: 'select',
+    // filterOptions: [
+    //   { label: t('currency.usd'), value: 'USD' },
+    //   { label: t('currency.khr'), value: 'KHR' },
+    // ],
+  },
+  {
+    id: 'totalAmount',
     accessorKey: 'amount',
-    header: t('wallet_page.amount'),
-    cell: ({ row }) => {
-      const transaction = row.original
-      return h('div', { class: 'text-right' }, [
-        h(
-          'div',
-          {
-            class: `font-semibold ${getAmountColor(transaction.transaction_type, transaction.amount)}`,
-          },
-          formatTransactionAmount(
-            transaction.amount,
-            transaction.currency,
-            transaction.transaction_type
-          )
-        ),
-        transaction.fee_amount &&
-          h(
-            'div',
-            {
-              class: 'text-xs text-gray-500',
-            },
-            `${t('wallet_page.fee_amount')}: ${formatCurrency(transaction.fee_amount, transaction.currency)}`
-          ),
-      ])
-    },
-  },
-  {
-    id: 'date',
-    accessorKey: 'created_date',
-    header: t('wallet_page.date'),
-    cell: ({ row }) => {
-      const transaction = row.original
-      return h(
+    header: t('settlement.amount'),
+        cell: ({ row }) =>
+      h(
         'div',
-        { class: 'text-sm text-gray-600' },
-        formatTransactionDate(transaction.created_date)
-      )
-    },
-  },
-])
-
-// Transaction filter handler
-const handleTransactionFilterChange = (columnId: string, value: string) => {
-  if (columnId === 'type') {
-    transactionFilters.value.type = value
-  } else if (columnId === 'status') {
-    transactionFilters.value.status = value
+        { class: 'text-center' },
+        useCurrency().formatAmount(row.original.amount, row.original.currency)
+      ),
+    enableSorting: true,
   }
-  loadTransactions(true)
+]
+})
+
+const exportOptions = computed(() => {
+  if (!selectedWalletTypeData.value) {
+    return {
+      fileName: 'transactions',
+      title: 'Transaction Report',
+    }
+  }
+
+  const walletName = selectedWalletTypeData.value.label || 'Wallet'
+  const currency = selectedWalletTypeData.value.currency
+
+  const getFilterValue = (field: string, defaultValue: string = t('all')) => {
+    const filter = lastFetchParams.value?.filters?.find(f => f.field === field)
+    return filter?.value ? String(filter.value) : defaultValue
+  }
+
+  const getMultipleFilterValues = (field: string) => {
+    const filters = lastFetchParams.value?.filters?.filter(f => f.field === field)
+    if (!filters || filters.length === 0) return t('all')
+    
+    // Capitalize each status value
+    return filters.map(f => {
+      const valueStr = String(f.value)
+      return `${valueStr.charAt(0).toUpperCase()}${valueStr.slice(1)}`
+    }).join(', ')
+  }
+
+  const dateRange =   `${lastFetchParams.value?.start_date} ${t('to')} ${lastFetchParams.value?.end_date}`
+  return {
+    fileName: `Transaction_Report_${walletName.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}`,
+    title: `${t('wallet_page.transaction_report')}`,
+    subtitle: `${walletName}`,
+    currency: currency,
+    filter: {
+      [t('date_range')]: dateRange,
+      [t('search')]: getFilterValue('search'),
+      [t('status.header')]: getMultipleFilterValues('status'),
+      [t('wallet_page.transaction_type')]: getMultipleFilterValues('tranType'),
+    },
+  }
+})
+
+const fetchTransactionsForTable = async (params?: QueryParams) => {
+  lastFetchParams.value = params
+  isLoadingTransactions.value = true
+
+  // console.log("Fetching transactions for wallet:")
+
+  const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
+  
+  if (!selectedWallet) {
+    isLoadingTransactions.value = false
+    throw new Error('No wallet selected')
+  }
+
+  const currencyId = selectedWallet.currency
+  if (params) {
+    // Initialize filters array if it doesn't exist
+    if (!params.filters) {
+      params.filters = []
+    }
+    
+    // Add default currencyId filter based on wallet currency
+    params.filters.push({
+      field: 'currencyId',
+      operator: FilterOperatorPgwModule.Equals,
+      value: currencyId
+    })
+  }
+
+  console.log("======= Fetching transactions for wallet ========:", {
+    walletType: selectedWallet.walletType,
+    params,
+  })
+
+  try {
+    const response = selectedWallet.walletType === 'settlement_wallet'
+      ? await getSettlementWalletTransactions(params)
+      : await getTopUpWalletTransactions(params)
+
+    let data: WalletTransaction[] = []
+    let total_record = 0
+
+    if (selectedWallet.walletType === 'settlement_wallet') {
+      const settlementResponse = response as SettlementWalletApiResponse
+      if (settlementResponse?.data?.result) {
+        data = settlementResponse.data.result
+        total_record = settlementResponse.data.param?.rowCount || 0
+      } else {
+        throw new Error('Invalid settlement wallet API response structure')
+      }
+    } else {
+      const topUpResponse = response as TopUpWalletApiResponse
+      if (topUpResponse?.result?.data?.result) {
+        data = topUpResponse.result.data.result
+        total_record = topUpResponse.result.data.param?.rowCount || 0
+      } else {
+        throw new Error('Invalid top-up wallet API response structure')
+      }
+    }
+
+    const pageSize = Number(params?.page_size) || 10
+    const total_page = Math.ceil(total_record / pageSize)
+
+    console.log("======= Returning server data ========:", {
+      dataLength: data.length,
+      total_record,
+      total_page,
+      walletType: selectedWallet.walletType
+    })
+
+    return {
+      data,
+      total_record,
+      total_page,
+    }
+  } catch (error: unknown) {
+    console.error('Error fetching wallet transactions:', error)
+    errorHandler.handleApiError(error)
+    // Re-throw the error so the table component can handle it properly
+    throw error
+  } finally {
+    isLoadingTransactions.value = false
+  }
 }
 
-// Computed wallet type data
+const handleViewDetails = (row: WalletTransaction) => {
+  selectedTransaction.value = row
+  isSlideoverOpen.value = true
+  console.log('View details for...:', row)
+}
+
+const closeAllocationSlideover = () => {
+  isSlideoverOpen.value = false
+}
+
 const selectedWalletTypeData = computed(() => {
   if (walletTypes.value.length === 0) return null
   return (
@@ -1009,28 +1045,22 @@ const selectedWalletTypeData = computed(() => {
 })
 
 const summaryData = computed(() => {
-  // Get the selected wallet to determine if it's settlement or top-up
   const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
   if (!selectedWallet) {
     return getDefaultSummaryData()
   }
 
-  // Use fee (settlement) data for settlement wallets, top-up data for others
   const isSettlementWallet = selectedWallet.walletType === 'settlement_wallet'
   const sourceData = isSettlementWallet ? feeSummaryData.value : topUpSummaryData.value
 
   if (!sourceData) {
     return getDefaultSummaryData()
-  }
-
-  // Log the data for debugging
-  console.log(`Loading ${isSettlementWallet ? 'Settlement' : 'Top-up'} data:`, sourceData)
+  }  
 
   return sourceData
 })
 
 const getDefaultSummaryData = () => {
-  // Return default/empty data if no API data is available yet
   const now = new Date()
   const isoString = now.toISOString()
   const currentDate = isoString.split('T')[0] || '2024-01-01'
@@ -1086,16 +1116,13 @@ const getDefaultSummaryData = () => {
   }
 }
 
-// Computed property for current summary data based on selected currency
 const currentSummaryData = computed(() => {
   const currentCurrency = summaryDisplayCurrency.value.toLowerCase() as 'khr' | 'usd'
   const data = summaryData.value
 
-  // Check if data has the API structure (today/week/month with nested currencies)
   const hasApiStructure = data && 'today' in data && 'week' in data && 'month' in data
 
   if (hasApiStructure) {
-    // API data structure
     return {
       today: {
         date: data.today?.date || new Date().toISOString().split('T')[0],
@@ -1122,7 +1149,6 @@ const currentSummaryData = computed(() => {
       },
     }
   } else if (data && currentCurrency in data) {
-    // Fallback data structure (organized by currency first)
     interface FallbackCurrencyData {
       today?: {
         date: string
@@ -1171,7 +1197,6 @@ const currentSummaryData = computed(() => {
       },
     }
   } else {
-    // Default empty data
     return {
       today: {
         date: new Date().toISOString().split('T')[0],
@@ -1198,56 +1223,57 @@ const currentSummaryData = computed(() => {
   }
 })
 
-// Watch for wallet type changes to trigger animations and reload balance
 watch(selectedWalletType, async (newType, oldType) => {
-  if (newType !== oldType) {
+  if (newType !== oldType && newType) {
+    console.log("======= Wallet type changed from", oldType, "to", newType)
+    
     const selectedWallet = walletTypes.value.find((type) => type.id === newType)
-    selectedWalletTypeAPI.value = selectedWallet?.name || ''
+    if (!selectedWallet) {
+      console.warn('Selected wallet not found:', newType)
+      return
+    }
 
-    // Update summary display currency based on selected wallet
+    selectedWalletTypeAPI.value = selectedWallet.name || ''
+
     if (selectedWallet?.currency) {
       summaryDisplayCurrency.value = selectedWallet.currency
     }
 
-    // Sync with store
     walletStore.setSelectedWalletType(newType, selectedWalletTypeAPI.value)
 
-    // Load data sequentially: wallet balance -> summary -> transactions
-    await loadWalletBalance()
-    await loadTransactionSummary()
-    await loadTransactions(true)
+    isWalletLoading.value = true
+    isLoadingSummary.value = true
+    
+    try {
+      await Promise.all([
+        loadWalletBalance(), 
+        loadTransactionSummary()
+      ])
+    } catch (error) {
+      console.error('Failed to reload wallet data:', error)
+    } finally {
+      isWalletLoading.value = false
+      isLoadingSummary.value = false
+    }
   }
 })
 
-// Watch transaction filters
-watch(
-  () => transactionFilters.value.type,
-  () => {
-    loadTransactions(true)
-  }
-)
-
-watch(
-  () => transactionFilters.value.status,
-  () => {
-    loadTransactions(true)
-  }
-)
-
-// Initialize data on component mount
 onMounted(async () => {
-  // Step 1: Load wallet types first
+  isWalletLoading.value = true
+  isLoadingSummary.value = true
+  isLoadingTransactions.value = true
+
   await loadWalletTypes()
 
-  // Step 2: Load wallet balance after wallet types are loaded
   if (selectedWalletType.value) {
-    await loadWalletBalance()
-
-    // Step 3: Load transaction summary after wallet balance is loaded
-    await loadTransactionSummary()
-
-    // Step 4: Finally load transactions
-    await loadTransactions(true)
+    await Promise.all([
+      loadWalletBalance(),
+      loadTransactionSummary(),
+    ])
+  } else {
+    isWalletLoading.value = false
+    isLoadingSummary.value = false
+    isLoadingTransactions.value = false
   }
 })
 
@@ -1255,6 +1281,7 @@ onMounted(async () => {
 const refreshBalances = async () => {
   isRefreshing.value = true
   isWalletLoading.value = true
+  isLoadingSummary.value = true
 
   // Temporarily pause auto-refresh during manual refresh
   const wasAutoRefreshEnabled = isAutoRefreshEnabled.value
@@ -1263,15 +1290,17 @@ const refreshBalances = async () => {
   }
 
   try {
-    // Load data sequentially: wallet balance -> summary -> transactions
-    await loadWalletBalance()
-    await loadTransactionSummary()
-    await loadTransactions(true)
+    // All data is refreshed in parallel
+    await Promise.all([
+      loadWalletBalance(),
+      loadTransactionSummary(),
+    ])
   } catch (error) {
     console.error('Failed to refresh balances:', error)
   } finally {
     isRefreshing.value = false
     isWalletLoading.value = false
+    isLoadingSummary.value = false
 
     // Resume auto-refresh if it was enabled
     if (wasAutoRefreshEnabled) {
@@ -1280,26 +1309,26 @@ const refreshBalances = async () => {
   }
 }
 
-const navigateToHistory = () => {
-  // Set the wallet type filter in the store
-  if (selectedWalletType.value && selectedWalletTypeAPI.value) {
-    walletStore.setupTransactionHistoryFilter({
-      walletType: selectedWalletTypeAPI.value,
-      period: 'this_month',
-    })
-  }
+// const navigateToHistory = () => {
+//   // Set the wallet type filter in the store
+//   if (selectedWalletType.value && selectedWalletTypeAPI.value) {
+//     walletStore.setupTransactionHistoryFilter({
+//       walletType: selectedWalletTypeAPI.value,
+//       period: 'this_month',
+//     })
+//   }
 
-  // Check if it's a settlement wallet type
-  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
-  const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
+//   // Check if it's a settlement wallet type
+//   const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
+//   const isSettlementWallet = selectedWallet?.walletType === 'settlement_wallet'
 
-  // Navigate to appropriate page based on wallet type
-  if (isSettlementWallet) {
-    navigateTo('/digital-wallet/settlement')
-  } else {
-    navigateTo('/transactions')
-  }
-}
+//   // Navigate to appropriate page based on wallet type
+//   if (isSettlementWallet) {
+//     navigateTo('/digital-wallet/settlement')
+//   } else {
+//     navigateTo('/transactions')
+//   }
+// }
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -1309,76 +1338,6 @@ const copyToClipboard = async (text: string) => {
     console.error('Failed to copy to clipboard:', error)
   }
 }
-
-// Transaction methods
-const loadTransactions = async (reset = false) => {
-  if (!selectedWalletType.value) return
-
-  const selectedWallet = walletTypes.value.find((type) => type.id === selectedWalletType.value)
-  if (!selectedWallet) return
-
-  try {
-    if (reset) {
-      isLoadingTransactions.value = true
-      currentPage.value = 1
-      transactions.value = []
-    } else {
-      isLoadingMore.value = true
-    }
-
-    const response = await getWalletTransactions({
-      wallet_id: selectedWallet.walletId,
-      page: currentPage.value,
-      page_size: pageSize.value,
-      transaction_type: (transactionFilters.value.type || undefined) as
-        | 'top_up'
-        | 'settlement'
-        | 'transfer'
-        | 'payment'
-        | undefined,
-      status: (transactionFilters.value.status || undefined) as
-        | 'completed'
-        | 'pending'
-        | 'failed'
-        | 'cancelled'
-        | undefined,
-      search: transactionFilters.value.search || undefined,
-    })
-
-    if (response.data?.transactions) {
-      if (reset) {
-        transactions.value = response.data.transactions
-      } else {
-        transactions.value.push(...response.data.transactions)
-      }
-
-      totalTransactions.value = response.data.total_count
-      hasMoreTransactions.value = response.data.has_more
-
-      if (response.data.has_more) {
-        currentPage.value++
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load transactions:', error)
-    if (reset) {
-      transactions.value = []
-    }
-  } finally {
-    isLoadingTransactions.value = false
-    isLoadingMore.value = false
-  }
-}
-
-const openTransactionDetail = (transaction: WalletTransaction) => {
-  // TODO: Implement transaction detail modal or navigation
-  console.log('Open transaction detail:', transaction)
-}
-
-// Debounced search function
-const debouncedSearch = useDebounceFn(() => {
-  loadTransactions(true)
-}, 500)
 
 // Auto refresh functionality
 const startCountdown = () => {

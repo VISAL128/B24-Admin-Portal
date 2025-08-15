@@ -14,7 +14,7 @@
           :searchable="false"
         />
     </div> -->
-    <div
+    <!-- <div
     class="flex flex-wrap items-center gap-2"
     >
       <div 
@@ -32,7 +32,13 @@
         v-else
         class="text-primary font-bold">{{ value }}</p>
       </div>
-    </div>
+    </div> -->
+    <CardsSummaryCards
+      v-show="!isTableFullscreen"
+      :cards="summarys"
+      :is-loading="isLoading"
+      :skeleton-count="summarys.length"
+    />
     <ExTable
       ref="table"
       :columns="columns"
@@ -41,20 +47,22 @@
       show-row-number
       show-date-filter
       enabled-auto-refresh
+      :search-tooltip="t('search_by_settler')"
       @data-changed="handleDataChanged"
       @row-click="handleViewDetails"
+      @fullscreen-toggle="(isFullScreen) => (isTableFullscreen = isFullScreen)"
     >
-    <template #trailingHeader>
-      <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
+      <template #trailingHeader>
+        <UButton color="primary" icon="i-lucide-play" size="sm" @click="onGenerateSettlement">
           {{ t('generate_settlement') }}
-      </UButton>
-    </template>
-  </ExTable>
+        </UButton>
+      </template>
+    </ExTable>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, nextTick, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { h, ref, resolveComponent, shallowRef, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { CalendarDate } from '@internationalized/date'
@@ -64,12 +72,13 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { UButton } from '#components'
 import { useCurrency } from '~/composables/utils/useCurrency'
-import { useTableConfig } from '~/composables/utils/useTableConfig'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import { DEFAULT_PAGE_SIZE } from '~/utils/constants'
 import { SettlementHistoryStatus } from '~/utils/enumModel'
 import type { BaseTableColumn, SettlementHistoryTableFetchResult } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
+import type { QueryParams } from '~/models/baseModel'
+import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
 
 definePageMeta({
   auth: false,
@@ -84,6 +93,7 @@ const { statusCellBuilder } = useStatusBadge()
 const pref = useUserPreferences().getPreferences()
 const { formatAmount } = useCurrency()
 const { currentProfile } = useAuth()
+const { formatDate } = useFormat()
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const table = useTemplateRef<any>('table')
@@ -94,75 +104,11 @@ const pageSize = ref<{ label: string; value: number }>({
   label: pref?.defaultPageSize ? pref?.defaultPageSize.toString() : DEFAULT_PAGE_SIZE.label,
   value: pref?.defaultPageSize || DEFAULT_PAGE_SIZE.value,
 })
-// const total = ref(0)
-// const totalPage = ref(0)
-// const search = ref('')
-// const startDate = ref('')
-// const endDate = ref('')
-// const settlements = ref<SettlementHistoryRecord[]>([])
-// const loading = ref(false)
-const errorMsg = ref('')
-// const isRefreshing = ref(false)
-// const autoRefresh = ref(false)
 
-const summary = ref({
-  total_amount_khr: 0,
-  total_amount_usd: 0,
-  total_settled: 0,
-  success: 0,
-  failed: 0,
-})
+const isTableFullscreen = ref(false)
+const isLoading = ref(false)
+const dateRangeFilterDisplay = ref('')
 
-// Initialize status filter from localStorage or defaults
-const initializeStatusFilter = () => {
-  const savedStatusValues = tableConfig.getStatusFilter(TABLE_ID)
-
-  if (savedStatusValues && savedStatusValues.length > 0) {
-    // Create the status objects with current language translation
-    // Filter out empty string if there are specific statuses to avoid "All" + specific status conflict
-    const filteredValues = savedStatusValues.filter((value) => {
-      // If we have specific statuses, remove the "All" (empty string) option
-      const hasSpecificStatuses = savedStatusValues.some((v) => v !== '')
-      return hasSpecificStatuses ? value !== '' : true
-    })
-
-    selectedStatuses.value = filteredValues.map((value) => ({
-      label: value === '' ? t('status.all') : getTranslatedStatusLabel(value),
-      value,
-    }))
-  } else {
-    // Default to "All" status when no saved values
-    selectedStatuses.value = [
-      {
-        label: t('status.all'),
-        value: '',
-      },
-    ]
-  }
-}
-
-// Helper function to get translated status label
-const getTranslatedStatusLabel = (statusValue: string): string => {
-  if (statusValue === '') return t('status.all')
-
-  switch (statusValue.toLowerCase()) {
-    case 'pending':
-      return t('status.pending')
-    case 'processing':
-      return t('status.processing')
-    case 'completed':
-      return t('status.completed')
-    default:
-      return statusValue
-  }
-}
-
-const selectedStatuses = ref<{ label: string; value: string }[]>([
-  {
-    label: t('status.all'),
-    value: '',
-  },
-])
 const availableStatuses = ref<string[]>(Object.values(SettlementHistoryStatus))
 const today = new Date()
 const modelValue = shallowRef({
@@ -170,109 +116,50 @@ const modelValue = shallowRef({
   end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
 })
 
-// Define table ID and default column visibility
+const summarys = computed<SummaryCard[]>(() => [
+  {
+    key: 'total_amount',
+    title: t('settlement.total_amount'),
+    values: [
+      { value: summaryData.value.total_amount_khr, currency: 'KHR' },
+      { value: summaryData.value.total_amount_usd, currency: 'USD' },
+    ],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+  {
+    key: 'total_settled',
+    title: t('settlement.total_settled'),
+    values: [{ value: summaryData.value.total_settled }],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+  {
+    key: 'success',
+    title: t('settlement.success'),
+    values: [{ value: summaryData.value.success }],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+  {
+    key: 'failed',
+    title: t('settlement.failed'),
+    values: [{ value: summaryData.value.failed }],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+])
+
+const summaryData = ref({
+  total_amount_khr: 0,
+  total_amount_usd: 0,
+  total_settled: 0,
+  success: 0,
+  failed: 0,
+})
+
+// Define table ID
 const TABLE_ID = 'settlement-history'
-const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
-  row_number: true,
-  created_date: true,
-  total_amount: true,
-  currency_id: true,
-  created_by: true,
-  total_settled: true,
-  status: true,
-  select: true,
-}
-
-// Use table configuration composable
-const tableConfig = useTableConfig()
-
-// Initialize column visibility from localStorage or defaults
-const initializeColumnVisibility = (): Record<string, boolean> => {
-  const savedConfig = tableConfig.getColumnConfig(TABLE_ID)
-  return savedConfig || DEFAULT_COLUMN_VISIBILITY
-}
-
-const columnVisibility = ref<Record<string, boolean>>(initializeColumnVisibility())
-
-// Initialize sorting state from localStorage or defaults
-const initializeSortingState = (): Array<{ id: string; desc: boolean }> => {
-  const savedSorting = tableConfig.getSortingState(TABLE_ID)
-  return savedSorting || []
-}
-
-const sortingState = ref<Array<{ id: string; desc: boolean }>>(initializeSortingState())
-
-// Save column visibility changes to localStorage
-const saveColumnVisibility = () => {
-  tableConfig.saveColumnConfig(TABLE_ID, columnVisibility.value)
-}
-
-// Save sorting state changes to localStorage
-const saveSortingState = () => {
-  tableConfig.saveSortingState(TABLE_ID, sortingState.value)
-}
-
-// Save status filter changes to localStorage
-const saveStatusFilter = () => {
-  tableConfig.saveStatusFilter(
-    TABLE_ID,
-    selectedStatuses.value.map((status) => status.value)
-  )
-}
-
-// Watch for changes and auto-save
-watch(columnVisibility, saveColumnVisibility, { deep: true })
-watch(sortingState, saveSortingState, { deep: true })
-watch(selectedStatuses, saveStatusFilter, { deep: true })
-
-// Watch for language changes to update status label
-const { locale } = useI18n()
-watch(
-  locale,
-  () => {
-    // Update the selected status labels when language changes
-    selectedStatuses.value = selectedStatuses.value.map((status) => ({
-      ...status,
-      label: status.value === '' ? t('status.all') : getTranslatedStatusLabel(status.value),
-    }))
-  },
-  { immediate: false }
-)
-
-// Initialize table column visibility from saved configuration
-const initializeTableColumnVisibility = () => {
-  if (table?.value?.tableApi) {
-    Object.entries(columnVisibility.value).forEach(([columnId, isVisible]) => {
-      const column = table.value.tableApi.getColumn(columnId)
-      if (column) {
-        column.toggleVisibility(isVisible)
-      }
-    })
-  }
-}
-
-// Initialize table sorting state from saved configuration
-const initializeTableSortingState = () => {
-  if (table?.value?.tableApi && sortingState.value.length > 0) {
-    // Apply saved sorting state
-    table.value.tableApi.setSorting(sortingState.value)
-  }
-}
-
-// Watch for table API changes to initialize column visibility and sorting
-watch(
-  () => table?.value?.tableApi,
-  (newApi) => {
-    if (newApi) {
-      // Small delay to ensure table is fully initialized
-      nextTick(() => {
-        initializeTableColumnVisibility()
-        initializeTableSortingState()
-      })
-    }
-  },
-  { immediate: true }
-)
 
 let interval: ReturnType<typeof setInterval> | null = null
 
@@ -285,22 +172,31 @@ onBeforeUnmount(() => {
 })
 
 // Wrapper function for BaseTableV2
-const fetchSettlementForTable = async (params?: {
-  page?: number
-  pageSize?: number
-  search?: string
-  startDate?: string
-  endDate?: string
-}): Promise<SettlementHistoryTableFetchResult | null> => {
+const fetchSettlementForTable = async (
+  params?: QueryParams
+): Promise<SettlementHistoryTableFetchResult | null> => {
   try {
+    isLoading.value = true
+    dateRangeFilterDisplay.value = `${formatDate(params?.start_date)} - ${formatDate(params?.end_date)}`
+
     const payload: SettlementHistoryQuery = {
       search: params?.search || undefined,
-      page_size: params?.pageSize || pageSize.value.value,
+      page_size: params?.page_size || pageSize.value.value,
       page: params?.page || page.value,
-      start_date: params?.startDate,
-      end_date: params?.endDate,
-      status: selectedStatuses.value.map((status) => status.value).filter((v) => v !== ''), // Use selected status values, filter out empty (all)
+      start_date: params?.start_date
+        ? formatDateForBackendRequest(params?.start_date, 'yyyy/MM/dd')
+        : undefined,
+      end_date: params?.end_date
+        ? formatDateForBackendRequest(params?.end_date, 'yyyy/MM/dd')
+        : undefined,
+      status: params?.statuses || [],
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
+      banks: [],
+      currencies: params?.filters
+        ? params.filters
+            .filter((filter) => filter.field === 'currency_id')
+            .map((filter) => filter.value as string)
+        : [],
     }
 
     const data = await getSettlementHistory(payload)
@@ -312,12 +208,14 @@ const fetchSettlementForTable = async (params?: {
       sum_total_amount_usd: data?.sum_total_amount_usd || 0,
       sum_total_settled: data?.sum_total_settled || 0,
       sum_success: data?.sum_success || 0,
+      sum_failed: data?.sum_failed || 0,
     }
   } catch (error: unknown) {
-    errorMsg.value = (error as Error).message || 'Failed to load settlement history.'
     // Show error notification to user
     errorHandler.handleApiError(error)
     return null
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -333,13 +231,6 @@ onBeforeMount(() => {
   modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
 })
 
-// Initial load
-onMounted(() => {
-
-  initializeStatusFilter()
-  // fetchSettlementHistory()
-})
-
 const onGenerateSettlement = () => {
   router.push('/digital-wallet/settlement/generate')
 }
@@ -350,13 +241,13 @@ const navigateToDetails = (settlementId: string) => {
 }
 
 const handleDataChanged = (result: SettlementHistoryTableFetchResult) => {
-  // Update summary with the result data
-  summary.value = {
+  // Update summary data with the result
+  summaryData.value = {
     total_amount_khr: result.sum_total_amount_khr || 0,
     total_amount_usd: result.sum_total_amount_usd || 0,
     total_settled: result.sum_total_settled || 0,
     success: result.sum_success || 0,
-    failed: result.sum_failed || 0
+    failed: result.sum_failed || 0,
   }
 }
 
@@ -411,15 +302,17 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
+    enableHiding: true,
     size: 50,
     maxSize: 150,
   },
   // { accessorKey: 'total_supplier', header: t('Total Supplier') },
-  
+
   {
     id: 'created_by',
     accessorKey: 'created_by',
     header: () => t('settled_by'),
+    headerText: 'settled_by',
     cell: ({ row }) => row.original.created_by || '-',
   },
 
@@ -443,9 +336,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
             variant: 'subtle',
             class: 'flex items-center gap-1',
           },
-          () => [
-            h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`),
-          ]
+          () => [h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`)]
         ),
         // Success and Fail badges
         h(
@@ -468,33 +359,24 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
         ),
       ])
     },
+    enableSorting: true,
   },
   {
     id: 'status',
     header: () => t('status.header'),
     cell: ({ row }) => statusCellBuilder(row.original.status, true),
     enableColumnFilter: true,
-    filterType: 'select',
+    filterType: 'status',
     filterOptions: availableStatuses.value.map((status) => ({
       label: getTranslatedStatusLabel(status),
       value: status,
     })),
   },
   {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: () => t('settlement.currency'),
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('currency.usd'), value: 'USD' },
-      { label: t('currency.khr'), value: 'KHR' },
-    ],
-  },
-  {
     id: 'total_amount',
     accessorKey: 'total_amount',
     header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
+    sortableHeaderAlignment: 'right',
     cell: ({ row }) =>
       h(
         'div',
@@ -506,6 +388,17 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     size: 50,
     maxSize: 150,
   },
-  
+  {
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    header: () => t('settlement.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+    size: 50,
+  },
 ]
 </script>

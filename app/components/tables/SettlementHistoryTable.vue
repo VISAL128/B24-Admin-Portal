@@ -13,6 +13,7 @@ import type {
 } from '~/models/settlement'
 import { useTable } from '~/composables/utils/useTable'
 import appConfig from '~~/app.config'
+import { UTooltip } from '#components'
 
 const { t } = useI18n()
 const format = useFormat()
@@ -50,22 +51,6 @@ watch(
   },
   { deep: true, immediate: true }
 )
-// const pageSize = ref<{ label: string; value: number }>(
-//   props.currentQuery.page_size
-//     ? { label: props.currentQuery.page_size.toString(), value: props.currentQuery.page_size }
-//     : APP_CONSTANTS.DEFAULT_PAGE_SIZE
-// )
-// const onPageSizeChange = () => {
-//   settlementHistoryQuery.value.page = 1
-//   settlementHistoryQuery.value.page_size = pageSize.value?.value || 10
-//   // Emit the search event with the updated query
-//   props.onSearchSubmit?.(settlementHistoryQuery.value)
-// }
-// function onPageUpdate(page: number) {
-//   settlementHistoryQuery.value.page = page
-//   // Emit the search event with the updated query
-//   props.onSearchSubmit?.(settlementHistoryQuery.value)
-// }
 
 const handleSearchSubmit = () => {
   settlementHistoryQuery.value.page = 1
@@ -74,23 +59,6 @@ const handleSearchSubmit = () => {
 
 const openSlideover = ref(false)
 const openSliderWithData = ref<SettlementHistoryDetail | null>(null)
-
-// This function is search locally in the table
-// const filteredSettlementHistorys = computed(() => {
-//   const searchTerm = (settlementHistoryQuery.value.search || '').toLowerCase()
-//   if (searchTerm) {
-//     return props.settlementHistorys.filter((item) => {
-//       return (
-//         item.supplier.name.toLowerCase().includes(searchTerm) ||
-//         item.cpo?.code?.toLowerCase().includes(searchTerm) ||
-//         item.cpo?.name?.toLowerCase().includes(searchTerm) ||
-//         item.settle_amount.toString().includes(searchTerm) ||
-//         item.status.toLowerCase().includes(searchTerm)
-//       )
-//     })
-//   }
-//   return props.settlementHistorys
-// })
 
 const sortingHistory = ref([
   {
@@ -160,35 +128,6 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
     size: 50,
     maxSize: 150,
-    meta: {
-      class: {
-        td(cell) {
-          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
-        },
-      },
-    },
-  },
-  {
-    accessorKey: 'settle_amount',
-    header: ({ column }) => createSortableHeader(column, t('settlement.amount'), 'right'),
-    cell: ({ row }) =>
-      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
-    size: 150,
-    maxSize: 150,
-    meta: {
-      class: {
-        td(cell) {
-          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
-        },
-      },
-    },
-  },
-  {
-    accessorKey: 'currency',
-    header: () => h('p', { class: 'w-full' }, t('settlement.currency')),
-    cell: () => h('span', { class: '' }, props.currency || 'N/A'),
-    size: 10,
-    maxSize: 30,
     meta: {
       class: {
         td(cell) {
@@ -291,7 +230,10 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
   {
     accessorKey: 'status',
     header: () => t('settlement.status'),
-    cell: ({ row }) => statusCellBuilder(row.original.status, true),
+    cell: ({ row }) =>
+      h(UTooltip, { text: row.original.reason }, () =>
+        statusCellBuilder(row.original.status, true)
+      ),
     // cell: ({ row }) => {
     //   return h(StatusBadgeV2, {
     //     status: row.original.status,
@@ -301,6 +243,35 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     // },
     size: 120,
     maxSize: 120,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
+  },
+  {
+    accessorKey: 'settle_amount',
+    header: ({ column }) => createSortableHeader(column, t('settlement.amount'), 'right'),
+    cell: ({ row }) =>
+      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
+    size: 150,
+    maxSize: 150,
+    meta: {
+      class: {
+        td(cell) {
+          return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+        },
+      },
+    },
+  },
+  {
+    accessorKey: 'currency',
+    header: () => h('p', { class: 'w-full' }, t('settlement.currency')),
+    cell: () => h('span', { class: '' }, props.currency || 'N/A'),
+    size: 10,
+    maxSize: 30,
     meta: {
       class: {
         td(cell) {
@@ -383,7 +354,17 @@ const valueClass = 'text-sm font-bold'
   >
     <template #header>
       <div class="flex flex-row items-center w-full justify-between">
-        <p class="text-md font-bold">{{ $t('settlement.settlement_list') }}</p>
+        <div class="flex items-center">
+          <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+            <UIcon
+              name="material-symbols:patient-list-outline-rounded"
+              class="w-4 h-4 text-primary"
+            />
+          </div>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ $t('settlement.settlement_list') }}
+          </h3>
+        </div>
         <ExSearch
           v-model="settlementHistoryQuery.search"
           :placeholder="$t('settlement.search_placeholder')"
@@ -540,6 +521,21 @@ const valueClass = 'text-sm font-bold'
               <p>{{ t('settlement.no_transaction_allocations') }}</p>
             </div>
           </div>
+        </div>
+      </template>
+
+      <template #close>
+        <div class="flex justify-end w-52">
+          <UTooltip :text="t('close')" :kbds="['esc']">
+            <UButton variant="ghost" class="w-8 h-8">
+              <UIcon
+                name="material-symbols:close"
+                size="30"
+                class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                @click="closeSlideover"
+              />
+            </UButton>
+          </UTooltip>
         </div>
       </template>
     </USlideover>

@@ -1,57 +1,18 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-4">
-    <!-- Table -->
-    <BaseTable
-      :data="suppliers"
+  <div class="flex flex-col h-full w-full">
+    <TablesExTable
+      ref="table"
       :columns="columns"
       table-id="sub-billers-table"
-      border-class="border-gray-200 dark:border-gray-700"
-      @filter-change="handleFilterChange"
-      @row-click="(row) => navigateToDetails(row.id)"
-      @search-change="(val) => (search = val)"
-      @date-range-change="
-        ({ start, end }) => {
-          startDate = start
-          endDate = end
-          fetchSubBiller()
-        }
-      "
-      :page="page"
-      :page-size="pageSize.value"
-      :total="total"
-      :total-page="totalPage"
-      @update:page="
-        (val) => {
-          page = val
-        }
-      "
-      @update:pageSize="
-        (val) => {
-          pageSize.value = val
-          page = 1
-        }
-      "
-      :show-date-filter="false"
-    >
-      <template #empty>
-        <TableEmptyState />
-      </template>
-    </BaseTable>
+      :fetch-data-fn="fetchSubBiller"
+      show-row-number
+      enabled-auto-refresh
+      @row-click="handleViewDetailss"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-const showSidebar = ref(false)
-const selectedRecord = ref<SettlementHistoryRecord | null>(null)
-const filters = ref<{ field: string; operator: string; value: string; manualFilter?: boolean }[]>(
-  []
-)
-
-definePageMeta({
-  auth: false,
-  breadcrumbs: [{ label: 'sub_biller', to: '/transactions' }],
-})
-
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
@@ -59,7 +20,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import StatusBadge from '~/components/StatusBadge.vue'
 import TableEmptyState from '~/components/TableEmptyState.vue'
-import BaseTable from '~/components/tables/BaseTable.vue'
+import type BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
@@ -74,11 +35,24 @@ import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionHistoryRecord } from '~/models/transaction'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
 import type { SubBillerQuery } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
 import { useTable } from '~/composables/utils/useTable'
 // const { createSortableHeader, createRowNumberCell } = useTable<Supplier>()
+import type { QueryParams } from '~/models/baseModel'
+
+const showSidebar = ref(false)
+const selectedRecord = ref<SettlementHistoryRecord | null>(null)
+const filters = ref<
+  { field: string; operator: FilterOperatorPgwModule; value: string; manualFilter?: boolean }[]
+>([])
+
+definePageMeta({
+  auth: false,
+  breadcrumbs: [{ label: 'sub_biller', to: '/organization/sub-billers' }],
+})
 
 const dateToCalendarDate = (date: Date): CalendarDate =>
   new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -145,7 +119,7 @@ watch(search, () => {
     ...filters.value.filter((f) => f.field !== 'search'),
     {
       field: 'search',
-      operator: 'contains',
+      operator: FilterOperatorPgwModule.Contains,
       value: search.value,
       manualFilter: false,
     },
@@ -167,23 +141,24 @@ const onDateFilterChange = (payload: { label: string; value: string }) => {
   }
 }
 
-async function fetchSubBiller() {
+const fetchSubBiller = async (
+  params?: QueryParams
+): Promise<{
+  data: Supplier[]
+  total_record: number
+  total_page: number
+} | null> => {
   try {
-    const payload: SubBillerQuery & { Filter?: string } = {
-      PageIndex: page.value,
-      PageSize: pageSize.value.value,
-    }
+    const response = await getSubBillers(params)
 
-    if (filters.value.length > 0) {
-      payload.Filter = JSON.stringify(filters.value) // ✅ use raw JSON string
+    return {
+      data: response.result || [],
+      total_record: response.param?.rowCount || 0,
+      total_page: response.param?.pageCount || 0,
     }
-
-    const data = await getSubBillers(payload)
-    suppliers.value = data.result
-    total.value = data?.param.rowCount ?? 0
-    totalPage.value = data?.param.pageCount
   } catch (error) {
-    console.error('fetchSubBiller error:', error)
+    errorHandler.handleApiError(error)
+    return null
   }
 }
 
@@ -428,70 +403,53 @@ const handleExport = (item: { click: () => void }) => {
   }
 }
 
-const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
-  if (record.success === 0 && record.failed === 0) {
-    await notification.showWarning({
-      title: t('no_transactions_found'),
-      description: t('no_transactions_found_desc'),
-    })
-    return
-  }
-  selectedRecord.value = record
-  showSidebar.value = true
+const handleViewDetailss = (record: Supplier) => {
+  navigateToDetails(record.id)
 }
 const handleFilterChange = (columnId: string, value: string) => {
   console.log('Filter changed:', columnId, value)
   // Optional: trigger fetch or other logic
 }
 
-const columns: BaseTableColumn<any>[] = [
-  {
-    id: 'select',
-    header: ({ table }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all',
-      }),
-    cell: ({ row }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row',
-      }),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
-    size: 30,
-    maxSize: 30,
-    enableSorting: false,
-  },
+const columns: BaseTableColumn<Supplier>[] = [
   {
     id: 'syncCode',
     accessorKey: 'syncCode',
-    header: t('code'),
+    headerText: t('code'),
+    cell: ({ row }) => {
+      const syncCode = row.original.syncCode
+      const Icon = resolveComponent('Icon') // Ensure globally registered or imported
 
-    // header: ({ column }) => createSortableHeader(column, t('code')),
-    // cell: ({ row }) =>
-    //   // Format date to DD/MM/YYYY
-    //   useFormat().formatDateTime(row.original.created_date),
+    return h('div', { class: 'flex items-center gap-3' }, [
+        // Circular background wrapper
+        h(
+          'div',
+          {
+            class:
+              'w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center',
+          },
+          [
+            h(Icon, {
+              name: 'material-symbols:home-work-outline',
+              class: 'w-4 h-4 text-primary',
+            }),
+          ]
+        ),
+        h('span', {}, syncCode ?? ''),
+      ])
+    },
+    enableSorting: true,
   },
   {
     id: 'name',
     accessorKey: 'name',
-    header: t('name'),
+    headerText: t('name'),
+    enableSorting: true,
   },
   {
     id: 'address',
     accessorKey: 'address',
-    header: t('settlement.generate.form.address'),
+    headerText: t('settlement.generate.form.address'),
   },
   // {
   //   id: 'collection_bank',

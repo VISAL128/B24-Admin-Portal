@@ -16,6 +16,15 @@ export interface CurrencyFormatOptions {
   useGrouping?: boolean
 }
 
+// Default currency configuration fallback
+const DEFAULT_CURRENCY_CONFIG: CurrencyConfig = {
+  code: 'KHR',
+  symbol: '៛',
+  name: 'Cambodian Riel',
+  decimals: 0,
+  locale: 'km-KH',
+}
+
 export const useCurrency = () => {
   // Common currencies used in Bill24
   const currencies = ref<Record<string, CurrencyConfig>>({
@@ -24,14 +33,14 @@ export const useCurrency = () => {
       symbol: '៛',
       name: 'Cambodian Riel',
       decimals: 0,
-      locale: 'km-KH'
+      locale: 'km-KH',
     },
     USD: {
       code: 'USD',
       symbol: '$',
       name: 'US Dollar',
       decimals: 2,
-      locale: 'en-US'
+      locale: 'en-US',
     },
   })
 
@@ -49,10 +58,10 @@ export const useCurrency = () => {
 
   // Get currency options for select components
   const getCurrencyOptions = computed(() => {
-    return getAllCurrencies.value.map(currency => ({
+    return getAllCurrencies.value.map((currency) => ({
       value: currency.code,
       label: `${currency.code} - ${currency.name}`,
-      symbol: currency.symbol
+      symbol: currency.symbol,
     }))
   })
 
@@ -73,34 +82,43 @@ export const useCurrency = () => {
       return '0'
     }
 
+    // Smart decimal handling: only round to 0 decimals if the decimal part is .00
+    const hasSignificantDecimals = numericAmount % 1 !== 0
+    const actualDecimals = hasSignificantDecimals
+      ? (options.maximumFractionDigits ?? 2)
+      : (options.minimumFractionDigits ?? 0)
+
     const formatOptions: Intl.NumberFormatOptions = {
       style: 'currency',
       currency: currency.code,
-      minimumFractionDigits: options.minimumFractionDigits ?? currency.decimals,
-      maximumFractionDigits: options.maximumFractionDigits ?? currency.decimals,
-      useGrouping: options.useGrouping ?? true
+      minimumFractionDigits:
+        options.minimumFractionDigits ?? (hasSignificantDecimals ? actualDecimals : 0),
+      maximumFractionDigits:
+        options.maximumFractionDigits ??
+        (hasSignificantDecimals ? actualDecimals : currency.decimals),
+      useGrouping: options.useGrouping ?? true,
     }
 
     try {
       const formatted = new Intl.NumberFormat(currency.locale, formatOptions).format(numericAmount)
-      
+
       // Custom formatting based on options
       if (!options.showSymbol && !options.showCode) {
         return formatted.replace(/[^\d.,\s-]/g, '').trim()
       }
-      
+
       if (options.showCode && !options.showSymbol) {
         return `${numericAmount.toLocaleString(currency.locale, {
           minimumFractionDigits: formatOptions.minimumFractionDigits,
           maximumFractionDigits: formatOptions.maximumFractionDigits,
-          useGrouping: formatOptions.useGrouping
+          useGrouping: formatOptions.useGrouping,
         })} ${currency.code}`
       }
 
       return formatted
     } catch (error) {
       console.error('Currency formatting error:', error)
-      return `${currency.symbol}${numericAmount.toFixed(currency.decimals)}`
+      return `${currency.symbol}${numericAmount.toFixed(hasSignificantDecimals ? 2 : 0)}`
     }
   }
 
@@ -115,11 +133,11 @@ export const useCurrency = () => {
   // Parse currency string to number
   const parseCurrency = (currencyString: string): number => {
     if (!currencyString) return 0
-    
+
     // Remove all non-numeric characters except decimal point and minus sign
     const cleanString = currencyString.replace(/[^\d.,-]/g, '')
     const numericValue = parseFloat(cleanString.replace(',', ''))
-    
+
     return isNaN(numericValue) ? 0 : numericValue
   }
 
@@ -131,13 +149,13 @@ export const useCurrency = () => {
     exchangeRate?: number
   ): number => {
     if (fromCurrency === toCurrency) return amount
-    
+
     // For now, return the original amount
     // In the future, integrate with exchange rate API
     if (exchangeRate) {
       return amount * exchangeRate
     }
-    
+
     console.warn('Currency conversion requires exchange rate integration')
     return amount
   }
@@ -175,7 +193,7 @@ export const useCurrency = () => {
     if (currency1 === currency2) {
       return amount1 - amount2
     }
-    
+
     // For different currencies, would need exchange rates
     console.warn('Comparing different currencies requires exchange rate conversion')
     return 0
@@ -185,11 +203,11 @@ export const useCurrency = () => {
     // State
     currencies: readonly(currencies),
     defaultCurrency: readonly(defaultCurrency),
-    
+
     // Computed
     getAllCurrencies,
     getCurrencyOptions,
-    
+
     // Methods
     getCurrency,
     formatCurrency,
@@ -200,7 +218,7 @@ export const useCurrency = () => {
     getCurrencySymbol,
     addCurrency,
     setDefaultCurrency,
-    compareCurrencyAmounts
+    compareCurrencyAmounts,
   }
 }
 

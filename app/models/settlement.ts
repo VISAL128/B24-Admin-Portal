@@ -114,6 +114,8 @@ export interface SettlementHistoryQuery {
   page?: number
   page_size?: number
   supplier_id: string
+  banks: string[]
+  currencies?: string[]
 }
 
 export interface SettlementHistoryDetail {
@@ -143,6 +145,7 @@ export interface SettlementHistoryDetail {
   bank_ref_id: string
   tran_date: string
   status: string
+  reason: string
   party_type: string
   tran_allocates: TransactionAllocation[]
 }

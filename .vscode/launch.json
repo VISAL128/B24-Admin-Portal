@@ -4,6 +4,11 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Dart: Attach to Process",
+      "type": "dart",
+      "request": "attach"
+    },
+    {
       "type": "chrome",
       "request": "launch",
       "name": "client: chrome",

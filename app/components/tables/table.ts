@@ -1,11 +1,13 @@
 // ~/types/table.ts
 import type { TableColumn } from '@nuxt/ui'
+import type { Bank } from '~/models/bank'
 import type { SettlementHistoryRecord } from '~/models/settlement'
+import type { TransactionModel } from '~~/server/model/pgw_module_api/transactions/transaction'
 
 export type BaseTableColumn<T> = TableColumn<T> & {
   id: string // ✅ Make `id` required
   enableColumnFilter?: boolean
-  filterOptions?: Array<{ label: string; value: string }>
+  filterOptions?: Array<{ label: string; value: string | number }>
   accessorKey?: keyof T | string
   // Optional properties for advanced filtering
   filterType?: 'select' | 'status'
@@ -18,6 +20,14 @@ export type BaseTableColumn<T> = TableColumn<T> & {
    * Note: rendering should be working when cell is undefined
    * and type is set to ColumnType.DateTime   */
   type?: ColumnType
+  /**
+   * Header text for the column
+   * This is used for rendering the column header and can be localized
+   * @note Do not use `t()` for translation, just provide the key
+   * @example 'table.column.headerText'
+   */
+  headerText?: string
+  sortableHeaderAlignment?: 'left' | 'center' | 'right'
 }
 
 export type TableFetchResult<TData> = {
@@ -34,3 +44,7 @@ export interface SettlementHistoryTableFetchResult extends TableFetchResult<Sett
   sum_success?: number
   sum_failed?: number
 }
+
+export type BankListTableFetchResult = TableFetchResult<Bank[]>
+
+export type TransactionListTableFetchResult = TableFetchResult<TransactionModel[]>

@@ -1,6 +1,10 @@
 {
+  "date_range": "Date Range",
+  "filters_applied": "Filters Applied",
   "yes": "Yes",
   "no": "No",
+  "close": "Close",
+  "seconds": "seconds",
   "yes_logout": "Yes, Logout",
   "hello": "Hello",
   "cancel": "Cancel",
@@ -12,7 +16,6 @@
   "fee_name": "Fee Name",
   "name": "Name",
   "fee_type": "Fee Type",
-  "fee_already_exists": "This fee already exists",
   "allocate_details": "Allocate Details",
   "welcome": "Welcome to Bill24 Management Portal",
   "add_fee": "Add Fee",
@@ -90,25 +93,53 @@
       "failed": "Failed",
       "success": "Success",
       "error": "Error",
-      "processing": "Processing"
+      "processing": "Processing",
+      "reversed": "Reversed",
+      "cancel": "Cancel",
+      "expire": "Expired"
+    },
+    "settlementType": {
+      "HUB": "HUB",
+      "DIRECT": "DIRECT"
+    },
+    "currency": {
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
+    },
+    "active": {
+      "1": "Active",
+      "2": "Inactive"
     },
     "currency_id": {
+      "USD": "USD - US Dollar",
+      "KHR": "KHR - Cambodian Riel"
+    },
+    "tranType": {
+      "wallet_payment": "Payment",
+      "wallet_topup": "Top Up"
+    },
+    "currencyId": {
       "USD": "USD - US Dollar",
       "KHR": "KHR - Cambodian Riel"
     }
   },
   "table": {
+    "more_options": "More Options",
     "filters": "Filters",
+    "filters_applied": "Filters Applied",
     "empty_state_message": "No data available.",
     "loading": "Loading...",
     "no_records_found": "No records found",
     "search_placeholder": "Search...",
+    "enter_fullscreen": "Enter Fullscreen",
+    "exit_fullscreen": "Exit Fullscreen",
     "column_config": {
       "tooltip": "Hide/Show Columns",
       "reset": "Reset",
+      "apply": "Apply",
       "reset_description": "Reset columns and sorting to defaults",
       "columns": "Columns"
-      },
+    },
     "settlement-history": {
       "columns": {
         "created_date": "Settlement Date",
@@ -121,12 +152,113 @@
     },
     "banks-list": {
       "columns": {
-        "bank_name": "Bank Name",
+        "name": "Bank Name",
         "currency": "Currency",
         "status": "Status",
         "activated_date": "Activated Date",
         "is_settlement_bank": "Settlement Bank",
-        "is_collection_bank": "Collection Bank"
+        "is_collection_bank": "Collection Bank",
+        "active": "Status"
+      }
+    },
+    "bank-settlements": {
+      "columns": {
+        "bank_name": "Bank Name",
+        "created_date": "Settlement Date",
+        "total_amount": "Total Amount",
+        "currency_id": "Currency",
+        "total_settled": "Total Settled",
+        "status": "Status",
+        "created_by": "Settled By"
+      }
+    },
+    "transaction-history-table": {
+      "columns": {
+        "collectionBank": "Collection Bank",
+        "settlementBank": "Settlement Bank",
+        "settlementType": "Settlement Type",
+        "transactionType": "Transaction Type",
+        "currency": "Currency",
+        "status": "Status",
+        "date": "Transaction Date",
+        "bankReference": "Bank Reference",
+        "subBiller": "Sub Biller",
+        "subSupplier": "Sub Biller",
+        "totalAmount": "Total Amount",
+        "totalCustomer": "Total Customer",
+        "numberOfCustomer": "Total Customer",
+        "transactionAmount": "Total Amount"
+      }
+    },
+    "wallet-transactions-table-top_up_wallet": {
+      "columns": {
+        "tranDate": "Transaction Date",
+        "wallet_type": "Wallet Type",
+        "transaction_type": "Transaction Type",
+        "status": "Status",
+        "totalAmount": "Total Amount",
+        "currency_id": "Currency",
+        "fee_amount": "Fee Amount",
+        "net_amount": "Net Amount",
+        "counterparty": "Counterparty",
+        "payment_method": "Payment Method",
+        "merchant": "Merchant",
+        "channel": "Channel",
+        "customerName": "Customer Name",
+        "actions": "Actions",
+        "currencyId": "Currency",
+        "tranType": "Transaction Type",
+        "bankRefId": "Bank Reference ID"
+      }
+    },
+    "sub-biller-transaction-table": {
+      "columns": {
+        "collectionBank": "Collection Bank",
+        "settlementBank": "Settlement Bank",
+        "settlementType": "Settlement Type",
+        "transactionType": "Transaction Type",
+        "currencyId": "Currency",
+        "status": "Status",
+        "date": "Transaction Date",
+        "bankReference": "Bank Reference",
+        "subBiller": "Sub Biller",
+        "subSupplier": "Sub Biller",
+        "totalAmount": "Total Amount",
+        "totalCustomer": "Total Customer",
+        "numberOfCustomer": "Total Customer",
+        "transactionAmount": "Total Amount",
+        "createdDate": "Transaction Date",
+        "walletAccountDisplay": "Wallet",
+        "transactionNo": "Transaction No"
+
+      }
+    },
+    "sub-billers-table": {
+      "columns": {
+        "syncCode": "Code",
+        "name": "Name",
+        "address": "Address"
+      }
+    },
+    "wallet-transactions-table-settlement_wallet": {
+      "columns": {
+        "tranDate": "Transaction Date",
+        "wallet_type": "Wallet Type",
+        "transaction_type": "Transaction Type",
+        "status": "Status",
+        "totalAmount": "Total Amount",
+        "currency_id": "Currency",
+        "fee_amount": "Fee Amount",
+        "net_amount": "Net Amount",
+        "counterparty": "Counterparty",
+        "payment_method": "Payment Method",
+        "merchant": "Merchant",
+        "channel": "Channel",
+        "customerName": "Customer Name",
+        "actions": "Actions",
+        "currencyId": "Currency",
+        "tranType": "Transaction Type",
+        "bankRefId":"Bank Reference ID"
       }
     }
   },
@@ -142,7 +274,10 @@
     "error": "Error",
     "processing": "Processing",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "cancel": "Cancelled",
+    "expire": "Expired",
+    "reversed": "Reversed"
   },
   "no_transactions_found": "No transactions found",
   "no_transactions_found_desc": "No transactions found for the selected criteria.",
@@ -159,7 +294,7 @@
   "row_selected": "row(s) selected",
   "total": "Total",
   "to": "to",
-  "generate_settlement": "Generate Settlement",
+  "generate_settlement": "Generate",
   "search_by_settler": "Search by Settler...",
   "pick_a_date": "Pick a Date",
   "user_profile": "User Profile",
@@ -172,6 +307,17 @@
   "copy_failed": "Copy Failed",
   "copy_failed_message": "Failed to copy to clipboard",
   "wallet_page": {
+    "transaction_report": "Transaction Report",
+    "settle_amount": "Settlement Amount",
+    "description":"Description",
+    "bank_ref_id": "Bank Reference ID",
+    "transaction_id": "Transaction ID",
+    "currency": "Currency",
+    "customer_email": "Customer Email",
+    "customer_phone": "Customer Phone",
+    "customer_name":"Customer Name",
+    "customer_info": "Customer Information",
+    "tran_date": "Transaction Date",
     "title": "Digital Wallet",
     "subtitle": "Manage your wallet balances and transactions",
     "refresh": "Refresh",
@@ -185,7 +331,7 @@
     "account_number": "Account Number",
     "last_transaction": "Last Transaction",
     "copy_success": "Copied!",
-    "copy_success_message": "Account number copied to clipboard",
+    "copy_success_message": "Copied to clipboard",
     "copy_to_clipboard": "Copy to clipboard",
     "copy_account_number": "Copy account number",
     "copy_failed": "Copy Failed",
@@ -211,8 +357,18 @@
     "transfer": "Transfer",
     "transaction_summary": "Transaction Summary",
     "today": "Today",
+    "yesterday": "Yesterday",
     "this_week": "This Week",
+    "previous_week": "Previous Week",
     "this_month": "This Month",
+    "previous_month": "Previous Month",
+    "this_quarter": "This Quarter",
+    "previous_quarter": "Previous Quarter",
+    "last_6_months": "Last 6 Months",
+    "previous_year": "Previous Year",
+    "quick_select": "Quick Select",
+    "custom_range": "Custom Range",
+    "select_date_range": "Select Date Range",
     "date": "Date",
     "period": "Period",
     "transactions": "Transactions",
@@ -224,7 +380,7 @@
     "no_wallets_found": "No wallets found",
     "loading": "Loading",
     "auto_refresh": "Auto Refresh",
-    "auto_refresh_tooltip": "Automatically refresh data every 30 seconds",
+    "auto_refresh_tooltip": "Automatically refresh data based on your configured interval",
     "biller_categories": "Biller Categories",
     "view_all": "View All",
     "recent_transactions": "Recent Transactions",
@@ -232,12 +388,13 @@
     "transaction_list": "Transaction List",
     "transaction_history": "Transaction History",
     "load_more": "Load More",
+    "show_less": "Show Less",
     "loading_transactions": "Loading transactions...",
     "no_more_transactions": "No more transactions to load",
     "transaction_details": "Transaction Details",
     "transaction_no": "Transaction No",
     "transaction_amount": "Amount",
-    "transaction_type": "Type",
+    "transaction_type": "Transaction Type",
     "transaction_status": "Status",
     "transaction_date": "Date",
     "reference_no": "Reference No",
@@ -254,9 +411,11 @@
     "search_transactions": "Search transactions...",
     "search_placeholder": "Search by transaction number, reference, etc.",
     "date_range": "Date Range",
+    "actions": "Actions",
+    "view_details": "View Details",
     "transaction_types": {
       "top_up": "Top Up",
-      "settlement": "Settlement", 
+      "settlement": "Settlement",
       "transfer": "Transfer",
       "payment": "Payment"
     },
@@ -268,9 +427,18 @@
     },
     "date_ranges": {
       "today": "Today",
+      "yesterday": "Yesterday",
       "this_week": "This Week",
       "this_month": "This Month",
+      "last_7_days": "Last 7 Days",
+      "last_14_days": "Last 14 Days",
       "last_30_days": "Last 30 Days",
+      "last_3_months": "Last 3 Months",
+      "last_6_months": "Last 6 Months",
+      "this_quarter": "This Quarter",
+      "last_quarter": "Last Quarter",
+      "this_year": "This Year",
+      "last_year": "Last Year",
       "custom": "Custom Range"
     },
     "billers": {
@@ -283,7 +451,7 @@
     },
     "wallet_number": "Wallet Number",
     "bank_account_number": "Bank Account Number",
-     "more_wallets_coming": "More wallets will appear here"
+    "more_wallets_coming": "More wallets will appear here"
   },
   "wallet": "Wallet",
   "transaction": {
@@ -335,6 +503,10 @@
     "developer_tools": "Developer Tools"
   },
   "settings": {
+    "reset_success": "Preferences reset successfully!",
+    "reset_error": "Failed to reset preferences. Please try again.",
+    "reset_success_desc": "Your preferences have been reset to default values.",
+    "save_error": "Failed to save preferences. Please try again.",
     "generate_details": "General Details",
     "fee_config": "Fee Configuration",
     "date_format_short": "Short (DD/MM/YYYY)",
@@ -367,6 +539,9 @@
     "default_currency": "Default Currency",
     "default_page_size": "Default Page Size",
     "default_page_size_description": "Set the default number of items to display per page in tables",
+    "auto_refresh_interval": "Auto Refresh Interval",
+    "auto_refresh_interval_description": "Set the time interval (in seconds) for automatic data refresh. Range: 30-300 seconds.",
+    "seconds": "seconds",
     "preview": "Preview",
     "preview_date": "Date:",
     "preview_time": "Time:",
@@ -440,16 +615,14 @@
     "settings": "Settings",
     "developer_tools": "Developer Tools"
   },
-  "fee_configs": {
+  "settlement_history": {
     "columns": {
-      "row_number": "Row Number",
-      "name": "Name",
-      "actions": "Actions",
-      "code": "Code",
-      "fee_name": "Fee Name",
-      "currency": "Currency",
-      "fee_type": "Fee Type",
-      "sharing": "Sharing Fee"
+      "created_date": "Settlement Date",
+      "total_amount": "Total Amount",
+      "currency_id": "Currency",
+      "total_settled": "Transaction",
+      "status": "Status",
+      "created_by": "Settled By"
     },
     "column_config": {
       "tooltip": "Hide/Show Columns",
@@ -459,10 +632,12 @@
     }
   },
   "settlement": {
+    "no_transaction_allocations": "No transaction allocations found.",
     "settlement_details_description": "Details of the settlement",
     "refresh": "Refresh",
     "auto_refresh": "Auto Refresh",
-    "auto_refresh_desc": "Automatically refresh the settlement history every 30 seconds.",
+    "auto_refresh_desc": "Automatically refresh the settlement history based on your configured interval.",
+    "auto_refresh_disabled_long_range": "Auto refresh is disabled for date ranges longer than 7 days to improve performance.",
     "transaction": "Transaction",
     "title": "Settlement",
     "settlement_list": "Settlement List",
@@ -527,6 +702,7 @@
       },
       "form": {
         "type": "Type",
+        "total_biller": "Total Biller",
         "total_transactions": "Total Transactions",
         "no_cpo_settlement_title": "No CPO",
         "no_cpo_settlement_message": "No CPO available for settlement.",
@@ -766,34 +942,92 @@
       "api_error": "API test '{api}' failed"
     }
   },
-
   "bank_ref": "Bank Ref",
   "settlement_bank": "Settlement Bank",
   "collection_bank": "Collection Bank",
   "settlement_type": "Settlement Type",
   "date": "Date",
   "sort_by": "Sort by",
-  "ascending": "Ascending",
-  "descending": "Descending",
   "clear": "Clear",
   "all": "All",
+  "all_time": "All Time",
   "transaction_summary": "Transaction Summary",
   "today": "Today",
   "this_week": "This Week",
   "this_month": "This Month",
   "this_year": "This Year",
   "sub_biller": "Sub Biller",
-  "overview": "Overview",
   "lottie": {
     "library_not_found": "Lottie animation library not available",
     "install_instruction": "Run: npm install lottie-web"
   },
   "pages": {
+    "transaction_detail": {
+      "customer": "Customer",
+      "customerCode": "Customer Code",
+      "currency": "Currency",
+      "billNo": "Bill No",
+      "amount": "Amount",
+      "title": "Transaction Detail",
+      "settlement_bank": "Settlement Bank",
+      "bank_name": "Bank Name",
+      "account_number": "Account Number",
+      "settlement_amount": "Settlement Amount",
+      "error_transaction_detail": "Failed to load transaction details",
+      "error_allocation": "Failed to load Transaction Allocation"
+    },
+    "transaction_allocation": {
+      "title": "Transaction Allocation",
+      "id": "ID",
+      "customer": "Customer",
+      "transaction_amount": "Transaction Amount",
+      "allocation_party": "Allocation Party",
+      "amount": "Received Amount",
+      "outstanding_amount": "Outstanding Balance",
+      "currency": "Currency",
+      "date": "Transaction Date",
+      "status": {
+        "status": "Status",
+        "complete": "Complete",
+        "pending": "Pending"
+      }
+    },
     "transaction": {
-      "title": "Transaction"
+      "supplier_fee": "Supplier Fee",
+      "customer_fee": "Customer Fee",
+      "amount": "Total Amount",
+      "title": "Transaction",
+      "created_date": "Transaction Date",
+      "total_customer": "Total Customer",
+      "bank_ref": "Bank Reference",
+      "collection_bank": "Collection Bank",
+      "settlement_bank": "Settlement Bank",
+      "settlement_type": "Settlement Type",
+      "transaction_type": "Transaction Type",
+      "sub_biller": "Sub Biller",
+      "status": "Status",
+      "currency": "Currency",
+      "repush": "Repush",
+      "repush_description": "Repush Transaction to Biller",
+      "info": "Confirmation",
+      "info_des": "Please select transaction before repush",
+      "tip": "Tip",
+      "tip_message": "Apply filters to reflect changes in both the Transaction Summary and the Transaction.",
+      "summary": {
+        "total_transaction": "Total Transaction",
+        "total_settlement": "Total Settlement Amount",
+        "total_amount": "Total Amount",
+        "success_transaction": "Successful Transactions",
+        "failed_transaction": "Failed Transactions",
+        "pending_transaction": "Pending Transactions",
+        "cancel_transaction": "Cancelled Transactions",
+        "total_customer": "Total Customers",
+        "average_amount": "Average Amount"
+      }
     }
   },
   "banks": {
+    "no_accounts_found": "No accounts found",
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
     "search_placeholder": "Search by bank name",
@@ -803,6 +1037,10 @@
     "delete_bank": "Delete Bank",
     "bank_code": "Bank Code",
     "bank_name": "Bank Name",
+    "name_kh": "Khmer Name",
+    "active_banks": "Active Banks",
+    "inactive_banks": "Inactive Banks",
+    "default_account": "Default Account",
     "bank_short_name": "Short Name",
     "swift_code": "SWIFT Code",
     "description": "Description",
@@ -834,6 +1072,7 @@
     "toggle_status": "Toggle Status",
     "activate_bank": "Activate Bank",
     "deactivate_bank": "Deactivate Bank",
+    "activated_date": "Activated Date",
     "confirm_delete": "Are you sure you want to delete this bank?",
     "confirm_activate": "Are you sure you want to activate this bank?",
     "confirm_deactivate": "Are you sure you want to deactivate this bank?",
@@ -852,9 +1091,15 @@
     "all_banks": "All Banks",
     "total_banks": "Total Banks",
     "bank_not_found_desc": "The requested bank could not be found.",
-    "bank_created_desc": "Bank {name} has been created successfully."
+    "bank_created_desc": "Bank {name} has been created successfully.",
+    "settlement_history_desc": "View all settlement transactions processed through this bank"
   },
   "additional_information": "Additional Information",
   "metadata": "Metadata",
-  "back": "Back"
+  "back": "Back",
+  "customer_name": "Customer Name",
+  "deactivate": "Deactivate",
+  "deactivate_subbiller_confirmation": "Do you really want to deactivate this sub-biller?",
+  "logo_recommendation": "Logo recommendation",
+  "updated_sub_biller_success": "Sub-biller updated successfully"
 }

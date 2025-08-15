@@ -1,252 +1,631 @@
 <template>
-  <div class="flex flex-col h-full w-full space-y-3">
-    <!-- Tabs -->
-    <UTabs variant="link" v-model="activeTab" :items="tabs" />
-
-    <div
-      v-if="activeTab === 'details'"
-      class="flex justify-center"
-    >
-      <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full">
-        <!-- Top Header Area with Blurred Background Image -->
-        <div
-          class="rounded-t-2xl px-8 py-6 flex flex-col items-center justify-center text-center space-y-4 relative bg-cover bg-center w-full"
-          :style="{
-            backgroundImage: `url('https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg')`,
-          }"
+  <div class="w-full h-[calc(100vh-64px)] overflow-hidden">
+    <!-- Mobile Tabs (Wallet / Details) -->
+    <div class="lg:hidden px-4 pt-3">
+      <div class="grid grid-cols-2 gap-1 rounded-xl p-1 bg-gray-100 dark:bg-gray-800">
+        <button
+          type="button"
+          @click="activeTab = 'wallet'"
+          :class="[
+            'py-2 rounded-lg text-sm font-medium transition',
+            activeTab === 'wallet'
+              ? 'bg-white dark:bg-gray-900 shadow text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-300',
+          ]"
         >
-          <!-- Blur overlay covering entire header -->
-          <div class="absolute inset-0 backdrop-blur-xs bg-black/20 dark:bg-black/40 w-full h-full"></div>
-          
-          <!-- Content (Avatar and Supplier Name) -->
-          <div class="relative z-10 flex flex-col items-center">
-            <!-- Perfect Circular Avatar -->
-            <div class="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-primary dark:bg-blue-900/30">
-              <img
-                v-if="supplierProfileImage"
-                :src="supplierProfileImage"
-                alt="Supplier"
-                class="w-full h-full object-cover"
-              />
-              <span v-else class="leading-none text-3xl text-white font-semibold">
-                {{ supplierInitials }}
-              </span>
-            </div>
+          {{ t('wallet') }}
+        </button>
+        <button
+          type="button"
+          @click="activeTab = 'details'"
+          :class="[
+            'py-2 rounded-lg text-sm font-medium transition',
+            activeTab === 'details'
+              ? 'bg-white dark:bg-gray-900 shadow text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-300',
+          ]"
+        >
+          {{ t('details') }}
+        </button>
+      </div>
+    </div>
 
-            <!-- Supplier Name -->
-            <h4 class="text-2xl font-medium text-white mt-4">
-              {{ supplierData.name }}
-            </h4>
+    <!-- Make this container relative so the floating expand tab can anchor to it -->
+    <div class="flex h-full flex-col lg:flex-row gap-4 relative">
+      <!-- Floating expand tab when collapsed (desktop only) -->
+      <button
+        v-if="isDetailsCollapsed"
+        @click="toggleDetails"
+        class="hidden lg:flex absolute right-1 top-1/2 -translate-y-1/2 z-50 p-2 /* bigger click area, still transparent */ text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-full"
+        :aria-expanded="!isDetailsCollapsed"
+        :title="t('expand')"
+      >
+        <UIcon name="i-heroicons-chevron-left-20-solid" class="w-8 h-8" />
+      </button>
+
+      <!-- SINGLE CARD with Wallets + Table -->
+      <section
+        :class="[
+          'min-h-0 overflow-hidden flex flex-col',
+          /* mobile: only show when wallet tab active */
+          activeTab === 'wallet' ? 'block' : 'hidden',
+          /* desktop: always show as the left pane */
+          'lg:flex lg:block flex-1',
+        ]"
+      >
+        <div
+          class="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-1 flex flex-col bg-white dark:bg-gray-900"
+        >
+          <div class="p-4">
+            <template v-if="isLoadingWallets">
+              <div class="flex gap-4 overflow-x-auto">
+                <USkeleton v-for="n in 2" :key="n" class="min-w-[320px] h-44 rounded-2xl" />
+              </div>
+            </template>
+
+            <template v-else>
+              <div
+                v-if="wallets.length === 0"
+                class="w-full rounded-xl border border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center text-center h-44 text-gray-400 dark:text-gray-500"
+              >
+                <UIcon name="i-heroicons-banknotes" class="w-10 h-10 mb-2" />
+                <span class="text-base font-medium">
+                  {{ t('wallet_page.no_wallets_found') }}
+                </span>
+              </div>
+
+              <!-- Horizontal scroll row -->
+              <div v-else class="overflow-x-auto">
+                <div class="flex flex-nowrap gap-4 pr-2">
+                  <!-- Wallet cards -->
+                  <div
+                    v-for="(wallet, index) in wallets"
+                    :key="wallet.walletId"
+                    :class="[
+                      'min-w-[320px] rounded-2xl text-white p-6 relative overflow-hidden shadow-lg flex flex-col justify-between h-44',
+                      getCardGradientByIndex(index),
+                    ]"
+                  >
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="text-xl font-semibold">
+                        {{ wallet.bankName }}
+                      </div>
+                      <UIcon name="i-heroicons-banknotes" class="w-5 h-5 opacity-70" />
+                    </div>
+
+                    <div class="flex-1 flex flex-col justify-center items-center text-center">
+                      <div class="text-xs opacity-80 tracking-wide uppercase">
+                        {{ t('wallet_page.current_balance') }}
+                      </div>
+                      <div class="text-2xl font-bold tracking-wide mt-1">
+                        {{ useCurrency().formatAmount(wallet.balance ?? '0', wallet.currency) }}
+                        {{ wallet.currency }}
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-white opacity-90">
+                      <div class="flex flex-col">
+                        <span class="opacity-60">
+                          {{ t('wallet_page.bank_account_number') }}
+                        </span>
+                        <div class="flex items-center gap-2 font-mono mt-1">
+                          <span class="truncate">
+                            {{ wallet.accountNo }}
+                          </span>
+                          <button
+                            class="hover:text-yellow-300 transition"
+                            :title="t('wallet_page.copy_account_number')"
+                            @click="copyToClipboard(wallet.accountNo ?? '')"
+                          >
+                            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col items-end text-right">
+                        <span class="opacity-60">
+                          {{ t('wallet_page.wallet_number') }}
+                        </span>
+                        <div class="flex items-center gap-2 font-mono mt-1">
+                          <span class="truncate">
+                            {{ wallet.walletNo }}
+                          </span>
+                          <button
+                            class="hover:text-yellow-300 transition"
+                            :title="t('wallet_page.copy_wallet_number')"
+                            @click="copyToClipboard(wallet.walletNo ?? '')"
+                          >
+                            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Placeholder card -->
+                  <div
+                    v-if="wallets.length === 1"
+                    class="min-w-[320px] h-44 rounded-2xl border-1 border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500"
+                  >
+                    <div class="flex flex-col items-center">
+                      <UIcon name="i-heroicons-banknotes" class="w-8 h-8 mb-2" />
+                      <span class="text-sm">
+                        {{ t('wallet_page.more_wallets_coming') }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Spacer at end -->
+                  <div class="w-2 flex-none"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <div class="flex-1 overflow-auto">
+            <template v-if="isLoadingTable">
+              <div class="p-4 space-y-2">
+                <USkeleton v-for="n in 10" :key="n" class="h-10 w-full rounded" />
+              </div>
+            </template>
+            <template v-else>
+              <TablesExTable
+                ref="table"
+                :columns="columns"
+                table-id="sub-biller-transaction-table"
+                :fetch-data-fn="fetchTransactionHistory"
+                show-row-number
+                show-date-filter
+                date-format="dd/MM/yyyy"
+                enabled-auto-refresh
+                @row-click="handleViewDetails"
+              />
+            </template>
           </div>
         </div>
+      </section>
 
-        <!-- Details Grid Section -->
-        <div class="grid grid-cols-1 gap-8 px-8 pb-8">
-          <!-- Left Column -->
-          <div class="space-y-0">
+      <!-- DETAILS (collapsible horizontally) -->
+      <section
+        :class="[
+          'overflow-hidden flex-shrink-0 transition-[width] duration-300 ease-in-out',
+          /* mobile: only show when details tab active */
+          activeTab === 'details' ? 'block' : 'hidden',
+          /* desktop: keep original collapse behavior/width */
+          isDetailsCollapsed ? 'lg:w-0 pointer-events-none' : 'lg:w-[320px]',
+          'lg:block w-full',
+        ]"
+        :aria-hidden="activeTab !== 'details' && !isDetailsCollapsed"
+      >
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full mx-auto h-full relative"
+        >
+          <!-- Collapse handle (visible when expanded) -->
+          <button
+            v-if="!isDetailsCollapsed"
+            @click="toggleDetails"
+            class="hidden lg:flex absolute -left-2 top-1/2 -translate-y-1/2 z-50 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-full"
+            :aria-expanded="!isDetailsCollapsed"
+            :title="t('collapse')"
+          >
+            <UIcon name="i-heroicons-chevron-right-20-solid" class="w-8 h-8" />
+          </button>
+
+          <template v-if="isLoadingSupplier">
+            <!-- Top image placeholder -->
             <div
-              v-for="(field, index) in supplierOverviewFields"
-              :key="index"
-              :class="[
-                'flex items-start py-4',
-                index !== supplierOverviewFields.length - 1
-                  ? 'border-b border-gray-200 dark:border-gray-700'
-                  : '',
-              ]"
+              class="px-8 py-6 flex flex-col items-center justify-center space-y-4 bg-gray-100 dark:bg-gray-800"
             >
-              <!-- Label -->
-              <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">
-                {{ field.label }}
-              </span>
+              <USkeleton class="w-24 h-24 rounded-full" />
+              <USkeleton class="h-6 w-32 rounded" />
+            </div>
+            <!-- Overview skeleton -->
+            <div class="p-8 space-y-4">
+              <div v-for="n in 6" :key="n" class="flex justify-between items-center">
+                <USkeleton class="w-24 h-4 rounded" />
+                <USkeleton class="w-32 h-4 rounded" />
+              </div>
+            </div>
+          </template>
 
-              <!-- Spacer & Value -->
-              <div class="flex-1 text-right">
-                <!-- Badge -->
-                <TransactionTypeBadge
-                  v-if="field.type === 'badge'"
-                  :transaction-type="field.value"
-                  size="sm"
-                />
+          <template v-else>
+            <div
+              class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full mx-auto h-full"
+            >
+              <!-- Top Header Area with Blurred Background Image -->
+              <div
+                class="rounded-t-2xl px-8 py-6 flex flex-col items-center justify-center text-center space-y-4 relative bg-cover bg-center w-full"
+                :style="{ backgroundImage: `url('${supplierBackgroundImage}')` }"
+              >
+                <div
+                  class="absolute inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40 w-full h-full pointer-events-none z-0"
+                ></div>
 
-                <!-- Amount -->
-                <span
-                  v-else-if="field.type === 'amount'"
-                  class="text-sm text-gray-900 dark:text-white"
-                >
-                  {{ field.value }}
-                </span>
+                <!-- TOP-RIGHT ACTIONS (kebab menu via UPopover) -->
+                <div class="absolute top-2 right-2 z-50">
+                  <UPopover placement="bottom-end" :offset="[0, 10]">
+                    <UButton
+                      variant="ghost"
+                      size="sm"
+                      class="px-2 rounded-full"
+                      :aria-label="t('actions')"
+                    >
+                      <UIcon
+                        name="i-heroicons-ellipsis-horizontal-20-solid"
+                        class="w-5 h-5 text-white"
+                      />
+                    </UButton>
 
-                <!-- Copyable Code -->
-                <ClipboardBadge
-                  v-else-if="field.type === 'code' && field.copyable"
-                  :text="field.rawValue || field.value"
-                  :copied-tooltip-text="$t('clipboard.copied')"
-                />
+                    <template #content>
+                      <div class="flex flex-col gap-1 p-2 w-36">
+                        <UButton
+                          variant="ghost"
+                          size="sm"
+                          class="justify-start text-left"
+                          block
+                          @click="
+                            () => {
+                              openEditModal()
+                            }
+                          "
+                        >
+                          <UIcon name="i-heroicons-pencil-square-20-solid" class="w-4 h-4 mr-2" />
+                          {{ t('edit') }}
+                        </UButton>
 
-                <!-- Regular Text -->
-                <span
-                  v-else
-                  :class="[
-                    'text-sm text-gray-900 dark:text-white',
-                    field.type === 'code' ? 'font-mono break-all' : '',
-                  ]"
-                >
-                  {{ field.value }}
-                </span>
+                        <UButton
+                          variant="ghost"
+                          size="sm"
+                          class="justify-start text-left text-red-600 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30"
+                          block
+                          @click="
+                            () => {
+                              isShowDeactivateConfirmModal = true
+                            }
+                          "
+                        >
+                          <UIcon name="i-heroicons-no-symbol-20-solid" class="w-4 h-4 mr-2" />
+                          {{ t('deactivate') }}
+                        </UButton>
+                      </div>
+                    </template>
+                  </UPopover>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center">
+                  <div
+                    class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center"
+                  >
+                    <template v-if="supplierProfileImage">
+                      <img
+                        :src="supplierProfileImage"
+                        alt="Supplier"
+                        class="w-full h-full object-cover"
+                      />
+                    </template>
+                    <template v-else>
+                      <div class="w-full h-full flex items-center justify-center">
+                        <UIcon
+                          name="material-symbols:home-work-outline"
+                          class="w-10 h-10 text-white"
+                        />
+                      </div>
+                    </template>
+                  </div>
+
+                  <h4 class="text-2xl font-medium text-white mt-4">
+                    {{ supplierData?.name ?? '-' }}
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Details Grid Section -->
+              <div class="grid grid-cols-1 gap-8 px-8 pb-8">
+                <div class="space-y-0">
+                  <div
+                    v-for="(field, index) in supplierOverviewFields"
+                    :key="index"
+                    :class="[
+                      'flex items-start py-4',
+                      index !== supplierOverviewFields.length - 1
+                        ? 'border-b border-gray-200 dark:border-gray-700'
+                        : '',
+                    ]"
+                  >
+                    <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">
+                      {{ field.label }}
+                    </span>
+
+                    <div class="flex-1 text-right">
+                      <TransactionTypeBadge
+                        v-if="field.type === 'badge'"
+                        :transaction-type="field.value"
+                        size="sm"
+                      />
+
+                      <span
+                        v-else-if="field.type === 'amount'"
+                        class="text-sm text-gray-900 dark:text-white"
+                      >
+                        {{ field.value }}
+                      </span>
+
+                      <ClipboardBadge
+                        v-else-if="field.type === 'code' && field.copyable"
+                        :text="field.rawValue || field.value"
+                        :copied-tooltip-text="$t('clipboard.copied')"
+                      />
+
+                      <span
+                        v-else
+                        :class="[
+                          'text-sm text-gray-900 dark:text-white',
+                          field.type === 'code' ? 'font-mono break-all' : '',
+                        ]"
+                      >
+                        {{ field.value }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+
+    <UModal
+      v-model:open="isShowDeactivateConfirmModal"
+      :title="t('confirmation')"
+      :transition="true"
+      :fullscreen="false"
+    >
+      <template #body>
+        <p class="text-sm">
+          {{ t('deactivate_subbiller_confirmation') }}
+        </p>
+      </template>
+
+      <template #footer>
+        <div class="w-full flex justify-end gap-2">
+          <UButton
+            :label="t('cancel')"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="isShowDeactivateConfirmModal = false"
+          />
+          <UButton
+            :label="t('confirm')"
+            color="error"
+            size="sm"
+            :loading="isDeactivating"
+            @click="confirmDeactivateSubBiller"
+          />
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="isShowEditModal"
+      :title="t('edit')"
+      :transition="true"
+      :fullscreen="false"
+      :close="{ class: 'rounded-full', onClick: () => {} }"
+    >
+      <template #header="{ close }">
+        <div class="flex items-center justify-between w-full">
+          <h3 class="text-base font-semibold">
+            {{ t('edit') }}
+          </h3>
+          <div class="flex items-center gap-2">
+            <UButton
+              icon="i-heroicons-x-mark-20-solid"
+              color="neutral"
+              variant="ghost"
+              size="md"
+              @click="close"
+            />
+          </div>
+        </div>
+      </template>
+      <template #body>
+        <div class="space-y-6">
+          <!-- Profile image section -->
+          <div
+            class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40"
+          >
+            <div class="relative">
+              <img
+                v-if="avatarPreview"
+                :src="avatarPreview"
+                alt="Logo"
+                class="w-20 h-20 rounded-full object-cover border border-white shadow"
+              />
+              <div
+                v-else
+                class="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500"
+              >
+                <UIcon name="material-symbols:home-work-outline" class="w-8 h-8" />
+              </div>
+
+              <!-- camera button -->
+              <button
+                type="button"
+                class="absolute -bottom-1 -right-1 inline-flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-gray-50"
+                @click="triggerAvatarPick"
+                :title="t('change_logo')"
+              >
+                <UIcon name="i-heroicons-camera" class="w-4 h-4" />
+              </button>
+
+              <!-- remove button -->
+              <button
+                v-if="avatarPreview"
+                type="button"
+                class="absolute -top-1 -right-1 inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow hover:bg-white"
+                @click="removeAvatar"
+                :title="t('remove_logo')"
+              >
+                <UIcon name="i-heroicons-x-mark-20-solid" class="w-4 h-4" />
+              </button>
+
+              <input
+                ref="avatarInputRef"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="onAvatarSelected"
+              />
+            </div>
+
+            <div class="flex-1">
+              <div class="text-sm text-gray-600 dark:text-gray-400">
+                {{ t('logo_recommendation') }} • 512×512 PNG/JPG • &lt; 2MB
               </div>
             </div>
           </div>
+
+          <!-- Form -->
+          <div class="grid grid-cols-2 gap-4 w-full">
+            <!-- Row 1 -->
+            <UFormGroup
+              :label="t('name')"
+              :required="true"
+              :error="formErrors.name"
+              class="min-w-0"
+            >
+              <UInput
+                v-model="editForm.name"
+                :placeholder="t('enter_name')"
+                size="md"
+                icon="i-heroicons-user-20-solid"
+                autocomplete="organization"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
+            </UFormGroup>
+
+            <UFormGroup
+              :label="t('code')"
+              :error="formErrors.syncCode"
+              help="Managed by system"
+              class="min-w-0"
+            >
+              <UInput
+                v-model="editForm.syncCode"
+                size="md"
+                icon="i-heroicons-hashtag-20-solid"
+                readonly
+                disabled
+                :ui="{ base: 'rounded-xl text-gray-500 dark:text-gray-400' }"
+                input-class="px-3 py-2.5 w-full"
+              >
+              </UInput>
+            </UFormGroup>
+
+            <!-- Row 2 -->
+            <UFormGroup :label="t('phone')" :error="formErrors.phone" class="min-w-0">
+              <UInput
+                v-model="editForm.phone"
+                :placeholder="t('enter_phone')"
+                size="md"
+                icon="i-heroicons-phone-20-solid"
+                inputmode="tel"
+                autocomplete="tel"
+                maxlength="20"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
+            </UFormGroup>
+
+            <UFormGroup :label="t('email')" :error="formErrors.email" class="min-w-0">
+              <UInput
+                v-model="editForm.email"
+                :placeholder="t('enter_email')"
+                type="email"
+                size="md"
+                icon="i-heroicons-envelope-20-solid"
+                autocomplete="email"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
+            </UFormGroup>
+
+            <!-- Row 3 -->
+            <UFormGroup :label="t('tin')" :error="formErrors.tinNumber" class="min-w-0">
+              <UInput
+                v-model="editForm.tinNumber"
+                :placeholder="t('enter_tin')"
+                size="md"
+                icon="i-heroicons-identification-20-solid"
+                maxlength="30"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
+            </UFormGroup>
+
+            <UFormGroup :label="t('address')" :error="formErrors.address" class="min-w-0">
+              <UInput
+                v-model="editForm.address"
+                :placeholder="t('enter_address')"
+                size="md"
+                icon="i-heroicons-map-pin-20-solid"
+                :ui="{ base: 'rounded-xl' }"
+                input-class="px-3 py-2.5 w-full"
+              />
+            </UFormGroup>
+          </div>
         </div>
-      </div>
-    </div>
+      </template>
 
-<!-- Wallet Tab -->
-<div
-  v-else-if="activeTab === 'wallet'"
-  class="space-y-6"
->
-  <!-- Wallet Cards -->
-<!-- Wallet Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <!-- Actual Wallet Cards -->
-  <div
-    v-for="(wallet, index) in wallets"
-    :key="wallet.id"
-    :class="[
-      'rounded-2xl text-white p-6 relative overflow-hidden shadow-lg flex flex-col justify-between h-52',
-      getCardGradientByIndex(index)
-    ]"
-  >
-    <!-- Top Section: Bank Info -->
-    <div class="flex items-center justify-between mb-2">
-      <div class="text-2xl font-semibold">
-        {{ wallet.bankName }}
-      </div>
-      <UIcon name="i-heroicons-banknotes" class="w-5 h-5 opacity-70" />
-    </div>
-
-    <!-- Center Section: Balance -->
-    <div class="flex-1 flex flex-col justify-center items-center text-center">
-      <div class="text-sm opacity-80 tracking-wide uppercase">
-        {{ t('wallet_page.current_balance') }}
-      </div>
-      <div class="text-3xl font-bold tracking-wide mt-1">
-        {{ wallet.balance }} {{ wallet.currency }}
-      </div>
-    </div>
-
-    <!-- Bottom Section: Account & Wallet Number -->
-    <div class="flex items-center justify-between text-sm text-white opacity-90">
-      <!-- Left: Bank Account -->
-      <div class="flex flex-col">
-        <span class="text-xs opacity-60">
-          {{ t('wallet_page.bank_account_number') }}
-        </span>
-        <div class="flex items-center gap-2 font-mono mt-1">
-          <span class="truncate">
-            {{ wallet.accountNumber }}
-          </span>
-          <button
-            class="hover:text-yellow-300 transition"
-            :title="t('wallet_page.copy_account_number')"
-            @click="copyToClipboard(wallet.accountNumber)"
-          >
-            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
-          </button>
+      <template #footer>
+        <div class="w-full flex flex-row justify-end gap-2">
+          <UButton
+            :label="t('cancel')"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            class="w-20 justify-center"
+            @click="isShowEditModal = false"
+            :disabled="isSavingEdit"
+          />
+          <UButton
+            :label="t('save')"
+            color="primary"
+            size="sm"
+            class="w-24 justify-center"
+            :loading="isSavingEdit"
+            @click="handleSaveEdit"
+          />
         </div>
-      </div>
-
-      <!-- Right: Wallet Number -->
-      <div class="flex flex-col items-end text-right">
-        <span class="text-xs opacity-60">
-          {{ t('wallet_page.wallet_number') }}
-        </span>
-        <div class="flex items-center gap-2 font-mono mt-1">
-          <span class="truncate">
-            {{ wallet.walletNumber }}
-          </span>
-          <button
-            class="hover:text-yellow-300 transition"
-            :title="t('wallet_page.copy_wallet_number')"
-            @click="copyToClipboard(wallet.walletNumber)"
-          >
-            <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<!-- Placeholder Card -->
-<div
-  v-if="wallets.length === 1"
-  class="rounded-2xl border-1 border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center h-52 text-gray-400 dark:text-gray-500"
->
-  <UIcon name="i-heroicons-banknotes" class="w-8 h-8 mb-2" />
-  <span class="text-sm">
-    {{ t('wallet_page.more_wallets_coming') }}
-  </span>
-</div>
-
-</div>
-
-
-  <!-- Transaction Table Below Wallet Cards -->
-    <div class="overflow-x-auto">
-      <BaseTable
-        :data="transactions"
-        :columns="columns"
-        table-id="wallet-transaction-table"
-        border-class="border-gray-200 dark:border-gray-700"
-        @filter-change="handleFilterChange"
-@row-click="(row: { original: TransactionHistoryRecord }) => console.log('Clicked:', row)"
-        @search-change="(val) => (search = val)"
-        @date-range-change="
-          ({ start, end }) => {
-            startDate = start
-            endDate = end
-            fetchTransactionHistory()
-          }
-        "
-        :page="page"
-        :page-size="pageSize.value"
-        :total="total"
-        :total-page="totalPage"
-        @update:page="(val) => (page = val)"
-        @update:pageSize="
-          (val) => {
-            pageSize.value = val
-            page = 1
-          }
-        "
-      >
-        <template #empty>
-          <TableEmptyState />
-        </template>
-      </BaseTable>
-    </div>
-</div>
-
-
+      </template>
+    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import html2canvas from 'html2canvas'
 import { computed, h, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
+import TablesExTable from '~/components/tables/ExTable.vue'
+import type { BaseTableColumn } from '~/components/tables/table'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
+import { usePgwModuleApi } from '~/composables/api/usePgwModuleApi'
+import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
-import type { Supplier } from '~/models/supplier'
-import BaseTable from '~/components/tables/BaseTable.vue'
-import type { BaseTableColumn } from '~/components/tables/table'
-import type { TransactionHistoryRecord } from '~/models/transaction'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
+import { useTable } from '~/composables/utils/useTable'
+import type { QueryParams } from '~/models/baseModel'
+import type { SubBillerWallet, DeactivateSubBillerReq } from '~/models/subBiller'
+import type { Supplier } from '~/models/supplier'
+import type { TransactionHistoryRecord } from '~/models/transaction'
+import { FilterOperatorPgwModule } from '~/utils/enumModel'
 
 definePageMeta({
   auth: false,
@@ -258,23 +637,20 @@ definePageMeta({
 
 const { t } = useI18n()
 
+/** Tabs & active tab (already existed) */
 const tabs = [
-  { label: t('details'), value: 'details' },
   { label: t('wallet'), value: 'wallet' },
+  { label: t('details'), value: 'details' },
 ]
+const activeTab = ref('wallet')
 
-const activeTab = ref('details')
 const route = useRoute()
 const notification = useNotification()
 
 const transactionId = computed(() => route.params.id as string)
-const loading = ref(true)
 const showDownloadModal = ref(false)
 const page = ref(1)
-const pageSize = ref<{ label: string; value: number }>({
-  label: '10',
-  value: 10,
-})
+const pageSize = ref<{ label: string; value: number }>({ label: '10', value: 10 })
 const total = ref(0)
 const totalPage = ref(0)
 const search = ref('')
@@ -285,6 +661,243 @@ const errorMsg = ref('')
 const router = useRouter()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
+const { createSortableHeader } = useTable()
+const isLoadingSupplier = ref(true)
+const isLoadingWallets = ref(true)
+const isLoadingTable = ref(true)
+
+/** collapse state (desktop only) */
+const isDetailsCollapsed = ref(false)
+const toggleDetails = () => (isDetailsCollapsed.value = !isDetailsCollapsed.value)
+
+const isShowEditModal = ref(false)
+const isSavingEdit = ref(false)
+
+type EditForm = {
+  name: string
+  syncCode: string
+  phone: string
+  email: string
+  tinNumber: string
+  address: string
+}
+
+const editForm = ref<EditForm>({
+  name: '',
+  syncCode: '',
+  phone: '',
+  email: '',
+  tinNumber: '',
+  address: '',
+})
+
+const formErrors = ref<Record<string, string | null>>({
+  name: null,
+  syncCode: null,
+  phone: null,
+  email: null,
+  tinNumber: null,
+  address: null,
+})
+
+// avatar state/refs
+const avatarInputRef = ref<HTMLInputElement | null>(null)
+const avatarFile = ref<File | null>(null)
+const avatarPreview = ref<string | null>(null)
+
+const triggerAvatarPick = () => avatarInputRef.value?.click()
+
+const onAvatarSelected = (e: Event) => {
+  const files = (e.target as HTMLInputElement).files
+  if (!files || !files[0]) return
+  const file = files[0]
+
+  // basic checks
+  if (file.size > 2 * 1024 * 1024) {
+    notification.showWarning({ title: t('file_too_large'), description: t('max_2mb') })
+    return
+  }
+
+  avatarFile.value = file
+  const reader = new FileReader()
+  reader.onload = () => (avatarPreview.value = String(reader.result || ''))
+  reader.readAsDataURL(file)
+}
+
+const isActionMenuOpen = ref(false)
+
+const actionsMenuFlat = [
+  {
+    label: t('edit'),
+    icon: 'i-heroicons-pencil-square-20-solid',
+    click: () => openEditModal(),
+  },
+  {
+    label: t('deactivate'),
+    icon: 'i-heroicons-no-symbol-20-solid',
+    class: 'text-red-600',
+    click: () => {
+      isShowDeactivateConfirmModal.value = true
+    },
+  },
+]
+
+const removeAvatar = () => {
+  avatarFile.value = null
+  avatarPreview.value = null
+  if (avatarInputRef.value) avatarInputRef.value.value = ''
+}
+
+// seed form + image when opening
+const openEditModal = () => {
+  const s = supplierData.value
+  editForm.value = {
+    name: s?.name ?? '',
+    syncCode: s?.syncCode ?? '',
+    phone: s?.phone ?? '',
+    email: s?.email ?? '',
+    tinNumber: s?.tinNumber ?? '',
+    address: s?.address ?? '',
+  }
+  // image preview (use existing logo if any)
+  avatarFile.value = null
+  avatarPreview.value = supplierProfileImage.value || null
+
+  Object.keys(formErrors.value).forEach((k) => (formErrors.value[k] = null))
+  isShowEditModal.value = true
+}
+
+// replace the whole function with this
+const uploadImageAndGetUrl = async (file: File): Promise<string> => {
+  const res = await uploadFile(file) // POST multipart
+  if (!res || res.code !== 'SUCCESS') {
+    // show the backend’s message (Khmer if you like)
+    notification.showError({
+      title: t('failed'),
+      description: res?.message || t('failed_to_upload_file'),
+    })
+    throw new Error(res?.message || 'Upload failed')
+  }
+  return res.data?.url || ''
+}
+
+const isShowDeactivateConfirmModal = ref(false)
+const isDeactivating = ref(false)
+
+const confirmDeactivateSubBiller = async () => {
+  try {
+    isDeactivating.value = true
+    await deactivateSubBiller({
+      subBillerId: supplierData?.value?.id ?? '',
+    })
+    notification.showSuccess({
+      title: t('success'),
+      description: t('sub_biller_deactivated_successfully'),
+    })
+    isShowDeactivateConfirmModal.value = false
+    router.replace(`/organization/sub-billers`)
+  } catch (err) {
+    console.error('Deactivate sub-biller failed:', err)
+    notification.showError({
+      title: t('failed'),
+      description: t('failed_to_deactivate_sub_biller'),
+    })
+  } finally {
+    isDeactivating.value = false
+  }
+}
+
+function safeParseJson<T extends object = Record<string, unknown>>(s?: string | null): T {
+  try {
+    return s ? (JSON.parse(s) as T) : ({} as T)
+  } catch {
+    return {} as T
+  }
+}
+
+const handleSaveEdit = async () => {
+  if (!validateEditForm()) return
+  try {
+    isSavingEdit.value = true
+    const id = transactionId.value
+    const current = supplierData.value
+    const currExt = safeParseJson(current?.extData)
+
+    // 1) Decide logoUrl action
+    let logoUrl: string | null = null
+    if (avatarFile.value) {
+      logoUrl = await uploadImageAndGetUrl(avatarFile.value) // set new logo
+    } else if (avatarPreview.value === null) {
+      logoUrl = '' // explicit clear
+    } // else: null means keep existing
+
+    if (logoUrl !== null) {
+      if (logoUrl === '') {
+        delete currExt.logo
+      } else {
+        currExt.logo = logoUrl
+      }
+    }
+    // 2) Build the request from existing Supplier to avoid losing fields
+    const request: Supplier = {
+      ...(current ?? ({} as Supplier)),
+      id: current?.id ?? id,
+      name: editForm.value.name,
+      syncCode: editForm.value.syncCode || null,
+      phone: editForm.value.phone || null,
+      email: editForm.value.email || null,
+      tinNumber: editForm.value.tinNumber || null,
+      address: editForm.value.address || null,
+      extData: JSON.stringify(currExt), // ✅ persist logo in extData
+    }
+
+    // 3) ✅ Update via API
+    const updated = await updateSubBiller(request)
+
+    // 4) Refresh UI (use API return if it returns Supplier, otherwise refetch)
+    if (updated) {
+      supplierData.value = updated.data as unknown as Supplier
+    } else {
+      await fetchSubBillerById()
+    }
+
+    isShowEditModal.value = false
+    notification.showSuccess({
+      title: t('success'),
+      description: t('updated_sub_biller_success'),
+    })
+  } catch (err) {
+    console.error('Save sub-biller failed:', err)
+    notification.showError({
+      title: t('failed'),
+      description: t('failed_to_save_changes'),
+    })
+  } finally {
+    isSavingEdit.value = false
+  }
+}
+
+// simple validations
+const validateEditForm = (): boolean => {
+  let ok = true
+  Object.keys(formErrors.value).forEach((k) => (formErrors.value[k] = null))
+
+  if (!editForm.value.name?.trim()) {
+    formErrors.value.name = t('validation.required') as string
+    ok = false
+  }
+
+  if (editForm.value.email?.trim()) {
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.value.email)
+    if (!emailOk) {
+      formErrors.value.email = t('validation.invalid_email') as string
+      ok = false
+    }
+  }
+
+  return ok
+}
+
 const getCardGradientByIndex = (index: number): string | undefined => {
   const gradients: string[] = [
     'bg-gradient-to-r from-blue-500 to-blue-500',
@@ -297,113 +910,57 @@ const getCardGradientByIndex = (index: number): string | undefined => {
     'bg-gradient-to-r from-teal-500 to-cyan-500',
     'bg-gradient-to-r from-fuchsia-500 to-pink-600',
   ]
-
   const safeIndex = index % gradients.length
   return gradients[safeIndex]
 }
 
-const handleFilterChange = (columnId: string, value: string) => {
-  console.log('Filter changed:', columnId, value)
-  // Optional: trigger fetch or other logic
+const handleViewDetails = (record: TransactionHistoryRecord) => {
+  navigateToDetails(record.id)
+}
+
+// Handle Repush Transaction
+const handleRepush = () => {
+  notification.showWarning({
+    title: t('pages.transaction.info'),
+    description: t('pages.transaction.info_des'),
+  })
 }
 
 const navigateToDetails = (rowId: string) => {
   router.push(`/transactions/detail/${rowId}`)
 }
 
-const columns: BaseTableColumn<any>[] = [
+const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
-    id: 'select',
-    header: ({ table }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all',
-      }),
-    cell: ({ row }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row',
-      }),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
-    size: 30,
-    maxSize: 30,
-    enableSorting: false,
-  },
-  {
-    id: 'created_date',
+    id: 'createdDate',
     accessorKey: 'created_date',
-    // header: ({ column }) =>
-    //   createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
-    //     // Call your API with the new sorting order
-    //     console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
-    //     // Trigger your own fetch with the column and direction
-    //     sortBy.value = 'created_date'
-    //     sortDirection.value = order
-    //     fetchTransactionHistory()
-    //   }),
-    header: t('date'),
-    cell: ({ row }) =>
-      // Format date to DD/MM/YYYY
-      useFormat().formatDateTime(row.original.created_date),
+    headerText: t('pages.transaction.created_date'),
+    cell: ({ row }) => row.original.date,
     enableSorting: true,
   },
   {
-    id: 'bank_ref',
+    id: 'transactionNo',
+    accessorKey: 'transactionNo',
+    headerText: t('wallet_page.transaction_no'),
+  },
+  {
+    id: 'bankReference',
     accessorKey: 'bank_ref',
-    header: t('bank_ref'),
-  },
-  {
-    id: 'collection_bank',
-    accessorKey: 'collection_bank',
-    header: t('collection_bank'),
-  },
-  {
-    id: 'settlement_bank',
-    accessorKey: 'settlement_bank',
-    header: t('settlement_bank'),
-  },
-  {
-    id: 'settlement_type',
-    accessorKey: 'settlement_type',
-    header: t('settlement_type'),
-  },
-  {
-    id: 'total_amount',
-    accessorKey: 'total_amount',
-    header: () => h('div', { class: 'text-right' }, t('total_amount')),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
-      ),
-  },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: t('settlement.currency'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'USD', value: 'USD' },
-      { label: 'KHR', value: 'KHR' },
-    ],
+    headerText: t('pages.transaction.bank_ref'),
+    cell: ({ row }) => row.original.bankReference || '-',
     enableSorting: true,
   },
   {
-    id: 'transaction_type',
+    id: 'walletAccountDisplay',
+    accessorKey: 'wallet',
+    headerText: t('wallet'),
+    cell: ({ row }) => row.original.walletAccountDisplay || '-',
+  },
+  {
+    id: 'transactionType',
     accessorKey: 'transaction_type',
-    header: t('transaction_type'),
+    headerText: t('transaction_type'),
+    cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
     enableSorting: true,
     enableColumnFilter: true,
     filterOptions: [
@@ -414,101 +971,80 @@ const columns: BaseTableColumn<any>[] = [
     ],
   },
   {
-    id: 'sub_biller',
-    accessorKey: 'sub_biller',
-    header: t('sub_biller'),
-    enableSorting: true,
+    id: 'totalCustomer',
+    accessorKey: 'total_customer',
+    headerText: t('pages.transaction.total_customer'),
+    cell: ({ row }) => h('div', { class: 'text-right' }, row.original.countTotalCustomer || '-'),
   },
+
   {
     id: 'status',
-    accessorKey: 'status',
-    header: t('status.header'),
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('completed'), value: 'completed' },
-      { label: t('pending'), value: 'pending' },
-      { label: t('failed'), value: 'failed' },
-    ],
-    cell: ({ row }: any) =>
+    headerText: t('status.header'),
+    cell: ({ row }) =>
       h(StatusBadge, {
         status: row.original.status,
         variant: 'subtle',
         size: 'sm',
       }),
-    // cell: ({ row }) => {
-    //   // return h('span', {
-    //   //   class: `text-sm font-medium`
-    //   // }, `Total: ${row.original.total_Settled}`)
-
-    //   const success = row.original.success
-    //   const fail = row.original.fail
-    //   const total = row.original.total_settled
-
-    //   const UBadge = resolveComponent('UBadge')
-    //   const Icon = resolveComponent('UIcon')
-
-    //   return h('div', { class: 'flex gap-2 items-center' }, [
-    //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-    //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-    //     //   h('span', {}, total)
-    //     // ]),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'primary',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [
-    //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-    //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
-    //       ]
-    //     ),
-    //     // Success and Fail badges
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'success',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-    //     ),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'error',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
-    //     ),
-    //   ])
-    // },
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: t('completed'), value: t('completed') },
+      { label: t('pending'), value: t('pending') },
+      { label: t('failed'), value: t('failed') },
+    ],
   },
-  // Add an action column for viewing details
-  // {
-  //   id: 'actions',
-  //   header: t('actions'),
-  //   cell: ({ row }) =>
-  //     h('div', { class: 'flex items-center gap-2' }, [
-  //       h(resolveComponent('UButton'), {
-  //         color: 'primary',
-  //         variant: 'ghost',
-  //         icon: 'i-lucide-eye',
-  //         size: 'sm',
-  //         onClick: handleViewDetails(row.original),
-  //         // title: translations.view_details
-  //       }),
-  //     ]),
-  // },
+  {
+    id: 'currencyId',
+    accessorKey: 'currency_id',
+    headerText: t('settlement.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+  },
+  {
+    id: 'totalAmount',
+    accessorKey: 'total_amount',
+    headerText: t('total_amount'),
+    cell: ({ row }) =>
+      h(
+        'div',
+        { class: 'text-right' },
+        useCurrency().formatAmount(row.original.transactionAmount, row.original.currency)
+      ),
+    enableMultiSort: true,
+    enableSorting: true,
+    size: 50,
+    maxSize: 150,
+  },
 ]
 
+const {
+  getSubBillerById,
+  getSubBillerWalletList,
+  deactivateSubBiller,
+  updateSubBiller,
+  uploadFile,
+} = usePgwModuleApi()
+const { getTransactionList } = useTransactionApi()
 
+const supplierData = ref<Supplier | null>(null)
 
+const fetchSubBillerById = async () => {
+  try {
+    const id = transactionId.value
+    if (!id) return
 
-
+    const response = await getSubBillerById(id)
+    supplierData.value = response
+  } catch (error) {
+    console.error('Error fetching sub biller detail:', error)
+    errorMsg.value = t('failed_to_load_data')
+  }
+}
 
 const errorHandler = useErrorHandler()
 
@@ -521,28 +1057,22 @@ const copyToClipboard = async (text: string) => {
   }
 }
 
-const wallets = ref([
-  {
-    id: 'wallet-aba',
-    bankName: 'ABA Bank',
-    accountNumber: '000111222',
-    walletNumber: 'WLT-ABA-001',
-    currency: 'KHR',
-    balance: '1,000,000',
-  },
-  // {
-  //   id: 'wallet-acleda',
-  //   bankName: 'Acleda Bank',
-  //   accountNumber: '999888777',
-  //   walletNumber: 'WLT-ACL-002',
-  //   currency: 'USD',
-  //   balance: '5,000',
-  // },
-])
+const fetchWallets = async () => {
+  try {
+    const id = transactionId.value
+    if (!id) return
 
+    const response = await getSubBillerWalletList(id)
+    wallets.value = response.data ?? []
+  } catch (error) {
+    console.error('Error fetching wallets:', error)
+    errorMsg.value = t('failed_to_load_wallets')
+  }
+}
 
+const wallets = ref<SubBillerWallet[]>([])
 
-// Push Back Transaction Data
+// Push Back Transaction Data (kept from your snippet)
 const webhookHistoryData = ref([
   {
     id: 'pushback-001',
@@ -587,16 +1117,11 @@ const webhookColumns = [
     id: 'actions',
     header: () => 'Actions',
     cell: ({ row }: any) =>
-      h(
-        'div',
-        {
-          class: 'relative inline-block group',
-        },
-        [
-          h(
-            'button',
-            {
-              class: `
+      h('div', { class: 'relative inline-block group' }, [
+        h(
+          'button',
+          {
+            class: `
                 inline-flex items-center justify-center w-8 h-8 rounded transition-colors
                 ${
                   row.original.retrying
@@ -604,35 +1129,34 @@ const webhookColumns = [
                     : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
                 }
               `,
-              disabled: row.original.retrying,
-              onClick: () => retryPushBack(row.original.id),
-              title: row.original.retrying ? 'Retrying...' : 'Retry Push Back',
-            },
-            [
-              row.original.retrying
-                ? h('svg', {
-                    class: 'animate-spin h-4 w-4',
-                    xmlns: 'http://www.w3.org/2000/svg',
-                    fill: 'none',
-                    viewBox: '0 0 24 24',
-                    innerHTML: `
+            disabled: row.original.retrying,
+            onClick: () => retryPushBack(row.original.id),
+            title: row.original.retrying ? 'Retrying...' : 'Retry Push Back',
+          },
+          [
+            row.original.retrying
+              ? h('svg', {
+                  class: 'animate-spin h-4 w-4',
+                  xmlns: 'http://www.w3.org/2000/svg',
+                  fill: 'none',
+                  viewBox: '0 0 24 24',
+                  innerHTML: `
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     `,
-                  })
-                : h('svg', {
-                    class: 'w-4 h-4',
-                    xmlns: 'http://www.w3.org/2000/svg',
-                    fill: 'none',
-                    viewBox: '0 0 24 24',
-                    'stroke-width': '1.5',
-                    stroke: 'currentColor',
-                    innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />`,
-                  }),
-            ]
-          ),
-        ]
-      ),
+                })
+              : h('svg', {
+                  class: 'w-4 h-4',
+                  xmlns: 'http://www.w3.org/2000/svg',
+                  fill: 'none',
+                  viewBox: '0 0 24 24',
+                  'stroke-width': '1.5',
+                  stroke: 'currentColor',
+                  innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />`,
+                }),
+          ]
+        ),
+      ]),
     size: 80,
   },
   {
@@ -670,38 +1194,8 @@ const webhookColumns = [
   },
 ]
 
-const supplierData: Supplier = {
-  id: 'SUP-001',
-  code: 'SUP12345',
-  name: 'ACME Corporation',
-  nameKh: 'ក្រុមហ៊ុន អេសស៊ីអិមអ៊ី',
-  shortName: 'ACME',
-  phone: '+85512345678',
-  email: 'info@acme.com',
-  address: '123 Street, Phnom Penh',
-  addressKh: 'ផ្លូវ ១២៣ ភ្នំពេញ',
-  tinNumber: 'KHM123456789',
-  userId: 'user-001',
-  parentId: null,
-  supplierTypeId: 'type-01',
-  syncCode: null,
-  bgwCode: null,
-  scope: 'international',
-  isActive: true,
-  isValidUnicodeName: true,
-  createdBy: 'admin',
-  createdDate: '2025-07-02T09:25:24.893821',
-  updatedBy: null,
-  updatedDate: null,
-  paymentWidgetSetting: null,
-  paymentWidgetSettingPreview: null,
-  directDebitResponse: null,
-  checkoutPageConfig: null,
-  extData: null,
-}
-
 const supplierInitials = computed(() => {
-  const name = supplierData.name?.trim() || ''
+  const name = supplierData.value?.name?.trim() || ''
   if (!name) return 'SP'
   return name
     .split(' ')
@@ -713,116 +1207,90 @@ const supplierInitials = computed(() => {
 
 const supplierProfileImage = computed(() => {
   try {
-    const ext = supplierData.extData ? JSON.parse(supplierData.extData) : {}
-    return ext.profileImage || 'https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg'
+    const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
+    return ext?.logo || null // return null so v-if falls back to icon
   } catch {
-    return 'https://cdn.prod.website-files.com/66619549eba8f39855e63f8a/66de8d3fc334563cf4f6d9de_software-companies.jpeg'
+    return null
   }
 })
 
-
-const fetchTransactionHistory = async () => {
-  loading.value = true
+const supplierBackgroundImage = computed(() => {
   try {
-    const banks = ['ABA', 'ACLEDA', 'AMK'] as const
-    const subBillers = [
-      'Cambodia Electric Co.',
-      'Smart Axiata',
-      'Cellcard',
-      'Ezecom',
-      'Metfone',
-      'Sabay Digital',
-      'Foodpanda Cambodia',
-      'Nham24',
-      'Kerry Express',
-      'J&T Express',
-      'B-Hub Technology',
-      'Phnom Penh Water Supply',
-      'City Gas Cambodia',
-      'Total Energies Cambodia',
-      'ISPP International School',
-    ]
-    const fullData: TransactionHistoryRecord[] = Array.from({ length: 100 }, (_, i) => ({
-      id: `txn-${i + 1}`,
-      created_date: new Date(Date.now() - i * 86400000),
-      bank_ref: `BANKREF-${i + 1000}`,
-      collection_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_type: i % 2 === 0 ? 'Auto' : 'Manual',
-      total_amount: 1000000 + i * 5000,
-      currency_id: i % 2 === 0 ? 'USD' : 'KHR',
-      status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
-      settled_by: `User ${i + 1}`,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4],
-      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)],
-    }))
+    const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
+    return ext.logo || 'https://i.pinimg.com/736x/3c/24/46/3c24462450c2a902bf7e18f3d9aada81.jpg'
+  } catch {
+    return 'https://i.pinimg.com/736x/3c/24/46/3c24462450c2a902bf7e18f3d9aada81.jpg'
+  }
+})
 
-    // ✅ Paging
-    const pageStart = (page.value - 1) * pageSize.value.value
-    const pageEnd = pageStart + pageSize.value.value
-    const pagedData = fullData.slice(pageStart, pageEnd)
+const getTransactionTypeKey = (value: string): string => {
+  const entry = Object.entries(TransactionType).find(([key, val]) => val === value)
+  return entry ? entry[0] : value
+}
 
-    transactions.value = pagedData
-    total.value = fullData.length
-    totalPage.value = Math.ceil(fullData.length / pageSize.value.value)
-  } catch (error: any) {
-    console.error('Error loading dummy data:', error.message)
-    errorMsg.value = error.message || 'Failed to load transaction history.'
+const fetchTransactionHistory = async (
+  params?: QueryParams
+): Promise<{
+  data: TransactionHistoryRecord[]
+  total_record: number
+  total_page: number
+} | null> => {
+  try {
+    params?.filters.push({
+      field: 'subBillerId',
+      operator: FilterOperatorPgwModule.Equals,
+      value: transactionId.value,
+    })
+    const response = await getTransactionList(params)
+    console.log('Fetched transactions:', response)
+    return {
+      data: response.results || [],
+      total_record: response.param?.rowCount || 0,
+      total_page: response.param?.pageCount || 0,
+    }
+  } catch (error) {
     errorHandler.handleApiError(error)
-  } finally {
-    loading.value = false
+    return null
   }
 }
 
 const supplierOverviewFields = computed(() => [
   {
     label: 'Code',
-    value: supplierData.code,
+    value: supplierData.value?.syncCode ?? '-',
     type: 'code',
     copyable: true,
-    rawValue: supplierData.code,
+    rawValue: supplierData.value?.syncCode,
   },
-  {
-    label: 'Phone',
-    value: supplierData.phone || '-',
-    type: 'text',
-  },
-  {
-    label: 'Email',
-    value: supplierData.email || '-',
-    type: 'text',
-  },
-  {
-    label: 'Address',
-    value: supplierData.address || '-',
-    type: 'text',
-  },
-  {
-    label: 'TIN',
-    value: supplierData.tinNumber || '-',
-    type: 'text',
-  },
-  {
-    label: 'Active',
-    value: supplierData.isActive ? 'Yes' : 'No',
-    type: 'badge',
-  },
+  { label: 'Phone', value: supplierData.value?.phone || '-', type: 'text' },
+  { label: 'Email', value: supplierData.value?.email || '-', type: 'text' },
+  { label: 'Address', value: supplierData.value?.address || '-', type: 'text' },
+  { label: 'TIN', value: supplierData.value?.tinNumber || '-', type: 'text' },
+  { label: 'Active', value: supplierData.value?.isActive ? 'Yes' : 'No', type: 'badge' },
   {
     label: 'Created Date',
-    value: new Date(supplierData.createdDate).toLocaleString('en-GB'),
+    value: supplierData.value?.createdDate
+      ? new Date(supplierData.value.createdDate).toLocaleString('en-GB')
+      : '-',
     type: 'text',
   },
 ])
-
 
 // Download functions
 const download = async () => {
   showDownloadModal.value = true
 }
 
-onMounted(() => {
-  fetchTransactionHistory()
+onMounted(async () => {
+  isLoadingSupplier.value = true
+  isLoadingWallets.value = true
+  isLoadingTable.value = true
+
+  await Promise.all([
+    fetchSubBillerById().finally(() => (isLoadingSupplier.value = false)),
+    fetchWallets().finally(() => (isLoadingWallets.value = false)),
+  ])
+
+  isLoadingTable.value = false
 })
 </script>
-
-

@@ -4,6 +4,7 @@
     :color="statusColor"
     :variant="variant"
     :size="props.size"
+    class="min-w-[60px] justify-center text-center"
     :ui="{ base: rounded ? 'rounded-full' : 'rounded' }"
   />
 </template>
@@ -53,6 +54,7 @@ const statusColor = computed(() => {
 
     // Active/Inactive states
     case 'active':
+    case 'yes':
       return 'success'
     case 'inactive':
       return 'neutral'
@@ -93,6 +95,10 @@ const displayText = computed(() => {
         return t('status.active')
       case 'inactive':
         return t('status.inactive')
+      case 'yes':
+        return t('status.yes')
+      case 'no':
+        return t('status.no')
       default:
         return props.status
     }

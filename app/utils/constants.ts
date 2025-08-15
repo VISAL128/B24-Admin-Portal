@@ -30,6 +30,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   hour12: true,
   currency: 'KHR',
   defaultPageSize: DEFAULT_PAGE_SIZE.value,
+  autoRefreshInterval: 30, // 30 seconds
 }
 
 export const DEFAULT_CURRENCY_CONFIG: CurrencyConfig = {

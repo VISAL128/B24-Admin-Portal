@@ -230,7 +230,7 @@ function activateCurrentRoute() {
     activeStates.value.digitalWallet = true
   }
   // Organization routes
-  else if (currentPath === '/organization/banks') {
+  else if (currentPath.startsWith('/organization/banks')) {
     activeStates.value.organization = true
     activeStates.value.banks = true
   } else if (currentPath === '/organization/sub-billers') {

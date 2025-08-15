@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isVisible"
-    class="fixed inset-0 z-50 flex flex-col bg-gradient-to-br from-[white] via-[#caf0f8] to-white transition-all duration-500"
+    class="fixed inset-0 z-50 flex flex-col bg-gradient-to-br from-white via-[#caf0f8] to-white dark:from-gray-900 dark:via-gray-700 dark:to-gray-900 transition-all duration-500"
     :class="{ 'opacity-0': isFadingOut }"
   >
     <!-- Main Content - Centered -->
@@ -18,12 +18,12 @@
         </div>
 
         <!-- App Title -->
-        <h1 class="mb-4 text-3xl font-bold text-[#211e1f] animate-fade-in-up">
+        <h1 class="mb-4 text-3xl font-bold text-[#211e1f] dark:text-white animate-fade-in-up">
           {{ t('splash.title') }}
         </h1>
 
         <!-- Subtitle -->
-        <p class="mb-8 text-lg text-[#211e1f]/80 animate-fade-in-up delay-200">
+        <p class="mb-8 text-lg text-[#211e1f]/80 dark:text-gray-300 animate-fade-in-up delay-200">
           {{ t('splash.subtitle') }}
         </p>
 
@@ -41,7 +41,10 @@
 
         <!-- Progress Bar -->
         <div class="mt-4 w-64 mx-auto">
-          <div class="bg-[#211e1f]/10 rounded-full overflow-hidden" style="height: 3px">
+          <div
+            class="bg-[#211e1f]/10 dark:bg-gray-700 rounded-full overflow-hidden"
+            style="height: 3px"
+          >
             <div
               class="h-full bg-primary rounded-full transition-all duration-1000 ease-out"
               :style="{ width: `${progress}%` }"
@@ -50,7 +53,7 @@
         </div>
 
         <!-- Progress Description -->
-        <div class="mt-3 text-sm text-[#211e1f]/70 animate-fade-in">
+        <div class="mt-3 text-sm text-[#211e1f]/70 dark:text-gray-400 animate-fade-in">
           {{ t(`splash.progress.${currentStep}`) }}
         </div>
       </div>
@@ -58,11 +61,11 @@
 
     <!-- Version Info - Fixed at Bottom -->
     <div class="flex flex-col flex-shrink-0 items-center justify-center pb-6">
-      <span class="text-sm text-[#211e1f]/50 animate-fade-in delay-500">
+      <span class="text-sm text-[#211e1f]/50 dark:text-gray-500 animate-fade-in delay-500">
         {{ t('splash.powered_by') }}
-        <ULink href="https://www.bill24.io">{{ t('splash.bill24') }}</ULink>
+        <ULink href="https://www.bill24.io" class="text-primary">{{ t('splash.bill24') }}</ULink>
       </span>
-      <div class="text-xs text-[#211e1f]/50 animate-fade-in delay-500">
+      <div class="text-xs text-[#211e1f]/50 dark:text-gray-500 animate-fade-in delay-500">
         {{ t('splash.version') }} {{ config.public.appVersion }}
       </div>
     </div>

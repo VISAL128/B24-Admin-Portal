@@ -3,136 +3,99 @@
     <!-- Main Layout: Left and Right Sections -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <!-- Left Section: Transaction Detail (50% width) -->
-      <div class="lg:col-span-1">
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
-          <!-- Tab Header -->
+      <div class="lg:col-span-1 flex flex-col h-full">
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3 flex-1 flex flex-col">
+          <!-- Header -->
           <div class="flex justify-between items-center mb-3">
-            <!-- Tabs -->
-            <div class="flex gap-2">
-              <div
-                v-for="tab in tabs"
-                :key="tab.value"
-                @click="activeTab = tab.value"
-                class="relative flex flex-col items-center"
+            <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
+              <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+                <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
+              </div>
+              {{ t('pages.transaction.title') }}
+            </h4>
+            
+            <!-- Actions Right -->
+            <!-- <div class="flex items-center gap-2">
+              <UButton
+                variant="outline"
+                icon="material-symbols:history"
+                size="sm"
+                @click="handleVoidPaymentRequest"
+                :loading="isVoidRequesting"
+                :disabled="isVoidRequesting"
               >
-                <!-- Tab Wrapper -->
-                <div
-                  class="flex items-center gap-2 px-4 py-2 cursor-pointer transition-all duration-200 ease-in-out rounded-t-xl"
-                  :class="activeTab === tab.value
-                    ? 'bg-primary/5 text-primary'
-                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800/50'"
-                >
-                  <UIcon :name="tab.icon" class="w-4 h-4" />
-                  <span class="text-sm font-medium">{{ tab.label }}</span>
+                {{ isVoidRequesting ? 'Processing...' : 'Void Payment History' }}
+              </UButton>
+            </div> -->
+          </div>
+          <!-- Transaction Content -->
+          <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4 flex-1 flex flex-col">
+            <!-- Loading State -->
+            <div v-if="loading || apiError" class="space-y-3 flex-1 flex flex-col">
+              <div v-if="loading" v-for="n in 9" :key="`skeleton-${n}`" class="flex justify-between items-center py-3 animate-pulse">
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              </div>
+              
+              <!-- Error State -->
+              <div v-if="apiError && !loading" class="flex-1 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-red-500 mb-2">
+                    <UIcon name="material-symbols:error-outline" class="w-12 h-12 mx-auto" />
+                  </div>
+                  <p class="text-red-600 dark:text-red-400 font-medium">{{ apiError }}</p>
+                  <UButton
+                    variant="outline"
+                    color="error"
+                    size="sm"
+                    class="mt-3"
+                    @click="fetchTransactionData"
+                  >
+                    Retry
+                  </UButton>
                 </div>
-
-                <!-- Underline -->
-                <div
-                  v-if="activeTab === tab.value"
-                  class="h-[2px] bg-primary rounded-full w-[65%]"
-                ></div>
               </div>
             </div>
-
-            <!-- Actions Right -->
-            <div class="flex items-center gap-2">
-              <StatusBadge :status="transactionData.status" variant="subtle" size="sm" />
-              <UButton
-                class="text-gray-500"
-                variant="ghost"
-                icon="material-symbols:more-vert"
-                size="md"
-                @click="download"
-              />
-            </div>
-          </div>
-          
-          <!-- Tab Content Wrapper -->
-          <div class="relative transition-all duration-300 ease-in-out">
-            <!-- Transaction Tab Content -->
-            <div
-              v-show="activeTab === 'transaction'"
-              ref="transactionRef"
-              class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4"
-            >
-              <div class="space-y-0">
-                <div
-                  v-for="(field, index) in allFields"
-                  :key="index"
+            
+            <!-- Actual Data -->
+            <div v-else class="space-y-0">
+              <div
+                v-for="(field, index) in allFields"
+                :key="index"
+                :class="[
+                  'flex justify-between items-center py-3',
+                  index < allFields.length - 1 ? 'border-b border-dotted border-gray-200 dark:border-gray-700' : ''
+                ]"
+              >
+                <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">{{ field.label }}</span>
+                <StatusBadge v-if="field.type === 'status'" :status="field.value" variant="subtle" size="sm" />
+                <TransactionTypeBadge
+                  v-else-if="field.type === 'badge'"
+                  :transaction-type="field.value"
+                  size="sm"
+                />
+                <span
+                  v-else-if="field.type === 'amount'"
+                  class="text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  {{ field.value }}
+                </span>
+                <ClipboardBadge
+                  v-else-if="field.type === 'code' && field.copyable"
+                  :text="field.rawValue"
+                  :copied-tooltip-text="$t('clipboard.copied')"
+                  class="mt-1"
+                />
+                <span
+                  v-else
                   :class="[
-                    'flex justify-between items-center py-3',
-                    index < allFields.length - 1 ? 'border-b border-dotted border-gray-200 dark:border-gray-700' : ''
+                    'text-sm font-medium text-gray-900 dark:text-white',
+                    field.type === 'code' ? 'font-mono break-all' : ''
                   ]"
                 >
-                  <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">{{ field.label }}</span>
-
-                  <TransactionTypeBadge
-                    v-if="field.type === 'badge'"
-                    :transaction-type="field.value"
-                    size="sm"
-                  />
-                  <span
-                    v-else-if="field.type === 'amount'"
-                    class="text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    {{ field.value }}
-                  </span>
-                  <ClipboardBadge
-                    v-else-if="field.type === 'code' && field.copyable"
-                    :text="field.rawValue"
-                    :copied-tooltip-text="$t('clipboard.copied')"
-                    class="mt-1"
-                  />
-                  <span
-                    v-else
-                    :class="[
-                      'text-sm font-medium text-gray-900 dark:text-white',
-                      field.type === 'code' ? 'font-mono break-all' : ''
-                    ]"
-                  >
-                    {{ field.value }}
-                  </span>
-                </div>
+                  {{ field.value }}
+                </span>
               </div>
-            </div>
-
-            <!-- Push Back Transaction Tab Content -->
-            <div
-              v-show="activeTab === 'repush'"
-              :style="{ height: transactionHeight + 'px' }"
-              class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col p-3">
-              <!-- <UTable
-                :data="webhookHistoryData"
-                :columns="webhookColumns"
-                class="w-full"
-                sortable
-                v-model:sort="webhookSorting"
-                :ui="{
-                  td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
-                  th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
-                  thead: 'whitespace-nowrap',
-                  tbody: 'whitespace-nowrap',
-                  tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
-                }"
-                @select="onRowSelect"
-              /> -->
-
-               <UTable
-                ref="table"
-                :data="webhookHistoryData"
-                :columns="webhookColumns"
-                sticky
-                sortable
-                v-model:sort="webhookSorting"
-                class="-mx-3"
-                :style="{ maxHeight: 'h-full'}"
-                :ui="{
-                  ...appConfig.ui.table.slots,
-                }"
-                @select="onRowSelect"
-              />
-
-              
             </div>
           </div>
         </div>
@@ -142,47 +105,53 @@
       <div class="space-y-3 flex flex-col h-full">
         <!-- Settlement Bank Section -->
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-          <!-- <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center space-x-3">
-              <div class="flex items-center">
-                <div
-                  class="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center mr-2"
-                >
-                  <UIcon name="material-symbols:account-balance-outline"  class="w-4 h-4 text-green-600" />
-                </div>
-                <h4 class="text-base font-medium text-gray-900 dark:text-white">Settlement Bank</h4>
-              </div>
-            </div>
-          </div> -->
           <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
             <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
               <UIcon name="material-symbols:account-balance-outline" class="w-4 h-4 text-primary" />
             </div>
-            Settlement Bank
+            {{ t('pages.transaction_detail.settlement_bank') }}
           </h4>
           <!-- Horizontal line below header -->
-          <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3" />
-          <div class="space-y-3">
+          <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3 py-1" />
+          
+          <!-- Loading State -->
+          <div v-if="loading || apiError" class="space-y-3">
+            <div v-if="loading" v-for="n in 3" :key="`settlement-skeleton-${n}`" class="flex justify-between items-center animate-pulse">
+              <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+              </div>
+            </div>
+            
+            <!-- Error State -->
+            <div v-if="apiError && !loading" class="text-center py-4">
+              <p class="text-red-600 dark:text-red-400 text-sm">{{ apiError }}</p>
+            </div>
+          </div>
+          
+          <!-- Actual Data -->
+          <div v-else class="space-y-3">
             <!-- Bank Name -->
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Bank Name</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_bank') }}</span>
               <div class="flex items-center space-x-2">
                 <UAvatar
-                  src="https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png"
-                  alt="ACLEDA Bank"
+                  :src="computedTransactionData.settlementBankLogo || 'https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png'"
+                  :alt="computedTransactionData.settlementBank || 'Bank'"
                   size="sm"
                 />
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ transactionData.settlementBank }}
+                  {{ computedTransactionData.settlementBank || 'N/A' }}
                 </span>
               </div>
             </div>
 
-            <!-- Bank Reference -->
+            <!-- Account Number -->
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Account Number</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.account_number') }}</span>
               <ClipboardBadge
-                :text="maskAccountNumber(transactionData.accountNumber)"
+                :text="maskAccountNumber(computedTransactionData.accountNumber)"
                 :copied-tooltip-text="$t('clipboard.copied')"
                 class="mt-1"
               />
@@ -190,10 +159,10 @@
 
             <!-- Settlement Amount -->
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Amount</span>
-              <span class="text-lg font-bold text-primary">
-                {{ useCurrency().formatAmount(transactionData.settlementAmount) }}
-                {{ transactionData.currency }}
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_amount') }}</span>
+              <span class="text-lg font-bold">
+                {{ useCurrency().formatAmount(computedTransactionData.settlementAmount) }}
+                {{ computedTransactionData.currency }}
               </span>
             </div>
           </div>
@@ -205,11 +174,48 @@
             <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
               <UIcon name="material-symbols:receipt-outline" class="w-4 h-4 text-primary" />
             </div>
-            Transaction Detail
+            {{ t('pages.transaction_detail.title') }}
           </h4>
           <!-- Horizontal line below header -->
           <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
+          
+          <!-- Loading State -->
+          <div v-if="loading || apiError" class="flex-1 flex flex-col">
+            <div v-if="loading" class="animate-pulse p-4">
+              <!-- Table Header Shimmer -->
+              <div class="flex space-x-4 mb-4">
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-8"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+              </div>
+              <!-- Table Rows Shimmer -->
+              <div v-for="n in 3" :key="`table-skeleton-${n}`" class="flex space-x-4 mb-3">
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              </div>
+            </div>
+            
+            <!-- Error State -->
+            <div v-if="apiError && !loading" class="flex-1 flex items-center justify-center py-8">
+              <div class="text-center">
+                <div class="text-red-500 mb-2">
+                  <UIcon name="material-symbols:error-outline" class="w-8 h-8 mx-auto" />
+                </div>
+                <p class="text-red-600 dark:text-red-400 text-sm">{{ t('pages.transaction_detail.error_transaction_detail') }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Actual Data -->
           <UTable
+            v-else
             ref="table"
             :data="customerDetails"
             :columns="customerColumns"
@@ -226,59 +232,56 @@
       </div>
     </div>
 
-    <!-- Customer Information Table -->
-    <!-- <div
-      class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3"
-    >
-      <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
-        <div
-          class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-2"
-        >
-          <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
-        </div>
-        Transaction Detail
-      </h4>
-      <UTable
-        :data="customerDetails"
-        :columns="customerColumns"
-        class="w-full"
-        sortable
-        v-model:sort="customerSorting"
-        :ui="{
-          td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
-          th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
-          thead: 'whitespace-nowrap',
-          tbody: 'whitespace-nowrap',
-        }"
-      />
-    </div> -->
-
     <!-- Transaction Allocation Table -->
     <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
       <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
         <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
           <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
         </div>
-        Transaction Allocation
+        {{ t('pages.transaction_allocation.title') }}
       </h4>
       <!-- Horizontal line below header -->
       <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
+      
+      <!-- Loading State -->
+      <div v-if="allocationLoading || allocationError">
+        <div v-if="allocationLoading" class="animate-pulse p-4">
+          <!-- Table Header Shimmer -->
+          <div class="flex space-x-4 mb-4">
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-8"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-28"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+          </div>
+          <!-- Table Rows Shimmer -->
+          <div v-for="n in 4" :key="`allocation-skeleton-${n}`" class="flex space-x-4 mb-3">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-28"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+          </div>
+        </div>
+        
+        <!-- Error State -->
+        <div v-if="allocationError && !allocationLoading" class="text-center py-8">
+          <div class="text-red-500 mb-2">
+            <UIcon name="material-symbols:error-outline" class="w-8 h-8 mx-auto" />
+          </div>
+          <p class="text-red-600 dark:text-red-400 text-sm">{{ allocationError }}</p>
+        </div>
+      </div>
+      
+      <!-- Actual Data -->
       <!-- <UTable
-        :data="transactionAllocateData"
-        :columns="transactionAllocateColumns"
-        class="w-full"
-        sortable
-        v-model:sort="transactionAllocationSorting"
-        :ui="{
-          td: 'px-2 py-3 whitespace-nowrap align-top text-sm',
-          th: 'px-2 py-3 whitespace-nowrap text-left text-sm',
-          thead: 'whitespace-nowrap',
-          tbody: 'whitespace-nowrap',
-          tr: 'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer',
-        }"
-        @select="onTransactionAllocationSelect"
-      /> -->
-      <UTable
+        v-else
         ref="table"
         :data="transactionAllocateData"
         :columns="transactionAllocateColumns"
@@ -290,98 +293,246 @@
           ...appConfig.ui.table.slots,
         }"
         @select="onTransactionAllocationSelect"
+      /> -->
+
+      <UTable
+        v-else
+        ref="table"
+        :data="transactionAllocateData"
+        :columns="transactionAllocateColumns"
+        sticky
+        v-model:sort="transactionAllocationSorting"
+        class="-mx-3"
+        :style="{ maxHeight: 'h-full'}"
+        :ui="{
+          ...appConfig.ui.table.slots,
+        }"
       />
     </div>
-    <!-- Download Modal -->
-    <UModal
-      v-model:open="showDownloadModal"
-      :title="t('download_options')"
-      :transition="true"
-      :close="{
-        class: 'rounded-full',
-        onClick: () => {
-          showDownloadModal = false
-        },
-      }"
-    >
-      <template #body>
-        <div class="space-y-4 py-6">
-          <div
-            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  {{ t('transaction_details') }}
-                </h4>
-                <p class="text-xs text-gray-600 dark:text-gray-400">
-                  {{ t('transaction_details_description') }}
-                </p>
-              </div>
-              <UButton size="sm" @click="exportTransaction" class="ml-3">
-                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-1" />
-                {{ t('download') }}
-              </UButton>
-            </div>
-          </div>
-          <div
-            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  {{ t('receipt') }}
-                </h4>
-                <p class="text-xs text-gray-600 dark:text-gray-400">
-                  {{ t('receipt_description') }}
-                </p>
-              </div>
-              <UButton variant="outline" size="sm" @click="downloadReceiptAsImage" class="ml-3">
-                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-1" />
-                {{ t('download') }}
-              </UButton>
-            </div>
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <UButton
-            :label="t('cancel')"
-            color="neutral"
-            variant="outline"
-            class="w-24 justify-center"
-            @click="showDownloadModal = false"
-          />
-        </div>
-      </template>
-    </UModal>
 
-    <!-- Push Back Transaction Detail Slideover -->
+    <!-- Repush Transaction Summary and Auto Direct Debit Summary Cards -->
+    <!-- TODO: Currently disabled - will be available in future releases -->
+    <div v-if="false" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <!-- Left Card: Repush Transaction Summary with Tabs -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-86">
+        <!-- Reusable Tabs Component -->
+        <ExTab
+          v-model="activeRepushTab"
+          :tabs="repushTabs"
+          size="md"
+        >
+          <template #default="{ activeTab }">
+            <!-- Tab Content -->
+            <div class="relative h-72 overflow-hidden">
+              <!-- Repush Summary Tab Content -->
+              <div
+                v-show="activeTab === 'repush_transaction_summary'"
+                class="h-full"
+              >
+                <!-- Clickable Summary Card -->
+                <div
+                  class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+                  @click="openRepushDetail"
+                >
+                  <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Total Repush</span>
+                      <span class="text-lg font-bold text-gray-900 dark:text-white">{{ summary.totalRepush }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                      <StatusBadge :status="summary.status" variant="subtle" size="sm" />
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ summary.type }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600 dark:text-gray-400">Last Repush Date</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ format.formatDateTime(summary.date, {
+                          dateStyle: userPreferences?.dateFormat || 'medium',
+                          timeStyle: userPreferences?.timeFormat || 'short',
+                        }) }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Click indicator -->
+                  <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                      <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
+                      Click to view details
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Repush Button -->
+                <div class="mt-3">
+                  <UButton
+                    size="md"
+                    variant="outline"
+                    icon="material-symbols:sync"
+                    class="w-full h-10 flex items-center justify-center"
+                    @click="handleRepush"
+                    :loading="isRepushing"
+                    :disabled="isRepushing"
+                  >
+                    {{ isRepushing ? 'Repushing...' : 'Repush Transaction' }}
+                  </UButton>
+                </div>
+              </div>
+
+              <!-- Activity Logs Tab Content -->
+              <div
+                v-show="activeTab === 'repush_activity_logs'"
+                class="h-full"
+              >
+                <div
+                  class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col p-3 space-y-3">
+                  <UTable
+                    ref="table"
+                    :data="summary.repushDetails || []"
+                    :columns="repushDetailsColumns"
+                    sticky
+                    sortable
+                    v-model:sort="webhookSorting"
+                    class="-mx-3"
+                    :style="{ maxHeight: 'h-full'}"
+                    :ui="{
+                      ...appConfig.ui.table.slots,
+                    }"
+                    @select="onRepushDetailSelect"
+                  />
+                </div>
+              </div>
+            </div>
+          </template>
+        </ExTab>
+      </div>
+
+      <!-- Right Card: Auto Direct Debit Summary -->
+      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-86">
+        <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
+          <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+            <UIcon name="material-symbols:account-balance-wallet-outline" class="w-4 h-4 text-primary" />
+          </div>
+          Auto Direct Debit Summary
+        </h4>
+        <!-- Content area -->
+        <div class="relative h-72 overflow-hidden py-4">
+          <!-- Clickable Summary Card -->
+          <div
+            class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+            @click="openDirectDebitDetail"
+          >
+            <div class="space-y-3">
+              <!-- Bank Logo + Bank Name -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Bank</span>
+                <div class="flex items-center space-x-2">
+                  <UAvatar
+                    :src="summaryDirectDebit.bankLogo"
+                    :alt="summaryDirectDebit.bankName"
+                    size="sm"
+                  />
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ summaryDirectDebit.bankName }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Bank Reference -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Bank Reference</span>
+                 <ClipboardBadge
+                    :text="summaryDirectDebit.bankRef || ''"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                    class="mt-2"
+                  />
+              </div>
+              
+              <!-- Status -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                <StatusBadge :status="summaryDirectDebit.status" variant="subtle" size="sm" />
+              </div>
+              
+              <!-- Last Push Date -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Last Push Date</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ format.formatDateTime(summaryDirectDebit.lastPushDate, {
+                    dateStyle: userPreferences?.dateFormat || 'medium',
+                    timeStyle: userPreferences?.timeFormat || 'short',
+                  }) }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Click indicator -->
+            <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+                <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
+                Click to view details
+              </div>
+            </div>
+          </div>
+          
+          <!-- Verify Button -->
+          <div class="mt-3">
+            <UButton
+              size="md"
+              variant="outline"
+              icon="material-symbols:verified-outline"
+              class="w-full h-10 flex items-center justify-center"
+              @click="handleVerifyTransaction"
+              :loading="isVerifying"
+              :disabled="isVerifying"
+            >
+              {{ isVerifying ? 'Verifying...' : 'Verify Transaction' }}
+            </UButton>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Repush Transaction Detail Slideover -->
+    <!-- TODO: Currently disabled - will be available in future releases -->
     <USlideover
+      v-if="false"
       v-model:open="showPushBackDetail"
       side="right"
       :overlay="false"
-      :title="'Push Back Transaction Detail'"
+      title="Repush Transaction Detail"
       @close="closeSlideover"
     >
       <template #body>
         <div class="space-y-4" v-if="selectedPushBackTransaction">
-          <!-- Transaction ID Section -->
+          <!-- Detail Section -->
           <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-            <div class="flex justify-between items-start mb-3">
-              <div>
-                <div class="flex items-center space-x-2 mb-1">
+            <div>
+                <div class="flex items-center justify-between mb-1">
                   <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Transaction ID:</span
+                    >Total Repush</span
                   >
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                    getSelectedPushBackDetail()?.transactionId
+                    getSelectedPushBackDetail()?.totalRepush || '0'
                   }}</span>
                 </div>
-                <div class="flex items-center space-x-2 mb-1">
+                <div class="flex items-center justify-between mb-1">
                   <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Repush Date:</span
+                    >Status</span
+                  >
+                  <StatusBadge
+                    :status="getSelectedPushBackDetail()?.status || 'Unknown'"
+                    variant="subtle"
+                    size="sm"
+                  />
+                </div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white"
+                    >Last Repush Date</span
                   >
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{
                     format.formatDateTime(getSelectedPushBackDetail()?.date, {
@@ -390,28 +541,7 @@
                     })
                   }}</span>
                 </div>
-                <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Repush Status:</span
-                  >
-                  <StatusBadge
-
-                    :status="getSelectedPushBackDetail()?.status || 'Unknown'"
-                    variant="subtle"
-                    size="sm"
-                  />
-                </div>
-                 <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white"
-                    >Total Repush:</span
-                  >
-                  <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                    getSelectedPushBackDetail()?.totalRepush || '0'
-                  }}</span>
-                </div>
-                
               </div>
-            </div>
           </div>
 
           <!-- Biller Configuration Section -->
@@ -419,7 +549,7 @@
             <h3
               class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
             >
-              Biller Configuration:
+              Configuration
             </h3>
             <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
               <div class="flex justify-between">
@@ -444,40 +574,90 @@
             <h3
               class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
             >
-              Payload Sent:
+              Request Payload
             </h3>
             <CopyableCodeBlock
               :content="getSelectedPushBackDetail()?.payload"
               success-message="Payload copied to clipboard"
+              :max-length="250"
+            />
+          </div>
+        </div>
+      </template>
+    </USlideover>
+
+    <!-- Activity Log Detail Slideover -->
+    <!-- TODO: Currently disabled - will be available in future releases -->
+    <USlideover
+      v-if="false"
+      v-model:open="showActivityLogDetail"
+      side="right"
+      :overlay="false"
+      title="Activity Log Details"
+      @close="closeActivityLogSlideover"
+    >
+      <template #body>
+        <div class="space-y-4" v-if="selectedActivityLog">
+          <!-- Detail Section -->
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">Status:</span>
+                <StatusBadge
+                  :status="getSelectedActivityLogDetail()?.status || 'Unknown'"
+                  variant="subtle"
+                  size="sm"
+                />
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">Date:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                  format.formatDateTime(getSelectedActivityLogDetail()?.date, {
+                    dateStyle: userPreferences?.dateFormat || 'medium',
+                    timeStyle: userPreferences?.timeFormat || 'short',
+                  })
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Response Payload Section -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Response Payload
+            </h3>
+            <CopyableCodeBlock
+              :content="getSelectedActivityLogDetail()?.payload"
+              success-message="Response payload copied to clipboard"
+              :max-length="250"
             />
           </div>
 
-          <!-- Response Section -->
+          <!-- Status Code Section -->
           <div class="space-y-3">
-            <h3
-              class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1"
-            >
-              Response:
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Status Code
             </h3>
-            <CopyableCodeBlock
-              :content="getSelectedPushBackDetail()?.response"
-              success-message="Response copied to clipboard"
-            >
-              <div class="space-y-2">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Status Code:</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.response.statusCode
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                    getSelectedPushBackDetail()?.response.message
-                  }}</span>
-                </div>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Code:</span>
+                <span class="text-sm font-mono font-medium text-gray-900 dark:text-white">{{
+                  getSelectedActivityLogDetail()?.statusCode || 'N/A'
+                }}</span>
               </div>
-            </CopyableCodeBlock>
+              <div class="flex justify-between items-start">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Message:</span>
+                <span class="text-sm font-medium text-right" :class="[
+                  getSelectedActivityLogDetail()?.statusCode === 200 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-red-600 dark:text-red-400'
+                ]">{{
+                  getSelectedActivityLogDetail()?.statusCode === 200 
+                    ? 'Success' 
+                    : 'Error'
+                }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </template>
@@ -615,14 +795,21 @@ import { useRoute, useRouter } from 'vue-router'
 import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
 import CopyableCodeBlock from '~/components/CopyableCodeBlock.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
+import ExTab from '~/components/tabs/ExTab.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
+import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
+import { useStatusBadge } from '~/composables/useStatusBadge'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { TransactionHistoryRecord } from '~/models/transaction'
 import appConfig from '~~/app.config'
+import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
+import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
+import type { TransactionAllocationModel } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
 definePageMeta({
   auth: false,
   breadcrumbs: [
@@ -636,6 +823,7 @@ const router = useRouter()
 const { t } = useI18n()
 const { copy } = useClipboard()
 const notification = useNotification()
+const { getTransactionById, getTransactionAllocationList } = useTransactionApi()
 const { createRowNumberCell, createSortableHeader } = useTable()
 const format = useFormat()
 const userPreferences = useUserPreferences().getPreferences()
@@ -643,39 +831,36 @@ const userPreferences = useUserPreferences().getPreferences()
 const isTransactionSelected = ref(false)
 const transactionId = computed(() => route.params.id as string)
 const loading = ref(true)
+const transactionData = ref<TransactionHistoryRecord | null>(null)
+const apiError = ref<string | null>(null)
+const allocationLoading = ref(true)
+const allocationError = ref<string | null>(null)
+const allocationData = ref<TransactionAllocationModel[]>([])
 const showDownloadModal = ref(false)
 const showPushBackDetail = ref(false)
 const selectedPushBackTransaction = ref<any>(null)
+const showActivityLogDetail = ref(false)
+const selectedActivityLog = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
+const { transactionAllocationStatusCellBuilder } = useStatusBadge()
 
-const activeTab = ref('transaction')
-const transactionRef = ref<HTMLElement | null>(null)
-const transactionHeight = ref(0)
+const activeRepushTab = ref('repush_transaction_summary')
+const isRepushing = ref(false)
+const isVerifying = ref(false)
+const isVoidRequesting = ref(false)
 
-const updateHeight = () => {
-  nextTick(() => {
-    if (transactionRef.value) {
-      transactionHeight.value = transactionRef.value.offsetHeight
-    }
-  })
-}
 
-onMounted(updateHeight)
-watch(activeTab, (val) => {
-  if (val === 'transaction') updateHeight()
-})
-
-const tabs = [
+const repushTabs = [
   {
-    label: 'Transaction',
-    value: 'transaction',
-    icon: 'material-symbols:credit-card-clock-outline'
+    label: 'Repush Summary',
+    value: 'repush_transaction_summary',
+    icon: 'material-symbols:sync-outline'
   },
   {
-    label: 'Repush',
-    value: 'repush',
-    icon: 'material-symbols:sync-outline'
+    label: 'Activity Logs',
+    value: 'repush_activity_logs',
+    icon: 'material-symbols:history'
   }
 ]
 
@@ -684,35 +869,109 @@ const customerSorting = ref([])
 const transactionAllocationSorting = ref([])
 const webhookSorting = ref([{ id: 'date', desc: true }])
 
-// Customer Details Data
-interface CustomerDetail {
-  id: string
-  customerName: string
-  customerCode: string
-  billNumber: string
-  amount: number
-  currency: string
-  [key: string]: any
-}
+// Direct Debit Summary Data
+const summaryDirectDebit = ref<DirectDebitSummary>({
+  id: '001',
+  bankName: 'ACLEDA Bank',
+  bankLogo: 'https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png',
+  bankRef: 'BX1234FD56789',
+  lastPushDate: '2025-08-05T10:20:00+07:00',
+  status: 'pending', // or 'success' | 'failed'
+  payload: {
+    accountNumber: '123456789012',  
+    accountName: 'Chan Dara',
+    amount: 250.75,
+    currency: 'USD',
+    debitDate: '2025-08-04'
+  },
+  transactionId: '3dc106d3-fb58-41eb-91ba-c9356ccb50ca',
+  transactionNo: 'TXN-20250805001'
+})
 
-const customerDetails: CustomerDetail[] = [
-  {
-    id: '1',
-    customerName: 'So Sorphorn',
-    customerCode: 'CUST-001',
-    billNumber: 'INV-000001A',
-    amount: 150,
-    currency: 'USD',
+// Repush Summary Data
+const summary = ref<RepushSummary>({
+  id: 'pushback-001',
+  transactionId: '3dc106d3-fb58-41eb-91ba-c9356ccb50ca',
+  transactionNo: 'TXN-20240722001',
+  totalRepush: 2,
+  date: '2024-07-22T10:30:00+07:00',
+  status: RepushStatus.Success,
+  type: RepushType.Webhook,
+  metaData: {
+    url: 'https://webhook.example.com'
   },
-   {
-    id: '2',
-    customerName: 'So Sorphorn',
-    customerCode: 'CUST-002',
-    billNumber: 'INV-000002B',
-    amount: 150,
+  payload: {
+    status: 'success',
+    amount: 10.5,
     currency: 'USD',
+    customer: {
+      name: 'John Doe',
+      phone: '012345678'
+    }
   },
-]
+  repushDetails: [
+      {
+        id: 1,
+        date: '2024-07-22T10:35:00+07:00',
+        status: RepushStatus.Failed,
+        metaData: {
+          statusCode: 400,
+          responsePayload: {
+            status: 'error',
+            amount: 10.5,
+            currency: 'USD',
+            customer: {
+              name: 'John Doe',
+              phone: '012345678'
+            }
+          },
+          responseHeader: {
+            'Content-Type': 'application/json'
+          }
+        }
+      },
+      {
+        id: 2,
+        date: '2024-07-23T10:35:00+07:00',
+        status: RepushStatus.Success,
+        metaData: {
+          statusCode: 200,
+          responsePayload: {
+            status: 'success',
+            amount: 10.5,
+            currency: 'USD',
+            customer: {
+              name: 'John Doe',
+              phone: '012345678'
+            }
+          },
+          responseHeader: {
+            'Content-Type': 'application/json'
+          }
+        }
+      }
+    ]
+  
+})
+
+// Customer Details Data - computed from transaction data or fallback to mock data
+const customerDetails = computed(() => {
+   try {
+    if (transactionData.value && transactionData.value.extData) {
+      const parsed = JSON.parse(transactionData.value.extData)
+      return (parsed.customers || []).map((c: any) => ({
+        customerName: c.customer_name || '-',
+        customerCode: c.customer_code || '-',
+        billNumber: c.bill_no || '-',
+        currency: c.currency || '-', // If available in API
+        amount: c.amount || 0
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to parse extData:', error)
+  }
+  return []
+})
 
 const customerColumns = [
   {
@@ -725,35 +984,28 @@ const customerColumns = [
   },
   {
     id: 'customerName',
-    header: ({ column }: any) => createSortableHeader(column, 'Name', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.customer'), 'left'),
     accessorKey: 'customerName',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerName),
     enableSorting: true,
   },
   {
     id: 'customerCode',
-    header: ({ column }: any) => createSortableHeader(column, 'Code', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.customerCode'), 'left'),
     accessorKey: 'customerCode',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerCode),
     enableSorting: true,
   },
   {
     id: 'billNumber',
-    header: ({ column }: any) => createSortableHeader(column, 'Bill No', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.billNo'), 'left'),
     accessorKey: 'billNumber',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
     enableSorting: true,
   },
   {
-    id: 'currency',
-    header: () => h('div', { class: 'text-left' }, 'Currency'),
-    accessorKey: 'currency',
-    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
-    enableSorting: true,
-  },
-  {
     id: 'amount',
-    header: ({ column }: any) => createSortableHeader(column, 'Amount', 'right'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.amount'), 'right'),
     accessorKey: 'amount',
     cell: ({ row }: any) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
@@ -761,43 +1013,69 @@ const customerColumns = [
   }
 ] as any[]
 
-// Transaction Allocation Data
-interface TransactionAllocateData {
-  id: string
-  customer: string
-  transactionAmount: number
-  billerName: string
-  amount: number
-  outstandingAmount: number
-  currency: string
-  date: string
-  [key: string]: any
-}
 
-const transactionAllocateData: TransactionAllocateData[] = [
-  {
-    id: '1',
-    customer: 'So Sorphorn',
-    transactionAmount: 150.0,
-    billerName: 'Charge Station A',
-    amount: 75.0,
-    outstandingAmount: 75.0,
-    currency: 'USD',
-    date: '2025-07-15T10:30:00+07:00',
-    status: 'pending',
-  },
-  {
-    id: '2',
-    customer: 'So Sorphorn',
-    transactionAmount: 150.0,
-    billerName: 'Oone Go EV Charger',
-    amount: 75.0,
-    outstandingAmount: 75.0,
-    currency: 'USD',
-    date: '2025-07-15T12:00:00+07:00',
-    status: 'pending',
-  },
-]
+
+// Transaction Allocation Data - computed from API data or fallback to mock data
+const transactionAllocateData = computed(() => {
+  // If we have allocation data from the API, use it
+  if (allocationData.value && allocationData.value.length > 0) {
+    return allocationData.value.map((allocation: TransactionAllocationModel) => ({
+      id: allocation.id || '-',
+      customer: allocation.customer || '-',
+      transactionAmount: allocation.amount || 0,
+      billerName: allocation.billerName || '-',
+      amount: allocation.amount || 0,
+      outstandingAmount: allocation.outstandingAmount || 0,
+      currency: allocation.currency || '-',
+      date: allocation.date || new Date().toISOString(),
+      status: allocation.outstandingAmount === 0 ? TransactionAllocationStatus.Completed : TransactionAllocationStatus.Pending,
+    }))
+  }
+
+
+  
+  // If we have transaction data but no allocation data (and not loading), show empty state
+  if (transactionData.value && !allocationLoading.value && !allocationError.value) {
+    return []
+  }
+  
+  // If we're still loading or have an error, return empty array (shimmer will show)
+  if (allocationLoading.value || allocationError.value) {
+    return []
+  }
+  
+  // Fallback mock data for development/testing
+  if (!transactionData.value) {
+    return []
+  }
+  
+  const txData = transactionData.value
+  
+  return [
+    {
+      id: '1',
+      customer: 'Customer from Transaction',
+      transactionAmount: txData.transactionAmount || 150.0,
+      billerName: txData.biller || txData.billerNameKh || 'Charge Station A',
+      amount: (txData.transactionAmount || 150.0) / 2,
+      outstandingAmount: (txData.transactionAmount || 150.0) / 2,
+      currency: txData.currency || txData.currencyId || 'USD',
+      date: txData.date || '2025-07-15T10:30:00+07:00',
+      status: txData.status || 'pending',
+    },
+    {
+      id: '2',
+      customer: 'Customer from Transaction',
+      transactionAmount: txData.transactionAmount || 150.0,
+      billerName: 'Secondary Biller',
+      amount: (txData.transactionAmount || 150.0) / 2,
+      outstandingAmount: (txData.transactionAmount || 150.0) / 2,
+      currency: txData.currency || txData.currencyId || 'USD',
+      date: txData.date || '2025-07-15T12:00:00+07:00',
+      status: txData.status || 'pending',
+    },
+  ]
+})
 
 const transactionAllocateColumns = [
   {
@@ -810,7 +1088,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'date',
-    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.date'), 'left'),
     accessorKey: 'date',
     cell: ({ row }: any) => {
       try {
@@ -831,7 +1109,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'customer',
-    header: ({ column }: any) => createSortableHeader(column, 'Customer', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.customer'), 'left'),
     accessorKey: 'customer',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customer),
     size: 180,
@@ -840,7 +1118,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'billerName',
-    header: ({ column }: any) => createSortableHeader(column, 'Allocation Party', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.allocation_party'), 'left'),
     accessorKey: 'billerName',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billerName),
     size: 160,
@@ -849,21 +1127,15 @@ const transactionAllocateColumns = [
   },
   {
     id: 'status',
-    header: ({column}: any) => h('div', { class: 'text-left' }, 'Status'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.status.status'), 'left'),
     accessorKey: 'status',
     enableSorting: false,
-    cell: ({ row }: any) =>
-      h(StatusBadge, {
-        class: 'text-left',
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
+    cell: ({ row }: any) => transactionAllocationStatusCellBuilder(row.original.status, true),
     size: 120,
   },
   {
     id: 'currency',
-    header: () => h('div', { class: 'text-left' }, 'Currency'),
+    header: () => h('div', { class: 'text-left' }, t('pages.transaction_allocation.currency')),
     accessorKey: 'currency',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
     size: 80,
@@ -872,7 +1144,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'amount',
-    header: ({ column }: any) => createSortableHeader(column, 'Received Amount', 'right'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.amount'), 'right'),
     accessorKey: 'amount',
     cell: ({ row }: any) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
@@ -882,7 +1154,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'outstandingAmount',
-    header: ({ column }: any) => createSortableHeader(column, 'Outstanding Amount', 'right'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.outstanding_amount'), 'right'),
     accessorKey: 'outstandingAmount',
     cell: ({ row }: any) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.outstandingAmount)),
@@ -1073,97 +1345,167 @@ const webhookColumns = [
   },
 ]
 
-// Transaction data
-const transactionData = {
-  transactionNo: transactionId.value || 'TXN-20250729001',
-  date: '2025-07-15T12:00:00+07:00',
-  transactionType: 'Wallet Payment',
-  currency: 'USD',
-  status: 'success',
-  transactionAmount: 150,
-  settlementAmount: 147, // 150 - 3 fee
-  customerFee: 0.0,
-  supplierFee: 3.0,
-  bankReference: 'AC0123243253',
-  collectionBank: 'ACLEDA',
-  settlementBank: 'ACLEDA',
-  accountNumber: 'BANK-12345678',
-  biller: 'Charge Station A',
-  transactionReference: 'DC0123243253',
-  settlementStatus: 'success',
-}
+// Repush Details Columns for Activity Logs
+const repushDetailsColumns = [
+  {
+    id: 'row_number',
+    header: () => '#',
+    cell: ({ row, table }: any) => createRowNumberCell(row, table),
+    size: 50,
+    maxSize: 50,
+    enableSorting: false,
+  },
+  {
+    id: 'date',
+    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
+    accessorKey: 'date',
+    enableSorting: true,
+    cell: ({ row }: any) => {
+      return h('div', { class: 'text-sm text-left' }, [
+        format.formatDateTime(row.original.date, {
+          dateStyle: userPreferences?.dateFormat || 'medium',
+          timeStyle: userPreferences?.timeFormat || 'short',
+        }),
+      ])
+    },
+    size: 120,
+  },
+  {
+    id: 'status',
+    header: () => h('div', { class: 'text-left' }, 'Status'),
+    accessorKey: 'status',
+    enableSorting: false,
+    cell: ({ row }: any) =>
+      h(StatusBadge, {
+        class: 'text-left',
+        status: row.original.status,
+        variant: 'subtle',
+        size: 'sm',
+      }),
+    size: 100,
+  },
+  {
+    id: 'statusCode',
+    header: () => h('div', { class: 'text-center' }, 'Status Code'),
+    accessorKey: 'metaData.statusCode',
+    enableSorting: false,
+    cell: ({ row }: any) =>
+      h('div', { class: 'text-center font-mono text-sm' }, row.original.metaData?.statusCode || 'N/A'),
+    size: 100,
+  },
+]
 
-// Helper function to mask account number
-const maskAccountNumber = (accountNumber: string): string => {
-  if (!accountNumber || accountNumber.length < 4) return accountNumber
-  const lastFour = accountNumber.slice(-4)
-  const maskedPart = '*'.repeat(accountNumber.length - 4)
-  return `${maskedPart}${lastFour}`
-}
+// Transaction data computed from API response
+const computedTransactionData = computed(() => {
+  if (!transactionData.value) {
+    return {
+      transactionNo: '',
+      date: '',
+      transactionType: '',
+      currency: '',
+      status: '',
+      transactionAmount: 0,
+      settlementAmount: 0,
+      customerFee: 0,
+      supplierFee: 0,
+      bankReference: '',
+      collectionBank: '',
+      settlementBank: '',
+      settlementBankLogo: '',
+      accountNumber: '',
+      biller: '',
+      transactionReference: '',
+      settlementStatus: '',
+      extData: '',
+    }
+  }
+
+  const data = transactionData.value
+  
+  return {
+    transactionNo: data.transactionNo || transactionId.value,
+    date: data.date || '',
+    transactionType: data.transactionType || '',
+    currency: data.currency || data.currencyId || '',
+    status: data.status || '',
+    transactionAmount: data.totalAmount || 0,
+    settlementAmount: parseFloat(data.settlementAmount || '0'),
+    customerFee: data.customerFee || 0,
+    supplierFee: data.billerFee || 0,
+    bankReference: data.bankReference || '',
+    collectionBank: data.collectionBank || '',
+    settlementBank: data.settlementBank || '',
+    settlementBankLogo: data.settlementBankLogo || '',
+    accountNumber: data.walletAccountDisplay || data.walletAccount || '',
+    biller: data.biller || data.billerNameKh || '',
+    transactionReference: data.bankReference || '',
+    settlementStatus: data.status || '',
+    extData: data.extData || '',
+  }
+})
+
 
 // Transaction overview fields
-const transactionOverviewFields = computed(() => [
-  {
-    label: 'Transaction No',
-    value: transactionData.transactionNo,
-    type: 'code',
-    copyable: true,
-    rawValue: transactionData.transactionNo,
-  },
-  {
-    label: 'Transaction Amount',
-    value: `${useCurrency().formatAmount(transactionData.transactionAmount)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Transaction Type',
-    value: transactionData.transactionType,
-    type: 'badge',
-  },
-  {
-    label: 'Date',
-    value: format.formatDateTime(transactionData.date, {
-      dateStyle: userPreferences?.dateFormat || 'medium',
-      timeStyle: userPreferences?.timeFormat || 'short',
-    }),
-    type: 'text',
-  },
-  {
-    label: 'Customer Fee',
-    value: `${useCurrency().formatAmount(transactionData.customerFee)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Supplier Fee',
-    value: `${useCurrency().formatAmount(transactionData.supplierFee)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Biller Name',
-    value: `${transactionData.biller}`,
-    type: 'text',
-  },
-  {
-    label: 'Bank Name',
-    value: `${transactionData.collectionBank}`,
-    type: 'text',
-  },
-  {
-    label: 'Bank Reference',
-    value: `${transactionData.transactionReference}`,
-    type: 'code',
-    copyable: true,
-    rawValue: transactionData.transactionReference,
-  }
-])
+const transactionOverviewFields = computed(() => {
+  const txData = computedTransactionData.value
+  
+  return [
+    {
+      label: t('pages.transaction.status'),
+      value: txData.status,
+      type: 'status',
+      status: txData.status,
+    },
+    {
+      label: t('pages.transaction.amount'),
+      value: `${useCurrency().formatAmount(txData.transactionAmount)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: t('pages.transaction.transaction_type'),
+      value: txData.transactionType,
+      type: 'badge',
+    },
+    {
+      label: t('pages.transaction.created_date'),
+      value: txData.date ? format.formatDateTime(txData.date, {
+        dateStyle: userPreferences?.dateFormat || 'medium',
+        timeStyle: userPreferences?.timeFormat || 'short',
+      }) : '',
+      type: 'text',
+    },
+    {
+      label: t('pages.transaction.customer_fee'),
+      value: `${useCurrency().formatAmount(txData.customerFee)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: t('pages.transaction.supplier_fee'),
+      value: `${useCurrency().formatAmount(txData.supplierFee)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: t('pages.transaction.sub_biller'),
+      value: txData.biller,
+      type: 'text',
+    },
+    {
+      label: t('pages.transaction.settlement_bank'),
+      value: txData.settlementBank,
+      type: 'text',
+    },
+    {
+      label: t('pages.transaction.bank_ref'),
+      value: txData.transactionReference,
+      type: 'code',
+      copyable: true,
+      rawValue: txData.transactionReference,
+    }
+  ]
+})
 
 // Show all fields in a single column
 const allFields = computed(() => transactionOverviewFields.value)
-
-// Download functions
-const download = async () => {
-  showDownloadModal.value = true
-}
 
 // Push Back Transaction Detail function
 const onRowSelect = (row: any) => {
@@ -1171,16 +1513,61 @@ const onRowSelect = (row: any) => {
   showPushBackDetail.value = true
 }
 
+// Repush Detail Select function for Activity Logs
+const onRepushDetailSelect = (row: any) => {
+  console.log('🔍 Activity Log row selected:', row.original)
+  console.log('📋 Row data structure:', JSON.stringify(row.original, null, 2))
+  selectedActivityLog.value = row.original
+  showActivityLogDetail.value = true
+  console.log('✅ Activity Log slideover should open')
+}
+
 const closeSlideover = () => {
   showPushBackDetail.value = false
   selectedPushBackTransaction.value = null
 }
 
-// Helper function to get selected push back detail
+const closeActivityLogSlideover = () => {
+  showActivityLogDetail.value = false
+  selectedActivityLog.value = null
+}
+
+// Helper function to get selected push back detail (for Repush Summary)
 const getSelectedPushBackDetail = () => {
-  if (!selectedPushBackTransaction.value || !selectedPushBackTransaction.value.id) return null
-  const id = selectedPushBackTransaction.value.id as string
-  return pushBackDetailData.value[id as keyof typeof pushBackDetailData.value]
+  if (!selectedPushBackTransaction.value) return null
+  
+  const data = selectedPushBackTransaction.value as any
+  
+  // For RepushSummary data (from clicking the summary card)
+  return {
+    transactionId: data.transactionId || summary.value.transactionId,
+    date: data.date || summary.value.date,
+    status: data.status || summary.value.status,
+    totalRepush: data.totalRepush || summary.value.totalRepush,
+    billerConfiguration: {
+      type: data.type || summary.value.type || 'webhook',
+      url: data.metaData?.url || summary.value.metaData?.url || 'N/A'
+    },
+    payload: data.payload || summary.value.payload || {},
+    statusCode: null
+  }
+}
+
+// Helper function to get selected activity log detail
+const getSelectedActivityLogDetail = () => {
+  if (!selectedActivityLog.value) return null
+  
+  const data = selectedActivityLog.value as any
+  
+  // For Activity Log data (repush detail items)
+  return {
+    transactionId: summary.value.transactionId,
+    date: data.date,
+    status: data.status,
+    totalRepush: summary.value.totalRepush,
+    payload: data.metaData?.responsePayload || {},
+    statusCode: data.metaData?.statusCode || null
+  }
 }
 
 
@@ -1280,9 +1667,163 @@ const downloadReceiptAsImage = async () => {
   }
 }
 
-onMounted(() => {
-  loading.value = false
+// Handle repush transaction
+const handleRepush = async () => {
+  try {
+    isRepushing.value = true
+    
+    notification.showInfo({
+      title: 'Repushing Transaction',
+      description: `Repushing transaction ${summary.value.transactionNo}...`,
+    })
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Update summary data
+    summary.value.totalRepush += 1
+    summary.value.date = new Date().toISOString()
+    summary.value.status = RepushStatus.Success
+    
+    notification.showSuccess({
+      title: 'Repush Successful',
+      description: `Transaction ${summary.value.transactionNo} has been repushed successfully.`,
+    })
+  } catch (error) {
+    console.error('Error repushing transaction:', error)
+    notification.showError({
+      title: 'Repush Failed',
+      description: 'Failed to repush transaction. Please try again.',
+    })
+  } finally {
+    isRepushing.value = false
+  }
+}
+
+// Handle verify transaction
+const handleVerifyTransaction = async () => {
+  try {
+    isVerifying.value = true
+    
+    notification.showInfo({
+      title: 'Verifying Transaction',
+      description: `Verifying direct debit transaction ${summaryDirectDebit.value.transactionNo}...`,
+    })
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Update direct debit summary data
+    summaryDirectDebit.value.lastPushDate = new Date().toISOString()
+    summaryDirectDebit.value.status = 'success'
+    
+    notification.showSuccess({
+      title: 'Verification Successful',
+      description: `Transaction ${summaryDirectDebit.value.transactionNo} has been verified successfully.`,
+    })
+  } catch (error) {
+    console.error('Error verifying transaction:', error)
+    notification.showError({
+      title: 'Verification Failed',
+      description: 'Failed to verify transaction. Please try again.',
+    })
+  } finally {
+    isVerifying.value = false
+  }
+}
+
+// Handle void payment request
+const handleVoidPaymentRequest = async () => {
+  try {
+    isVoidRequesting.value = true
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Navigate to void payment detail page
+    router.push(`/void-payment/detail/${transactionId.value}`)
+  } catch (error) {
+    console.error('Error processing void request:', error)
+    notification.showError({
+      title: 'Void Request Failed',
+      description: 'Failed to process void payment request. Please try again.',
+    })
+  } finally {
+    isVoidRequesting.value = false
+  }
+}
+
+// Open repush detail slideover
+const openRepushDetail = () => {
+  console.log('🚀 Opening repush detail')
+  console.log('📊 Summary data:', summary.value)
+  // Use the repush summary data as the selected transaction
+  if (summary.value) {
+    selectedPushBackTransaction.value = summary.value
+    showPushBackDetail.value = true
+    console.log('✅ Slideover should open now')
+  }else{
+    console.log('❌ No summary data available')
+  }
+}
+
+// Open direct debit detail (placeholder function)
+const openDirectDebitDetail = () => {
+  // Placeholder function - can be implemented later when direct debit detail slideover is needed
+  notification.showInfo({
+    title: 'Direct Debit Details',
+    description: 'Direct debit detail view is not yet implemented.',
+  })
+}
+
+// Helper function to mask account number
+const maskAccountNumber = (accountNumber: string): string => {
+  if (!accountNumber || accountNumber.length < 4) return accountNumber
+  const lastFour = accountNumber.slice(-4)
+  const maskedPart = '*'.repeat(accountNumber.length - 4)
+  return `${maskedPart}${lastFour}`
+}
+
+// Fetch transaction data
+const fetchTransactionData = async () => {
+  loading.value = true
+  apiError.value = null
+  
+  try {
+    const result = await getTransactionById(transactionId.value)
+    transactionData.value = result
+   
+  } catch (error) {
+    console.error('Failed to fetch transaction data:', error)
+    apiError.value = t('pages.transaction_detail.error_transaction_detail')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Fetch transaction allocation data
+const fetchTransactionAllocation = async () => {
+  allocationLoading.value = true
+  allocationError.value = null
+  
+  try {
+    const result = await getTransactionAllocationList(transactionId.value)
+    allocationData.value = result.allocations || []
+
+    console.log('Transaction allocation data fetched:', allocationData.value)
+  } catch (error) {
+    console.error('Failed to fetch transaction allocation data:', error)
+    allocationError.value = t('pages.transaction_detail.error_allocation')
+    allocationData.value = []
+  } finally {
+    allocationLoading.value = false
+  }
+}
+
+
+onMounted(async () => {
+  await fetchTransactionData()
+  await fetchTransactionAllocation()
 })
+
 </script>
 
 <style scoped>

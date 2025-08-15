@@ -1,354 +1,353 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-      <!-- Total Transaction -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Transaction</h3>
-        <p class="text-md font-bold">100</p>
-      </div>
-      
-      <!-- Failed Transactions -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Failed Transactions</h3>
-        <p class="text-md font-bold">5</p>
-      </div>
-      
-      <!-- Total Amount KHR -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">KHR</span> 4,000,000
-        </p>
-      </div> -->
-      
-      <!-- Total Amount USD -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">USD</span> 50
-        </p>
-      </div> -->
-      
-      <!-- Total Settlement -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">KHR</span> 3,900
-        </p>
-      </div> -->
-      
-      <!-- Total Split USD -->
-      <!-- <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
-        <p class="text-lg font-bold">
-          <span class="text-xs font-medium">USD</span> 10
-        </p>
-      </div> -->
-
-      <!-- Total Amount (Multi-currency in 2 cols) -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Amount</h3>
-        <div class="grid grid-cols-2 gap-x-4">
-          <!-- KHR Block First -->
-          <div>
-            <p class="text-xs text-gray-600 dark:text-gray-400">KHR</p>
-            <p class="text-md font-bold">4,000,000</p>
-          </div>
-
-          <!-- USD Block Second -->
-          <div class="text-right ml-auto">
-            <p class="text-xs text-gray-600 dark:text-gray-400 ">USD</p>
-            <p class="text-md font-bold">50</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Total Settlement (Multi-currency in 2 cols) -->
-      <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Settlement</h3>
-        <div class="grid grid-cols-2 gap-x-4">
-          <!-- KHR Block First -->
-          <div>
-            <p class="text-xs text-gray-600 dark:text-gray-400">KHR</p>
-            <p class="text-md font-bold">4,000,000</p>
-          </div>
-
-          <!-- USD Block Second -->
-          <div class="text-right ml-auto">
-            <p class="text-xs text-gray-600 dark:text-gray-400 ">USD</p>
-            <p class="text-md font-bold">50</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="overflow-x-auto">
-      <BaseTable
-        :data="filteredData"
-        :columns="columns"
-        table-id="transaction-history-table"
-        border-class="border-gray-200 dark:border-gray-700"
-        @filter-change="handleFilterChange"
-        @row-click="(row) => navigateToDetails(row.id)"
-        @search-change="(val) => (search = val)"
-        @date-range-change="
-          ({ start, end }) => {
-            startDate = start
-            endDate = end
-            fetchTransactionHistory()
-          }
-        "
-        :page="page"
-        :page-size="pageSize.value"
-        :total="total"
-        :total-page="totalPage"
-        @update:page="(val) => (page = val)"
-        @update:pageSize="
-          (val) => {
-            pageSize.value = val
-            page = 1
-          }
-        "
-      >
-        <template #empty>
-          <TableEmptyState />
-        </template>
-      </BaseTable>
-    </div>
+    <!-- Info Banner -->
+    <InfoBanner
+      v-show="!isTableFullscreen"
+      :title="t('pages.transaction.tip')"
+      :message="t('pages.transaction.tip_message')"
+    />
+    <!-- Transaction Summary Cards -->
+    <SummaryCards
+      v-show="!isTableFullscreen"
+      :cards="summarys"
+      :is-loading="isLoading"
+      :skeleton-count="skeletonCount"
+    />
+    <TablesExTable
+      ref="table"
+      :columns="columns"
+      :table-id="TABLE_ID"
+      :fetch-data-fn="fetchTransactionHistory"
+      show-row-number
+      date-format="dd/MM/yyyy" 
+      show-date-filter
+      enabled-auto-refresh
+      enabled-repush
+      @row-click="handleViewDetails"
+      @fullscreen-toggle="handleFullscreenToggle"
+      @data-changed="handleDataChanged"
+    >
+      <template #trailingHeader>
+        <!-- Repush Button - Only show when rows are selected -->
+        <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
+          <UButton variant="outline" size="sm" @click="handleRepush()">
+            {{ t('pages.transaction.repush') }} ({{ selectedRows.length }})
+            <template #trailing>
+              <UIcon name="material-symbols:send-outline" class="w-4 h-4" />
+            </template>
+          </UButton>
+        </UTooltip>
+    </template>
+    </TablesExTable>
   </div>
 </template>
 
 <script setup lang="ts">
-const showSidebar = ref(false)
-const selectedRecord = ref<SettlementHistoryRecord | null>(null)
-
 definePageMeta({
   auth: false,
   breadcrumbs: [{ label: 'transactions', to: '/transactions' }],
 })
 
-import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { computed, h, onMounted, ref, resolveComponent, shallowRef, watch } from 'vue'
+import { computed, h, onMounted, ref, resolveComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import StatusBadge from '~/components/StatusBadge.vue'
-import TableEmptyState from '~/components/TableEmptyState.vue'
-import BaseTable from '~/components/tables/BaseTable.vue'
+import InfoBanner from '~/components/cards/InfoBanner.vue'
+import SummaryCards from '~/components/cards/SummaryCards.vue'
+import TablesExTable from '~/components/tables/ExTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
-import {
-  exportToExcelStyled,
-  exportToExcelWithUnicodeSupport,
-  exportToPDFStyled,
-  exportToPDFWithUnicodeSupport,
-} from '~/composables/utils/exportUtils'
+import { useBankApi } from '~/composables/api/useBankApi'
+import { useTransactionApi } from '~/composables/api/useTransactionApi'
+import { useErrorHandler } from '~/composables/useErrorHandler'
+import { useNotification } from '~/composables/useNotification'
+import { useStatusBadge } from '~/composables/useStatusBadge'
 import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
-import type { SettlementHistoryRecord } from '~/models/settlement'
+import type { Bank } from '~/models/bank'
+import type { TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord } from '~/models/transaction'
+import { SettlementType, TransactionStatus, TransactionType } from '~/utils/enumModel'
+import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 
-const dateOptions = computed(() => {
-  const todayDate = df.format(today)
-  const startOfWeek = new Date(today)
-  startOfWeek.setDate(today.getDate() - today.getDay() + 1)
-  const endOfWeek = new Date(today)
-  endOfWeek.setDate(startOfWeek.getDate() + 6)
+// Helper function to get the enum key from enum value
+const getTransactionTypeKey = (value: string): string => {
+  const entry = Object.entries(TransactionType).find(([key, val]) => val === value)
+  return entry ? entry[0] : value
+}
 
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+const {getTransactionList, getTransactionSummary} = useTransactionApi()
+const { getTBanks } = useBankApi()
 
-  const startOfYear = new Date(today.getFullYear(), 0, 1)
-  const endOfYear = new Date(today.getFullYear(), 11, 31)
+const showInfoBanner = ref(true)
+const isLoading = ref(true)
+// Fullscreen state for table
+const isTableFullscreen = ref(false)
 
-  return [
-    { label: `${t('today')} <span class="text-xs">(${todayDate})</span>`, value: 'today' },
-    {
-      label: `${t('this_week')} <span class="text-xs">(${df.format(startOfWeek)} - ${df.format(endOfWeek)})</span>`,
-      value: 'this_week',
-    },
-    {
-      label: `${t('this_month')} <span class="text-xs">(${df.format(startOfMonth)} - ${df.format(endOfMonth)})</span>`,
-      value: 'this_month',
-    },
-    {
-      label: `${t('this_year')} <span class="text-xs">(${df.format(startOfYear)} - ${df.format(endOfYear)})</span>`,
-      value: 'this_year',
-    },
-  ]
+
+// Handle Repush Transaction
+const handleRepush = () => {
+  notification.showWarning({
+    title: t('pages.transaction.info'),
+    description: t('pages.transaction.info_des'),
+  })
+}
+
+const transactionSummary = ref<TransactionSummaryModel | null>(null)
+const bankData = ref<Bank[]>([])
+
+// Reactive computed property that updates when transactionSummary changes
+const summarys = computed(() => {
+  const rawSummary = transactionSummary.value?.summarys || []
+  
+  // Manual mapping for summary card titles with translations
+  const titleMapping: Record<string, string> = {
+    'Total Transaction': t('pages.transaction.summary.total_transaction'),
+    'Total Amount': t('pages.transaction.summary.total_amount'), 
+    'Failed Transactions': t('pages.transaction.summary.failed_transaction'),
+    'Total Settlement': t('pages.transaction.summary.total_settlement'),
+    // Add more mappings as needed
+  }
+  
+  // Map the summary data with translated titles
+  return rawSummary.map((summary: any) => ({
+    ...summary,
+    title: titleMapping[summary.title] || summary.title // Use mapped translation or fallback to original
+  }))
 })
 
+// Dynamic skeleton count based on expected number of summary cards
+const skeletonCount = computed(() => {
+  // If we have data, use the actual count
+  // If no data yet, use a default of 4 (which matches your mock data structure)
+  return transactionSummary.value?.summarys?.length || 4
+})
+
+
+// Handle fullscreen toggle from ExTable
+const handleFullscreenToggle = (fullscreen: boolean) => {
+  isTableFullscreen.value = fullscreen
+}
+
+// Helper: Normalize various date string formats to YYYY-MM-DD
+const toYMD = (dateStr?: string): string | undefined => {
+  if (!dateStr) return undefined
+  // Handle separators
+  if (dateStr.includes('/')) {
+    const [a, b, c] = dateStr.split('/')
+    if (!a || !b || !c) return undefined
+    // dd/MM/yyyy or yyyy/MM/dd
+    if (a.length === 4) {
+      // yyyy/MM/dd
+      return `${a}-${b.padStart(2, '0')}-${c.padStart(2, '0')}`
+    } else {
+      // dd/MM/yyyy
+      return `${c}-${b.padStart(2, '0')}-${a.padStart(2, '0')}`
+    }
+  }
+  if (dateStr.includes('-')) {
+    const [a, b, c] = dateStr.split('-')
+    if (!a || !b || !c) return undefined
+    // dd-MM-yyyy or yyyy-MM-dd
+    if (a.length === 4) return `${a}-${b.padStart(2, '0')}-${c.padStart(2, '0')}`
+    return `${c}-${b.padStart(2, '0')}-${a.padStart(2, '0')}`
+  }
+  // Fallback to Date parsing
+  const d = new Date(dateStr)
+  if (!isNaN(d.getTime())) {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+  return undefined
+}
+
+// Function to fetch transaction summary from API
+const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: string; PeriodType?: number }) => {
+  try {
+    isLoading.value = true
+    const response = await getTransactionSummary(params, locale.value)
+    transactionSummary.value = response
+    isLoading.value = false
+    console.log('✅ Frontend: Transaction summary loaded successfully')
+  } catch (error) {
+    console.error('❌ Frontend: Error fetching transaction summary:', error)
+    // Keep loading state true to show skeleton cards when there's an error
+  }
+}
+
+// Function to fetch bank data from API
+const fetchBankData = async () => {
+  try {
+    const response = await getTBanks()
+    if (response.code === 'SUCCESS' && response.data) {
+      bankData.value = response.data
+      console.log('✅ Frontend: Bank data loaded successfully', response.data)
+    }
+  } catch (error) {
+    console.error('❌ Frontend: Error fetching bank data:', error)
+    // Fallback to hardcoded options if API fails
+    // bankData.value = [
+    //   { id: '1', bank_id: 'ABA', name: 'ABA Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' },
+    //   { id: '2', bank_id: 'ACLEDA', name: 'ACLEDA Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' },
+    //   { id: '3', bank_id: 'AMK', name: 'AMK Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' }
+    // ]
+  }
+}
+
+// New handler: get the exact dates used by the table fetch and apply to summary
+const handleDataChanged = (result: Record<string, any>) => {
+  const FromDate = toYMD(result?.start_date)
+  const ToDate = toYMD(result?.end_date)
+  if (FromDate || ToDate) {
+    fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 })
+  }
+}
+
+onMounted(async () => {
+  // Default monthly summary (PeriodType=4) custom date range for the current month
+  const now = new Date()
+  const first = new Date(now.getFullYear(), now.getMonth(), 1)
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const FromDate = `${first.getFullYear()}-${pad(first.getMonth() + 1)}-${pad(first.getDate())}`
+  const ToDate = `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`
+
+  // Load both transaction summary and bank data
+  await Promise.all([
+    fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 }),
+    fetchBankData()
+  ])
+})
+
+const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise<{
+  data: TransactionHistoryRecord[]
+  total_record: number
+  total_page: number
+} | null> => {
+  try {
+    // Extract transactionType from filters and move to Types parameter
+    let cleanedFilters = params?.filters || []
+    let transactionTypes: string[] = []
+    
+    // Find and extract transactionType filters
+    if (cleanedFilters.length > 0) {
+      cleanedFilters = cleanedFilters.filter(filter => {
+        if (filter.field === 'transactionType') {
+          // Extract transaction type values and add to Types array
+          if (Array.isArray(filter.value)) {
+            transactionTypes.push(...filter.value)
+          } else {
+            transactionTypes.push(String(filter.value))
+          }
+          return false // Remove from filters array
+        }
+        return true // Keep other filters
+      })
+    }
+    
+    const response = await getTransactionList({
+      ...params,
+      statuses: params?.statuses || [], // Pass statuses as array
+      Types: transactionTypes, // Pass transaction types directly as Types parameter
+      filters: cleanedFilters, // Pass cleaned filters without transactionType
+    }, locale.value) // Pass current locale
+    
+    console.log('Fetched transactions with Types:', transactionTypes, 'and filters:', cleanedFilters)
+    return {
+      data: response.results || [],
+      total_record: response.param?.rowCount || 0,
+      total_page: response.param?.pageCount || 0,
+      // pass through the dates used for this fetch so parent can sync summary
+      start_date: params?.start_date,
+      end_date: params?.end_date,
+    } as any
+  } catch (error) {
+    errorHandler.handleApiError(error)
+    return null
+  }
+}
+
+
 const { createSortableHeader, createRowNumberCell } = useTable()
+const { transactionStatusCellBuilder, getTransactionStatusTranslationKey } = useStatusBadge()
 const { t, locale } = useI18n()
 const errorHandler = useErrorHandler()
-const table = ref<InstanceType<typeof BaseTable> | null>(null)
-const sortBy = ref<string | null>(null)
-const sortDirection = ref<'asc' | 'desc' | null>(null)
-const selectedRows = computed(() => table.value?.getSelectedRows?.() ?? [])
+const table = ref<any>(null)
+const selectedRows = computed(() => table.value?.getSelectedRows() ?? [])
 const allRows = computed(() => table.value?.getAllRows() ?? [])
 const router = useRouter()
 const toast = useToast()
 const notification = useNotification()
 
-const page = ref(1)
-const pageSize = ref<{ label: string; value: number }>({
-  label: '10',
-  value: 10,
-})
-const total = ref(0)
-const totalPage = ref(0)
-const search = ref('')
-const startDate = ref('')
-const endDate = ref('')
-const transactions = ref<TransactionHistoryRecord[]>([])
-const loading = ref(false)
-const errorMsg = ref('')
+const TABLE_ID = 'transaction-history-table'
 
-const df = new DateFormatter('en-US', { dateStyle: 'medium' })
-const today = new Date()
-const modelValue = shallowRef({
-  start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-  end: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
-})
-
-const userPreference = useUserPreferences().getPreferences()
-const selectedDateFilter = ref({
-  label: t('this_month'),
-  value: 'this_month',
-})
-
-// ...existing code for watchers, functions, etc...
-// Watch and convert modelValue to string ISO
-watch(modelValue, (val) => {
-  startDate.value =
-    val.start?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) ||
-    new CalendarDate(today.getFullYear(), today.getMonth(), 1).toString()
-  endDate.value =
-    val.end?.toDate(getLocalTimeZone()).toISOString().slice(0, 10) ||
-    new CalendarDate(today.getFullYear(), today.getMonth(), 30).toString()
-  fetchTransactionHistory()
-})
-
-// Watch pagination
-watch([page, pageSize.value], () => {
-  fetchTransactionHistory()
-})
-
-watch(search, () => {
-  page.value = 1 // Reset to first page on search
-  fetchTransactionHistory()
-})
-
-const onDateFilterChange = (payload: { label: string; value: string }) => {
-  if (!payload?.value) return
-  const value = payload.value
-  switch (value) {
-    case 'today':
-    case 'this_week':
-    case 'this_month':
-    case 'this_year':
-      // your existing logic here...
-      break
-  }
+// Navigation to Transaction Detail Page
+const navigateToDetails = (transactionId: string) => {
+  router.push(`/transactions/detail/${transactionId}`)
 }
 
-// Fetch settlement data from API
-const fetchTransactionHistory = async () => {
-  loading.value = true
-  try {
-    const banks = ['ABA', 'ACLEDA', 'AMK'] as const
-    const subBillers = [
-      'Cambodia Electric Co.',
-      'Smart Axiata',
-      'Cellcard',
-      'Ezecom',
-      'Metfone',
-      'Sabay Digital',
-      'Foodpanda Cambodia',
-      'Nham24',
-      'Kerry Express',
-      'J&T Express',
-      'B-Hub Technology',
-      'Phnom Penh Water Supply',
-      'City Gas Cambodia',
-      'Total Energies Cambodia',
-      'ISPP International School',
-    ]
-    const fullData: TransactionHistoryRecord[] = Array.from({ length: 100 }, (_, i) => ({
-      id: `txn-${i + 1}`,
-      created_date: new Date(Date.now() - i * 86400000),
-      bank_ref: `BANKREF-${i + 1000}`,
-      collection_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_bank: banks[Math.floor(Math.random() * banks.length)]!,
-      settlement_type: i % 2 === 0 ? 'Auto' : 'Manual',
-      total_amount: 1000000 + i * 5000,
-      currency_id: i % 2 === 0 ? 'USD' : 'KHR',
-      status: [t('completed'), t('pending'), t('failed')][i % 3] as string,
-      settled_by: `User ${i + 1}`,
-      transaction_type: ['Wallet Top up', 'Deeplink / Checkout', 'Wallet Payment', 'QR Pay'][i % 4],
-      sub_biller: subBillers[Math.floor(Math.random() * subBillers.length)],
-    }))
-
-    // ✅ Paging
-    const pageStart = (page.value - 1) * pageSize.value.value
-    const pageEnd = pageStart + pageSize.value.value
-    const pagedData = fullData.slice(pageStart, pageEnd)
-
-    transactions.value = pagedData
-    total.value = fullData.length
-    totalPage.value = Math.ceil(fullData.length / pageSize.value.value)
-  } catch (error: any) {
-    console.error('Error loading dummy data:', error.message)
-    errorMsg.value = error.message || 'Failed to load transaction history.'
-    errorHandler.handleApiError(error)
-  } finally {
-    loading.value = false
-  }
+// Build status filter options from TransactionStatus enum
+const getTranslatedTransactionStatusLabel = (status: string) => {
+  const key = getTransactionStatusTranslationKey(status)
+  const translated = t(key)
+  return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
 }
 
-const onPageSizeChange = () => {
-  page.value = 1
-  // fetchSettlementHistory()
-}
-
-// Filtered rows for table
-const filteredData = computed(() =>
-  transactions.value.filter((item) =>
-    (item.settled_by ?? '').toLowerCase().includes(search.value.toLowerCase())
-  )
+const transactionStatusFilterOptions = computed(() =>
+  Object.values(TransactionStatus).map((status) => ({
+    label: getTranslatedTransactionStatusLabel(status),
+    value: status
+  }))
 )
 
-onBeforeMount(() => {
-  // Get last day of current month
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
-  // Set default date range to current month
-  startDate.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1).toString()
-  endDate.value = new CalendarDate(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    lastDayOfMonth
-  ).toString()
-  modelValue.value.start = new CalendarDate(today.getFullYear(), today.getMonth() + 1, 1)
-  modelValue.value.end = new CalendarDate(today.getFullYear(), today.getMonth() + 1, lastDayOfMonth)
-})
+// Build transaction type filter options from TransactionType enum
+const transactionTypeFilterOptions = computed(() =>
+  Object.entries(TransactionType).map(([key, value]) => ({
+    label: key.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to readable format
+    value: value
+  }))
+)
 
-// Initial load
-onMounted(() => {
-  fetchTransactionHistory()
-})
+// Build settlement type filter options from SettlementType enum
+const settlementTypeFilterOptions = computed(() =>
+  Object.values(SettlementType).map((type) => ({
+    label: type,
+    value: type
+  }))
+)
 
-const onGenerateSettlement = () => {
-  router.push('/digital-wallet/settlement/generate')
-}
+// Build bank filter options from API data
+const bankFilterOptions = computed(() =>
+  bankData.value
+    //.filter(bank => bank.active === 'ACTIVE')
+    .map((bank) => ({
+      label: bank.name || bank.name_kh || 'Unknown Bank',
+      value: bank.bank_id || bank.id || bank.name
+    }))
+)
 
-// Handle navigation to details page
-const navigateToDetails = (rowId: string) => {
-  router.push(`/transactions/detail/${rowId}`)
-}
+// Build collection bank filter options (only banks that can be used for collection)
+const collectionBankFilterOptions = computed(() =>
+  bankData.value
+   // .filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_collection_bank)
+    .map((bank) => ({
+      label: bank.name || bank.name_kh || 'Unknown Bank',
+      value: bank.bank_id || bank.id || bank.name
+    }))
+)
+
+// Build settlement bank filter options (only banks that can be used for settlement)
+const settlementBankFilterOptions = computed(() =>
+  bankData.value
+    //.filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_settlement_bank)
+    .map((bank) => ({
+      label: bank.name || bank.name_kh || 'Unknown Bank',
+      value: bank.bank_id || bank.id || bank.name
+    }))
+)
 
 const exportHeaders = [
   { key: 'currency_id', label: t('settlement.currency') },
@@ -364,159 +363,159 @@ const pdfExportHeaders = computed(() => getPDFHeaders(t))
 
 const exportToExcelHandler = async () => {
   // ...existing export logic...
-  try {
-    const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
-    const dataToExport =
-      selectedRows.length > 0
-        ? selectedRows.map((row: { original: any }) => row.original)
-        : filteredData.value
+  // try {
+  //   const selectedRows = table.value?.getSelectedRows() || []
+  //   const dataToExport =
+  //     selectedRows.length > 0
+  //       ? selectedRows.map((row: { original: any }) => row.original)
+  //       : allRows.value
 
-    if (dataToExport.length === 0) {
-      toast.add({
-        title: t('no_data_to_export'),
-        description: t('please_ensure_there_is_data_to_export'),
-        color: 'warning',
-      })
-      return
-    }
+  //   if (dataToExport.length === 0) {
+  //     toast.add({
+  //       title: t('no_data_to_export'),
+  //       description: t('please_ensure_there_is_data_to_export'),
+  //       color: 'warning',
+  //     })
+  //     return
+  //   }
 
-    // Calculate total amount
-    const totalAmount = dataToExport.reduce(
-      (sum: number, item: { total_amount: number | string }) =>
-        sum + (Number(item.total_amount) || 0),
-      0
-    )
+  //   // Calculate total amount
+  //   const totalAmount = dataToExport.reduce(
+  //     (sum: number, item: { total_amount: number | string }) =>
+  //       sum + (Number(item.total_amount) || 0),
+  //     0
+  //   )
 
-    // Get current locale from the existing locale ref
-    const currentLocale = locale.value as 'km' | 'en'
+  //   // Get current locale from the existing locale ref
+  //   const currentLocale = locale.value as 'km' | 'en'
 
-    // Create period string from date range
-    const periodText = `${startDate.value} ${t('to')} ${endDate.value}`
+  //   // Create period string from date range
+  //   const periodText = `${startDate.value} ${t('to')} ${endDate.value}`
 
-    // Try the new Unicode-supported Excel export first, fallback to regular if it fails
-    try {
-      await exportToExcelWithUnicodeSupport(
-        dataToExport,
-        exportHeaders,
-        `settlement-history-${new Date().toISOString().slice(0, 10)}.xlsx`,
-        t('settlement_history_title'),
-        t('settlement_history_subtitle', {
-          date: new Date().toLocaleDateString(currentLocale === 'km' ? 'km-KH' : 'en-US'),
-        }),
-        {
-          locale: currentLocale,
-          t: t,
-          currency: dataToExport[0]?.currency_id || 'USD',
-          totalAmount: totalAmount,
-          period: periodText,
-        }
-      )
-    } catch (unicodeError) {
-      console.warn('Unicode Excel export failed, falling back to standard Excel:', unicodeError)
-      // Fallback to standard Excel export
-      await exportToExcelStyled(
-        dataToExport,
-        exportHeaders,
-        'settlement-history.xlsx',
-        t('settlement_history_title'),
-        t('settlement_history_subtitle', {
-          date: new Date().toLocaleDateString(),
-        })
-      )
-    }
+  //   // Try the new Unicode-supported Excel export first, fallback to regular if it fails
+  //   try {
+  //     await exportToExcelWithUnicodeSupport(
+  //       dataToExport,
+  //       exportHeaders,
+  //       `settlement-history-${new Date().toISOString().slice(0, 10)}.xlsx`,
+  //       t('settlement_history_title'),
+  //       t('settlement_history_subtitle', {
+  //         date: new Date().toLocaleDateString(currentLocale === 'km' ? 'km-KH' : 'en-US'),
+  //       }),
+  //       {
+  //         locale: currentLocale,
+  //         t: t,
+  //         currency: dataToExport[0]?.currency_id || 'USD',
+  //         totalAmount: totalAmount,
+  //         period: periodText,
+  //       }
+  //     )
+  //   } catch (unicodeError) {
+  //     console.warn('Unicode Excel export failed, falling back to standard Excel:', unicodeError)
+  //     // Fallback to standard Excel export
+  //     await exportToExcelStyled(
+  //       dataToExport,
+  //       exportHeaders,
+  //       'settlement-history.xlsx',
+  //       t('settlement_history_title'),
+  //       t('settlement_history_subtitle', {
+  //         date: new Date().toLocaleDateString(),
+  //       })
+  //     )
+  //   }
 
-    toast.add({
-      title: t('export_successful'),
-      description: t('exported_records_to_excel', {
-        count: dataToExport.length,
-        selected: selectedRows.length > 0 ? t('selected') : '',
-      }),
-      color: 'success',
-    })
-  } catch (error) {
-    console.error('Excel export error:', error)
-    toast.add({
-      title: t('export_failed'),
-      description: t('failed_to_export_to_excel'),
-      color: 'error',
-    })
-  }
+  //   toast.add({
+  //     title: t('export_successful'),
+  //     description: t('exported_records_to_excel', {
+  //       count: dataToExport.length,
+  //       selected: selectedRows.length > 0 ? t('selected') : '',
+  //     }),
+  //     color: 'success',
+  //   })
+  // } catch (error) {
+  //   console.error('Excel export error:', error)
+  //   toast.add({
+  //     title: t('export_failed'),
+  //     description: t('failed_to_export_to_excel'),
+  //     color: 'error',
+  //   })
+  // }
 }
 
 const exportToPDFHandler = async () => {
   // ...existing export logic...
   try {
-    const selectedRows = table.value?.tableApi?.getFilteredSelectedRowModel().rows || []
-    const dataToExport =
-      selectedRows.length > 0
-        ? selectedRows.map((row: { original: any }) => row.original)
-        : filteredData.value
-    if (dataToExport.length === 0) {
-      toast.add({
-        title: t('no_data_to_export'),
-        description: t('please_ensure_there_is_data_to_export'),
-        color: 'warning',
-      })
-      return
-    }
+    // const selectedRows = table.value?.getSelectedRows() || []
+    // const dataToExport =
+    //   selectedRows.length > 0
+    //     ? selectedRows.map((row: { original: any }) => row.original)
+    //     : allRows.value
+    // if (dataToExport.length === 0) {
+    //   toast.add({
+    //     title: t('no_data_to_export'),
+    //     description: t('please_ensure_there_is_data_to_export'),
+    //     color: 'warning',
+    //   })
+    //   return
+    // }
 
-    // Calculate total amount
-    const totalAmount = dataToExport.reduce(
-      (sum: number, item: { total_amount: number | string }) =>
-        sum + (Number(item.total_amount) || 0),
-      0
-    )
+    // // Calculate total amount
+    // const totalAmount = dataToExport.reduce(
+    //   (sum: number, item: { total_amount: number | string }) =>
+    //     sum + (Number(item.total_amount) || 0),
+    //   0
+    // )
 
-    // Get current locale from the existing locale ref
-    const currentLocale = locale.value as 'km' | 'en'
+    // // Get current locale from the existing locale ref
+    // const currentLocale = locale.value as 'km' | 'en'
 
-    // Create period string from date range
-    const periodText = `${startDate.value} to ${endDate.value}`
+    // // Create period string from date range
+    // const periodText = `${startDate.value} to ${endDate.value}`
 
-    try {
-      await exportToPDFWithUnicodeSupport(
-        dataToExport,
-        pdfExportHeaders.value,
-        `settlement-history-${new Date().toISOString().slice(0, 10)}.pdf`,
-        'Transaction Report', // Let the function use dynamic titles
-        'Transaction Report', // Let the function use dynamic titles
-        periodText,
-        {
-          // company: 'WINGKH',
-          // currency: dataToExport[0]?.currency_id || 'USD',
-          totalAmount: totalAmount,
-          locale: currentLocale,
-          t: t, // Pass the translation function
-        }
-      )
-    } catch (unicodeError) {
-      console.warn('Unicode PDF export failed, falling back to standard PDF:', unicodeError)
-      // Fallback to standard PDF export
-      await exportToPDFStyled(
-        dataToExport,
-        pdfExportHeaders.value,
-        'settlement-history.pdf',
-        'Transaction Report', // Let the function use dynamic titles
-        'Transaction Report', // Let the function use dynamic titles
-        periodText,
-        {
-          company: 'WINGKH',
-          currency: dataToExport[0]?.currency_id || 'USD',
-          totalAmount: totalAmount,
-          locale: currentLocale,
-          t: t, // Pass the translation function
-        }
-      )
-    }
+    // try {
+    //   await exportToPDFWithUnicodeSupport(
+    //     dataToExport,
+    //     pdfExportHeaders.value,
+    //     `settlement-history-${new Date().toISOString().slice(0, 10)}.pdf`,
+    //     'Transaction Report', // Let the function use dynamic titles
+    //     'Transaction Report', // Let the function use dynamic titles
+    //     periodText,
+    //     {
+    //       // company: 'WINGKH',
+    //       // currency: dataToExport[0]?.currency_id || 'USD',
+    //       totalAmount: totalAmount,
+    //       locale: currentLocale,
+    //       t: t, // Pass the translation function
+    //     }
+    //   )
+    // } catch (unicodeError) {
+    //   console.warn('Unicode PDF export failed, falling back to standard PDF:', unicodeError)
+    //   // Fallback to standard PDF export
+    //   await exportToPDFStyled(
+    //     dataToExport,
+    //     pdfExportHeaders.value,
+    //     'settlement-history.pdf',
+    //     'Transaction Report', // Let the function use dynamic titles
+    //     'Transaction Report', // Let the function use dynamic titles
+    //     periodText,
+    //     {
+    //       company: 'WINGKH',
+    //       currency: dataToExport[0]?.currency_id || 'USD',
+    //       totalAmount: totalAmount,
+    //       locale: currentLocale,
+    //       t: t, // Pass the translation function
+    //     }
+    //   )
+    // }
 
-    toast.add({
-      title: t('export_successful'),
-      description: t('exported_records_to_pdf', {
-        count: dataToExport.length,
-        selected: selectedRows.length > 0 ? t('selected') : '',
-      }),
-      color: 'success',
-    })
+    // toast.add({
+    //   title: t('export_successful'),
+    //   description: t('exported_records_to_pdf', {
+    //     count: dataToExport.length,
+    //     selected: selectedRows.length > 0 ? t('selected') : '',
+    //   }),
+    //   color: 'success',
+    // })
   } catch (error) {
     console.error('PDF export error:', error)
     toast.add({
@@ -552,29 +551,22 @@ const translations = {
   // Add more translations as needed
 }
 
-const handleExport = (item: { click: () => void }) => {
-  if (item.click) {
-    item.click()
-  }
-}
+// const handleExport = (item: { click: () => void }) => {
+//   if (item.click) {
+//     item.click()
+//   }
+// }
 
-const handleViewDetails = (record: SettlementHistoryRecord) => async () => {
-  if (record.success === 0 && record.failed === 0) {
-    await notification.showWarning({
-      title: t('no_transactions_found'),
-      description: t('no_transactions_found_desc'),
-    })
-    return
-  }
-  selectedRecord.value = record
-  showSidebar.value = true
+const handleViewDetails = (transaction: TransactionHistoryRecord) => {
+  // Navigate to transaction details page
+  navigateToDetails(transaction.id)
 }
 const handleFilterChange = (columnId: string, value: string) => {
   console.log('Filter changed:', columnId, value)
   // Optional: trigger fetch or other logic
 }
 
-const columns: BaseTableColumn<any>[] = [
+const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -593,178 +585,109 @@ const columns: BaseTableColumn<any>[] = [
         'aria-label': 'Select row',
       }),
     enableSorting: false,
+    enableColumnFilter: false,
     enableHiding: false,
   },
   {
-    id: 'row_number',
-    header: () => '#',
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.index + 1),
-    size: 30,
-    maxSize: 30,
-    enableSorting: false,
+    id: 'date',
+    accessorKey: 'date',
+    header: ({ column }) => createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
+    cell: ({ row }) =>
+      useFormat().formatDateTime(row.original.date),
+    enableSorting: true,
+    size: 50,
+    maxSize: 150,
   },
   {
-    id: 'created_date',
-    accessorKey: 'created_date',
-    // header: ({ column }) =>
-    //   createSortableHeader(column, t('date'), 'created_date', 'left', (order) => {
-    //     // Call your API with the new sorting order
-    //     console.log('Sort order for created_date:', order) // 'asc' | 'desc' | null
-    //     // Trigger your own fetch with the column and direction
-    //     sortBy.value = 'created_date'
-    //     sortDirection.value = order
-    //     fetchTransactionHistory()
-    //   }),
-    header: t('date'),
-    cell: ({ row }) =>
-      // Format date to DD/MM/YYYY
-      useFormat().formatDateTime(row.original.created_date),
+    id: 'bankReference',
+    accessorKey: 'bankReference',
+    header: () => t('pages.transaction.bank_ref'),
+    cell: ({ row }) => row.original.bankReference || '-',
     enableSorting: true,
   },
   {
-    id: 'bank_ref',
-    accessorKey: 'bank_ref',
-    header: t('bank_ref'),
+    id: 'collectionBank',
+    accessorKey: 'collectionBank',
+    header: () => t('pages.transaction.collection_bank'),
+    cell: ({ row }) => row.original.collectionBank || '-',
+    enableColumnFilter: true,
+    filterOptions: collectionBankFilterOptions.value,
   },
   {
-    id: 'collection_bank',
-    accessorKey: 'collection_bank',
-    header: t('collection_bank'),
+    id: 'settlementBank',
+    accessorKey: 'settlementBank',
+    header: () => t('page.transaction.settlement_bank'),
+    cell: ({ row }) => row.original.settlementBank || '-',
+    enableColumnFilter: true,
+    filterOptions: settlementBankFilterOptions.value,
   },
   {
-    id: 'settlement_bank',
-    accessorKey: 'settlement_bank',
-    header: t('settlement_bank'),
+    id: 'settlementType',
+    accessorKey: 'settlementType',
+    header: () => t('pages.transaction.settlement_type'),
+    cell: ({ row }) => row.original.settlementType || '-',
+    enableColumnFilter: true,
+    filterOptions: settlementTypeFilterOptions.value,
   },
   {
-    id: 'settlement_type',
-    accessorKey: 'settlement_type',
-    header: t('settlement_type'),
+    id: 'transactionType',
+    accessorKey: 'transactionType',
+    header: () => t('pages.transaction.transaction_type'),
+    cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
+    enableSorting: true,
+    enableColumnFilter: true,
+    filterOptions: transactionTypeFilterOptions.value,
   },
   {
-    id: 'total_amount',
-    accessorKey: 'total_amount',
-    header: () => h('div', { class: 'text-right' }, t('total_amount')),
+    id: 'subSupplier',
+    accessorKey: 'subSupplier',
+    header: () => t('pages.transaction.sub_biller'),
+    cell: ({ row }) => row.original.subBiller || '-',
+    enableSorting: true,
+  },
+  {
+    id: 'numberOfCustomer',
+    accessorKey: 'numberOfCustomer',
+    header : ({ column }) => createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
+    cell: ({ row }) =>  h(
+        'div',
+        { class: 'text-right' },
+        row.original.countTotalCustomer || '-',
+      ),
+  },
+  {
+    id: 'status',
+    header: () => t('pages.transaction.status'),
+    cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
+    enableColumnFilter: true,
+    filterType: 'status',
+    filterOptions: transactionStatusFilterOptions.value,
+  },
+  {
+    id: 'currency',
+    accessorKey: 'currency',
+    header: () => t('pages.transaction.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+  },
+  {
+    id: 'transactionAmount',
+    accessorKey: 'transactionAmount',
+    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
     cell: ({ row }) =>
       h(
         'div',
         { class: 'text-right' },
-        useCurrency().formatAmount(row.original.total_amount, row.original.currency_id)
+        useCurrency().formatAmount(row.original.transactionAmount, row.original.currency)
       ),
-  },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: t('settlement.currency'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'USD', value: 'USD' },
-      { label: 'KHR', value: 'KHR' },
-    ],
+    enableMultiSort: true,
     enableSorting: true,
+    size: 50,
+    maxSize: 150,
   },
-  {
-    id: 'transaction_type',
-    accessorKey: 'transaction_type',
-    header: t('transaction_type'),
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'Wallet Top up', value: 'Wallet Top up' },
-      { label: 'Deeplink / Checkout', value: 'Deeplink / Checkout' },
-      { label: 'Wallet Payment', value: 'Wallet Payment' },
-      { label: 'QR Pay', value: 'QR Pay' },
-    ],
-  },
-  {
-    id: 'sub_biller',
-    accessorKey: 'sub_biller',
-    header: t('sub_biller'),
-    enableSorting: true,
-  },
-  {
-    id: 'status',
-    accessorKey: 'status',
-    header: t('status.header'),
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('completed'), value: 'completed' },
-      { label: t('pending'), value: 'pending' },
-      { label: t('failed'), value: 'failed' },
-    ],
-    cell: ({ row }: any) =>
-      h(StatusBadge, {
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
-    // cell: ({ row }) => {
-    //   // return h('span', {
-    //   //   class: `text-sm font-medium`
-    //   // }, `Total: ${row.original.total_Settled}`)
-
-    //   const success = row.original.success
-    //   const fail = row.original.fail
-    //   const total = row.original.total_settled
-
-    //   const UBadge = resolveComponent('UBadge')
-    //   const Icon = resolveComponent('UIcon')
-
-    //   return h('div', { class: 'flex gap-2 items-center' }, [
-    //     // h(UBadge, { color: 'gray', variant: 'subtle', class: 'flex items-center gap-1' }, () => [
-    //     //   h(Icon, { name: 'i-lucide-sigma', class: 'w-4 h-4' }),
-    //     //   h('span', {}, total)
-    //     // ]),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'primary',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [
-    //         // h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }),
-    //         h('span', { class: 'text-sm' }, `${t('total')}: ${total}`),
-    //       ]
-    //     ),
-    //     // Success and Fail badges
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'success',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-    //     ),
-    //     h(
-    //       UBadge,
-    //       {
-    //         color: 'error',
-    //         variant: 'subtle',
-    //         class: 'flex items-center gap-1',
-    //       },
-    //       () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, fail)]
-    //     ),
-    //   ])
-    // },
-  },
-  // Add an action column for viewing details
-  // {
-  //   id: 'actions',
-  //   header: t('actions'),
-  //   cell: ({ row }) =>
-  //     h('div', { class: 'flex items-center gap-2' }, [
-  //       h(resolveComponent('UButton'), {
-  //         color: 'primary',
-  //         variant: 'ghost',
-  //         icon: 'i-lucide-eye',
-  //         size: 'sm',
-  //         onClick: handleViewDetails(row.original),
-  //         // title: translations.view_details
-  //       }),
-  //     ]),
-  // },
 ]
 </script>

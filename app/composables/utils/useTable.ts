@@ -2,7 +2,7 @@
 import { h } from 'vue'
 import { UButton } from '#components'
 
-export const useTable = <_T>() => {
+export const useTable = <_T>(externalSortState?: Ref<Array<{ id: string; desc: boolean }>>) => {
   const page = ref(1)
   const pageSize = ref(10)
   const total = ref(0)
@@ -36,31 +36,79 @@ export const useTable = <_T>() => {
       right: 'justify-end text-right',
     }
 
+    const getAlignmentClass = () => {
+      switch (alignment) {
+        case 'left':
+          return alignmentClasses.left
+        case 'center':
+          return alignmentClasses.center
+        case 'right':
+          return alignmentClasses.right
+        default:
+          return alignmentClasses.left
+      }
+    }
+
     const handleSort = () => {
       const columnId = column.id
-      const current = sortState.value[columnId] || null
+      const current = getCurrentSortState(columnId)
       if (current === null) {
-        sortState.value[columnId] = 'asc'
+        setSortState(columnId, 'asc')
         column.toggleSorting(false)
       } else if (current === 'asc') {
-        sortState.value[columnId] = 'desc'
+        setSortState(columnId, 'desc')
         column.toggleSorting(true)
       } else {
-        sortState.value[columnId] = null
+        setSortState(columnId, null)
         column.clearSorting()
       }
 
-      onSortChange?.(sortState.value[columnId])
+      onSortChange?.(getCurrentSortState(columnId))
+    }
+
+    // Get current sort state - prefer external state if available
+    const getCurrentSortState = (columnId: string): 'asc' | 'desc' | null => {
+      if (externalSortState?.value) {
+        const sortItem = externalSortState.value.find(s => s.id === columnId)
+        if (sortItem) {
+          return sortItem.desc ? 'desc' : 'asc'
+        }
+        return null
+      }
+      return sortState.value[columnId] || null
+    }
+
+    // Set sort state - update external state if available
+    const setSortState = (columnId: string, value: 'asc' | 'desc' | null) => {
+      if (externalSortState?.value) {
+        // Update external sorting state
+        if (value === null) {
+          externalSortState.value = externalSortState.value.filter(s => s.id !== columnId)
+        } else {
+          const existingIndex = externalSortState.value.findIndex(s => s.id === columnId)
+          const newSortItem = { id: columnId, desc: value === 'desc' }
+          
+          if (existingIndex >= 0) {
+            externalSortState.value[existingIndex] = newSortItem
+          } else {
+            externalSortState.value = [newSortItem]
+          }
+        }
+      } else {
+        // Fallback to internal state
+        sortState.value[columnId] = value
+      }
     }
 
     const getIcon = () => {
       const columnId = column.id
-      if (sortState.value[columnId] === 'asc') return 'i-solar:sort-from-top-to-bottom-bold'
-      if (sortState.value[columnId] === 'desc') return 'i-solar:sort-from-bottom-to-top-outline'
+      const currentSort = getCurrentSortState(columnId)
+      if (currentSort === 'asc') return 'i-solar:sort-from-top-to-bottom-bold'
+      if (currentSort === 'desc') return 'i-solar:sort-from-bottom-to-top-outline'
       return 'i-lucide-arrow-up-down'
     }
 
-    return h('div', { class: `w-full ${alignmentClasses[alignment]}` }, [
+    return h('div', { class: `w-full ${getAlignmentClass()}` }, [
       h(UButton, {
         color: 'neutral',
         variant: 'ghost',

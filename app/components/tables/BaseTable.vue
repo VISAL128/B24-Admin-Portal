@@ -308,7 +308,7 @@ const filteredData = computed(() => {
 
 const props = defineProps<{
   data: any[]
-  columns: BaseTableColumn<any>[]
+  columns: BaseTableColumn<unknown>[]
   borderClass?: string
   tableId: string
   exportOptions?: ExportOptions
