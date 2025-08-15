@@ -1,12 +1,13 @@
-import type { ApiResponse } from '~/models/baseModel'
 import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
+import type { TransactionAllocationResponse } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
+import { PGW_MODULE_API_ENDPOINTS } from '~~/server/utils/pgw-module-api-endpoints'
 
 /**
  * Get transaction allocation list by ID from PGW Module API
  * 
- * @route GET /api/transaction/[id]/allocations
+ * @route GET /api/pgw-module/transaction/[id]/allocations
  */
-export default defineEventHandler(async (event): Promise<ApiResponse<any[] | null>> => {
+export default defineEventHandler(async (event): Promise<TransactionAllocationResponse> => {
   try {
     const id = getRouterParam(event, 'id')
     
@@ -25,9 +26,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<any[] | nul
     
     const response = await requestToPgwModuleApi(
       event,
-      `/transaction/${id}/allocations`,
+      PGW_MODULE_API_ENDPOINTS.TRANSACTION.ALLOCATION_BY_ID.replace('{id}', id),
       'GET'
-    ) as ApiResponse<any[]>
+    ) as TransactionAllocationResponse
     
     return response
   } catch (error: any) {

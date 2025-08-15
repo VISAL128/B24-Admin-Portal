@@ -614,379 +614,391 @@ definePageMeta({
 })
 </script>
 <template>
-  <div
-    class="w-full h-full bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex flex-col"
-  >
-    <UStepper ref="stepper" disabled :items="items" class="flex-1">
-      <template #content="{ item }">
-        <div class="flex flex-col h-full gap-2">
-          <div class="flex-1 h-full overflow-y-auto">
-            <!-- Step 1: Reconciliation with Cutoff Date and Currency Selection -->
-            <div v-if="item.value === 'Reconciliation'" class="flex flex-col h-full gap-4">
-              <!-- Cutoff Date and Currency Selection -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-shrink-0">
-                <!-- Cutoff Date -->
-                <div>
-                  <h1 class="text-sm mb-2 font-semibold">
-                    {{ t('settlement.generate.form.select_cutoff_date') }}
-                  </h1>
-                  <UPopover v-model:open="openCutoffDateSelect" class="w-full">
-                    <UButton
-                      color="neutral"
-                      variant="outline"
-                      icon="i-lucide-calendar"
+  <div class="w-full h-full flex flex-col gap-3">
+    <PageHeader
+      :title="$t('pages.generate_settlement.title')"
+      :subtitle="$t('pages.generate_settlement.description')"
+    />
+    <div
+      class="bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex-1 overflow-auto"
+    >
+      <UStepper ref="stepper" disabled :items="items" class="flex-1 h-full">
+        <template #content="{ item }">
+          <div class="flex flex-col h-full gap-2">
+            <div class="flex-1 h-full overflow-y-auto">
+              <!-- Step 1: Reconciliation with Cutoff Date and Currency Selection -->
+              <div v-if="item.value === 'Reconciliation'" class="flex flex-col h-full gap-4">
+                <!-- Cutoff Date and Currency Selection -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-shrink-0">
+                  <!-- Cutoff Date -->
+                  <div>
+                    <h1 class="text-sm mb-2 font-semibold">
+                      {{ t('settlement.generate.form.select_cutoff_date') }}
+                    </h1>
+                    <UPopover v-model:open="openCutoffDateSelect" class="w-full">
+                      <UButton
+                        color="neutral"
+                        variant="outline"
+                        icon="i-lucide-calendar"
+                        size="sm"
+                        class="w-full justify-start"
+                      >
+                        {{
+                          cutOffDatetime
+                            ? formatTimeDisplay
+                            : t('settlement.generate.form.select_date')
+                        }}
+                      </UButton>
+                      <template #content>
+                        <div class="p-4 space-y-4 lg:min-w-96 sm:min-w-80">
+                          <UCalendar v-model="cutOffDatetime" :max-value="now" />
+                          <Divider />
+                          <div>
+                            <label class="block text-sm font-semibold mb-2">
+                              {{ t('settlement.generate.form.select_time') }}
+                            </label>
+                            <div class="flex gap-2">
+                              <USelectMenu
+                                v-model="cutOffDateHour"
+                                :items="getHourOptions"
+                                :placeholder="t('settlement.generate.form.hour')"
+                                class="flex-1"
+                                size="sm"
+                                :search-input="false"
+                              />
+                              <USelectMenu
+                                v-model="cutOffDateMinute"
+                                :items="getMinuteOptions"
+                                :placeholder="t('settlement.generate.form.minute')"
+                                class="flex-1"
+                                size="sm"
+                                :search-input="false"
+                              />
+                              <USelectMenu
+                                v-model="cutOffDateSecond"
+                                :items="getSecondOptions"
+                                :placeholder="t('settlement.generate.form.second')"
+                                class="flex-1"
+                                size="sm"
+                                :search-input="false"
+                              />
+                              <USelectMenu
+                                v-if="userPreferences?.hour12 || false"
+                                v-model="cutOffDatePeriod"
+                                :items="getPeriodOptions"
+                                :placeholder="t('settlement.generate.form.am/pm')"
+                                class="flex-1"
+                                size="sm"
+                                :search-input="false"
+                              />
+                            </div>
+                          </div>
+                          <Divider />
+                          <!-- Action Buttons Footer -->
+                          <div class="flex justify-end gap-2">
+                            <UButton
+                              variant="outline"
+                              color="neutral"
+                              size="sm"
+                              @click="onCutOffDateCancelled"
+                            >
+                              {{ t('cancel') }}
+                            </UButton>
+                            <UButton size="sm" @click="onCutOffDateConfimed">
+                              {{ t('confirm') }}
+                            </UButton>
+                          </div>
+                        </div>
+                      </template>
+                    </UPopover>
+                  </div>
+
+                  <!-- Currency Selector -->
+                  <div>
+                    <h1 class="text-sm mb-2 font-semibold">
+                      {{ t('settlement.generate.form.select_currency') }}
+                    </h1>
+                    <USelectMenu
+                      v-model="selectedCurrency"
+                      :items="currencyOptions"
+                      option-attribute="value"
+                      :placeholder="t('settlement.generate.form.choose_currency')"
+                      class="w-full"
                       size="sm"
-                      class="w-full justify-start"
+                      :search-input="false"
                     >
-                      {{
-                        cutOffDatetime
-                          ? formatTimeDisplay
-                          : t('settlement.generate.form.select_date')
-                      }}
+                      <template #leading>
+                        <span class="mr-2 text-gray-500 font-medium">
+                          {{ selectedCurrency?.value.symbol || '' }}
+                        </span>
+                      </template>
+                    </USelectMenu>
+                  </div>
+                </div>
+
+                <!-- Load Settlement Button or Auto-loading indicator -->
+                <div class="flex justify-between items-center flex-shrink-0">
+                  <div class="flex items-center gap-3">
+                    <h3 class="text-sm font-semibold">
+                      {{ t('settlement.generate.steps.reconciliation.title') }}
+                    </h3>
+                    <UButton
+                      v-if="selectedCurrency && cutOffDatetime"
+                      size="sm"
+                      color="primary"
+                      variant="outline"
+                      icon="material-symbols:sync"
+                      :loading="isLoadingInquiry"
+                      @click="fetchInquirySettlementCpo"
+                    >
+                      {{ t('settlement.refresh') }}
                     </UButton>
-                    <template #content>
-                      <div class="p-4 space-y-4 lg:min-w-96 sm:min-w-80">
-                        <UCalendar v-model="cutOffDatetime" :max-value="now" />
-                        <Divider />
-                        <div>
-                          <label class="block text-sm font-semibold mb-2">
-                            {{ t('settlement.generate.form.select_time') }}
-                          </label>
-                          <div class="flex gap-2">
-                            <USelectMenu
-                              v-model="cutOffDateHour"
-                              :items="getHourOptions"
-                              :placeholder="t('settlement.generate.form.hour')"
-                              class="flex-1"
-                              size="sm"
-                              :search-input="false"
+                  </div>
+                </div>
+                <!-- Summary -->
+                <CardsSummaryCards
+                  :is-loading="isLoadingInquiry"
+                  :skeleton-count="3"
+                  :cards="[
+                    {
+                      title: t('settlement.generate.form.total_biller'),
+                      values: [
+                        {
+                          value: listInquirySettlement?.settlements?.length || 0,
+                        },
+                      ],
+                      dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
+                      filterLabel: '',
+                    },
+                    {
+                      title: t('settlement.generate.form.total_transactions'),
+                      values: [
+                        {
+                          value:
+                            listInquirySettlement?.settlements?.reduce(
+                              (acc, curr) => acc + (curr.transaction_allocations?.length || 0),
+                              0
+                            ) || 0,
+                        },
+                      ],
+                      dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
+                      filterLabel: '',
+                    },
+                    {
+                      title: t('settlement.generate.form.total_amount'),
+                      values: [
+                        {
+                          value:
+                            listInquirySettlement?.settlements?.reduce(
+                              (acc, curr) => acc + (curr.amount || 0),
+                              0
+                            ) || 0,
+                          currency: selectedCurrency?.value.code || defaultCurrency.code,
+                        },
+                      ],
+                      dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
+                      filterLabel: '',
+                    },
+                  ]"
+                />
+                <!-- Settlement List and Transaction Details -->
+                <div class="flex flex-1 sm:flex-col lg:flex-row gap-6 min-h-0">
+                  <!-- Master Table -->
+                  <div
+                    class="flex-2 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
+                  >
+                    <div class="h-full overflow-auto">
+                      <!-- Table Skeleton -->
+                      <TableShimmer v-if="isLoadingInquiry" :rows="5" :show-row-number="true" />
+                      <!-- Actual Table -->
+                      <UTable
+                        v-else
+                        ref="table"
+                        :loading="false"
+                        :data="listInquirySettlement?.settlements || []"
+                        :columns="cpoSettlementColumns"
+                        :ui="appConfig.ui.table.slots"
+                        sticky
+                        class="min-w-[800px] w-full"
+                        @row:click="handleRowClick"
+                      >
+                        <template #empty>
+                          <EmptyState />
+                        </template>
+                      </UTable>
+                    </div>
+                  </div>
+
+                  <!-- Detail Table -->
+                  <Transition
+                    name="slide-left"
+                    enter-active-class="transition-all duration-300 ease-out"
+                    leave-active-class="transition-all duration-300 ease-in"
+                    enter-from-class="transform translate-x-full opacity-0"
+                    enter-to-class="transform translate-x-0 opacity-100"
+                    leave-from-class="transform translate-x-0 opacity-100"
+                    leave-to-class="transform translate-x-full opacity-0"
+                    class="flex flex-col flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-h-0"
+                  >
+                    <div
+                      v-if="
+                        selectedCpoSettlement?.transaction_allocations &&
+                        (selectedCpoSettlement.transaction_allocations.length || 0) > 0
+                      "
+                      class="flex flex-col h-full min-h-0 max-h-full"
+                    >
+                      <!-- Fixed Header -->
+                      <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center">
+                          <h3 class="text-lg font-semibold">
+                            {{ t('settlement.generate.form.transaction_history') }}
+                          </h3>
+                          <div class="flex gap-4">
+                            <ButtonsExportButton
+                              :data="selectedCpoSettlement.transaction_allocations"
+                              :headers="exportHeaders"
+                              :export-options="resolvedExportOptions"
                             />
-                            <USelectMenu
-                              v-model="cutOffDateMinute"
-                              :items="getMinuteOptions"
-                              :placeholder="t('settlement.generate.form.minute')"
-                              class="flex-1"
-                              size="sm"
-                              :search-input="false"
-                            />
-                            <USelectMenu
-                              v-model="cutOffDateSecond"
-                              :items="getSecondOptions"
-                              :placeholder="t('settlement.generate.form.second')"
-                              class="flex-1"
-                              size="sm"
-                              :search-input="false"
-                            />
-                            <USelectMenu
-                              v-if="userPreferences?.hour12 || false"
-                              v-model="cutOffDatePeriod"
-                              :items="getPeriodOptions"
-                              :placeholder="t('settlement.generate.form.am/pm')"
-                              class="flex-1"
-                              size="sm"
-                              :search-input="false"
+                            <UButton
+                              icon="i-lucide-x"
+                              size="xs"
+                              color="gray"
+                              variant="ghost"
+                              class="hover:bg-gray-100 transition-colors duration-200"
+                              @click="selectedCpoSettlement = null"
                             />
                           </div>
                         </div>
-                        <Divider />
-                        <!-- Action Buttons Footer -->
-                        <div class="flex justify-end gap-2">
-                          <UButton
-                            variant="outline"
-                            color="neutral"
-                            size="sm"
-                            @click="onCutOffDateCancelled"
-                          >
-                            {{ t('cancel') }}
-                          </UButton>
-                          <UButton size="sm" @click="onCutOffDateConfimed">
-                            {{ t('confirm') }}
-                          </UButton>
-                        </div>
                       </div>
-                    </template>
-                  </UPopover>
-                </div>
 
-                <!-- Currency Selector -->
-                <div>
-                  <h1 class="text-sm mb-2 font-semibold">
-                    {{ t('settlement.generate.form.select_currency') }}
-                  </h1>
-                  <USelectMenu
-                    v-model="selectedCurrency"
-                    :items="currencyOptions"
-                    option-attribute="value"
-                    :placeholder="t('settlement.generate.form.choose_currency')"
-                    class="w-full"
-                    size="sm"
-                    :search-input="false"
-                  >
-                    <template #leading>
-                      <span class="mr-2 text-gray-500 font-medium">
-                        {{ selectedCurrency?.value.symbol || '' }}
-                      </span>
-                    </template>
-                  </USelectMenu>
+                      <!-- Scrollable Table Container -->
+                      <UTable
+                        ref="table"
+                        v-model:sorting="tranDetailsSorting"
+                        :data="selectedCpoSettlement.transaction_allocations"
+                        :columns="cpoSettlementTransactionColumns"
+                        :ui="appConfig.ui.table.slots"
+                        sticky
+                        class="flex h-64 w-full animate-fade-in min-h-0 overflow-auto"
+                      />
+
+                      <!-- Fixed Footer -->
+                      <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
+                        <SumTranDataUnderTable
+                          :total-transactions="
+                            selectedCpoSettlement.transaction_allocations?.length || 0
+                          "
+                          :amount="selectedCpoSettlement.amount"
+                          :currency="selectedCpoSettlement.currency"
+                        />
+                      </div>
+                    </div>
+                  </Transition>
                 </div>
               </div>
 
-              <!-- Load Settlement Button or Auto-loading indicator -->
-              <div class="flex justify-between items-center flex-shrink-0">
-                <div class="flex items-center gap-3">
-                  <h3 class="text-sm font-semibold">
-                    {{ t('settlement.generate.steps.reconciliation.title') }}
-                  </h3>
+              <!-- Step 2: Settlement Request Success -->
+              <div
+                v-if="item.value === 'Confirmation'"
+                class="flex flex-1 items-center justify-center h-full"
+              >
+                <div
+                  class="w-10/12 h-10/12 bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm items-center justify-center content-center"
+                >
+                  <UIcon name="i-lucide-check-circle" class="text-success text-6xl mb-4" />
+                  <h2 class="text-2xl font-bold text-success mb-2">
+                    {{ t('settlement.generate.form.settlement_request_successful') }}
+                  </h2>
+                  <p class="text-success mb-6">
+                    {{ t('settlement.generate.form.settlement_request_message') }}
+                  </p>
                   <UButton
-                    v-if="selectedCurrency && cutOffDatetime"
-                    size="sm"
                     color="primary"
-                    variant="outline"
-                    icon="material-symbols:sync"
-                    :loading="isLoadingInquiry"
-                    @click="fetchInquirySettlementCpo"
+                    class="w-24 justify-center"
+                    size="md"
+                    @click="onConfirm()"
                   >
-                    {{ t('settlement.refresh') }}
+                    {{
+                      t('settlement.generate.form.done') ||
+                      t('settlement.generate.form.back_to_list')
+                    }}
                   </UButton>
                 </div>
               </div>
-              <!-- Summary -->
-              <CardsSummaryCards
-                :is-loading="isLoadingInquiry"
-                :skeleton-count="3"
-                :cards="[
-                  {
-                    title: t('settlement.generate.form.total_biller'),
-                    values: [
-                      {
-                        value: listInquirySettlement?.settlements?.length || 0,
-                      },
-                    ],
-                    dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: '',
-                  },
-                  {
-                    title: t('settlement.generate.form.total_transactions'),
-                    values: [
-                      {
-                        value:
-                          listInquirySettlement?.settlements?.reduce(
-                            (acc, curr) => acc + (curr.transaction_allocations?.length || 0),
-                            0
-                          ) || 0,
-                      },
-                    ],
-                    dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: '',
-                  },
-                  {
-                    title: t('settlement.generate.form.total_amount'),
-                    values: [
-                      {
-                        value:
-                          listInquirySettlement?.settlements?.reduce(
-                            (acc, curr) => acc + (curr.amount || 0),
-                            0
-                          ) || 0,
-                        currency: selectedCurrency?.value.code || defaultCurrency.code,
-                      },
-                    ],
-                    dateRange: useFormat().formatDateTime(cutOffDatetime.toString()),
-                    filterLabel: '',
-                  },
-                ]"
-              />
-              <!-- Settlement List and Transaction Details -->
-              <div class="flex flex-1 sm:flex-col lg:flex-row gap-6 min-h-0">
-                <!-- Master Table -->
-                <div
-                  class="flex-2 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
-                >
-                  <div class="h-full overflow-auto">
-                    <!-- Table Skeleton -->
-                    <TableShimmer v-if="isLoadingInquiry" :rows="5" :show-row-number="true" />
-                    <!-- Actual Table -->
-                    <UTable
-                      v-else
-                      ref="table"
-                      :loading="false"
-                      :data="listInquirySettlement?.settlements || []"
-                      :columns="cpoSettlementColumns"
-                      :ui="appConfig.ui.table.slots"
-                      sticky
-                      class="min-w-[800px] w-full"
-                      @row:click="handleRowClick"
-                    >
-                      <template #empty>
-                        <EmptyState />
-                      </template>
-                    </UTable>
-                  </div>
-                </div>
-
-                <!-- Detail Table -->
-                <Transition
-                  name="slide-left"
-                  enter-active-class="transition-all duration-300 ease-out"
-                  leave-active-class="transition-all duration-300 ease-in"
-                  enter-from-class="transform translate-x-full opacity-0"
-                  enter-to-class="transform translate-x-0 opacity-100"
-                  leave-from-class="transform translate-x-0 opacity-100"
-                  leave-to-class="transform translate-x-full opacity-0"
-                  class="flex flex-col flex-1 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-h-0"
-                >
-                  <div
-                    v-if="
-                      selectedCpoSettlement?.transaction_allocations &&
-                      (selectedCpoSettlement.transaction_allocations.length || 0) > 0
-                    "
-                    class="flex flex-col h-full min-h-0 max-h-full"
-                  >
-                    <!-- Fixed Header -->
-                    <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
-                      <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold">
-                          {{ t('settlement.generate.form.transaction_history') }}
-                        </h3>
-                        <div class="flex gap-4">
-                          <ButtonsExportButton
-                            :data="selectedCpoSettlement.transaction_allocations"
-                            :headers="exportHeaders"
-                            :export-options="resolvedExportOptions"
-                          />
-                          <UButton
-                            icon="i-lucide-x"
-                            size="xs"
-                            color="gray"
-                            variant="ghost"
-                            class="hover:bg-gray-100 transition-colors duration-200"
-                            @click="selectedCpoSettlement = null"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Scrollable Table Container -->
-                    <UTable
-                      ref="table"
-                      v-model:sorting="tranDetailsSorting"
-                      :data="selectedCpoSettlement.transaction_allocations"
-                      :columns="cpoSettlementTransactionColumns"
-                      :ui="appConfig.ui.table.slots"
-                      sticky
-                      class="flex h-80 w-full animate-fade-in min-h-0 overflow-auto"
-                    />
-
-                    <!-- Fixed Footer -->
-                    <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
-                      <SumTranDataUnderTable
-                        :total-transactions="
-                          selectedCpoSettlement.transaction_allocations?.length || 0
-                        "
-                        :amount="selectedCpoSettlement.amount"
-                        :currency="selectedCpoSettlement.currency"
-                      />
-                    </div>
-                  </div>
-                </Transition>
-              </div>
             </div>
-
-            <!-- Step 2: Settlement Request Success -->
-            <div
-              v-if="item.value === 'Confirmation'"
-              class="flex flex-1 items-center justify-center h-full"
-            >
-              <div
-                class="w-10/12 h-10/12 bg-green-50 border border-green-200 rounded-lg p-8 text-center shadow-sm items-center justify-center content-center"
-              >
-                <UIcon name="i-lucide-check-circle" class="text-success text-6xl mb-4" />
-                <h2 class="text-2xl font-bold text-success mb-2">
-                  {{ t('settlement.generate.form.settlement_request_successful') }}
-                </h2>
-                <p class="text-success mb-6">
-                  {{ t('settlement.generate.form.settlement_request_message') }}
-                </p>
-                <UButton color="primary" class="w-24 justify-center" size="md" @click="onConfirm()">
-                  {{
-                    t('settlement.generate.form.done') || t('settlement.generate.form.back_to_list')
-                  }}
+            <!-- Navigation Buttons -->
+            <div class="flex-shrink-0 flex flex-row items-center justify-end">
+              <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <UButton
+                  v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
+                  :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
+                  loading-auto
+                  size="sm"
+                  @click="isConfirmModalShow = true"
+                >
+                  {{ t('settlement.generate.form.confirm_settlement') }}
                 </UButton>
+
+                <!-- Show confirm modal to confirm settlement -->
+                <UModal
+                  v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
+                  transition
+                  :open="isConfirmModalShow"
+                  :close="false"
+                  :title="t('settlement.generate.form.confirm_settlement_title')"
+                >
+                  <template #body>
+                    <div class="flex flex-col items-center text-center py-6">
+                      <!-- Icon with circle background using Bill24 colors -->
+                      <div
+                        class="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-primary/10"
+                      >
+                        <UIcon
+                          name="i-material-symbols:help-outline-rounded"
+                          class="text-3xl text-primary"
+                        />
+                      </div>
+
+                      <!-- Question text -->
+                      <h4 class="text-lg font-semibold mb-1">
+                        {{ t('settlement.generate.form.confirm_settlement_message') }}
+                      </h4>
+
+                      <!-- Description text -->
+                      <p class="max-w-md text-sm leading-relaxed" style="color: #b2aaa3">
+                        {{ t('settlement.generate.form.confirm_settlement_description') }}
+                      </p>
+                    </div>
+                  </template>
+                  <template #footer>
+                    <div class="flex justify-end gap-3 w-full">
+                      <UButton
+                        variant="outline"
+                        size="sm"
+                        style="border-color: #d0c8c1"
+                        class="w-16 justify-center"
+                        @click="isConfirmModalShow = false"
+                      >
+                        {{ t('settlement.generate.form.confirm_settlement_buttons.no') }}
+                      </UButton>
+                      <UButton
+                        color="primary"
+                        variant="solid"
+                        size="sm"
+                        loading-auto
+                        @click="handleSubmitSettlement"
+                      >
+                        {{ t('settlement.generate.form.confirm_settlement_buttons.yes') }}
+                      </UButton>
+                    </div>
+                  </template>
+                </UModal>
               </div>
             </div>
           </div>
-          <!-- Navigation Buttons -->
-          <div class="flex-shrink-0 flex flex-row items-center justify-end">
-            <div class="flex flex-col sm:flex-row justify-end gap-3">
-              <UButton
-                v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
-                :disabled="(listInquirySettlement?.settlements?.length || 0) === 0"
-                loading-auto
-                size="sm"
-                @click="isConfirmModalShow = true"
-              >
-                {{ t('settlement.generate.form.confirm_settlement') }}
-              </UButton>
-
-              <!-- Show confirm modal to confirm settlement -->
-              <UModal
-                v-if="item.title === t('settlement.generate.steps.reconciliation.title')"
-                transition
-                :open="isConfirmModalShow"
-                :close="false"
-                :title="t('settlement.generate.form.confirm_settlement_title')"
-              >
-                <template #body>
-                  <div class="flex flex-col items-center text-center py-6">
-                    <!-- Icon with circle background using Bill24 colors -->
-                    <div
-                      class="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-primary/10"
-                    >
-                      <UIcon
-                        name="i-material-symbols:help-outline-rounded"
-                        class="text-3xl text-primary"
-                      />
-                    </div>
-
-                    <!-- Question text -->
-                    <h4 class="text-lg font-semibold mb-1">
-                      {{ t('settlement.generate.form.confirm_settlement_message') }}
-                    </h4>
-
-                    <!-- Description text -->
-                    <p class="max-w-md text-sm leading-relaxed" style="color: #b2aaa3">
-                      {{ t('settlement.generate.form.confirm_settlement_description') }}
-                    </p>
-                  </div>
-                </template>
-                <template #footer>
-                  <div class="flex justify-end gap-3 w-full">
-                    <UButton
-                      variant="outline"
-                      size="sm"
-                      style="border-color: #d0c8c1"
-                      class="w-16 justify-center"
-                      @click="isConfirmModalShow = false"
-                    >
-                      {{ t('settlement.generate.form.confirm_settlement_buttons.no') }}
-                    </UButton>
-                    <UButton
-                      color="primary"
-                      variant="solid"
-                      size="sm"
-                      loading-auto
-                      @click="handleSubmitSettlement"
-                    >
-                      {{ t('settlement.generate.form.confirm_settlement_buttons.yes') }}
-                    </UButton>
-                  </div>
-                </template>
-              </UModal>
-            </div>
-          </div>
-        </div>
-      </template>
-    </UStepper>
+        </template>
+      </UStepper>
+    </div>
   </div>
 </template>
 

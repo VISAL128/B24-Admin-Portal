@@ -20,6 +20,8 @@ import type {
   WalletTransactionResponse,
 } from '~~/server/model/pgw_module_api/wallet_transactions'
 
+import type { UploadFileResponse } from '~/models/media'
+
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
 
@@ -225,6 +227,20 @@ export const usePgwModuleApi = () => {
     )
   }
 
+const uploadFile = async (file: File) => {
+    const form = new FormData()
+    form.append('file', file, file.name)
+
+    return await executeV2(() =>
+      $fetch<UploadFileResponse>(`/api/pgw-module/media/uploadfile`, {
+        method: 'POST',
+        body: form,
+        onResponseError() {},
+      })
+    )
+  }
+
+
   return {
     getProfile,
     getWalletTypes,
@@ -239,6 +255,7 @@ export const usePgwModuleApi = () => {
     getSubBillerWalletList,
     getTransactions,
     deactivateSubBiller,
-    updateSubBiller
+    updateSubBiller,
+    uploadFile
   }
 }

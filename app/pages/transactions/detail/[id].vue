@@ -3,20 +3,19 @@
     <!-- Main Layout: Left and Right Sections -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <!-- Left Section: Transaction Detail (50% width) -->
-      <div class="lg:col-span-1">
-        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+      <div class="lg:col-span-1 flex flex-col h-full">
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3 flex-1 flex flex-col">
           <!-- Header -->
           <div class="flex justify-between items-center mb-3">
             <h4 class="text-base font-medium text-gray-900 dark:text-white flex items-center">
               <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
                 <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
               </div>
-              Transaction Detail
+              {{ t('pages.transaction.title') }}
             </h4>
             
             <!-- Actions Right -->
-            <div class="flex items-center gap-2">
-              <!-- <StatusBadge :status="transactionData.status" variant="subtle" size="sm" /> -->
+            <!-- <div class="flex items-center gap-2">
               <UButton
                 variant="outline"
                 icon="material-symbols:history"
@@ -27,18 +26,39 @@
               >
                 {{ isVoidRequesting ? 'Processing...' : 'Void Payment History' }}
               </UButton>
-              <!-- <UButton
-                class="text-gray-500"
-                variant="ghost"
-                icon="material-symbols:more-vert"
-                size="md"
-                @click="download"
-              /> -->
-            </div>
+            </div> -->
           </div>
           <!-- Transaction Content -->
-          <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4">
-            <div class="space-y-0">
+          <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700 p-4 flex-1 flex flex-col">
+            <!-- Loading State -->
+            <div v-if="loading || apiError" class="space-y-3 flex-1 flex flex-col">
+              <div v-if="loading" v-for="n in 9" :key="`skeleton-${n}`" class="flex justify-between items-center py-3 animate-pulse">
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              </div>
+              
+              <!-- Error State -->
+              <div v-if="apiError && !loading" class="flex-1 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-red-500 mb-2">
+                    <UIcon name="material-symbols:error-outline" class="w-12 h-12 mx-auto" />
+                  </div>
+                  <p class="text-red-600 dark:text-red-400 font-medium">{{ apiError }}</p>
+                  <UButton
+                    variant="outline"
+                    color="error"
+                    size="sm"
+                    class="mt-3"
+                    @click="fetchTransactionData"
+                  >
+                    Retry
+                  </UButton>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Actual Data -->
+            <div v-else class="space-y-0">
               <div
                 v-for="(field, index) in allFields"
                 :key="index"
@@ -89,31 +109,49 @@
             <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
               <UIcon name="material-symbols:account-balance-outline" class="w-4 h-4 text-primary" />
             </div>
-            Settlement Bank
+            {{ t('pages.transaction_detail.settlement_bank') }}
           </h4>
           <!-- Horizontal line below header -->
           <hr class="border-gray-200 dark:border-gray-700 mt-3 -mx-3 py-1" />
-          <div class="space-y-3">
+          
+          <!-- Loading State -->
+          <div v-if="loading || apiError" class="space-y-3">
+            <div v-if="loading" v-for="n in 3" :key="`settlement-skeleton-${n}`" class="flex justify-between items-center animate-pulse">
+              <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+              </div>
+            </div>
+            
+            <!-- Error State -->
+            <div v-if="apiError && !loading" class="text-center py-4">
+              <p class="text-red-600 dark:text-red-400 text-sm">{{ apiError }}</p>
+            </div>
+          </div>
+          
+          <!-- Actual Data -->
+          <div v-else class="space-y-3">
             <!-- Bank Name -->
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Bank Name</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_bank') }}</span>
               <div class="flex items-center space-x-2">
                 <UAvatar
-                  src="https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png"
-                  alt="ACLEDA Bank"
+                  :src="computedTransactionData.settlementBankLogo || 'https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png'"
+                  :alt="computedTransactionData.settlementBank || 'Bank'"
                   size="sm"
                 />
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ transactionData.settlementBank }}
+                  {{ computedTransactionData.settlementBank || 'N/A' }}
                 </span>
               </div>
             </div>
 
-            <!-- Bank Reference -->
+            <!-- Account Number -->
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Account Number</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.account_number') }}</span>
               <ClipboardBadge
-                :text="maskAccountNumber(transactionData.accountNumber)"
+                :text="maskAccountNumber(computedTransactionData.accountNumber)"
                 :copied-tooltip-text="$t('clipboard.copied')"
                 class="mt-1"
               />
@@ -121,10 +159,10 @@
 
             <!-- Settlement Amount -->
             <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Settlement Amount</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_amount') }}</span>
               <span class="text-lg font-bold">
-                {{ useCurrency().formatAmount(transactionData.settlementAmount) }}
-                {{ transactionData.currency }}
+                {{ useCurrency().formatAmount(computedTransactionData.settlementAmount) }}
+                {{ computedTransactionData.currency }}
               </span>
             </div>
           </div>
@@ -136,11 +174,48 @@
             <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
               <UIcon name="material-symbols:receipt-outline" class="w-4 h-4 text-primary" />
             </div>
-            Transaction Detail
+            {{ t('pages.transaction_detail.title') }}
           </h4>
           <!-- Horizontal line below header -->
           <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
+          
+          <!-- Loading State -->
+          <div v-if="loading || apiError" class="flex-1 flex flex-col">
+            <div v-if="loading" class="animate-pulse p-4">
+              <!-- Table Header Shimmer -->
+              <div class="flex space-x-4 mb-4">
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-8"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+              </div>
+              <!-- Table Rows Shimmer -->
+              <div v-for="n in 3" :key="`table-skeleton-${n}`" class="flex space-x-4 mb-3">
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              </div>
+            </div>
+            
+            <!-- Error State -->
+            <div v-if="apiError && !loading" class="flex-1 flex items-center justify-center py-8">
+              <div class="text-center">
+                <div class="text-red-500 mb-2">
+                  <UIcon name="material-symbols:error-outline" class="w-8 h-8 mx-auto" />
+                </div>
+                <p class="text-red-600 dark:text-red-400 text-sm">{{ t('pages.transaction_detail.error_transaction_detail') }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Actual Data -->
           <UTable
+            v-else
             ref="table"
             :data="customerDetails"
             :columns="customerColumns"
@@ -163,11 +238,50 @@
         <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
           <UIcon name="material-symbols:credit-card-clock-outline" class="w-4 h-4 text-primary" />
         </div>
-        Transaction Allocation
+        {{ t('pages.transaction_allocation.title') }}
       </h4>
       <!-- Horizontal line below header -->
       <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />
-      <UTable
+      
+      <!-- Loading State -->
+      <div v-if="allocationLoading || allocationError">
+        <div v-if="allocationLoading" class="animate-pulse p-4">
+          <!-- Table Header Shimmer -->
+          <div class="flex space-x-4 mb-4">
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-8"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-28"></div>
+            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+          </div>
+          <!-- Table Rows Shimmer -->
+          <div v-for="n in 4" :key="`allocation-skeleton-${n}`" class="flex space-x-4 mb-3">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-28"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+          </div>
+        </div>
+        
+        <!-- Error State -->
+        <div v-if="allocationError && !allocationLoading" class="text-center py-8">
+          <div class="text-red-500 mb-2">
+            <UIcon name="material-symbols:error-outline" class="w-8 h-8 mx-auto" />
+          </div>
+          <p class="text-red-600 dark:text-red-400 text-sm">{{ allocationError }}</p>
+        </div>
+      </div>
+      
+      <!-- Actual Data -->
+      <!-- <UTable
+        v-else
         ref="table"
         :data="transactionAllocateData"
         :columns="transactionAllocateColumns"
@@ -179,11 +293,26 @@
           ...appConfig.ui.table.slots,
         }"
         @select="onTransactionAllocationSelect"
+      /> -->
+
+      <UTable
+        v-else
+        ref="table"
+        :data="transactionAllocateData"
+        :columns="transactionAllocateColumns"
+        sticky
+        v-model:sort="transactionAllocationSorting"
+        class="-mx-3"
+        :style="{ maxHeight: 'h-full'}"
+        :ui="{
+          ...appConfig.ui.table.slots,
+        }"
       />
     </div>
 
     <!-- Repush Transaction Summary and Auto Direct Debit Summary Cards -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <!-- TODO: Currently disabled - will be available in future releases -->
+    <div v-if="false" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <!-- Left Card: Repush Transaction Summary with Tabs -->
       <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-86">
         <!-- Reusable Tabs Component -->
@@ -367,74 +496,11 @@
         </div>
       </div>
     </div>
-
-    <!-- Download Modal -->
-    <UModal
-      v-model:open="showDownloadModal"
-      :title="t('download_options')"
-      :transition="true"
-      :close="{
-        class: 'rounded-full',
-        onClick: () => {
-          showDownloadModal = false
-        },
-      }"
-    >
-      <template #body>
-        <div class="space-y-4 py-6">
-          <div
-            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  {{ t('transaction_details') }}
-                </h4>
-                <p class="text-xs text-gray-600 dark:text-gray-400">
-                  {{ t('transaction_details_description') }}
-                </p>
-              </div>
-              <UButton size="sm" @click="exportTransaction" class="ml-3">
-                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-1" />
-                {{ t('download') }}
-              </UButton>
-            </div>
-          </div>
-          <div
-            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  {{ t('receipt') }}
-                </h4>
-                <p class="text-xs text-gray-600 dark:text-gray-400">
-                  {{ t('receipt_description') }}
-                </p>
-              </div>
-              <UButton variant="outline" size="sm" @click="downloadReceiptAsImage" class="ml-3">
-                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-1" />
-                {{ t('download') }}
-              </UButton>
-            </div>
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <UButton
-            :label="t('cancel')"
-            color="neutral"
-            variant="outline"
-            class="w-24 justify-center"
-            @click="showDownloadModal = false"
-          />
-        </div>
-      </template>
-    </UModal>
-
+    
     <!-- Repush Transaction Detail Slideover -->
+    <!-- TODO: Currently disabled - will be available in future releases -->
     <USlideover
+      v-if="false"
       v-model:open="showPushBackDetail"
       side="right"
       :overlay="false"
@@ -521,7 +587,9 @@
     </USlideover>
 
     <!-- Activity Log Detail Slideover -->
+    <!-- TODO: Currently disabled - will be available in future releases -->
     <USlideover
+      v-if="false"
       v-model:open="showActivityLogDetail"
       side="right"
       :overlay="false"
@@ -729,15 +797,19 @@ import CopyableCodeBlock from '~/components/CopyableCodeBlock.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import ExTab from '~/components/tabs/ExTab.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
+import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
+import { useStatusBadge } from '~/composables/useStatusBadge'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { TransactionHistoryRecord } from '~/models/transaction'
 import appConfig from '~~/app.config'
 import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
+import type { TransactionAllocationModel } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
 definePageMeta({
   auth: false,
   breadcrumbs: [
@@ -751,6 +823,7 @@ const router = useRouter()
 const { t } = useI18n()
 const { copy } = useClipboard()
 const notification = useNotification()
+const { getTransactionById, getTransactionAllocationList } = useTransactionApi()
 const { createRowNumberCell, createSortableHeader } = useTable()
 const format = useFormat()
 const userPreferences = useUserPreferences().getPreferences()
@@ -758,6 +831,11 @@ const userPreferences = useUserPreferences().getPreferences()
 const isTransactionSelected = ref(false)
 const transactionId = computed(() => route.params.id as string)
 const loading = ref(true)
+const transactionData = ref<TransactionHistoryRecord | null>(null)
+const apiError = ref<string | null>(null)
+const allocationLoading = ref(true)
+const allocationError = ref<string | null>(null)
+const allocationData = ref<TransactionAllocationModel[]>([])
 const showDownloadModal = ref(false)
 const showPushBackDetail = ref(false)
 const selectedPushBackTransaction = ref<any>(null)
@@ -765,11 +843,13 @@ const showActivityLogDetail = ref(false)
 const selectedActivityLog = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
+const { transactionAllocationStatusCellBuilder } = useStatusBadge()
 
 const activeRepushTab = ref('repush_transaction_summary')
 const isRepushing = ref(false)
 const isVerifying = ref(false)
 const isVoidRequesting = ref(false)
+
 
 const repushTabs = [
   {
@@ -874,35 +954,24 @@ const summary = ref<RepushSummary>({
   
 })
 
-// Customer Details Data
-interface CustomerDetail {
-  id: string
-  customerName: string
-  customerCode: string
-  billNumber: string
-  amount: number
-  currency: string
-  [key: string]: any
-}
-
-const customerDetails: CustomerDetail[] = [
-  {
-    id: '1',
-    customerName: 'So Sorphorn',
-    customerCode: 'CUST-001',
-    billNumber: 'INV-000001A',
-    amount: 150,
-    currency: 'USD',
-  },
-   {
-    id: '2',
-    customerName: 'So Sorphorn',
-    customerCode: 'CUST-002',
-    billNumber: 'INV-000002B',
-    amount: 150,
-    currency: 'USD',
-  },
-]
+// Customer Details Data - computed from transaction data or fallback to mock data
+const customerDetails = computed(() => {
+   try {
+    if (transactionData.value && transactionData.value.extData) {
+      const parsed = JSON.parse(transactionData.value.extData)
+      return (parsed.customers || []).map((c: any) => ({
+        customerName: c.customer_name || '-',
+        customerCode: c.customer_code || '-',
+        billNumber: c.bill_no || '-',
+        currency: c.currency || '-', // If available in API
+        amount: c.amount || 0
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to parse extData:', error)
+  }
+  return []
+})
 
 const customerColumns = [
   {
@@ -915,35 +984,28 @@ const customerColumns = [
   },
   {
     id: 'customerName',
-    header: ({ column }: any) => createSortableHeader(column, 'Name', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.customer'), 'left'),
     accessorKey: 'customerName',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerName),
     enableSorting: true,
   },
   {
     id: 'customerCode',
-    header: ({ column }: any) => createSortableHeader(column, 'Code', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.customerCode'), 'left'),
     accessorKey: 'customerCode',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerCode),
     enableSorting: true,
   },
   {
     id: 'billNumber',
-    header: ({ column }: any) => createSortableHeader(column, 'Bill No', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.billNo'), 'left'),
     accessorKey: 'billNumber',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
     enableSorting: true,
   },
   {
-    id: 'currency',
-    header: () => h('div', { class: 'text-left' }, 'Currency'),
-    accessorKey: 'currency',
-    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
-    enableSorting: true,
-  },
-  {
     id: 'amount',
-    header: ({ column }: any) => createSortableHeader(column, 'Amount', 'right'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.amount'), 'right'),
     accessorKey: 'amount',
     cell: ({ row }: any) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
@@ -951,43 +1013,69 @@ const customerColumns = [
   }
 ] as any[]
 
-// Transaction Allocation Data
-interface TransactionAllocateData {
-  id: string
-  customer: string
-  transactionAmount: number
-  billerName: string
-  amount: number
-  outstandingAmount: number
-  currency: string
-  date: string
-  [key: string]: any
-}
 
-const transactionAllocateData: TransactionAllocateData[] = [
-  {
-    id: '1',
-    customer: 'So Sorphorn',
-    transactionAmount: 150.0,
-    billerName: 'Charge Station A',
-    amount: 75.0,
-    outstandingAmount: 75.0,
-    currency: 'USD',
-    date: '2025-07-15T10:30:00+07:00',
-    status: 'pending',
-  },
-  {
-    id: '2',
-    customer: 'So Sorphorn',
-    transactionAmount: 150.0,
-    billerName: 'Oone Go EV Charger',
-    amount: 75.0,
-    outstandingAmount: 75.0,
-    currency: 'USD',
-    date: '2025-07-15T12:00:00+07:00',
-    status: 'pending',
-  },
-]
+
+// Transaction Allocation Data - computed from API data or fallback to mock data
+const transactionAllocateData = computed(() => {
+  // If we have allocation data from the API, use it
+  if (allocationData.value && allocationData.value.length > 0) {
+    return allocationData.value.map((allocation: TransactionAllocationModel) => ({
+      id: allocation.id || '-',
+      customer: allocation.customer || '-',
+      transactionAmount: allocation.amount || 0,
+      billerName: allocation.billerName || '-',
+      amount: allocation.amount || 0,
+      outstandingAmount: allocation.outstandingAmount || 0,
+      currency: allocation.currency || '-',
+      date: allocation.date || new Date().toISOString(),
+      status: allocation.outstandingAmount === 0 ? TransactionAllocationStatus.Completed : TransactionAllocationStatus.Pending,
+    }))
+  }
+
+
+  
+  // If we have transaction data but no allocation data (and not loading), show empty state
+  if (transactionData.value && !allocationLoading.value && !allocationError.value) {
+    return []
+  }
+  
+  // If we're still loading or have an error, return empty array (shimmer will show)
+  if (allocationLoading.value || allocationError.value) {
+    return []
+  }
+  
+  // Fallback mock data for development/testing
+  if (!transactionData.value) {
+    return []
+  }
+  
+  const txData = transactionData.value
+  
+  return [
+    {
+      id: '1',
+      customer: 'Customer from Transaction',
+      transactionAmount: txData.transactionAmount || 150.0,
+      billerName: txData.biller || txData.billerNameKh || 'Charge Station A',
+      amount: (txData.transactionAmount || 150.0) / 2,
+      outstandingAmount: (txData.transactionAmount || 150.0) / 2,
+      currency: txData.currency || txData.currencyId || 'USD',
+      date: txData.date || '2025-07-15T10:30:00+07:00',
+      status: txData.status || 'pending',
+    },
+    {
+      id: '2',
+      customer: 'Customer from Transaction',
+      transactionAmount: txData.transactionAmount || 150.0,
+      billerName: 'Secondary Biller',
+      amount: (txData.transactionAmount || 150.0) / 2,
+      outstandingAmount: (txData.transactionAmount || 150.0) / 2,
+      currency: txData.currency || txData.currencyId || 'USD',
+      date: txData.date || '2025-07-15T12:00:00+07:00',
+      status: txData.status || 'pending',
+    },
+  ]
+})
 
 const transactionAllocateColumns = [
   {
@@ -1000,7 +1088,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'date',
-    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.date'), 'left'),
     accessorKey: 'date',
     cell: ({ row }: any) => {
       try {
@@ -1021,7 +1109,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'customer',
-    header: ({ column }: any) => createSortableHeader(column, 'Customer', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.customer'), 'left'),
     accessorKey: 'customer',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customer),
     size: 180,
@@ -1030,7 +1118,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'billerName',
-    header: ({ column }: any) => createSortableHeader(column, 'Allocation Party', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.allocation_party'), 'left'),
     accessorKey: 'billerName',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billerName),
     size: 160,
@@ -1039,21 +1127,15 @@ const transactionAllocateColumns = [
   },
   {
     id: 'status',
-    header: ({column}: any) => h('div', { class: 'text-left' }, 'Status'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.status.status'), 'left'),
     accessorKey: 'status',
     enableSorting: false,
-    cell: ({ row }: any) =>
-      h(StatusBadge, {
-        class: 'text-left',
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
+    cell: ({ row }: any) => transactionAllocationStatusCellBuilder(row.original.status, true),
     size: 120,
   },
   {
     id: 'currency',
-    header: () => h('div', { class: 'text-left' }, 'Currency'),
+    header: () => h('div', { class: 'text-left' }, t('pages.transaction_allocation.currency')),
     accessorKey: 'currency',
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.currency),
     size: 80,
@@ -1062,7 +1144,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'amount',
-    header: ({ column }: any) => createSortableHeader(column, 'Received Amount', 'right'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.amount'), 'right'),
     accessorKey: 'amount',
     cell: ({ row }: any) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
@@ -1072,7 +1154,7 @@ const transactionAllocateColumns = [
   },
   {
     id: 'outstandingAmount',
-    header: ({ column }: any) => createSortableHeader(column, 'Outstanding Amount', 'right'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_allocation.outstanding_amount'), 'right'),
     accessorKey: 'outstandingAmount',
     cell: ({ row }: any) =>
       h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.outstandingAmount)),
@@ -1313,103 +1395,117 @@ const repushDetailsColumns = [
   },
 ]
 
-// Transaction data
-const transactionData = {
-  transactionNo: transactionId.value || 'TXN-20250729001',
-  date: '2025-07-15T12:00:00+07:00',
-  transactionType: 'Wallet Payment',
-  currency: 'USD',
-  status: 'success',
-  transactionAmount: 150,
-  settlementAmount: 147, // 150 - 3 fee
-  customerFee: 0.0,
-  supplierFee: 3.0,
-  bankReference: 'AC0123243253',
-  collectionBank: 'ACLEDA',
-  settlementBank: 'ACLEDA',
-  accountNumber: 'BANK-12345678',
-  biller: 'Charge Station A',
-  transactionReference: 'DC0123243253',
-  settlementStatus: 'success',
-}
+// Transaction data computed from API response
+const computedTransactionData = computed(() => {
+  if (!transactionData.value) {
+    return {
+      transactionNo: '',
+      date: '',
+      transactionType: '',
+      currency: '',
+      status: '',
+      transactionAmount: 0,
+      settlementAmount: 0,
+      customerFee: 0,
+      supplierFee: 0,
+      bankReference: '',
+      collectionBank: '',
+      settlementBank: '',
+      settlementBankLogo: '',
+      accountNumber: '',
+      biller: '',
+      transactionReference: '',
+      settlementStatus: '',
+      extData: '',
+    }
+  }
 
-// Helper function to mask account number
-const maskAccountNumber = (accountNumber: string): string => {
-  if (!accountNumber || accountNumber.length < 4) return accountNumber
-  const lastFour = accountNumber.slice(-4)
-  const maskedPart = '*'.repeat(accountNumber.length - 4)
-  return `${maskedPart}${lastFour}`
-}
+  const data = transactionData.value
+  
+  return {
+    transactionNo: data.transactionNo || transactionId.value,
+    date: data.date || '',
+    transactionType: data.transactionType || '',
+    currency: data.currency || data.currencyId || '',
+    status: data.status || '',
+    transactionAmount: data.totalAmount || 0,
+    settlementAmount: parseFloat(data.settlementAmount || '0'),
+    customerFee: data.customerFee || 0,
+    supplierFee: data.billerFee || 0,
+    bankReference: data.bankReference || '',
+    collectionBank: data.collectionBank || '',
+    settlementBank: data.settlementBank || '',
+    settlementBankLogo: data.settlementBankLogo || '',
+    accountNumber: data.walletAccountDisplay || data.walletAccount || '',
+    biller: data.biller || data.billerNameKh || '',
+    transactionReference: data.bankReference || '',
+    settlementStatus: data.status || '',
+    extData: data.extData || '',
+  }
+})
+
 
 // Transaction overview fields
-const transactionOverviewFields = computed(() => [
-  // {
-  //   label: 'Transaction No',
-  //   value: transactionData.transactionNo,
-  //   type: 'code',
-  //   copyable: true,
-  //   rawValue: transactionData.transactionNo,
-  // },
-  {
-    label: 'Status',
-    value: transactionData.status,
-    type: 'status',
-    status: transactionData.status,
-  },
-  {
-    label: 'Transaction Amount',
-    value: `${useCurrency().formatAmount(transactionData.transactionAmount)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Transaction Type',
-    value: transactionData.transactionType,
-    type: 'badge',
-  },
-  {
-    label: 'Date',
-    value: format.formatDateTime(transactionData.date, {
-      dateStyle: userPreferences?.dateFormat || 'medium',
-      timeStyle: userPreferences?.timeFormat || 'short',
-    }),
-    type: 'text',
-  },
-  {
-    label: 'Customer Fee',
-    value: `${useCurrency().formatAmount(transactionData.customerFee)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Supplier Fee',
-    value: `${useCurrency().formatAmount(transactionData.supplierFee)} ${transactionData.currency}`,
-    type: 'amount',
-  },
-  {
-    label: 'Biller Name',
-    value: `${transactionData.biller}`,
-    type: 'text',
-  },
-  {
-    label: 'Bank Name',
-    value: `${transactionData.collectionBank}`,
-    type: 'text',
-  },
-  {
-    label: 'Bank Reference',
-    value: `${transactionData.transactionReference}`,
-    type: 'code',
-    copyable: true,
-    rawValue: transactionData.transactionReference,
-  }
-])
+const transactionOverviewFields = computed(() => {
+  const txData = computedTransactionData.value
+  
+  return [
+    {
+      label: t('pages.transaction.status'),
+      value: txData.status,
+      type: 'status',
+      status: txData.status,
+    },
+    {
+      label: t('pages.transaction.amount'),
+      value: `${useCurrency().formatAmount(txData.transactionAmount)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: t('pages.transaction.transaction_type'),
+      value: txData.transactionType,
+      type: 'badge',
+    },
+    {
+      label: t('pages.transaction.created_date'),
+      value: txData.date ? format.formatDateTime(txData.date, {
+        dateStyle: userPreferences?.dateFormat || 'medium',
+        timeStyle: userPreferences?.timeFormat || 'short',
+      }) : '',
+      type: 'text',
+    },
+    {
+      label: t('pages.transaction.customer_fee'),
+      value: `${useCurrency().formatAmount(txData.customerFee)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: t('pages.transaction.supplier_fee'),
+      value: `${useCurrency().formatAmount(txData.supplierFee)} ${txData.currency}`,
+      type: 'amount',
+    },
+    {
+      label: t('pages.transaction.sub_biller'),
+      value: txData.biller,
+      type: 'text',
+    },
+    {
+      label: t('pages.transaction.settlement_bank'),
+      value: txData.settlementBank,
+      type: 'text',
+    },
+    {
+      label: t('pages.transaction.bank_ref'),
+      value: txData.transactionReference,
+      type: 'code',
+      copyable: true,
+      rawValue: txData.transactionReference,
+    }
+  ]
+})
 
 // Show all fields in a single column
 const allFields = computed(() => transactionOverviewFields.value)
-
-// Download functions
-const download = async () => {
-  showDownloadModal.value = true
-}
 
 // Push Back Transaction Detail function
 const onRowSelect = (row: any) => {
@@ -1472,12 +1568,6 @@ const getSelectedActivityLogDetail = () => {
     payload: data.metaData?.responsePayload || {},
     statusCode: data.metaData?.statusCode || null
   }
-}
-
-// Helper function to determine if the selected data is repush detail (from activity logs)
-const isRepushDetailData = () => {
-  // This function is no longer needed since we're using separate slidevers
-  return false
 }
 
 
@@ -1684,9 +1774,56 @@ const openDirectDebitDetail = () => {
   })
 }
 
-onMounted(() => {
-  loading.value = false
+// Helper function to mask account number
+const maskAccountNumber = (accountNumber: string): string => {
+  if (!accountNumber || accountNumber.length < 4) return accountNumber
+  const lastFour = accountNumber.slice(-4)
+  const maskedPart = '*'.repeat(accountNumber.length - 4)
+  return `${maskedPart}${lastFour}`
+}
+
+// Fetch transaction data
+const fetchTransactionData = async () => {
+  loading.value = true
+  apiError.value = null
+  
+  try {
+    const result = await getTransactionById(transactionId.value)
+    transactionData.value = result
+   
+  } catch (error) {
+    console.error('Failed to fetch transaction data:', error)
+    apiError.value = t('pages.transaction_detail.error_transaction_detail')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Fetch transaction allocation data
+const fetchTransactionAllocation = async () => {
+  allocationLoading.value = true
+  allocationError.value = null
+  
+  try {
+    const result = await getTransactionAllocationList(transactionId.value)
+    allocationData.value = result.allocations || []
+
+    console.log('Transaction allocation data fetched:', allocationData.value)
+  } catch (error) {
+    console.error('Failed to fetch transaction allocation data:', error)
+    allocationError.value = t('pages.transaction_detail.error_allocation')
+    allocationData.value = []
+  } finally {
+    allocationLoading.value = false
+  }
+}
+
+
+onMounted(async () => {
+  await fetchTransactionData()
+  await fetchTransactionAllocation()
 })
+
 </script>
 
 <style scoped>

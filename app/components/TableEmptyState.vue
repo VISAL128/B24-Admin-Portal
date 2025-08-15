@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center py-50 text-gray-400 w-full">
+  <div class="flex flex-col items-center justify-center text-gray-400 w-full">
     <div class="mb-1">
       <!-- Show external/local SVG if provided -->
       <img
@@ -7,7 +7,7 @@
         :src="iconUrl"
         alt="Empty icon"
         class="w-14 h-14 object-contain"
-      />
+      >
 
       <!-- Show UIcon if no iconUrl -->
       <UIcon

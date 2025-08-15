@@ -179,7 +179,7 @@ const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: st
 }
 
 // Function to fetch bank data from API
-const fetchBankData = async () => {fetchBankData
+const fetchBankData = async () => {
   try {
     const response = await getTBanks()
     if (response.code === 'SUCCESS' && response.data) {
@@ -284,9 +284,9 @@ const notification = useNotification()
 
 const TABLE_ID = 'transaction-history-table'
 
-// Restore navigation helper for details page
-const navigateToDetails = (rowId: string) => {
-  router.push(`/transactions/detail/${rowId}`)
+// Navigation to Transaction Detail Page
+const navigateToDetails = (transactionId: string) => {
+  router.push(`/transactions/detail/${transactionId}`)
 }
 
 // Build status filter options from TransactionStatus enum
@@ -557,9 +557,9 @@ const translations = {
 //   }
 // }
 
-const handleViewDetails = (record: TransactionHistoryRecord) => {
+const handleViewDetails = (transaction: TransactionHistoryRecord) => {
   // Navigate to transaction details page
-  navigateToDetails(record.id)
+  navigateToDetails(transaction.id)
 }
 const handleFilterChange = (columnId: string, value: string) => {
   console.log('Filter changed:', columnId, value)
@@ -663,19 +663,6 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     filterType: 'status',
     filterOptions: transactionStatusFilterOptions.value,
   },
-  // {
-  //   id: 'status',
-  //   header: () => t('pages.transaction.status'),
-  //   cell: ({ row }) =>
-  //     h(StatusBadge, {
-  //       status: row.original.status,
-  //       variant: 'subtle',
-  //       size: 'sm',
-  //     }),
-  //   enableColumnFilter: true,
-  //   filterType: 'status',
-  //   filterOptions: transactionStatusFilterOptions.value,
-  // },
   {
     id: 'currency',
     accessorKey: 'currency',

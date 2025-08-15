@@ -2,6 +2,7 @@ import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
   Bank,
   BankAccount,
+  BankDetailsResponse,
   BankListResponse,
 } from '~/models/bank'
 import type { ApiResponse, QueryParams } from '~/models/baseModel'
@@ -128,9 +129,9 @@ export const useBankApi = () => {
   /**
    * Get a specific bank by ID
    */
-  const getBankById = async (id: string): Promise<Bank | null> => {
-    const response = await execute<Bank>(() =>
-      $fetch<ApiResponse<Bank>>(`/api/pgw-module/bank/${id}`, {
+  const getBankById = async (id: string): Promise<BankDetailsResponse | null> => {
+    const response = await execute<BankDetailsResponse>(() =>
+      $fetch<ApiResponse<BankDetailsResponse>>(`/api/pgw-module/bank/${id}`, {
         method: 'GET',
       })
     )

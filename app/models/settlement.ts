@@ -115,6 +115,7 @@ export interface SettlementHistoryQuery {
   page_size?: number
   supplier_id: string
   banks: string[]
+  currencies?: string[]
 }
 
 export interface SettlementHistoryDetail {

@@ -40,6 +40,7 @@
   "failed_to_create_fee": "បរាជ័យក្នុងការបង្កើតថ្លៃសេវា",
   "code_required": "ត្រូវការកូដ",
   "name_required": "ត្រូវការឈ្មោះ",
+  "charge_type": "ប្រភេទថ្លៃសេវា",
   "new": "បន្ថែម",
   "edit": "កែប្រែ",
   "delete": "លុប",
@@ -48,7 +49,20 @@
   "search": "ស្វែងរក",
   "fixed_fee": "ថេរ",
   "percentage_fee": "ភាគរយ",
+  "supplier_sharing_fee":"ថ្លៃសេវាចែករំលែកអ្នកផ្គត់ផ្គង់",
   "fee_sharing_configuration": "កំណត់ថ្លៃសេវាចែករំលែក",
+  "set_fee_configuration_title": "កំណត់ការកំណត់ថ្លៃសេវា",
+  "set_fee_configuration_description": "កំណត់ថ្លៃសេវាសម្រាប់ដំណើរការប្រតិបត្តិការ",
+  "preview_fee_calculation_amount": "ការគណនាថ្លៃសេវាសម្រាប់ចំនួនប្រតិបត្តិការ",
+  "preview_fee_calculation_tip": "មិនមានការកំណត់ថ្លៃសេវាអ្វីទេ។ បន្ថែមជួរដេកដើម្បីមើលការពិនិត្យគណនាថ្លៃសេវា។",
+  "preview_fee_calculation_no_supplier": "មិនមានអ្នកផ្គត់ផ្គង់ចែករំលែកថ្លៃសេវាអ្វីទេ។",
+  "transaction_fee":"ថ្លៃប្រតិបត្តិការ",
+  "distribution_fee":"ថ្លៃចែកចាយ",
+  "add_fee_sharing_supplier_title": "បន្ថែមអ្នកផ្គត់ផ្គង់ចែករំលែកថ្លៃសេវា",
+  "add_fee_sharing_supplier_description": "ជ្រើសរើសអ្នកផ្គត់ផ្គង់ដើម្បីចែករំលែកថ្លៃប្រតិបត្តិការជាមួយក្នុងការកំណត់ថ្លៃសេវា។",
+  "remove_supplier_sharing":"តើអ្នកប្រាកដជាចង់លុប ({name}) ទេ? ប្រតិបត្តិការនេះមិនអាចត្រឡប់មកវិញបាន។",
+
+
   "start_amount": "ចំនួនចាប់ផ្តើម",
   "end_amount": "ចំនួនបញ្ចប់",
   "fee_amount": "ចំនួនថ្លៃសេវា",
@@ -796,7 +810,8 @@
         "totalCustomer": "ចំនួនអតិថិជន",
         "subSupplier": "ម្ចាស់អាជីវកម្មរង",
         "transactionAmount": "ចំនួនទឹកប្រាក់",
-        "walletAccountDisplay": "កាបូប"
+        "walletAccountDisplay": "កាបូប",
+        "transactionNo": "លេខប្រតិបត្តិការ"
       }
     },
     "sub-billers-table": {
@@ -969,7 +984,40 @@
     "install_instruction": "ដំណើរការ: npm install lottie-web"
   },
   "pages": {
+    "transaction_detail": {
+      "customer": "អតិថិជន",
+      "customerCode": "លេខកូដអតិថិជន",
+      "currency": "រូបិយប័ណ្ណ",
+      "billNo": "លេខវិក្កយបត្រ",
+      "amount": "ចំនួនទឹកប្រាក់",
+      "title": "ព័ត៌មានលម្អិតប្រតិបត្តិការ",
+      "settlement_bank": "ធនាគារទូទាត់",
+      "bank_name": "ឈ្មោះធនាគារ",
+      "account_number": "លេខគណនី",
+      "settlement_amount": "ចំនួនទឹកប្រាក់ទូទាត់",
+      "error_transaction_detail": "បរាជ័យក្នុងការទាញយកព័ត៌មានលម្អិតប្រតិបត្តិការ",
+      "error_allocation": "បរាជ័យក្នុងការទាញយកការបែងចែកប្រតិបត្តិការ"
+    },
+    "transaction_allocation": {
+      "title": "ការបែងចែកប្រតិបត្តិការ",
+      "id": "លេខសម្គាល់",
+      "customer": "អតិថិជន",
+      "transaction_amount": "ចំនួនប្រតិបត្តិការ",
+      "allocation_party": "ភាគីពាក់ព័ន្ធ",
+      "amount": "ចំនួនទឹកប្រាក់ទទួលបាន",
+      "outstanding_amount": "ចំនួនទឹកប្រាក់ត្រូវទូទាត់",
+      "currency": "រូបិយប័ណ្ណ",
+      "date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "status": {
+        "status": "ស្ថានភាព",
+        "complete": "បញ្ចប់",
+        "pending": "កំពុងដំណើរការ"
+      }
+    },
     "transaction": {
+      "supplier_fee": "កម្រៃសេវាអ្នកចេញវិក្កយបត្រ",
+      "customer_fee": "កម្រៃសេវាអតិថិជន",
+      "amount": "ចំនួនទឹកប្រាក់សរុប",
       "title": "ប្រតិបត្តិការ",
       "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
       "total_customer": "ចំនួនអតិថិជន",
@@ -998,6 +1046,10 @@
         "total_customer": "ចំនួនអតិថិជនសរុប",
         "average_amount": "ចំនួនទឹកប្រាក់មធ្យម"
       }
+    },
+    "generate_settlement": {
+      "title": "បង្កើតការទូទាត់",
+      "description": "បង្កើតការទូទាត់ថ្មី"
     }
   },
   "banks": {
@@ -1077,5 +1129,6 @@
   "customer_name": "ឈ្មោះអតិថិជន",
   "deactivate": "បិទដំណើរការ",
   "deactivate_subbiller_confirmation": "តើអ្នកប្រាកដជាចង់បិទដំណើរការម្ចាស់អាជីវកម្មរងនេះទេ?",
-  "logo_recommendation": "ណែនាំ"
+  "logo_recommendation": "ណែនាំ",
+  "updated_sub_biller_success": "បានកែប្រែម្ចាស់អាជីវកម្មរងដោយជោគជ័យ"
 }

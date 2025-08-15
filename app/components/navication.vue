@@ -172,7 +172,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
           label: t('settings.fee_config'),
           // icon: 'i-material-symbols-light-switch-access-shortcut',
           size: 'lg',
-          to: '/settings/fee-config',
+          to: '/settings/fee-configuration',
           active: activeStates.value.settingsFeeConfig,
         },
         // {

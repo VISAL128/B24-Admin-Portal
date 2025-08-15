@@ -176,6 +176,7 @@
                 :fetch-data-fn="fetchTransactionHistory"
                 show-row-number
                 show-date-filter
+                date-format="dd/MM/yyyy"
                 enabled-auto-refresh
                 @row-click="handleViewDetails"
               />
@@ -766,13 +767,18 @@ const openEditModal = () => {
   isShowEditModal.value = true
 }
 
-// example: inject your real uploader here
+// replace the whole function with this
 const uploadImageAndGetUrl = async (file: File): Promise<string> => {
-  // e.g. const res = await mediaApi.upload(file)
-  // return res.publicUrl
-  return new Promise((resolve) =>
-    setTimeout(() => resolve('https://cdn.example.com/logo.png'), 600)
-  )
+  const res = await uploadFile(file) // POST multipart
+  if (!res || res.code !== 'SUCCESS') {
+    // show the backend’s message (Khmer if you like)
+    notification.showError({
+      title: t('failed'),
+      description: res?.message || t('failed_to_upload_file'),
+    })
+    throw new Error(res?.message || 'Upload failed')
+  }
+  return res.data?.url || ''
 }
 
 const isShowDeactivateConfirmModal = ref(false)
@@ -800,12 +806,22 @@ const confirmDeactivateSubBiller = async () => {
     isDeactivating.value = false
   }
 }
+
+function safeParseJson<T extends object = Record<string, unknown>>(s?: string | null): T {
+  try {
+    return s ? (JSON.parse(s) as T) : ({} as T)
+  } catch {
+    return {} as T
+  }
+}
+
 const handleSaveEdit = async () => {
   if (!validateEditForm()) return
   try {
     isSavingEdit.value = true
     const id = transactionId.value
     const current = supplierData.value
+    const currExt = safeParseJson(current?.extData)
 
     // 1) Decide logoUrl action
     let logoUrl: string | null = null
@@ -815,6 +831,13 @@ const handleSaveEdit = async () => {
       logoUrl = '' // explicit clear
     } // else: null means keep existing
 
+    if (logoUrl !== null) {
+      if (logoUrl === '') {
+        delete currExt.logo
+      } else {
+        currExt.logo = logoUrl
+      }
+    }
     // 2) Build the request from existing Supplier to avoid losing fields
     const request: Supplier = {
       ...(current ?? ({} as Supplier)),
@@ -825,7 +848,7 @@ const handleSaveEdit = async () => {
       email: editForm.value.email || null,
       tinNumber: editForm.value.tinNumber || null,
       address: editForm.value.address || null,
-      // safely update extData with possible new/cleared logo
+      extData: JSON.stringify(currExt), // ✅ persist logo in extData
     }
 
     // 3) ✅ Update via API
@@ -840,8 +863,8 @@ const handleSaveEdit = async () => {
 
     isShowEditModal.value = false
     notification.showSuccess({
-      title: t('saved'),
-      description: t('sub_biller_updated_successfully'),
+      title: t('success'),
+      description: t('updated_sub_biller_success'),
     })
   } catch (err) {
     console.error('Save sub-biller failed:', err)
@@ -912,8 +935,13 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     id: 'createdDate',
     accessorKey: 'created_date',
     headerText: t('pages.transaction.created_date'),
-    cell: ({ row }) => useFormat().formatDateTime(row.original.date),
+    cell: ({ row }) => row.original.date,
     enableSorting: true,
+  },
+  {
+    id: 'transactionNo',
+    accessorKey: 'transactionNo',
+    headerText: t('wallet_page.transaction_no'),
   },
   {
     id: 'bankReference',
@@ -923,51 +951,16 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     enableSorting: true,
   },
   {
-    id: 'collectionBank',
-    accessorKey: 'collection_bank',
-    headerText: t('collection_bank'),
-    cell: ({ row }) => row.original.collectionBank || '-',
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'ABA', value: 'ABA' },
-      { label: 'ACLEDA', value: 'ACLEDA' },
-      { label: 'AMK', value: 'AMK' },
-    ],
-  },
-  {
-    id: 'settlementBank',
-    accessorKey: 'settlement_bank',
-    headerText: t('settlement_bank'),
-    cell: ({ row }) => row.original.settlementBank || '-',
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'ABA', value: 'ABA' },
-      { label: 'ACLEDA', value: 'ACLEDA' },
-      { label: 'AMK', value: 'AMK' },
-    ],
-  },
-  {
     id: 'walletAccountDisplay',
     accessorKey: 'wallet',
     headerText: t('wallet'),
     cell: ({ row }) => row.original.walletAccountDisplay || '-',
   },
   {
-    id: 'settlementType',
-    accessorKey: 'settlement_type',
-    headerText: t('settlement_type'),
-    cell: ({ row }) => row.original.settlementType || '-',
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: 'Auto', value: 'Auto' },
-      { label: 'Manual', value: 'Manual' },
-    ],
-  },
-  {
     id: 'transactionType',
     accessorKey: 'transaction_type',
     headerText: t('transaction_type'),
-    cell: ({ row }) => row.original.transactionType || '-',
+    cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
     enableSorting: true,
     enableColumnFilter: true,
     filterOptions: [
@@ -1029,8 +1022,13 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
   },
 ]
 
-const { getSubBillerById, getSubBillerWalletList, deactivateSubBiller, updateSubBiller } =
-  usePgwModuleApi()
+const {
+  getSubBillerById,
+  getSubBillerWalletList,
+  deactivateSubBiller,
+  updateSubBiller,
+  uploadFile,
+} = usePgwModuleApi()
 const { getTransactionList } = useTransactionApi()
 
 const supplierData = ref<Supplier | null>(null)
@@ -1210,7 +1208,7 @@ const supplierInitials = computed(() => {
 const supplierProfileImage = computed(() => {
   try {
     const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
-    return ext?.cpo?.cpo_logo || null // return null so v-if falls back to icon
+    return ext?.logo || null // return null so v-if falls back to icon
   } catch {
     return null
   }
@@ -1219,14 +1217,16 @@ const supplierProfileImage = computed(() => {
 const supplierBackgroundImage = computed(() => {
   try {
     const ext = supplierData.value?.extData ? JSON.parse(supplierData.value?.extData) : {}
-    return (
-      ext.cpo.cpo_logo ||
-      'https://t3.ftcdn.net/jpg/09/27/94/24/360_F_927942465_j6MgO2enbUJ3IHfr2hn8ZxGfY1Dshi8p.jpghttps://wallpapers.com/images/hd/profile-picture-background-10tprnkqwqif4lyv.jpg'
-    )
+    return ext.logo || 'https://i.pinimg.com/736x/3c/24/46/3c24462450c2a902bf7e18f3d9aada81.jpg'
   } catch {
     return 'https://i.pinimg.com/736x/3c/24/46/3c24462450c2a902bf7e18f3d9aada81.jpg'
   }
 })
+
+const getTransactionTypeKey = (value: string): string => {
+  const entry = Object.entries(TransactionType).find(([key, val]) => val === value)
+  return entry ? entry[0] : value
+}
 
 const fetchTransactionHistory = async (
   params?: QueryParams

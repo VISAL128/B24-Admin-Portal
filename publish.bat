@@ -1,4 +1,4 @@
-SET IMAGE_TAG=beta-1.0.15
+SET IMAGE_TAG=beta-1.0.16
 SET IMAGE_NAME=registry.bill24.io/b24/payment-portal
 
 @REM npm run build

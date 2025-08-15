@@ -1,6 +1,6 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { TransactionQueryParams } from '~/models/baseModel'
-import type { TransactionListResponse } from '~/models/transaction'
+import type { TransactionHistoryRecord, TransactionListResponse } from '~/models/transaction'
 import type { TransactionAllocationResponse } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 
@@ -33,7 +33,6 @@ export const useTransactionApi = () => {
     )
   }
 
-  
 
   /**
    * Get paginated transaction list from transaction API
@@ -66,14 +65,6 @@ export const useTransactionApi = () => {
       formattedQuery.Types = query.Types
     }
     
-    // Map date parameters for transaction API compatibility
-    // if (query?.start_date && !formattedQuery.fromDate) {
-    //   formattedQuery.fromDate = query.start_date
-    // }
-    
-    // if (query?.end_date && !formattedQuery.toDate) {
-    //   formattedQuery.toDate = query.end_date
-    // }
     
     console.log('Final formatted query for transaction API:', formattedQuery)
     
@@ -87,28 +78,24 @@ export const useTransactionApi = () => {
     return rep
   }
 
-
-
-
-  
-
   /**
    * Get transaction details by ID
    */
   const getTransactionById = async (id: string) => {
-    // return await executeV2(() =>
-    //   $fetch(`/api/pgw-module/transaction/${id}/v2`, {
-    //     method: 'GET',
-    //   })
-    // )
-  }
+      return await executeV2(() =>
+        $fetch<TransactionHistoryRecord>(`/api/pgw-module/transaction/${id}/v2`, {
+          method: 'GET',
+          onResponseError() {},
+        })
+      )
+    }
 
   /**
    * Get transaction allocation list
    */
   const getTransactionAllocationList = async (id: string) => {
     return await executeV2(() => 
-      $fetch<TransactionAllocationResponse>(`/api/transaction/${id}/allocations`)
+      $fetch<TransactionAllocationResponse>(`/api/pgw-module/transaction/${id}/allocations`)
     )
   }
 
