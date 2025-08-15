@@ -23,7 +23,6 @@ import { useToast } from '#imports'
 import { computed } from 'vue'
 import {
   exportToExcelWithUnicodeSupport,
-  exportToExcelStyled,
   exportToPDFWithUnicodeSupport,
 } from '~/composables/utils/exportUtils'
 
@@ -80,7 +79,6 @@ const exportToExcelHandler = async () => {
     const totalAmount = props.data.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0)
     const currentLocale = locale.value as 'km' | 'en'
     const periodText = `${props.exportOptions?.startDate} ${t('to')} ${props.exportOptions?.endDate}`
-    try {
       await exportToExcelWithUnicodeSupport(
         props.data,
         props.headers,
@@ -94,25 +92,12 @@ const exportToExcelHandler = async () => {
           currency: props.exportOptions?.currency ?? 'USD',
           totalAmount,
           period: periodText,
+          filter: props.exportOptions?.filter,
+          exportBy: props.exportOptions?.exportBy,
+          exportDate: props.exportOptions?.exportDate,
         }
       )
-    } catch (unicodeError) {
-      console.error('Unicode Excel export failed:', unicodeError)
-      await exportToExcelStyled(
-        props.data,
-        props.headers,
-        `${props.exportOptions?.fileName || 'export'}.xlsx`,
-        props.exportOptions?.title || '',
-        props.exportOptions?.subtitle || '',
-        {
-          currency: props.exportOptions?.currency,
-          totalAmount: props.exportOptions?.totalAmount,
-          locale: locale.value as 'km' | 'en',
-          t,
-        }
-      )
-    }
-    
+
     toast.add({
       title: t('export_successful'),
       description: t('exported_records_to_excel', { count: props.data.length }),
@@ -154,7 +139,9 @@ const exportToPDFHandler = async () => {
         totalAmount,
         locale: currentLocale,
         t,
-       filter: props.exportOptions?.filter,
+        filter: props.exportOptions?.filter,
+        exportBy: props.exportOptions?.exportBy,
+        exportDate: props.exportOptions?.exportDate,
       }
     )
 
