@@ -78,7 +78,7 @@ async function extractToken(event: H3Event): Promise<string | null> {
     if (!session?.accessToken) return null
 
     return session.accessToken
-  }catch (error) {
+  } catch (error) {
     console.error('❌ Error extracting token:', error)
     return null
   }
@@ -88,7 +88,7 @@ async function extractToken(event: H3Event): Promise<string | null> {
  * Extract user information from validated JWT payload
  */
 function extractUserFromPayload(payload: KeycloakJwtPayload): AuthenticatedUser {
-  const clientId = useRuntimeConfig().oidc?.providers?.keycloak?.clientId || 'b24-admin-portal'
+  const clientId = useRuntimeConfig().oidc?.providers?.keycloak?.clientId || 'b24-payment-portal'
 
   // Extract roles from realm_access and resource_access
   const realmRoles = payload.realm_access?.roles || []

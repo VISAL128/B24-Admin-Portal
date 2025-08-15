@@ -20,6 +20,12 @@ export default defineNuxtRouteMiddleware((to) => {
   // Don't redirect if already on profile error page
   if (isProfileErrorPage()) return
 
+  // // Check if redirect from auth callback, force to get profile
+  // console.log('to name: ', to.name)
+  // if (to.name === `/auth/${useRuntimeConfig().oidc.defaultProvider}/callback`) {
+  //   clearProfileData()
+  // }
+
   // Check if profile exists and is valid
   const profile = getValidatedProfile()
   if (!profile) {
