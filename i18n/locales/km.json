@@ -1026,6 +1026,10 @@
         "total_customer": "ចំនួនអតិថិជនសរុប",
         "average_amount": "ចំនួនទឹកប្រាក់មធ្យម"
       }
+    },
+    "generate_settlement": {
+      "title": "បង្កើតការទូទាត់",
+      "description": "បង្កើតការទូទាត់ថ្មី"
     }
   },
   "banks": {

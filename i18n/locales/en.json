@@ -1010,6 +1010,10 @@
         "total_customer": "Total Customers",
         "average_amount": "Average Amount"
       }
+    },
+    "generate_settlement": {
+      "title": "Generate Settlement",
+      "description": "Create a new settlement"
     }
   },
   "banks": {
