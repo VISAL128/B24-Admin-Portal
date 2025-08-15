@@ -192,6 +192,11 @@ const fetchSettlementForTable = async (
       status: params?.statuses || [],
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
       banks: [],
+      currencies: params?.filters
+        ? params.filters
+            .filter((filter) => filter.field === 'currency_id')
+            .map((filter) => filter.value as string)
+        : [],
     }
 
     const data = await getSettlementHistory(payload)

@@ -95,7 +95,7 @@ export const useTransactionApi = () => {
    */
   const getTransactionAllocationList = async (id: string) => {
     return await executeV2(() => 
-      $fetch<TransactionAllocationResponse>(`/api/transaction/${id}/allocations`)
+      $fetch<TransactionAllocationResponse>(`/api/pgw-module/transaction/${id}/allocations`)
     )
   }
 

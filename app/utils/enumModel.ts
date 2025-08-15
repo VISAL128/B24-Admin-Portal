@@ -126,5 +126,10 @@ export enum PeriodType {
   Custom = 4,
 }
 
+export enum TransactionAllocationStatus {
+  Completed = 'completed',
+  Pending = 'pending',
+}
+
 export { BankServiceStatus, Currency, FeeType, FilterOperator, FilterOperatorPgwModule, FilterType, PartyType, SettlementHistoryStatus, SettlementStatus, SortDirection, Status };
 

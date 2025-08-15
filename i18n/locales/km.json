@@ -964,7 +964,40 @@
     "install_instruction": "ដំណើរការ: npm install lottie-web"
   },
   "pages": {
+    "transaction_detail": {
+      "customer": "អតិថិជន",
+      "customerCode": "លេខកូដអតិថិជន",
+      "currency": "រូបិយប័ណ្ណ",
+      "billNo": "លេខវិក្កយបត្រ",
+      "amount": "ចំនួនទឹកប្រាក់",
+      "title": "ព័ត៌មានលម្អិតប្រតិបត្តិការ",
+      "settlement_bank": "ធនាគារទូទាត់",
+      "bank_name": "ឈ្មោះធនាគារ",
+      "account_number": "លេខគណនី",
+      "settlement_amount": "ចំនួនទឹកប្រាក់ទូទាត់",
+      "error_transaction_detail": "បរាជ័យក្នុងការទាញយកព័ត៌មានលម្អិតប្រតិបត្តិការ",
+      "error_allocation": "បរាជ័យក្នុងការទាញយកការបែងចែកប្រតិបត្តិការ"
+    },
+    "transaction_allocation": {
+      "title": "ការបែងចែកប្រតិបត្តិការ",
+      "id": "លេខសម្គាល់",
+      "customer": "អតិថិជន",
+      "transaction_amount": "ចំនួនប្រតិបត្តិការ",
+      "allocation_party": "ភាគីពាក់ព័ន្ធ",
+      "amount": "ចំនួនទឹកប្រាក់ទទួលបាន",
+      "outstanding_amount": "ចំនួនទឹកប្រាក់ត្រូវទូទាត់",
+      "currency": "រូបិយប័ណ្ណ",
+      "date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
+      "status": {
+        "status": "ស្ថានភាព",
+        "complete": "បញ្ចប់",
+        "pending": "កំពុងដំណើរការ"
+      }
+    },
     "transaction": {
+      "supplier_fee": "កម្រៃសេវាអ្នកចេញវិក្កយបត្រ",
+      "customer_fee": "កម្រៃសេវាអតិថិជន",
+      "amount": "ចំនួនទឹកប្រាក់សរុប",
       "title": "ប្រតិបត្តិការ",
       "created_date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
       "total_customer": "ចំនួនអតិថិជន",

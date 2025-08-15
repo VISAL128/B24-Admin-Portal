@@ -282,8 +282,18 @@
           </div>
         </div>
 
+        <!-- Summary Cards -->
+        <CardsSummaryCards
+          v-show="!tblFull"
+          :cards="summarys"
+          :is-loading="loadingBankInfo"
+          :skeleton-count="summarys.length"
+          class="p-3"
+        />
+
         <!-- Settlement History Table Content -->
         <ExTable
+          :key="`bank-settlements-${bankLoaded ? bank?.supplier_bank_service?.bank_id : 'loading'}`"
           :table-id="`bank-settlements`"
           :columns="settlementColumns"
           :fetch-data-fn="fetchSettlements"
@@ -293,6 +303,7 @@
           :search-tooltip="t('search_by_settler')"
           class="border-0 max-h-[800px] overflow-auto"
           @row-click="handleRowClick"
+          @data-changed="handleDataChanged"
           @fullscreen-toggle="(isFullScreen) => (tblFull = isFullScreen)"
         />
       </div>
@@ -333,15 +344,16 @@ import { getTranslatedStatusLabel, formatAmountV2 } from '~/utils/helper'
 import ExTable from '~/components/tables/ExTable.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import PageHeader from '~/components/PageHeader.vue'
+import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
 import appConfig from '~~/app.config'
 
 // Define settlement history status enum
-enum SettlementHistoryStatus {
-  PENDING = 'pending',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  SUCCESS = 'success',
-}
+// enum SettlementHistoryStatus {
+//   PENDING = 'pending',
+//   COMPLETED = 'completed',
+//   FAILED = 'failed',
+//   SUCCESS = 'success',
+// }
 
 definePageMeta({
   auth: true,
@@ -356,7 +368,7 @@ const route = useRoute()
 const router = useRouter()
 const { getBankById } = useBankApi()
 const { getSettlementHistory } = useSupplierApi()
-const { formatDateTime } = useFormat()
+const { formatDate, formatDateTime } = useFormat()
 const errorHandler = useErrorHandler()
 
 const bank = ref<BankDetailsResponse | null>(null)
@@ -364,8 +376,54 @@ const bankAccounts = ref<BankAccount[]>([])
 const loading = ref(false)
 const loadingBankInfo = ref(false)
 const tblFull = ref(false)
+const bankLoaded = ref(false)
+const dateRangeFilterDisplay = ref('')
+
+// Summary data for cards
+const summaryData = ref({
+  total_amount_khr: 0,
+  total_amount_usd: 0,
+  total_settled: 0,
+  success: 0,
+  failed: 0,
+})
 
 const supplierBankServiceId = computed(() => route.params.id as string)
+
+// Summary cards configuration
+const summarys = computed<SummaryCard[]>(() => [
+  {
+    key: 'total_amount',
+    title: t('settlement.total_amount'),
+    values: [
+      { value: summaryData.value.total_amount_khr, currency: 'KHR' },
+      { value: summaryData.value.total_amount_usd, currency: 'USD' },
+    ],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+  {
+    key: 'total_settled',
+    title: t('settlement.total_settled'),
+    values: [{ value: summaryData.value.total_settled }],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+  {
+    key: 'success',
+    title: t('settlement.success'),
+    values: [{ value: summaryData.value.success }],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+  {
+    key: 'failed',
+    title: t('settlement.failed'),
+    values: [{ value: summaryData.value.failed }],
+    filterLabel: '',
+    dateRange: dateRangeFilterDisplay.value,
+  },
+])
 
 // Settlement table columns configuration
 const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[] => [
@@ -378,12 +436,58 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
     cell: ({ row }) => formatDateTime(row.original.created_date),
   },
   {
+    id: 'created_by',
+    accessorKey: 'created_by',
+    header: t('table.settlement-history.columns.created_by'),
+    type: ColumnType.Text,
+    enableSorting: true,
+    cell: ({ row }) => row.original.created_by || '-',
+  },
+  {
     id: 'total_settled',
     accessorKey: 'total_settled',
     header: t('table.settlement-history.columns.total_settled'),
     type: ColumnType.Number,
     enableSorting: true,
-    cell: ({ row }) => row.original.total_settled?.toLocaleString() || '0',
+    cell: ({ row }) => {
+      const success = row.original.success
+      const failed = row.original.failed
+      const total = row.original.total_settled
+
+      const UBadge = resolveComponent('UBadge')
+      const Icon = resolveComponent('UIcon')
+
+      return h('div', { class: 'flex gap-2 items-center' }, [
+        h(
+          UBadge,
+          {
+            color: 'primary',
+            variant: 'subtle',
+            class: 'flex items-center gap-1',
+          },
+          () => [h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`)]
+        ),
+        // Success and Fail badges
+        h(
+          UBadge,
+          {
+            color: 'success',
+            variant: 'subtle',
+            class: 'flex items-center gap-1',
+          },
+          () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
+        ),
+        h(
+          UBadge,
+          {
+            color: 'error',
+            variant: 'subtle',
+            class: 'flex items-center gap-1',
+          },
+          () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, failed)]
+        ),
+      ])
+    },
   },
   {
     id: 'status',
@@ -391,6 +495,7 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
     header: t('table.settlement-history.columns.status'),
     type: ColumnType.Text,
     enableColumnFilter: true,
+    filterType: 'status',
     filterOptions: Object.values(SettlementHistoryStatus).map((status) => ({
       label: getTranslatedStatusLabel(status),
       value: status,
@@ -401,26 +506,7 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
         type: 'settlement',
       }),
   },
-  {
-    id: 'created_by',
-    accessorKey: 'created_by',
-    header: t('table.settlement-history.columns.created_by'),
-    type: ColumnType.Text,
-    enableSorting: true,
-    cell: ({ row }) => row.original.created_by || '-',
-  },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    // header: t('table.settlement-history.columns.currency_id'),
-    type: ColumnType.Text,
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('currency.usd'), value: 'USD' },
-      { label: t('currency.khr'), value: 'KHR' },
-    ],
-    cell: ({ row }) => row.original.currency_id,
-  },
+
   {
     id: 'total_amount',
     accessorKey: 'total_amount',
@@ -434,10 +520,36 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
     type: ColumnType.Amount,
     enableSorting: true,
   },
+  {
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    // header: t('table.settlement-history.columns.currency_id'),
+    type: ColumnType.Text,
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+    cell: ({ row }) => row.original.currency_id,
+  },
 ])
 
 const handleRowClick = (rowData: SettlementHistoryRecord) => {
   router.push(`/digital-wallet/settlement/details/${rowData.id}`)
+}
+
+// Handle data changes and update summary
+const handleDataChanged = (
+  result: TableFetchResult<SettlementHistoryRecord[]> & Record<string, unknown>
+) => {
+  // Update summary data with the result
+  summaryData.value = {
+    total_amount_khr: (result.sum_total_amount_khr as number) || 0,
+    total_amount_usd: (result.sum_total_amount_usd as number) || 0,
+    total_settled: (result.sum_total_settled as number) || 0,
+    success: (result.sum_success as number) || 0,
+    failed: (result.sum_failed as number) || 0,
+  }
 }
 
 // Fetch settlement data for the table
@@ -445,6 +557,20 @@ const fetchSettlements = async (
   params?: QueryParams
 ): Promise<(TableFetchResult<SettlementHistoryRecord[]> & Record<string, unknown>) | null> => {
   try {
+    // Update date range display
+    if (params?.start_date && params?.end_date) {
+      dateRangeFilterDisplay.value = `${formatDate(params.start_date)} - ${formatDate(params.end_date)}`
+    }
+
+    // Wait for bank data to be loaded before fetching settlements
+    if (!bankLoaded.value || !bank.value?.supplier_bank_service?.bank_id) {
+      return {
+        data: [],
+        total_record: 0,
+        total_page: 0,
+      }
+    }
+
     if (!params) {
       return {
         data: [],
@@ -461,9 +587,11 @@ const fetchSettlements = async (
       start_date: params.start_date || undefined,
       end_date: params.end_date || undefined,
       status: params.statuses || undefined,
-      banks: bank.value?.supplier_bank_service?.bank_id
-        ? [bank.value.supplier_bank_service.bank_id]
-        : [],
+      banks: [bank.value.supplier_bank_service.bank_id],
+      currencies:
+        params.filters
+          .filter((filter) => filter.field === 'currency_id')
+          .map((filter) => filter.value as string) || undefined,
     }
 
     const response = await getSettlementHistory(query)
@@ -502,6 +630,7 @@ const fetchBank = async () => {
   if (!supplierBankServiceId.value) return
 
   loadingBankInfo.value = true
+  bankLoaded.value = false
   try {
     const response = await getBankById(supplierBankServiceId.value)
     bank.value = response
@@ -509,6 +638,8 @@ const fetchBank = async () => {
     if (response?.accounts) {
       bankAccounts.value = response.accounts
     }
+    // Mark bank as loaded after successful fetch
+    bankLoaded.value = true
   } catch (error) {
     errorHandler.handleApiError(error)
     router.push('/organization/banks')
