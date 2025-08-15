@@ -24,7 +24,7 @@ export async function requestToPgwModuleApi(
     }
 
     const response = await fetch(url, options)
-    return handlePgwModuleApiResponse(response)
+    return await handlePgwModuleApiResponse(response)
   } catch (error) {
     console.error('Error fetching fee config :', error)
     throw createError({
@@ -34,7 +34,7 @@ export async function requestToPgwModuleApi(
   }
 }
 
-function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
+async function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
   console.log('PGW Module Api Response:', response)
   if (!response.ok) {
     throw createError({
@@ -42,5 +42,5 @@ function handlePgwModuleApiResponse(response: Response): Promise<unknown> {
       statusMessage: response.statusText,
     })
   }
-  return response.json()
+  return await response.json()
 }
