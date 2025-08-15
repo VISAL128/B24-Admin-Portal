@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ApiResponse } from '~/models/baseModel'
-import type { FeeModel, FeeModelRequest, SharingSupplier } from '~/models/settlement'
+import type { FeeModel, SharingSupplier } from '~/models/settlement'
 import { useApiExecutor } from './useApiExecutor'
+import type { FeeConfig} from '~/models/feeConfiguration'
+const toast = useToast()
 
 export const useFeeConfigApi = () => {
-  const { execute,executeV2 } = useApiExecutor()
+  const { executeV2 } = useApiExecutor()
   // 1. Get settlement history with pagination
   // const getListFeeConfig = (search: string) =>
   //   useFetch(`${baseUrl}/api/get-fee-config`, {
@@ -24,22 +27,31 @@ export const useFeeConfigApi = () => {
   //     },
   //   })
 
-  const createFeeConfig = async (payload: FeeModelRequest): Promise<FeeModel> => {
+  const createFeeConfig = async (payload: FeeModel): Promise<FeeModel> => {
     const rep = await executeV2(() =>
       $fetch<ApiResponse<FeeModel>>(`/api/fee/create-fee-config`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
-      // console.error('Failed to fetch fee config:', rep.message)
+      toast.add({
+        title: 'Error',
+        description: `Failed to create fee config: ${rep.message}`,
+        color: 'error'
+      })
       return null as any
     }
     return rep.data as FeeModel
   }
-  const updateFeeConfig = async (payload: FeeModelRequest): Promise<FeeModel> => {
+  
+  const updateFeeConfig = async (payload: FeeModel): Promise<FeeModel> => {
     const rep = await executeV2(() =>
       $fetch<ApiResponse<FeeModel>>(`/api/fee/update-fee-config`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch fee config:', rep.message)
+      toast.add({
+        title: 'Error',
+        description: `Failed to update fee config: ${rep.message}`,
+        color: 'error'
+      })
       return null as any
     }
     return rep.data as FeeModel
@@ -47,10 +59,14 @@ export const useFeeConfigApi = () => {
 
   const getListFeeConfig = async (payload: { search: string }): Promise<FeeModel[]> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeModel[]>>(`/api/fee/get-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<FeeModel[]>>(`/api/fee/get-fee-configv2`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch fee config:', rep.message)
+      toast.add({
+        title: 'Error',
+        description: `Failed to fetch fee config: ${rep.message}`,
+        color: 'error'
+      })
       return [] as FeeModel[]
     }
     return rep.data as FeeModel[]
@@ -61,10 +77,46 @@ export const useFeeConfigApi = () => {
       $fetch<ApiResponse<FeeModel>>(`/api/fee/find-fee-config`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch fee config by ID:', rep.message)
+      toast.add({
+        title: 'Error',
+        description: `Failed to fetch fee config by ID: ${rep.message}`,
+        color: 'error'
+      })
       return null as any
     }
     return rep.data
+  }
+
+
+  // New API Fee Config
+  const getSupplierFeeConfig = async (payload: { search: string }): Promise<FeeConfig[]> => {
+    const rep = await executeV2(() =>
+      $fetch<ApiResponse<FeeConfig[]>>(`/api/fee/get-fee-config`, { method: 'POST', body: payload })
+    )
+    if (rep.code !== 'SUCCESS') {
+      toast.add({
+        title: 'Error',
+        description: `Failed to fetch supplier fee config: ${rep.message}`,
+        color: 'error'
+      })
+      return [] as FeeConfig[]
+    }
+    return rep.data as FeeConfig[]
+  }
+
+  const saveSupplierFeeConfig = async (payload: FeeConfig[]): Promise<FeeConfig[]> => {
+    const rep = await executeV2(() =>
+      $fetch<ApiResponse<FeeConfig[]>>(`/api/fee/update-fee-config`, { method: 'POST', body: payload })
+    )
+    if (rep.code !== 'SUCCESS') {
+      toast.add({
+        title: 'Error',
+        description: `Failed to save supplier fee config: ${rep.message}`,
+        color: 'error'
+      })
+      return [] as FeeConfig[]
+    }
+    return rep.data as FeeConfig[]
   }
 
   const getAllSharingSupplier = async (): Promise<SharingSupplier[]> => {
@@ -72,10 +124,44 @@ export const useFeeConfigApi = () => {
       $fetch<ApiResponse<SharingSupplier[]>>(`/api/fee/get_sharing_supplier`, { method: 'GET' })
     )
     if (rep.code !== 'SUCCESS') {
-      console.error('Failed to fetch sharing supplier:', rep.message)
+      toast.add({
+        title: 'Error',
+        description: `Failed to fetch sharing suppliers: ${rep.message}`,
+        color: 'error'
+      })
       return null as any
     }
     return rep.data as SharingSupplier[]
+  }
+
+  const addSharingSupplier = async  (payload: SharingSupplier): Promise<SharingSupplier> => {
+    const rep = await executeV2(() =>
+      $fetch<ApiResponse<SharingSupplier>>(`/api/fee/add_sharing_supplier`, { method: 'POST', body: payload })
+    )
+    if (rep.code !== 'SUCCESS') {
+      toast.add({
+        title: 'Error',
+        description: `Failed to add sharing supplier: ${rep.message}`,
+        color: 'error'
+      })
+      return null as any
+    }
+    return rep.data as SharingSupplier
+  }
+
+  const deleteSharingSupplier = async  (payload: SharingSupplier): Promise<SharingSupplier> => {
+    const rep = await executeV2(() =>
+      $fetch<ApiResponse<SharingSupplier>>(`/api/fee/delete_sharing_supplier`, { method: 'POST', body: payload })
+    )
+    if (rep.code !== 'SUCCESS') {
+      toast.add({
+        title: 'Error',
+        description: `Failed to delete sharing supplier: ${rep.message}`,
+        color: 'error'
+      })
+      return null as any
+    }
+    return rep.data as SharingSupplier
   }
 
   return {
@@ -83,6 +169,11 @@ export const useFeeConfigApi = () => {
     findFeeConfigById,
     createFeeConfig,
     updateFeeConfig,
+
     getAllSharingSupplier,
+    saveSupplierFeeConfig,
+    getSupplierFeeConfig,
+    addSharingSupplier,
+    deleteSharingSupplier
   }
 }

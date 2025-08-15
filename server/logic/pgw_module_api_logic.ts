@@ -29,8 +29,8 @@ import { mapQueryParamsToPgwModule, serializePgwModuleParams } from '../utils/qu
 //     return handlePgwModuleApiResponse<T>(response)
 //   } catch (error) {
 //     console.error('Error fetching fee config :', error)
-//     const statusCode = error && typeof error === 'object' && 'statusCode' in error 
-//       ? (error as { statusCode: number }).statusCode 
+//     const statusCode = error && typeof error === 'object' && 'statusCode' in error
+//       ? (error as { statusCode: number }).statusCode
 //       : 500
 //     throw createError({
 //       statusCode,
@@ -38,6 +38,54 @@ import { mapQueryParamsToPgwModule, serializePgwModuleParams } from '../utils/qu
 //     })
 //   }
 // }
+
+const isFormData = (v: unknown): v is FormData =>
+  typeof v === 'object' && v !== null && (v as any)[Symbol.toStringTag] === 'FormData'
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && v.constructor === Object
+const isTypedArrayOrBuffer = (v: unknown): v is ArrayBuffer | Uint8Array | Buffer =>
+  v instanceof ArrayBuffer ||
+  ArrayBuffer.isView(v) ||
+  (typeof Buffer !== 'undefined' && v instanceof Buffer)
+
+function buildFetchInit(
+  event: H3Event,
+  method: string,
+  body: unknown | undefined,
+  additionalHeaders?: Record<string, string>
+): RequestInit {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${event.context.auth?.token || ''}`,
+    ...additionalHeaders, // allow caller to force/override
+  }
+
+  const init: RequestInit = { method, headers, signal: AbortSignal.timeout(30000) }
+
+  // No body for GET/HEAD
+  if (method === 'GET' || method === 'HEAD') return init
+
+  // If body is provided, set it properly
+  if (body != null) {
+    if (isFormData(body)) {
+      // Important: DO NOT set Content-Type for FormData (boundary is auto)
+      init.body = body as any
+    } else if (isTypedArrayOrBuffer(body)) {
+      headers['Content-Type'] ||= 'application/octet-stream'
+      init.body = body as any
+    } else if (typeof body === 'string') {
+      headers['Content-Type'] ||= 'text/plain;charset=utf-8'
+      init.body = body
+    } else if (isPlainObject(body)) {
+      headers['Content-Type'] ||= 'application/json'
+      init.body = JSON.stringify(body)
+    } else {
+      // Fallback: let fetch handle it if possible
+      init.body = body as any
+    }
+  }
+
+  return init
+}
 
 export async function requestToPgwModuleApi<T>(
   event: H3Event,
@@ -50,129 +98,94 @@ export async function requestToPgwModuleApi<T>(
   try {
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
     const query = getQuery<QueryParams | TransactionQueryParams>(event)
-    
-    // Check if we should use raw query params (for endpoints like transaction list with Statuses)
+
     if (useRawQueryParams && method === 'GET') {
-      // Hybrid approach: Use QueryParams mapping for standard params + raw handling for special params
-      const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query
-      
-      let finalParams = new URLSearchParams()
-      
+      const isQueryParams =
+        query && typeof query === 'object' && 'page' in query && 'page_size' in query
+      const finalParams = new URLSearchParams()
+
       if (isQueryParams) {
-        // First, process standard QueryParams (pagination, filters, sorting)
         const pgwParams = mapQueryParamsToPgwModule(query as QueryParams)
-        const serializedParams = serializePgwModuleParams(pgwParams)
-        
-        // Add standard parameters
-        for (const [key, value] of Object.entries(serializedParams)) {
-          if (value !== undefined && value !== null && value !== '') {
-            if (Array.isArray(value)) {
-              finalParams.append(key, JSON.stringify(value))
-            } else {
-              finalParams.append(key, String(value))
-            }
-          }
-        }
-        
-        console.log('Processed standard QueryParams:', serializedParams)
-      }
-      
-      // Then, add raw query params for special transaction parameters (Statuses, Types)
-      const specialParams = ['Statuses', 'Types']
-      for (const [key, value] of Object.entries(query)) {
-        if (specialParams.includes(key) && value !== undefined && value !== null && value !== '') {
-          if (Array.isArray(value)) {
-            // For arrays (like Statuses, Types), add each item as a separate parameter
-            value.forEach(item => {
-              if (item !== undefined && item !== null && item !== '') {
-                finalParams.append(key, String(item))
-              }
-            })
-          } else {
-            finalParams.append(key, String(value))
+        const serialized = serializePgwModuleParams(pgwParams)
+        for (const [k, v] of Object.entries(serialized)) {
+          if (v !== undefined && v !== null && v !== '') {
+            Array.isArray(v)
+              ? finalParams.append(k, JSON.stringify(v))
+              : finalParams.append(k, String(v))
           }
         }
       }
-      
-      const queryString = finalParams.toString()
-      url = `${url}${queryString ? `?${queryString}` : ''}`
-      
-      console.log(`Requesting PGW Module API with hybrid query params: ${url}`, { 
-        method,
-        hybridQuery: query,
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' }
-      })
+
+      for (const [k, v] of Object.entries(query)) {
+        if ((k === 'Statuses' || k === 'Types') && v != null && v !== '') {
+          if (Array.isArray(v)) v.forEach((x) => x != null && finalParams.append(k, String(x)))
+          else finalParams.append(k, String(v))
+        }
+      }
+
+      const qs = finalParams.toString()
+      url = `${url}${qs ? `?${qs}` : ''}`
     } else {
-      // Check if the query is type of QueryParams for GET requests
-      const isQueryParams = query && typeof query === 'object' && 'page' in query && 'page_size' in query && method === 'GET'
-
-      // Only use QueryParams mapping for GET list requests
+      const isQueryParams =
+        query &&
+        typeof query === 'object' &&
+        'page' in query &&
+        'page_size' in query &&
+        method === 'GET'
       if (isQueryParams) {
         const pgwParams = mapQueryParamsToPgwModule(query as QueryParams)
-        const serializedParams = serializePgwModuleParams(pgwParams)
-        
-        // Convert serialized params to URL query string
+        const serialized = serializePgwModuleParams(pgwParams)
         const urlParams = new URLSearchParams()
-        for (const [key, value] of Object.entries(serializedParams)) {
-          if (value !== undefined && value !== null && value !== '') {
-            if (Array.isArray(value)) {
-              urlParams.append(key, JSON.stringify(value))
-            } else {
-              urlParams.append(key, String(value))
-            }
+        for (const [k, v] of Object.entries(serialized)) {
+          if (v !== undefined && v !== null && v !== '') {
+            Array.isArray(v)
+              ? urlParams.append(k, JSON.stringify(v))
+              : urlParams.append(k, String(v))
           }
         }
-        
-        const queryString = urlParams.toString()
-        url = `${url}${queryString ? `?${queryString}` : ''}`
-        
-        console.log(`Requesting PGW Module API with query params: ${url}`, { 
-          method,
-          pgwParams: serializedParams, 
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' }
-        })
-      } else {
-        console.log(`Requesting PGW Module API: ${url}`, { method, hasBody: !!body })
+        const qs = urlParams.toString()
+        url = `${url}${qs ? `?${qs}` : ''}`
       }
     }
 
-    console.log(`Requesting PGW Module API: ${url}`, { method, body, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer [REDACTED]' } })
-    const options: RequestInit = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${event.context.auth?.token || ''}`,
-        ...additionalHeaders, // Merge additional headers (like Accept-Language)
-      },
-      signal: AbortSignal.timeout(30000),
-    }
-
-    // For POST requests, if no body is provided as parameter, try to read it from the request
-    if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-      let requestBody = body
-      
-      // If no body provided as parameter, try to read from request
-      if (!requestBody) {
-        try {
-          requestBody = await readBody(event)
-        } catch (error) {
-          console.warn('Could not read request body:', error)
+    // If no body passed and request is non-GET, try to read it from the incoming request.
+    let outboundBody = body
+    if (!outboundBody && !(method === 'GET' || method === 'HEAD')) {
+      // Detect multipart from inbound headers and rebuild as FormData
+      const ctype = getRequestHeader(event, 'content-type') || ''
+      if (ctype.startsWith('multipart/form-data')) {
+        const parts = await readMultipartFormData(event)
+        const form = new FormData()
+        for (const p of parts || []) {
+          if (p.filename && p.data) {
+            // @ts-ignore Node fetch/undici File is available in Nitro runtime
+            const file = new File([p.data], p.filename, {
+              type: p.type || 'application/octet-stream',
+            })
+            form.append(p.name || 'file', file)
+          } else {
+            form.append(p.name || 'field', p.data?.toString('utf8') ?? '')
+          }
         }
-      }
-      
-      if (requestBody) {
-        options.body = JSON.stringify(requestBody)
-        console.log(`Adding request body to ${method} request`)
+        outboundBody = form
+      } else if (ctype.startsWith('application/json')) {
+        outboundBody = await readBody(event)
+      } else {
+        // Fallback: raw text/body
+        outboundBody = await readRawBody(event)
       }
     }
-    
+
+    const options = buildFetchInit(event, method, outboundBody, additionalHeaders)
+
     const response = await fetch(url, options)
     return handlePgwModuleApiResponse<T>(response)
   } catch (error) {
     console.error('Error in PGW Module API request:', error)
-    const statusCode = error && typeof error === 'object' && 'statusCode' in error 
-      ? (error as { statusCode: number }).statusCode 
-      : 500
+    const statusCode =
+      error && typeof error === 'object' && 'statusCode' in error
+        ? (error as { statusCode: number }).statusCode
+        : 500
     throw createError({
       statusCode,
       statusMessage: (error as Error).message ?? 'Internal Server Error',
@@ -181,14 +194,10 @@ export async function requestToPgwModuleApi<T>(
 }
 
 function handlePgwModuleApiResponse<T>(response: Response): Promise<T> {
-  console.log('PGW Module API response:', response)
-  if(!response.ok) {
-    throw createError({
-      statusCode: response.status,
-      statusMessage: response.statusText,
-    })
+  if (!response.ok) {
+    throw createError({ statusCode: response.status, statusMessage: response.statusText })
   }
-  return response.json()
+  return response.json() as Promise<T>
 }
 
 export const pgwModuleApiLogic = () => {
@@ -199,7 +208,10 @@ export const pgwModuleApiLogic = () => {
    * @param event The H3 event object.
    * @param walletType The type of wallet ('settlement' or 'top-up').
    */
-  const getWalletTransactionsLogic = async (event: H3Event, walletType: 'settlement' | 'top-up') => {
+  const getWalletTransactionsLogic = async (
+    event: H3Event,
+    walletType: 'settlement' | 'top-up'
+  ) => {
     const query = getQuery(event)
     const endpoint = `/walletmgnt/${walletType}/transactions`
     const queryString = new URLSearchParams(query as Record<string, string>).toString()
@@ -214,19 +226,20 @@ export const pgwModuleApiLogic = () => {
       const options: RequestInit = {
         method: 'GET',
         headers: {
-          'accept': 'text/plain',
-          'Authorization': `Bearer ${event.context.auth?.token || ''}`,
+          accept: 'text/plain',
+          Authorization: `Bearer ${event.context.auth?.token || ''}`,
         },
         signal: AbortSignal.timeout(30000),
       }
- 
+
       const response = await fetch(url, options)
       return handlePgwModuleApiResponse(response)
     } catch (error) {
       console.error(`Error fetching wallet transactions for type '${walletType}':`, error)
       throw createError({
         statusCode: 500,
-        statusMessage: (error as Error).message ?? 'Internal Server Error while fetching transactions.',
+        statusMessage:
+          (error as Error).message ?? 'Internal Server Error while fetching transactions.',
       })
     }
   }
