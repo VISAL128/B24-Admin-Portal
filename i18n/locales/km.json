@@ -1,4 +1,7 @@
 {
+  "wallet_info": "ព័ត៌មានកាបូប",
+  "export_date":"កាលបរិច្ឆេទ",
+  "exported_by": "ទាញចេញដោយ",
   "date_range": "ជួរកាលបរិច្ឆេទ",
   "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
   "yes": "បាទ",
@@ -725,6 +728,9 @@
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",
     "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
+    "export_information": "ព័ត៌មានការនាំចេញ",
+    "exported_by": "នាំចេញដោយ",
+    "export_date": "កាលបរិច្ឆេទនាំចេញ",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",

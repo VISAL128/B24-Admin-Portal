@@ -585,6 +585,7 @@ import { useFormat } from '~/composables/utils/useFormat'
 import type { QueryParams } from '~/models/baseModel'
 import { FilterOperatorPgwModule } from '~/utils/enumModel'
 import { StatusBadge } from '#components'
+import type { ExportOptions } from '~/components/tables/ExTable.vue'
 
 // Define page meta
 definePageMeta({
@@ -608,6 +609,8 @@ const {
 
 // Wallet store
 const walletStore = useWalletStore()
+const auth = useAuth()
+const user = auth.user
 
 // Component Refs
 const tableRef = ref()
@@ -666,8 +669,6 @@ const loadWalletTypes = async () => {
   try {
     isLoadingWalletTypes.value = true
     const response = await getWalletTypes()
-
-    console.log("======= loadWalletTypes response ========:", response)
 
     if (response.data?.wallet_type) {
       // Update wallet types from API - new format where keys are wallet IDs and values are objects
@@ -901,11 +902,12 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
 ]
 })
 
-const exportOptions = computed(() => {
+const exportOptions = computed((): ExportOptions => {
   if (!selectedWalletTypeData.value) {
     return {
       fileName: 'transactions',
       title: 'Transaction Report',
+      exportBy: typeof user.value?.fullName === 'string' ? user.value.fullName : 'N/A',
     }
   }
 
@@ -929,11 +931,15 @@ const exportOptions = computed(() => {
   }
 
   const dateRange =   `${lastFetchParams.value?.start_date} ${t('to')} ${lastFetchParams.value?.end_date}`
+
+  // return with type ExportOptions
   return {
     fileName: `Transaction_Report_${walletName.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}`,
     title: `${t('wallet_page.transaction_report')}`,
     subtitle: `${walletName}`,
     currency: currency,
+    // exportBy: typeof user.value?.fullName === 'string' ? user.value.fullName : 'N/A',
+    // exportDate: new Date().toISOString().split('T')[0],
     filter: {
       [t('date_range')]: dateRange,
       [t('search')]: getFilterValue('search'),
@@ -945,9 +951,12 @@ const exportOptions = computed(() => {
 
 const fetchTransactionsForTable = async (params?: QueryParams) => {
   lastFetchParams.value = params
-  isLoadingTransactions.value = true
 
-  // console.log("Fetching transactions for wallet:")
+  console.log("Fetching transactions for wallet:", {
+    params,
+  })
+
+  isLoadingTransactions.value = true
 
   const selectedWallet = walletTypes.value.find((w) => w.id === selectedWalletType.value)
   
@@ -970,11 +979,6 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
       value: currencyId
     })
   }
-
-  console.log("======= Fetching transactions for wallet ========:", {
-    walletType: selectedWallet.walletType,
-    params,
-  })
 
   try {
     const response = selectedWallet.walletType === 'settlement_wallet'
@@ -1005,13 +1009,6 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
     const pageSize = Number(params?.page_size) || 10
     const total_page = Math.ceil(total_record / pageSize)
 
-    console.log("======= Returning server data ========:", {
-      dataLength: data.length,
-      total_record,
-      total_page,
-      walletType: selectedWallet.walletType
-    })
-
     return {
       data,
       total_record,
@@ -1030,7 +1027,6 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
 const handleViewDetails = (row: WalletTransaction) => {
   selectedTransaction.value = row
   isSlideoverOpen.value = true
-  console.log('View details for...:', row)
 }
 
 const closeAllocationSlideover = () => {
@@ -1225,11 +1221,9 @@ const currentSummaryData = computed(() => {
 
 watch(selectedWalletType, async (newType, oldType) => {
   if (newType !== oldType && newType) {
-    console.log("======= Wallet type changed from", oldType, "to", newType)
     
     const selectedWallet = walletTypes.value.find((type) => type.id === newType)
     if (!selectedWallet) {
-      console.warn('Selected wallet not found:', newType)
       return
     }
 

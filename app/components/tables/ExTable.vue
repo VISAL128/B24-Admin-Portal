@@ -387,8 +387,13 @@ export interface ExportOptions {
   startDate?: string
   endDate?: string
   totalAmount?: number
+  exportBy?: string
+  exportDate?: string
   filter?: Record<string, string>
 }
+
+const auth = useAuth()
+const user = auth.user
 
 // Use table configuration composable
 const tableConfig = useTableConfig()
@@ -796,6 +801,8 @@ const resolvedExportOptions = computed(() => ({
   startDate: props.exportOptions?.startDate ?? startDate.value,
   endDate: props.exportOptions?.endDate ?? endDate.value,
   totalAmount: props.exportOptions?.totalAmount,
+  exportDate: new Date().toISOString().split('T')[0],
+  exportBy: typeof user.value?.fullName === 'string' ? user.value.fullName : 'N/A',
   filter: props.exportOptions?.filter,
 }))
 

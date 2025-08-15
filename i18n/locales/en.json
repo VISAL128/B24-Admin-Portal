@@ -1,4 +1,7 @@
 {
+  "wallet_info": "Wallet Information",
+  "export_date": "Exported Date",
+  "exported_by": "Exported By",
   "date_range": "Date Range",
   "filters_applied": "Filters Applied",
   "yes": "Yes",
@@ -127,6 +130,9 @@
     "more_options": "More Options",
     "filters": "Filters",
     "filters_applied": "Filters Applied",
+    "export_information": "Export Information",
+    "exported_by": "Exported By",
+    "export_date": "Export Date",
     "empty_state_message": "No data available.",
     "loading": "Loading...",
     "no_records_found": "No records found",
