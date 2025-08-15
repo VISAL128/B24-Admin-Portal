@@ -24,7 +24,6 @@ import type BaseTable from '~/components/tables/BaseTable.vue'
 import type { BaseTableColumn } from '~/components/tables/table'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import {
-  exportToExcelStyled,
   exportToExcelWithUnicodeSupport,
   exportToPDFStyled,
   exportToPDFWithUnicodeSupport,
@@ -259,15 +258,7 @@ const exportToExcelHandler = async () => {
     } catch (unicodeError) {
       console.warn('Unicode Excel export failed, falling back to standard Excel:', unicodeError)
       // Fallback to standard Excel export
-      await exportToExcelStyled(
-        dataToExport,
-        exportHeaders,
-        'settlement-history.xlsx',
-        t('settlement_history_title'),
-        t('settlement_history_subtitle', {
-          date: new Date().toLocaleDateString(),
-        })
-      )
+
     }
 
     toast.add({
