@@ -1053,5 +1053,6 @@
   "customer_name": "Customer Name",
   "deactivate": "Deactivate",
   "deactivate_subbiller_confirmation": "Do you really want to deactivate this sub-biller?",
-  "logo_recommendation": "Logo recommendation"
+  "logo_recommendation": "Logo recommendation",
+  "updated_sub_biller_success": "Sub-biller updated successfully"
 }

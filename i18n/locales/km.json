@@ -1072,5 +1072,6 @@
   "customer_name": "ឈ្មោះអតិថិជន",
   "deactivate": "បិទដំណើរការ",
   "deactivate_subbiller_confirmation": "តើអ្នកប្រាកដជាចង់បិទដំណើរការម្ចាស់អាជីវកម្មរងនេះទេ?",
-  "logo_recommendation": "ណែនាំ"
+  "logo_recommendation": "ណែនាំ",
+  "updated_sub_biller_success": "បានកែប្រែម្ចាស់អាជីវកម្មរងដោយជោគជ័យ"
 }
