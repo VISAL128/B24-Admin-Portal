@@ -178,6 +178,9 @@ export async function requestToPgwModuleApi<T>(
 
     const options = buildFetchInit(event, method, outboundBody, additionalHeaders)
 
+    console.log(`Forwarding request to PGW Module API: ${url}`)
+    console.log(`Request options:`, options)
+
     const response = await fetch(url, options)
     return handlePgwModuleApiResponse<T>(response)
   } catch (error) {
