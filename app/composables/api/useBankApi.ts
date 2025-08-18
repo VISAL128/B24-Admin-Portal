@@ -1,5 +1,6 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type {
+  ActivatedBankResponse,
   Bank,
   BankAccount,
   BankDetailsResponse,
@@ -13,9 +14,9 @@ export const useBankApi = () => {
   /**
    * Get list of banks with optional filtering and pagination (Legacy endpoint)
    */
-  const getBanks = async (query?: QueryParams): Promise<ApiResponse<Bank[]>> => {
-    const response = await execute<Bank[]>(() =>
-      $fetch<ApiResponse<Bank[]>>('/api/pgw-module/bank/list', {
+  const getBanks = async (query?: QueryParams): Promise<ApiResponse<ActivatedBankResponse[]>> => {
+    const response = await execute<ActivatedBankResponse[]>(() =>
+      $fetch<ApiResponse<ActivatedBankResponse[]>>('/api/pgw-module/bank/list', {
         method: 'GET',
         query,
       })

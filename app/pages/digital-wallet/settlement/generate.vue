@@ -615,7 +615,10 @@ definePageMeta({
 </script>
 <template>
   <div class="w-full h-full flex flex-col gap-3">
-    <PageHeader title="Generate Settlement" subtitle="Create a new settlement" />
+    <PageHeader
+      :title="$t('pages.generate_settlement.title')"
+      :subtitle="$t('pages.generate_settlement.description')"
+    />
     <div
       class="bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex-1 overflow-auto"
     >

@@ -173,7 +173,8 @@
                 ref="table"
                 :columns="columns"
                 table-id="sub-biller-transaction-table"
-                :fetch-data-fn="fetchTransactionHistory"
+                :fetch-data-fn="fetchTransactions"
+                  :default-sorting="[{ id: 'tranDate', desc: true }]"
                 show-row-number
                 show-date-filter
                 date-format="dd/MM/yyyy"
@@ -624,7 +625,7 @@ import { useTable } from '~/composables/utils/useTable'
 import type { QueryParams } from '~/models/baseModel'
 import type { SubBillerWallet, DeactivateSubBillerReq } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
-import type { TransactionHistoryRecord } from '~/models/transaction'
+import type { TransactionHistoryRecord, WalletTransaction } from '~/models/transaction'
 import { FilterOperatorPgwModule } from '~/utils/enumModel'
 
 definePageMeta({
@@ -898,6 +899,8 @@ const validateEditForm = (): boolean => {
   return ok
 }
 
+const { getTransactionStatusTranslationKey } = useStatusBadge()
+
 const getCardGradientByIndex = (index: number): string | undefined => {
   const gradients: string[] = [
     'bg-gradient-to-r from-blue-500 to-blue-500',
@@ -914,8 +917,8 @@ const getCardGradientByIndex = (index: number): string | undefined => {
   return gradients[safeIndex]
 }
 
-const handleViewDetails = (record: TransactionHistoryRecord) => {
-  navigateToDetails(record.id)
+const handleViewDetails = (record: WalletTransaction) => {
+  navigateToDetails(record.tranId)
 }
 
 // Handle Repush Transaction
@@ -930,12 +933,32 @@ const navigateToDetails = (rowId: string) => {
   router.push(`/transactions/detail/${rowId}`)
 }
 
-const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
+const transactionTypeFilterOptions = computed(() =>
+  Object.entries(TransactionType).map(([key, value]) => ({
+    label: key.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to readable format
+    value: value
+  }))
+)
+
+const getTranslatedTransactionStatusLabel = (status: string) => {
+  const key = getTransactionStatusTranslationKey(status)
+  const translated = t(key)
+  return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
+}
+const transactionStatusFilterOptions = computed(() =>
+  Object.values(TransactionStatus).map((status) => ({
+    label: getTranslatedTransactionStatusLabel(status),
+    value: status
+  }))
+)
+
+
+const columns: BaseTableColumn<WalletTransaction>[] = [
   {
-    id: 'createdDate',
-    accessorKey: 'created_date',
+    id: 'tranDate',
+    accessorKey: 'tranDate',
     headerText: t('pages.transaction.created_date'),
-    cell: ({ row }) => row.original.date,
+    cell: ({ row }) => row.original.tranDate,
     enableSorting: true,
   },
   {
@@ -947,36 +970,24 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     id: 'bankReference',
     accessorKey: 'bank_ref',
     headerText: t('pages.transaction.bank_ref'),
-    cell: ({ row }) => row.original.bankReference || '-',
+    cell: ({ row }) => row.original.bankRefId || '-',
     enableSorting: true,
   },
   {
-    id: 'walletAccountDisplay',
+    id: 'wallet',
     accessorKey: 'wallet',
     headerText: t('wallet'),
-    cell: ({ row }) => row.original.walletAccountDisplay || '-',
+    cell: ({ row }) => row.original.wallet || '-',
   },
   {
-    id: 'transactionType',
+    id: 'tranType',
     accessorKey: 'transaction_type',
     headerText: t('transaction_type'),
-    cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
+    cell: ({ row }) => getTransactionTypeKey(row.original.tranType) || '-',
     enableSorting: true,
     enableColumnFilter: true,
-    filterOptions: [
-      { label: 'Wallet Top up', value: 'Wallet Top up' },
-      { label: 'Deeplink / Checkout', value: 'Deeplink / Checkout' },
-      { label: 'Wallet Payment', value: 'Wallet Payment' },
-      { label: 'QR Pay', value: 'QR Pay' },
-    ],
+    filterOptions: transactionTypeFilterOptions.value,
   },
-  {
-    id: 'totalCustomer',
-    accessorKey: 'total_customer',
-    headerText: t('pages.transaction.total_customer'),
-    cell: ({ row }) => h('div', { class: 'text-right' }, row.original.countTotalCustomer || '-'),
-  },
-
   {
     id: 'status',
     headerText: t('status.header'),
@@ -988,17 +999,13 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
       }),
     enableColumnFilter: true,
     filterType: 'select',
-    filterOptions: [
-      { label: t('completed'), value: t('completed') },
-      { label: t('pending'), value: t('pending') },
-      { label: t('failed'), value: t('failed') },
-    ],
+    filterOptions: transactionStatusFilterOptions.value,
   },
   {
     id: 'currencyId',
     accessorKey: 'currency_id',
     headerText: t('settlement.currency'),
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currencyId || '-'),
     enableColumnFilter: true,
     filterOptions: [
       { label: t('currency.usd'), value: 'USD' },
@@ -1013,7 +1020,7 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
       h(
         'div',
         { class: 'text-right' },
-        useCurrency().formatAmount(row.original.transactionAmount, row.original.currency)
+        useCurrency().formatAmount(row.original.amount, row.original.currencyId)
       ),
     enableMultiSort: true,
     enableSorting: true,
@@ -1028,6 +1035,7 @@ const {
   deactivateSubBiller,
   updateSubBiller,
   uploadFile,
+  getWalletTransactionBySubBiller,
 } = usePgwModuleApi()
 const { getTransactionList } = useTransactionApi()
 
@@ -1047,6 +1055,7 @@ const fetchSubBillerById = async () => {
 }
 
 const errorHandler = useErrorHandler()
+
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -1226,6 +1235,32 @@ const supplierBackgroundImage = computed(() => {
 const getTransactionTypeKey = (value: string): string => {
   const entry = Object.entries(TransactionType).find(([key, val]) => val === value)
   return entry ? entry[0] : value
+}
+
+const fetchTransactions = async (
+  params?: QueryParams
+): Promise<{
+  data: WalletTransaction[]
+  total_record: number
+  total_page: number
+} | null> => {
+  try {
+    params?.filters.push({
+      field: 'subBillerId',
+      operator: FilterOperatorPgwModule.Equals,
+      value: transactionId.value,
+    })
+    const response = await getWalletTransactionBySubBiller(params)
+    console.log('Fetched transactions:', response)
+    return {
+      data: response.results || [],
+      total_record: response.param?.rowCount || 0,
+      total_page: response.param?.pageCount || 0,
+    }
+  } catch (error) {
+    errorHandler.handleApiError(error)
+    return null
+  }
 }
 
 const fetchTransactionHistory = async (

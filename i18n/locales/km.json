@@ -1,4 +1,7 @@
 {
+  "wallet_info": "ព័ត៌មានកាបូប",
+  "export_date": "កាលបរិច្ឆេទ",
+  "exported_by": "ទាញចេញដោយ",
   "date_range": "ជួរកាលបរិច្ឆេទ",
   "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
   "yes": "បាទ",
@@ -60,8 +63,8 @@
   "preview_fee_calculation_amount": "ការគណនាថ្លៃសេវាសម្រាប់ចំនួនប្រតិបត្តិការ",
   "preview_fee_calculation_tip": "មិនមានការកំណត់ថ្លៃសេវាអ្វីទេ។ បន្ថែមជួរដេកដើម្បីមើលការពិនិត្យគណនាថ្លៃសេវា។",
   "preview_fee_calculation_no_supplier": "មិនមានអ្នកផ្គត់ផ្គង់ចែករំលែកថ្លៃសេវាអ្វីទេ។",
-  "transaction_fee": "ថ្លៃប្រតិបត្តិការ",
-  "distribution_fee": "ថ្លៃចែកចាយ",
+  "transaction_fee":  "ថ្លៃប្រតិបត្តិការ",
+  "distribution_fee":  "ថ្លៃចែកចាយ",
   "add_fee_sharing_supplier_title": "បន្ថែមអ្នកផ្គត់ផ្គង់ចែករំលែកថ្លៃសេវា",
   "add_fee_sharing_supplier_description": "ជ្រើសរើសអ្នកផ្គត់ផ្គង់ដើម្បីចែករំលែកថ្លៃប្រតិបត្តិការជាមួយក្នុងការកំណត់ថ្លៃសេវា។",
   "remove_supplier_sharing": "តើអ្នកប្រាកដជាចង់លុប ({name}) ទេ? ប្រតិបត្តិការនេះមិនអាចត្រឡប់មកវិញបាន។",
@@ -747,6 +750,9 @@
     "more_options": "ជម្រើសផ្សេងទៀត",
     "filters": "តម្រង",
     "filters_applied": "តម្រងដែលត្រូវបានអនុវត្ត",
+    "export_information": "ព័ត៌មានការនាំចេញ",
+    "exported_by": "នាំចេញដោយ",
+    "export_date": "កាលបរិច្ឆេទនាំចេញ",
     "empty_state_message": "គ្មានទិន្នន័យសម្រាប់បង្ហាញ",
     "loading": "កំពុងទាញយក...",
     "no_records_found": "រកមិនឃើញកំណត់ត្រា",
@@ -775,6 +781,7 @@
         "name": "ឈ្មោះធនាគារ",
         "currency": "រូបិយប័ណ្ណ",
         "status": "ស្ថានភាព",
+        "connectedServices": "សេវាកម្មដែលភ្ជាប់",
         "activated_date": "កាលបរិច្ឆេទដំណើរការ",
         "is_settlement_bank": "ធនាគារទូទាត់",
         "is_collection_bank": "ធនាគារប្រមូលប្រាក់",
@@ -815,7 +822,7 @@
         "collectionBank": "ធនាគារប្រមូលប្រាក់",
         "settlementBank": "ធនាគារទូទាត់",
         "settlementType": "ប្រភេទទូទាត់",
-        "transactionType": "ប្រភេទប្រតិបត្តិការ",
+        "tranType": "ប្រភេទប្រតិបត្តិការ",
         "currency": "រូបិយប័ណ្ណ",
         "status": "ស្ថានភាព",
         "date": "កាលបរិច្ឆេទប្រតិបត្តិការ",
@@ -1062,6 +1069,10 @@
         "total_customer": "ចំនួនអតិថិជនសរុប",
         "average_amount": "ចំនួនទឹកប្រាក់មធ្យម"
       }
+    },
+    "generate_settlement": {
+      "title": "បង្កើតការទូទាត់",
+      "description": "បង្កើតការទូទាត់ថ្មី"
     }
   },
   "banks": {
@@ -1086,6 +1097,8 @@
     "currency_code": "រូបិយប័ណ្ណ",
     "is_settlement_bank": "ធនាគារទូទាត់",
     "is_collection_bank": "ធនាគារប្រមូលប្រាក់",
+    "connected_services_single": "សេវាកម្ម {count}",
+    "connected_services_multiple": "សេវាកម្ម {count}",
     "account_number": "លេខគណនី",
     "account_name": "ឈ្មោះគណនី",
     "branch_name": "ឈ្មោះសាខា",

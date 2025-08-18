@@ -23,7 +23,7 @@
 import { h, onMounted, ref, resolveComponent, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBankApi } from '~/composables/api/useBankApi'
-import type { Bank } from '~/models/bank'
+import type { ActivatedBankResponse } from '~/models/bank'
 import { useI18n } from 'vue-i18n'
 import type { BankListTableFetchResult, BaseTableColumn } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
@@ -48,7 +48,7 @@ const { statusCellBuilder } = useStatusBadge()
 const router = useRouter()
 const isTableFullscreen = ref(false)
 const isLoading = ref(false)
-const bankData = ref<Bank[]>([])
+const bankData = ref<ActivatedBankResponse[]>([])
 
 const summarys = computed<SummaryCard[]>(() => [
   {
@@ -65,7 +65,7 @@ const summarys = computed<SummaryCard[]>(() => [
     title: t('banks.active_banks'),
     values: [
       {
-        value: bankData.value.filter((bank) => bank.active).length,
+        value: bankData.value.filter((_bank) => true).length,
       },
     ],
     filterLabel: '',
@@ -75,7 +75,7 @@ const summarys = computed<SummaryCard[]>(() => [
     title: t('banks.inactive_banks'),
     values: [
       {
-        value: bankData.value.filter((bank) => !bank.active).length,
+        value: bankData.value.filter((_bank) => false).length,
       },
     ],
     filterLabel: '',
@@ -113,11 +113,11 @@ const navigateToDetails = (bankId: string) => {
   router.push(`/organization/banks/${bankId}`)
 }
 
-const handleViewDetails = (rowData: Bank) => {
+const handleViewDetails = (rowData: ActivatedBankResponse) => {
   navigateToDetails(rowData.id)
 }
 
-const columns: BaseTableColumn<Bank>[] = [
+const columns: BaseTableColumn<ActivatedBankResponse>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -166,7 +166,7 @@ const columns: BaseTableColumn<Bank>[] = [
         // If bank logo is available, display it
         return h('div', { class: 'flex items-center gap-2' }, [
           h(UAvatar, {
-            src: row.original.logo,
+            src: row.original.logoUrl,
             size: '3xs',
           }),
           h('div', { class: '' }, row.original.name || '-'),
@@ -183,32 +183,61 @@ const columns: BaseTableColumn<Bank>[] = [
     // ]
   },
   {
-    id: 'activated_date',
-    accessorKey: 'activated_date',
-    header: () => t('table.banks-list.columns.activated_date'),
-    type: ColumnType.DateTime,
-    size: 150,
+    id: 'connectedServices',
+    accessorKey: 'connected_services',
+    header: () => t('table.banks-list.columns.connected_services'),
+    cell: ({ row }) => {
+      const services = row.original.connectedServices || []
+      const UTooltip = resolveComponent('UTooltip')
+
+      if (services.length === 0) {
+        return h('div', { class: 'text-sm text-gray-500 dark:text-gray-400' }, '-')
+      }
+
+      const serviceNames = services.map((service) => service.serviceName).join(', ')
+
+      return h(
+        UTooltip,
+        {
+          text: serviceNames,
+          placement: 'top',
+        },
+        {
+          default: () =>
+            h(
+              'div',
+              {
+                class:
+                  'text-sm text-primary cursor-help underline decoration-dotted',
+              },
+              services.length === 1 
+                ? t('banks.connected_services_single', { count: services.length })
+                : t('banks.connected_services_multiple', { count: services.length })
+            ),
+        }
+      )
+    },
+    size: 200,
   },
-  {
-    id: 'is_settlement_bank',
-    accessorKey: 'is_settlement_bank',
-    header: () => t('table.banks-list.columns.is_settlement_bank'),
-    cell: ({ row }) => statusCellBuilder(row.original.is_settlement_bank ? 'yes' : 'no'),
-    size: 120,
-  },
-  {
-    id: 'is_collection_bank',
-    accessorKey: 'is_collection_bank',
-    header: () => t('table.banks-list.columns.is_collection_bank'),
-    cell: ({ row }) => statusCellBuilder(row.original.is_collection_bank ? 'yes' : 'no'),
-    size: 120,
-  },
+  // {
+  //   id: 'is_settlement_bank',
+  //   accessorKey: 'is_settlement_bank',
+  //   header: () => t('table.banks-list.columns.is_settlement_bank'),
+  //   cell: ({ row }) => statusCellBuilder(row.original.is_settlement_bank ? 'yes' : 'no'),
+  //   size: 120,
+  // },
+  // {
+  //   id: 'is_collection_bank',
+  //   accessorKey: 'is_collection_bank',
+  //   header: () => t('table.banks-list.columns.is_collection_bank'),
+  //   cell: ({ row }) => statusCellBuilder(row.original.is_collection_bank ? 'yes' : 'no'),
+  //   size: 120,
+  // },
   {
     id: 'active',
     accessorKey: 'active',
     header: () => t('table.banks-list.columns.status'),
-    cell: ({ row }) =>
-      statusCellBuilder(row.original.active === BankServiceStatus.Active ? 'active' : 'inactive'),
+    cell: () => statusCellBuilder('active'),
     filterOptions: [
       { label: getTranslatedStatusLabel('active'), value: BankServiceStatus.Active },
       { label: getTranslatedStatusLabel('inactive'), value: BankServiceStatus.Inactive },

@@ -48,103 +48,112 @@
               <div
                 class="rounded-lg shadow-md py-2 min-w-[260px] w-[320px] max-h-[70vh] flex flex-col"
               >
-                 <!-- Column Filters -->
-                 <div class="space-y-2 flex flex-col min-h-48 h-full">
-                   <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">
-                     {{ t('table.filters') }}
-                   </h4>
+                <!-- Column Filters -->
+                <div class="space-y-2 flex flex-col min-h-48 h-full">
+                  <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">
+                    {{ t('table.filters') }}
+                  </h4>
                   <div class="flex flex-col flex-1 gap-2">
-                     <Divider />
+                    <Divider />
                     <div class="px-2 flex flex-col flex-1 min-h-0 overflow-y-auto pr-1">
-                       <template v-for="col in filteredColumns" :key="col.id">
-                         <template v-if="col.enableColumnFilter">
-                           <div class="space-y-1">
-                             <!-- Filter Label -->
-                             <label 
-                               :for="`filter-${col.id}`" 
-                               class="text-xs font-medium text-gray-700 dark:text-gray-300"
-                             >
-                               {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
-                             </label>
-                             
-                             <template v-if="'filterType' in col && col.filterType === 'status'">
-                               <StatusSelection
-                                 :id="`filter-${col.id}`"
-                                 :model-value="selectedStatuses"
-                                 :multiple="true"
-                                 :available-statuses="['all' , ...getColumnFilterOptions(col).map((status) => status.value.toString()) || []]"
-                                 :include-all-statuses="false"
-                                 :placeholder="t('settlement.select_status')"
-                                 :searchable="false"
-                                 @update:model-value="(val) => {
-                                   val = val as { label: string; value: string }[]
-                                   selectedStatuses = val
-                                   emit('filter-change', col.id, val.map((s) => s.value).join(','))
-                                 }"
-                               />
-                             </template>
-                             <template v-else>
-                               <USelectMenu
-                                 :id="`filter-${col.id}`"
-                                 :model-value="{
-                                   label: columnFilters[col.id]
-                                     ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
-                                     : t('all'),
-                                   value: columnFilters[col.id] || '',
-                                 }"
-                                 :default-value="{ label: t('all'), value: '' }"
-                                 :items="[
-                                   { label: t('all'), value: '' },
-                                   ...getColumnFilterOptions(col),
-                                 ]"
-                                 option-attribute="label"
-                                 value-attribute="value"
-                                 size="sm"
-                                 class="w-full"
-                                 :search-input="false"
-                                 @update:model-value="
-                                   (val) => {
-                                     columnFilters[col.id] = String(val?.value || '')
-                                     emit('filter-change', col.id, columnFilters[col.id] || '')
-                                   }
-                                 "
-                               />
-                             </template>
-                           </div>
-                         </template>
-                       </template>
-                     </div>
-                     <Divider />
-                   </div>
-                  <div class="flex flex-wrap justify-between px-2 sticky bottom-0 bg-default pt-2 border-t border-gray-200 dark:border-gray-700">
-                     <UButton
-                       variant="link"
-                       size="xs"
-                       color="neutral"
-                       class="underline"
-                       :ui="{
-                         ...appConfig.ui.button.slots,
-                         leadingIcon: 'shrink-0 size-3 text-muted',
-                       }"
-                       @click="() => resetColumnFilters()"
-                     >
-                       <template #default>
-                         {{ t('table.column_config.reset') }}
-                       </template>
-                     </UButton>
-                     <UButton
-                       size="sm"
-                       :ui="appConfig.ui.button.slots"
-                       @click="onApplyColumnFilters"
-                     >
-                       <template #default>
-                         {{ t('table.column_config.apply') }}
-                       </template>
-                     </UButton>
-                   </div>
-                 </div>
-               </div>
-             </template>
+                      <template v-for="col in filteredColumns" :key="col.id">
+                        <template v-if="col.enableColumnFilter">
+                          <div class="space-y-1">
+                            <!-- Filter Label -->
+                            <label
+                              :for="`filter-${col.id}`"
+                              class="text-xs font-medium text-gray-700 dark:text-gray-300"
+                            >
+                              {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
+                            </label>
+
+                            <template v-if="'filterType' in col && col.filterType === 'status'">
+                              <StatusSelection
+                                :id="`filter-${col.id}`"
+                                :model-value="selectedStatuses"
+                                :multiple="true"
+                                :available-statuses="[
+                                  'all',
+                                  ...(getColumnFilterOptions(col).map((status) =>
+                                    status.value.toString()
+                                  ) || []),
+                                ]"
+                                :include-all-statuses="false"
+                                :placeholder="t('settlement.select_status')"
+                                :searchable="false"
+                                @update:model-value="
+                                  (val) => {
+                                    val = val as { label: string; value: string }[]
+                                    selectedStatuses = val
+                                    emit('filter-change', col.id, val.map((s) => s.value).join(','))
+                                  }
+                                "
+                              />
+                            </template>
+                            <template v-else>
+                              <USelectMenu
+                                :id="`filter-${col.id}`"
+                                :model-value="{
+                                  label: columnFilters[col.id]
+                                    ? t(`dynamic_filter.${col.id}.${columnFilters[col.id]}`)
+                                    : t('all'),
+                                  value: columnFilters[col.id] || '',
+                                }"
+                                :default-value="{ label: t('all'), value: '' }"
+                                :items="[
+                                  { label: t('all'), value: '' },
+                                  ...getColumnFilterOptions(col),
+                                ]"
+                                option-attribute="label"
+                                value-attribute="value"
+                                size="sm"
+                                class="w-full"
+                                :search-input="false"
+                                @update:model-value="
+                                  (val) => {
+                                    columnFilters[col.id] = String(val?.value || '')
+                                    emit('filter-change', col.id, columnFilters[col.id] || '')
+                                  }
+                                "
+                              />
+                            </template>
+                          </div>
+                        </template>
+                      </template>
+                    </div>
+                    <Divider />
+                  </div>
+                  <div
+                    class="flex flex-wrap justify-between px-2 sticky bottom-0 bg-default pt-2 border-t border-gray-200 dark:border-gray-700"
+                  >
+                    <UButton
+                      variant="link"
+                      size="xs"
+                      color="neutral"
+                      class="underline"
+                      :ui="{
+                        ...appConfig.ui.button.slots,
+                        leadingIcon: 'shrink-0 size-3 text-muted',
+                      }"
+                      @click="() => resetColumnFilters()"
+                    >
+                      <template #default>
+                        {{ t('table.column_config.reset') }}
+                      </template>
+                    </UButton>
+                    <UButton
+                      size="sm"
+                      :ui="appConfig.ui.button.slots"
+                      @click="onApplyColumnFilters"
+                    >
+                      <template #default>
+                        {{ t('table.column_config.apply') }}
+                      </template>
+                    </UButton>
+                  </div>
+                </div>
+              </div>
+            </template>
           </UPopover>
           <!-- Auto Refresh -->
           <div v-if="props.enabledAutoRefresh" class="flex items-center gap-1">
@@ -387,8 +396,13 @@ export interface ExportOptions {
   startDate?: string
   endDate?: string
   totalAmount?: number
+  exportBy?: string
+  exportDate?: string
   filter?: Record<string, string>
 }
+
+const auth = useAuth()
+const user = auth.user
 
 // Use table configuration composable
 const tableConfig = useTableConfig()
@@ -446,9 +460,20 @@ const initializeDateRange = (): { start: string; end: string } => {
 }
 
 // Initialize sorting from localStorage or defaults
+// only sort if saved OR defaultSorting is provided; otherwise no sorting
 const initializeSorting = (): Array<{ id: string; desc: boolean }> => {
-  const savedSorting = tableConfig.getSortingState(props.tableId)
-  return savedSorting || []
+  // If you want to ignore saved state entirely, comment these two lines out.
+  const saved = tableConfig.getSortingState(props.tableId)
+  if (saved?.length) return saved
+
+  if (props.defaultSorting?.length) {
+    const colIds = new Set((props.columns ?? []).map((c) => String(c.id ?? c.accessorKey ?? '')))
+    const fromProp = props.defaultSorting.filter((s) => colIds.has(s.id))
+    if (fromProp.length) return fromProp
+  }
+
+  // ⬇️ No fallback -> means no initial sorting
+  return []
 }
 
 const columnVisibility = ref<Record<string, boolean>>({})
@@ -772,6 +797,7 @@ const props = defineProps<{
   dateFormat?: string
   startDateFormat?: string
   endDateFormat?: string
+  defaultSorting?: Array<{ id: string; desc: boolean }>
 }>()
 
 // Computed helpers for customizable date formats
@@ -796,6 +822,8 @@ const resolvedExportOptions = computed(() => ({
   startDate: props.exportOptions?.startDate ?? startDate.value,
   endDate: props.exportOptions?.endDate ?? endDate.value,
   totalAmount: props.exportOptions?.totalAmount,
+  exportDate: new Date().toISOString().split('T')[0],
+  exportBy: typeof user.value?.fullName === 'string' ? user.value.fullName : 'N/A',
   filter: props.exportOptions?.filter,
 }))
 

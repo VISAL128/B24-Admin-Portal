@@ -38,3 +38,17 @@ export interface BankDetailsResponse {
   supplier_bank_service: Bank | null
   accounts: BankAccount[]
 }
+
+export interface ActivatedBankResponse {
+  id: string,
+  code: string,
+  name: string,
+  nameKh: string,
+  logoUrl?: string,
+  connectedServices: ConnectedService[]
+}
+
+export interface ConnectedService {
+  serviceName: string,
+  activatedDate: string
+}

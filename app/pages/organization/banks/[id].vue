@@ -6,8 +6,9 @@
       :subtitle="bank?.supplier_bank_service?.name"
     />
 
+    <UnderDevelopment v-if="true" />
     <!-- Content -->
-    <div class="flex-1 overflow-auto space-y-3">
+    <div v-else class="flex-1 overflow-auto space-y-3">
       <!-- Bank Information Cards -->
       <div v-if="!tblFull" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <!-- General Information -->
@@ -308,22 +309,6 @@
         />
       </div>
     </div>
-
-    <!-- Error State -->
-    <div
-      v-if="!loading && !loadingBankInfo && !bank?.supplier_bank_service"
-      class="flex items-center justify-center flex-1"
-    >
-      <div class="text-center">
-        <UIcon name="i-lucide-alert-circle" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          {{ t('banks.no_banks_found') }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400">
-          {{ t('banks.bank_not_found_desc') }}
-        </p>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -373,7 +358,6 @@ const errorHandler = useErrorHandler()
 
 const bank = ref<BankDetailsResponse | null>(null)
 const bankAccounts = ref<BankAccount[]>([])
-const loading = ref(false)
 const loadingBankInfo = ref(false)
 const tblFull = ref(false)
 const bankLoaded = ref(false)

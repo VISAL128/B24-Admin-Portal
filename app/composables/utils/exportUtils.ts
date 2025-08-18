@@ -168,167 +168,167 @@ export async function exportToExcel(
 
 
 
-export async function exportToExcelStyled(
-  data: Record<string, unknown>[],
-  headers: { key: string, label: string }[],
-  filename = 'export.xlsx',
-  title = 'Settlement History',
-  subtitle = '',
-  options: {
-    locale?: 'km' | 'en';
-    t?: (key: string, ...args: any[]) => string;
-    currency?: string;
-    totalAmount?: number;
-    period?: string;
-  } = {}
-) {
+// export async function exportToExcelStyled(
+//   data: Record<string, unknown>[],
+//   headers: { key: string, label: string }[],
+//   filename = 'export.xlsx',
+//   title = 'Settlement History',
+//   subtitle = '',
+//   options: {
+//     locale?: 'km' | 'en';
+//     t?: (key: string, ...args: any[]) => string;
+//     currency?: string;
+//     totalAmount?: number;
+//     period?: string;
+//   } = {}
+// ) {
 
-    console.log('Optimizing column width for:');
+//     console.log('Optimizing column width for:');
 
-    const ExcelJS = (await import('exceljs')).default;
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Sheet1');
+//     const ExcelJS = (await import('exceljs')).default;
+//     const workbook = new ExcelJS.Workbook();
+//     const worksheet = workbook.addWorksheet('Sheet1');
 
-    // Add title row
-    worksheet.mergeCells(1, 1, 1, headers.length);
-    const titleCell = worksheet.getCell(1, 1);
-    titleCell.value = title;
-    titleCell.font = { size: 16, bold: true };
-    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+//     // Add title row
+//     worksheet.mergeCells(1, 1, 1, headers.length);
+//     const titleCell = worksheet.getCell(1, 1);
+//     titleCell.value = title;
+//     titleCell.font = { size: 16, bold: true };
+//     titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-    // Add subtitle row if provided
-    let headerRowIndex = 2;
-    if (subtitle) {
-      worksheet.mergeCells(2, 1, 2, headers.length);
-      const subtitleCell = worksheet.getCell(2, 1);
-      subtitleCell.value = subtitle;
-      subtitleCell.font = { size: 12, italic: true };
-      subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-      headerRowIndex = 3;
-    }
+//     // Add subtitle row if provided
+//     let headerRowIndex = 2;
+//     if (subtitle) {
+//       worksheet.mergeCells(2, 1, 2, headers.length);
+//       const subtitleCell = worksheet.getCell(2, 1);
+//       subtitleCell.value = subtitle;
+//       subtitleCell.font = { size: 12, italic: true };
+//       subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+//       headerRowIndex = 3;
+//     }
 
-    // Add header row
-    worksheet.addRow(headers.map(h => h.label));
-    const headerRow = worksheet.getRow(headerRowIndex);
-    headerRow.font = { bold: true };
-    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-    headerRow.eachCell(cell => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFDDEEFF' }
-      };
-      cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
-      };
-    });
+//     // Add header row
+//     worksheet.addRow(headers.map(h => h.label));
+//     const headerRow = worksheet.getRow(headerRowIndex);
+//     headerRow.font = { bold: true };
+//     headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+//     headerRow.eachCell(cell => {
+//       cell.fill = {
+//         type: 'pattern',
+//         pattern: 'solid',
+//         fgColor: { argb: 'FFDDEEFF' }
+//       };
+//       cell.border = {
+//         top: { style: 'thin' },
+//         left: { style: 'thin' },
+//         bottom: { style: 'thin' },
+//         right: { style: 'thin' }
+//       };
+//     });
 
-    // Add data rows
-    data.forEach(item => {
-      worksheet.addRow(headers.map(h => item[h.key]));
-    });
+//     // Add data rows
+//     data.forEach(item => {
+//       worksheet.addRow(headers.map(h => item[h.key]));
+//     });
 
-    // Add total row if provided with proper formatting
-    if (options.totalAmount !== undefined && options.t) {
-      // Add empty row for spacing
-      worksheet.addRow([]);
+//     // Add total row if provided with proper formatting
+//     if (options.totalAmount !== undefined && options.t) {
+//       // Add empty row for spacing
+//       worksheet.addRow([]);
       
-      // Create a properly formatted total section
-      const totalLabel = options.t('pdf_export.total');
-      const totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`;
+//       // Create a properly formatted total section
+//       const totalLabel = options.t('pdf_export.total');
+//       const totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`;
       
-      // Add total row spanning multiple columns for better layout
-      const totalRowData = new Array(headers.length).fill('');
-      totalRowData[headers.length - 2] = totalLabel; // Second to last column
-      totalRowData[headers.length - 1] = totalValue; // Last column
+//       // Add total row spanning multiple columns for better layout
+//       const totalRowData = new Array(headers.length).fill('');
+//       totalRowData[headers.length - 2] = totalLabel; // Second to last column
+//       totalRowData[headers.length - 1] = totalValue; // Last column
       
-      const totalRow = worksheet.addRow(totalRowData);
+//       const totalRow = worksheet.addRow(totalRowData);
       
-      // Style the total row
-      totalRow.font = { 
-        bold: true,
-        size: 12,
-        name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
-      };
-      totalRow.alignment = { horizontal: 'right', vertical: 'middle' };
+//       // Style the total row
+//       totalRow.font = { 
+//         bold: true,
+//         size: 12,
+//         name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//       };
+//       totalRow.alignment = { horizontal: 'right', vertical: 'middle' };
       
-      // Add background color and borders to make it stand out
-      totalRow.eachCell((cell, colNumber) => {
-        if (colNumber >= headers.length - 1) { // Last two columns
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFE6F3FF' } // Light blue background
-          };
-          cell.border = {
-            top: { style: 'medium', color: { argb: 'FF000000' } },
-            left: { style: 'thin', color: { argb: 'FF000000' } },
-            bottom: { style: 'medium', color: { argb: 'FF000000' } },
-            right: { style: 'thin', color: { argb: 'FF000000' } }
-          };
-        }
-      });
+//       // Add background color and borders to make it stand out
+//       totalRow.eachCell((cell, colNumber) => {
+//         if (colNumber >= headers.length - 1) { // Last two columns
+//           cell.fill = {
+//             type: 'pattern',
+//             pattern: 'solid',
+//             fgColor: { argb: 'FFE6F3FF' } // Light blue background
+//           };
+//           cell.border = {
+//             top: { style: 'medium', color: { argb: 'FF000000' } },
+//             left: { style: 'thin', color: { argb: 'FF000000' } },
+//             bottom: { style: 'medium', color: { argb: 'FF000000' } },
+//             right: { style: 'thin', color: { argb: 'FF000000' } }
+//           };
+//         }
+//       });
       
-      // Make the total value cell right-aligned and bold
-      const totalValueCell = totalRow.getCell(headers.length);
-      totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };
-      totalValueCell.font = { 
-        bold: true,
-        size: 12,
-        color: { argb: 'FF0066CC' }, // Blue color for emphasis
-        name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
-      };
-    }
+//       // Make the total value cell right-aligned and bold
+//       const totalValueCell = totalRow.getCell(headers.length);
+//       totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };
+//       totalValueCell.font = { 
+//         bold: true,
+//         size: 12,
+//         color: { argb: 'FF0066CC' }, // Blue color for emphasis
+//         name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//       };
+//     }
 
-    // Set reasonable column widths - compact and globally applicable
-    worksheet.columns.forEach(column => {
-      if (!column) return;
+//     // Set reasonable column widths - compact and globally applicable
+//     worksheet.columns.forEach(column => {
+//       if (!column) return;
       
-      let maxLength = 8; // Reduced minimum width
-      let calculatedWidth = 12; // Reduced default width
+//       let maxLength = 8; // Reduced minimum width
+//       let calculatedWidth = 12; // Reduced default width
       
-      // Calculate width based on actual content
-      column.eachCell?.({ includeEmpty: true }, cell => {
-        if (cell.value) {
-          const cellLength = cell.value.toString().length;
-          maxLength = Math.max(maxLength, cellLength);
-        }
-      });
+//       // Calculate width based on actual content
+//       column.eachCell?.({ includeEmpty: true }, cell => {
+//         if (cell.value) {
+//           const cellLength = cell.value.toString().length;
+//           maxLength = Math.max(maxLength, cellLength);
+//         }
+//       });
       
-      // Apply intelligent width limits based on content length
-      if (maxLength <= 10) {
-        calculatedWidth = Math.min(maxLength + 2, 12); // Short content
-      } else if (maxLength <= 20) {
-        calculatedWidth = Math.min(maxLength + 2, 18); // Medium content
-      } else if (maxLength <= 30) {
-        calculatedWidth = Math.min(maxLength + 2, 25); // Long content
-      } else {
-        calculatedWidth = Math.min(maxLength + 2, 30); // Very long content
-      }
+//       // Apply intelligent width limits based on content length
+//       if (maxLength <= 10) {
+//         calculatedWidth = Math.min(maxLength + 2, 12); // Short content
+//       } else if (maxLength <= 20) {
+//         calculatedWidth = Math.min(maxLength + 2, 18); // Medium content
+//       } else if (maxLength <= 30) {
+//         calculatedWidth = Math.min(maxLength + 2, 25); // Long content
+//       } else {
+//         calculatedWidth = Math.min(maxLength + 2, 30); // Very long content
+//       }
       
-      // Ensure minimum readability but keep compact
-      column.width = Math.max(calculatedWidth, 10);
-    });
+//       // Ensure minimum readability but keep compact
+//       column.width = Math.max(calculatedWidth, 10);
+//     });
 
-    // Adjust row height
-    worksheet.eachRow((row, rowIndex) => {
-      row.height = 20;  // Set a default row height to reduce space
-    });
+//     // Adjust row height
+//     worksheet.eachRow((row, rowIndex) => {
+//       row.height = 20;  // Set a default row height to reduce space
+//     });
 
-    // Freeze header
-    worksheet.views = [{ state: 'frozen', ySplit: headerRowIndex }];
+//     // Freeze header
+//     worksheet.views = [{ state: 'frozen', ySplit: headerRowIndex }];
 
-    // Save
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
+//     // Save
+//     const buffer = await workbook.xlsx.writeBuffer();
+//     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+//     const link = document.createElement('a');
+//     link.href = URL.createObjectURL(blob);
+//     link.download = filename;
+//     link.click();
+// }
 
 
 export async function exportToPDFStyled(
@@ -811,6 +811,8 @@ export async function exportToPDFWithUnicodeSupport(
     locale?: 'km' | 'en';
     t?: (key: string, ...args: unknown[]) => string;
     filter?: Record<string, string>;
+    exportBy?: string;
+    exportDate?: string;
   } = {}
 ) {
   try {
@@ -862,7 +864,7 @@ export async function exportToPDFWithUnicodeSupport(
       let htmlContent = `
       <div style="padding: 10px;">
         <div style="
-          text-align: center; 
+          text-align: left; 
           padding-bottom: 15px;
           border-bottom: 3px double ${KHMER_BLUE};
           margin-bottom: 15px;
@@ -870,17 +872,66 @@ export async function exportToPDFWithUnicodeSupport(
           <h1 style="
             font-size: 22px; 
             font-weight: bold; 
-            margin: 0 0 8px 0; 
+            margin: 8px 0 0 0; 
             font-family: ${options.locale === 'km' ? '"Khmer OS Muol Light", "Noto Sans Khmer"' : '"Times New Roman", serif'};
             color: ${KHMER_BLUE};
           ">${displayTitle}</h1>
-          <h2 style="
-            font-size: 14px; 
-            margin: 0; 
+    `;
+
+    if(displaySubtitle) {
+      htmlContent += `
+        <h3 style="
+          font-size: 12px; 
+          margin: 8px 0 0 0; 
+          font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
+          color: ${KHMER_TEXT_LIGHT};
+          font-weight: normal;
+        "><strong>${options.t ? options.t('wallet_info') : 'Wallet Info'}:</strong> ${displaySubtitle}</h3>
+      `;
+    }
+
+    // Add Export Metadata (exportBy and exportDate) in simple format like subtitle
+    if ((options.exportBy || options.exportDate) && options.t) {
+      const t = options.t;
+      
+      if (options.exportBy) {
+        htmlContent += `
+          <h3 style="
+            font-size: 12px; 
+            margin: 8px 0 0 0; 
             font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
             color: ${KHMER_TEXT_LIGHT};
             font-weight: normal;
-          ">${displaySubtitle}</h2>
+          "><strong>${t('exported_by') || 'Exported By'}:</strong> ${options.exportBy}</h3>
+        `;
+      }
+
+      if (options.exportDate) {
+        // Format the export date
+        const formattedDate = new Date(options.exportDate).toLocaleDateString(
+          options.locale === 'km' ? 'km-KH' : 'en-US',
+          { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
+        
+        htmlContent += `
+          <h3 style="
+            font-size: 12px; 
+            margin: 4px 0 0 0; 
+            font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
+            color: ${KHMER_TEXT_LIGHT};
+            font-weight: normal;
+          "><strong>${t('export_date') || 'Export Date'}:</strong> ${formattedDate}</h3>
+        `;
+      }
+    }
+
+    htmlContent += `
         </div>
     `;
 
@@ -894,35 +945,76 @@ export async function exportToPDFWithUnicodeSupport(
       htmlContent += `
         <div style="
           margin-bottom: 20px;
-          padding: 12px 15px;
-          background: ${KHMER_BG_LIGHT};
-          border: 1px solid ${KHMER_BORDER};
-          border-left: 4px solid ${KHMER_BLUE};
-          border-radius: 5px;
+          padding: 12px 0;
+          border-top: 1px solid #e0e0e0;
         ">
           <h3 style="
-            margin: 0 0 10px 0;
+            margin: 0 0 12px 0;
             font-size: 13px;
-            font-weight: bold;
-            color: ${KHMER_BLUE};
+            font-weight: 600;
+            color: #333;
             font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
           ">${t('filters_applied')}</h3>
-          <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+          <div style="display: flex; flex-wrap: wrap; gap: 20px;">
       `;
 
-      // Display all filter values, even if they are "All" or "all_time"
-      for (const [key, value] of Object.entries(options.filter)) {
-        const displayValue = String(value || 'N/A');
+      // Convert filter entries to array and filter out Date Range, keep only Period and other filters
+      const filterEntries = Object.entries(options.filter).filter(([key]) => 
+        !key.toLowerCase().includes('date range')
+      );
+      
+      if (filterEntries.length > 0) {
+        const midPoint = Math.ceil(filterEntries.length / 2);
+        const leftColumn = filterEntries.slice(0, midPoint);
+        const rightColumn = filterEntries.slice(midPoint);
+
+        // Left Column
         htmlContent += `
-          <tr style="border-bottom: 1px solid ${KHMER_BORDER};">
-            <td style="padding: 6px 0; font-weight: 600; color: ${KHMER_TEXT_DARK}; width: 150px;">${key}</td>
-            <td style="padding: 6px 0; color: ${KHMER_TEXT_LIGHT};">${displayValue}</td>
-          </tr>
+          <div style="flex: 1; min-width: 200px;">
+            <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
         `;
+        
+        leftColumn.forEach(([key, value]) => {
+          const displayValue = String(value || 'N/A');
+          htmlContent += `
+            <tr>
+              <td style="padding: 6px 0; font-weight: 600; color: #333; width: 120px; text-align: left;">${key}:</td>
+              <td style="padding: 6px 0; color: #666; text-align: left;">${displayValue}</td>
+            </tr>
+          `;
+        });
+        
+        htmlContent += `
+            </table>
+          </div>
+        `;
+
+        // Right Column (only if there are items for it)
+        if (rightColumn.length > 0) {
+          htmlContent += `
+            <div style="flex: 1; min-width: 200px;">
+              <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+          `;
+          
+          rightColumn.forEach(([key, value]) => {
+            const displayValue = String(value || 'N/A');
+            htmlContent += `
+              <tr>
+                <td style="padding: 6px 0; font-weight: 600; color: #333; width: 120px; text-align: left;">${key}:</td>
+                <td style="padding: 6px 0; color: #666; text-align: left;">${displayValue}</td>
+              </tr>
+            `;
+          });
+          
+          htmlContent += `
+              </table>
+            </div>
+          `;
+        }
       }
 
       htmlContent += `
-          </table>
+          </div>
         </div>
       `;
     }
@@ -959,33 +1051,41 @@ export async function exportToPDFWithUnicodeSupport(
       htmlContent += `<tr style="${rowStyle}">`;
       
       headers.forEach((h) => {
-        let value = item[h.key];
+        let value;
         let cellAlign = 'left';
         let cellStyle = '';
         
-        // Format specific fields
-        if (h.key.includes('date') && value) {
-          if (
-            typeof value === 'string' ||
-            typeof value === 'number' ||
-            value instanceof Date
-          ) {
-            value = new Date(value).toLocaleDateString(
-              options.locale === 'km' ? 'km-KH' : 'en-US',
-              { year: 'numeric', month: 'short', day: 'numeric' }
-            );
+        // Handle row number column
+        if (h.key === 'row_number' || h.label === '#') {
+          value = index + 1; // Generate sequential row numbers
+          cellAlign = 'center';
+        } else {
+          value = item[h.key];
+          
+          // Format specific fields
+          if (h.key.includes('date') && value) {
+            if (
+              typeof value === 'string' ||
+              typeof value === 'number' ||
+              value instanceof Date
+            ) {
+              value = new Date(value).toLocaleDateString(
+                options.locale === 'km' ? 'km-KH' : 'en-US',
+                { year: 'numeric', month: 'short', day: 'numeric' }
+              );
+            }
+            cellAlign = 'center';
           }
-          cellAlign = 'center';
-        }
 
-        if (h.key.includes('amount') && (typeof value === 'number' || value instanceof Date)) {
-          value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          cellAlign = 'right';
-          cellStyle = 'font-weight: 600;';
-        }
-        if (h.key.includes('status')) {
-          cellAlign = 'center';
-          cellStyle = 'font-weight: 500; text-transform: capitalize;';
+          if (h.key.includes('amount') && (typeof value === 'number' || value instanceof Date)) {
+            value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            cellAlign = 'right';
+            cellStyle = 'font-weight: 600;';
+          }
+          if (h.key.includes('status')) {
+            cellAlign = 'center';
+            cellStyle = 'font-weight: 500; text-transform: capitalize;';
+          }
         }
         
         htmlContent += `
@@ -1109,6 +1209,330 @@ export async function exportToPDFWithUnicodeSupport(
 /**
  * Enhanced Excel export with better Unicode/Khmer support
  */
+
+// export async function exportToExcelWithUnicodeSupport(
+//   data: any[],
+//   headers: { key: string, label: string }[],
+//   filename = 'export.xlsx',
+//   title = 'Settlement History',
+//   subtitle = '',
+//   options: {
+//     locale?: 'km' | 'en';
+//     t?: Function;
+//     currency?: string;
+//     totalAmount?: number;
+//     period?: string;
+//     filter?: Record<string, string>;
+//     exportBy?: string;
+//     exportDate?: string;
+//   } = {}
+// ) {
+//   const ExcelJS = (await import('exceljs')).default;
+//   const workbook = new ExcelJS.Workbook();
+//   const worksheet = workbook.addWorksheet('Sheet1');
+
+//   // Set worksheet properties for better Unicode support
+//   worksheet.properties.defaultColWidth = 5;
+
+//   // Get dynamic titles if translation function is available
+//   const displayTitle = options.t ? options.t('settlement_history_title') : title;
+//   const displaySubtitle = options.t ? 
+//     options.t('settlement_history_subtitle', { date: new Date().toLocaleDateString(options.locale === 'km' ? 'km-KH' : 'en-US') }) : 
+//     subtitle;
+
+//   let currentRow = 1;
+
+//   // Add title row
+//   worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+//   const titleCell = worksheet.getCell(currentRow, 1);
+//   titleCell.value = displayTitle;
+//   titleCell.font = { 
+//     size: 16, 
+//     bold: true,
+//     name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//   };
+//   titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+//   currentRow++;
+
+//   // Add subtitle row if provided
+//   if (displaySubtitle) {
+//     worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+//     const subtitleCell = worksheet.getCell(currentRow, 1);
+//     subtitleCell.value = `${options.t ? options.t('wallet_info') : 'Wallet Info'}: ${displaySubtitle}`;
+//     subtitleCell.font = { 
+//       size: 11,
+//       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//     };
+//     subtitleCell.alignment = { vertical: 'middle', horizontal: 'left' };
+//     currentRow++;
+//   }
+
+//   // Add Export Metadata (exportBy and exportDate)
+//   if ((options.exportBy || options.exportDate) && options.t) {
+//     const t = options.t;
+    
+//     if (options.exportBy) {
+//       worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+//       const exportByCell = worksheet.getCell(currentRow, 1);
+//       exportByCell.value = `${t('exported_by') || 'Exported By'}: ${options.exportBy}`;
+//       exportByCell.font = { 
+//         size: 11,
+//         name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//       };
+//       exportByCell.alignment = { vertical: 'middle', horizontal: 'left' };
+//       currentRow++;
+//     }
+
+//     if (options.exportDate) {
+//       worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+//       const exportDateCell = worksheet.getCell(currentRow, 1);
+//       const formattedDate = new Date(options.exportDate).toLocaleDateString(
+//         options.locale === 'km' ? 'km-KH' : 'en-US',
+//         { 
+//           year: 'numeric', 
+//           month: 'long', 
+//           day: 'numeric',
+//           hour: '2-digit',
+//           minute: '2-digit'
+//         }
+//       );
+//       exportDateCell.value = `${t('export_date') || 'Export Date'}: ${formattedDate}`;
+//       exportDateCell.font = { 
+//         size: 11,
+//         name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//       };
+//       exportDateCell.alignment = { vertical: 'middle', horizontal: 'left' };
+//       currentRow++;
+//     }
+//   }
+
+//   // Add Filter Information
+//   if (options.filter && Object.keys(options.filter).length > 0 && options.t) {
+//     const t = options.t;
+    
+//     // Add filters section header
+//     worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+//     const filtersHeaderCell = worksheet.getCell(currentRow, 1);
+//     filtersHeaderCell.value = t('filters_applied');
+//     filtersHeaderCell.font = { 
+//       size: 12,
+//       bold: true,
+//       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//     };
+//     filtersHeaderCell.alignment = { vertical: 'middle', horizontal: 'left' };
+//     filtersHeaderCell.fill = {
+//       type: 'pattern',
+//       pattern: 'solid',
+//       fgColor: { argb: 'FFF0F0F0' }
+//     };
+//     currentRow++;
+
+//     // Add filter entries in a clean format
+//     const filterEntries = Object.entries(options.filter);
+//     filterEntries.forEach(([key, value]) => {
+//       const filterRow = worksheet.addRow([key, String(value || 'N/A')]);
+//       filterRow.font = {
+//         size: 10,
+//         name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//       };
+//       // Make the key bold
+//       filterRow.getCell(1).font = {
+//         size: 10,
+//         bold: true,
+//         name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//       };
+//       // Add light background
+//       filterRow.eachCell((cell) => {
+//         cell.fill = {
+//           type: 'pattern',
+//           pattern: 'solid',
+//           fgColor: { argb: 'FFFAFAFA' }
+//         };
+//         cell.border = {
+//           top: { style: 'thin', color: { argb: 'FFE0E0E0' } },
+//           left: { style: 'thin', color: { argb: 'FFE0E0E0' } },
+//           bottom: { style: 'thin', color: { argb: 'FFE0E0E0' } },
+//           right: { style: 'thin', color: { argb: 'FFE0E0E0' } }
+//         };
+//       });
+//     });
+//     currentRow++;
+//   }
+
+//   // Add period information if provided
+//   if (options.period && options.t) {
+//     worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+//     const periodCell = worksheet.getCell(currentRow, 1);
+//     const periodText = `${options.t('pdf_export.period')}: ${options.period}`;
+//     periodCell.value = periodText;
+//     periodCell.font = { 
+//       size: 10,
+//       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//     };
+//     periodCell.alignment = { vertical: 'middle', horizontal: 'center' };
+//     currentRow++;
+//   }
+
+//   // Add empty row for spacing
+//   currentRow++;
+
+//   // Add header row
+//   const headerRow = worksheet.addRow(headers.map(h => h.label));
+//   headerRow.font = { 
+//     bold: true,
+//     name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//   };
+//   headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+//   headerRow.height = 18; // Slightly taller for header but still compact
+//   headerRow.eachCell(cell => {
+//     cell.fill = {
+//       type: 'pattern',
+//       pattern: 'solid',
+//       fgColor: { argb: 'FFDDEEFF' }
+//     };
+//     cell.border = {
+//       top: { style: 'thin' },
+//       left: { style: 'thin' },
+//       bottom: { style: 'thin' },
+//       right: { style: 'thin' }
+//     };
+//   });
+
+//   // Add data rows with proper formatting and shorter spacing
+//   data.forEach(item => {
+//     const row = worksheet.addRow(headers.map(h => {
+//       let value = item[h.key];
+      
+//       // Format specific fields based on locale
+//       if (h.key.includes('date') && value) {
+//         value = new Date(value).toLocaleDateString(options.locale === 'km' ? 'km-KH' : 'en-US');
+//       }
+//       if (h.key.includes('amount') && typeof value === 'number') {
+//         value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US');
+//       }
+      
+//       return value;
+//     }));
+    
+//     // Set font for data rows
+//     row.font = {
+//       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//     };
+    
+//     // Set shorter row height for compact spacing
+//     row.height = 16; // Reduced from default ~20 to make it shorter
+    
+//     // Add borders to data cells
+//     row.eachCell(cell => {
+//       cell.border = {
+//         top: { style: 'thin' },
+//         left: { style: 'thin' },
+//         bottom: { style: 'thin' },
+//         right: { style: 'thin' }
+//       };
+//     });
+//   });
+
+//   // Add total row if provided with proper formatting
+//   if (options.totalAmount !== undefined && options.t) {
+//     // Add empty row for spacing
+//     worksheet.addRow([]);
+    
+//     // Create a properly formatted total section
+//     const totalLabel = options.t('pdf_export.total');
+//     const totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`;
+    
+//     // Add total row spanning multiple columns for better layout
+//     const totalRowData = new Array(headers.length).fill('');
+//     totalRowData[headers.length - 2] = totalLabel; // Second to last column
+//     totalRowData[headers.length - 1] = totalValue; // Last column
+    
+//     const totalRow = worksheet.addRow(totalRowData);
+    
+//     // Style the total row
+//     totalRow.font = { 
+//       bold: true,
+//       size: 12,
+//       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//     };
+//     totalRow.alignment = { horizontal: 'right', vertical: 'middle' };
+    
+//     // Add background color and borders to make it stand out
+//     totalRow.eachCell((cell, colNumber) => {
+//       if (colNumber >= headers.length - 1) { // Last two columns
+//         cell.fill = {
+//           type: 'pattern',
+//           pattern: 'solid',
+//           fgColor: { argb: 'FFE6F3FF' } // Light blue background
+//         };
+//         cell.border = {
+//           top: { style: 'medium', color: { argb: 'FF000000' } },
+//           left: { style: 'thin', color: { argb: 'FF000000' } },
+//           bottom: { style: 'medium', color: { argb: 'FF000000' } },
+//           right: { style: 'thin', color: { argb: 'FF000000' } }
+//         };
+//       }
+//     });
+    
+//     // Make the total value cell right-aligned and bold
+//     const totalValueCell = totalRow.getCell(headers.length);
+//     totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };
+//     totalValueCell.font = { 
+//       bold: true,
+//       size: 12,
+//       color: { argb: 'FF0066CC' }, // Blue color for emphasis
+//       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+//     };
+//   }
+
+//   worksheet.columns.forEach((column) => {
+//     if (!column) return;
+    
+//     let maxLength = 2;
+//     let calculatedWidth = 6;
+    
+//     column.eachCell?.({ includeEmpty: true }, cell => {
+//       if (cell.value) {
+//         const cellLength = cell.value.toString().length;
+//         const adjustedLength = options.locale === 'km' ? cellLength * 1.1 : cellLength;
+//         maxLength = Math.max(maxLength, adjustedLength);
+//       }
+//     });
+    
+//     // Apply more aggressive width limits for compact layout
+//     if (maxLength <= 8) {
+//       calculatedWidth = Math.min(maxLength + 1, 9); // Very short content
+//     } else if (maxLength <= 15) {
+//       calculatedWidth = Math.min(maxLength + 1, 14); // Short content
+//     } else if (maxLength <= 25) {
+//       calculatedWidth = Math.min(maxLength + 1, 18); // Medium content
+//     } else {
+//       calculatedWidth = Math.min(maxLength + 1, 22); // Long content
+//     }
+    
+//     // Ensure minimum readability but keep very compact
+//     column.width = Math.max(calculatedWidth, 7);
+//   });
+
+//   // Freeze header row
+//   worksheet.views = [{ state: 'frozen', ySplit: currentRow }];
+
+//   // Save with proper encoding
+//   const buffer = await workbook.xlsx.writeBuffer();
+//   const blob = new Blob([buffer], { 
+//     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+//   });
+//   const link = document.createElement('a');
+//   link.href = URL.createObjectURL(blob);
+//   link.download = filename;
+//   link.click();
+  
+//   // Cleanup
+//   URL.revokeObjectURL(link.href);
+// }
+
+
+
 export async function exportToExcelWithUnicodeSupport(
   data: any[],
   headers: { key: string, label: string }[],
@@ -1117,28 +1541,31 @@ export async function exportToExcelWithUnicodeSupport(
   subtitle = '',
   options: {
     locale?: 'km' | 'en';
-    t?: Function;
+    t?: (key: string, ...args: unknown[]) => string;
     currency?: string;
     totalAmount?: number;
     period?: string;
+    filter?: Record<string, string>;
+    exportBy?: string;
+    exportDate?: string;
   } = {}
 ) {
+
+  console.log('Starting Excel export...');
+  console.log('Using headers:', headers);
+
+
   const ExcelJS = (await import('exceljs')).default;
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Sheet1');
 
-  // Set worksheet properties for better Unicode support
   worksheet.properties.defaultColWidth = 5;
 
-  // Get dynamic titles if translation function is available
-  const displayTitle = options.t ? options.t('settlement_history_title') : title;
-  const displaySubtitle = options.t ? 
-    options.t('settlement_history_subtitle', { date: new Date().toLocaleDateString(options.locale === 'km' ? 'km-KH' : 'en-US') }) : 
-    subtitle;
+  const displayTitle = title;
+  const displaySubtitle = subtitle
 
   let currentRow = 1;
 
-  // Add title row
   worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
   const titleCell = worksheet.getCell(currentRow, 1);
   titleCell.value = displayTitle;
@@ -1150,44 +1577,163 @@ export async function exportToExcelWithUnicodeSupport(
   titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
   currentRow++;
 
-  // Add subtitle row if provided
   if (displaySubtitle) {
     worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
     const subtitleCell = worksheet.getCell(currentRow, 1);
-    subtitleCell.value = displaySubtitle;
-    subtitleCell.font = { 
-      size: 12, 
-      italic: true,
-      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+    const walletInfoKey = `${options.t ? options.t('wallet_info') : 'Wallet Info'}: `;
+    subtitleCell.value = {
+      richText: [
+        { text: walletInfoKey, font: { size: 11, bold: true, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial' } },
+        { text: displaySubtitle, font: { size: 11, bold: false, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial' } }
+      ]
     };
-    subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    subtitleCell.alignment = { vertical: 'middle', horizontal: 'left' };
     currentRow++;
   }
 
-  // Add period information if provided
-  if (options.period && options.t) {
+  if ((options.exportBy || options.exportDate) && options.t) {
+    const t = options.t;
+    
+    if (options.exportBy) {
+      worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+      const exportByCell = worksheet.getCell(currentRow, 1);
+      const exportByKey = `${t('exported_by') || 'Exported By'}: `;
+      exportByCell.value = {
+        richText: [
+          { text: exportByKey, font: { size: 11, bold: true, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial' } },
+          { text: options.exportBy, font: { size: 11, bold: false, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial' } }
+        ]
+      };
+      exportByCell.alignment = { vertical: 'middle', horizontal: 'left' };
+      currentRow++;
+    }
+
+    if (options.exportDate) {
+      worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
+      const exportDateCell = worksheet.getCell(currentRow, 1);
+      const formattedDate = new Date(options.exportDate).toLocaleDateString(
+        options.locale === 'km' ? 'km-KH' : 'en-US',
+        { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric'
+        }
+      );
+      const exportDateKey = `${t('export_date') || 'Export Date'}: `;
+      exportDateCell.value = {
+        richText: [
+          { text: exportDateKey, font: { size: 11, bold: true, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial' } },
+          { text: formattedDate, font: { size: 11, bold: false, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial' } }
+        ]
+      };
+      exportDateCell.alignment = { vertical: 'middle', horizontal: 'left' };
+      currentRow++;
+    }
+  }
+
+  if (options.filter && Object.keys(options.filter).length > 0 && options.t) {
+    const t = options.t;
+    
+    // Add a subtle separator line before the filters section
+    worksheet.addRow([]);
+    const separatorRow = worksheet.lastRow;
+    if (separatorRow) {
+      separatorRow.height = 5;
+      const separatorCell = separatorRow.getCell(1);
+      separatorCell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFEEEEEE' }
+      };
+      worksheet.mergeCells(separatorRow.number, 1, separatorRow.number, headers.length);
+    }
+    currentRow++;
+    
+    // Add filters section header
     worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
-    const periodCell = worksheet.getCell(currentRow, 1);
-    const periodText = `${options.t('pdf_export.period')}: ${options.period}`;
-    periodCell.value = periodText;
-    periodCell.font = { 
-      size: 10,
-      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
+    const filtersHeaderCell = worksheet.getCell(currentRow, 1);
+    filtersHeaderCell.value = t('filters_applied');
+    filtersHeaderCell.font = { 
+      size: 11,
+      bold: true,
+      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
+      color: { argb: 'FF444444' }
     };
-    periodCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    filtersHeaderCell.alignment = { vertical: 'middle', horizontal: 'left' };
     currentRow++;
+    
+    // Filter out Date Range entries, keep only Period and other filters
+    const filterEntries = Object.entries(options.filter).filter(([key]) => 
+      !key.toLowerCase().includes('date range')
+    );
+    
+    // Render filters in a two-column layout for a cleaner look
+    const midPoint = Math.ceil(filterEntries.length / 2);
+    for (let i = 0; i < midPoint; i++) {
+      const leftItem = filterEntries[i];
+      const rightItem = filterEntries[i + midPoint];
+      
+      const rowData = [];
+      if (leftItem) {
+        rowData.push(leftItem[0]);
+        rowData.push(String(leftItem[1] || 'N/A'));
+      } else {
+        rowData.push('');
+        rowData.push('');
+      }
+      
+      // Add a spacer column for visual separation
+      rowData.push('');
+      
+      if (rightItem) {
+        rowData.push(rightItem[0]);
+        rowData.push(String(rightItem[1] || 'N/A'));
+      }
+      
+      const filterRow = worksheet.addRow(rowData);
+      filterRow.height = 16;
+      
+      // Style the left filter item
+      if (leftItem) {
+        const keyCell = filterRow.getCell(1);
+        const valueCell = filterRow.getCell(2);
+        keyCell.font = { size: 9, bold: true, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial', color: { argb: 'FF555555' } };
+        valueCell.font = { size: 9, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial', color: { argb: 'FF666666' } };
+        keyCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        valueCell.alignment = { horizontal: 'left', vertical: 'middle' };
+      }
+      
+      // Style the right filter item
+      if (rightItem) {
+        const keyCell = filterRow.getCell(4);
+        const valueCell = filterRow.getCell(5);
+        keyCell.font = { size: 9, bold: true, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial', color: { argb: 'FF555555' } };
+        valueCell.font = { size: 9, name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial', color: { argb: 'FF666666' } };
+        keyCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        valueCell.alignment = { horizontal: 'left', vertical: 'middle' };
+      }
+    }
+    
+    // Adjust column widths for the filter section
+    worksheet.getColumn(1).width = 20;
+    worksheet.getColumn(2).width = 25;
+    worksheet.getColumn(3).width = 5; // Spacer column
+    worksheet.getColumn(4).width = 20;
+    worksheet.getColumn(5).width = 25;
+    
+    currentRow += midPoint;
   }
 
-  // Add empty row for spacing
   currentRow++;
 
-  // Add header row
   const headerRow = worksheet.addRow(headers.map(h => h.label));
+  currentRow++; // Increment for the header row
   headerRow.font = { 
     bold: true,
     name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
   };
   headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+  headerRow.height = 18;
   headerRow.eachCell(cell => {
     cell.fill = {
       type: 'pattern',
@@ -1202,28 +1748,27 @@ export async function exportToExcelWithUnicodeSupport(
     };
   });
 
-  // Add data rows with proper formatting
-  data.forEach(item => {
+  data.forEach((item, index) => {
     const row = worksheet.addRow(headers.map(h => {
-      let value = item[h.key];
+      // Handle row number column
+      if (h.key === 'row_number' || h.label === '#') {
+        return index + 1; // Generate sequential row numbers
+      }
       
-      // Format specific fields based on locale
+      let value = item[h.key];
       if (h.key.includes('date') && value) {
         value = new Date(value).toLocaleDateString(options.locale === 'km' ? 'km-KH' : 'en-US');
       }
       if (h.key.includes('amount') && typeof value === 'number') {
         value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US');
       }
-      
       return value;
     }));
-    
-    // Set font for data rows
+    currentRow++; // Increment for each data row
     row.font = {
       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
     };
-    
-    // Add borders to data cells
+    row.height = 16;
     row.eachCell(cell => {
       cell.border = {
         top: { style: 'thin' },
@@ -1234,37 +1779,26 @@ export async function exportToExcelWithUnicodeSupport(
     });
   });
 
-  // Add total row if provided with proper formatting
   if (options.totalAmount !== undefined && options.t) {
-    // Add empty row for spacing
     worksheet.addRow([]);
-    
-    // Create a properly formatted total section
     const totalLabel = options.t('pdf_export.total');
     const totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`;
-    
-    // Add total row spanning multiple columns for better layout
     const totalRowData = new Array(headers.length).fill('');
-    totalRowData[headers.length - 2] = totalLabel; // Second to last column
-    totalRowData[headers.length - 1] = totalValue; // Last column
-    
+    totalRowData[headers.length - 2] = totalLabel;
+    totalRowData[headers.length - 1] = totalValue;
     const totalRow = worksheet.addRow(totalRowData);
-    
-    // Style the total row
     totalRow.font = { 
       bold: true,
       size: 12,
       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
     };
     totalRow.alignment = { horizontal: 'right', vertical: 'middle' };
-    
-    // Add background color and borders to make it stand out
     totalRow.eachCell((cell, colNumber) => {
-      if (colNumber >= headers.length - 1) { // Last two columns
+      if (colNumber >= headers.length - 1) {
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: 'FFE6F3FF' } // Light blue background
+          fgColor: { argb: 'FFE6F3FF' }
         };
         cell.border = {
           top: { style: 'medium', color: { argb: 'FF000000' } },
@@ -1274,54 +1808,46 @@ export async function exportToExcelWithUnicodeSupport(
         };
       }
     });
-    
-    // Make the total value cell right-aligned and bold
     const totalValueCell = totalRow.getCell(headers.length);
     totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };
     totalValueCell.font = { 
       bold: true,
       size: 12,
-      color: { argb: 'FF0066CC' }, // Blue color for emphasis
+      color: { argb: 'FF0066CC' },
       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
     };
   }
 
-  // Set reasonable column widths - more compact and globally applicable
-  worksheet.columns.forEach((column, index) => {
+  // ==== UPDATED SECTION FOR SMALLER CELL WIDTHS ====
+  worksheet.columns.forEach((column) => {
     if (!column) return;
-    
-    let maxLength = 8; // Reduced minimum width
-    let calculatedWidth = 12; // Reduced default width
-    
-    // Calculate width based on actual content
+    let maxLength = 2; // UPDATED: smaller base value
+    let calculatedWidth = 5; // UPDATED: smaller default
+
     column.eachCell?.({ includeEmpty: true }, cell => {
       if (cell.value) {
         const cellLength = cell.value.toString().length;
-        // For Khmer text, account for wider characters but keep it reasonable
-        const adjustedLength = options.locale === 'km' ? cellLength * 1.2 : cellLength;
+        const adjustedLength = options.locale === 'km' ? cellLength * 1.1 : cellLength;
         maxLength = Math.max(maxLength, adjustedLength);
       }
     });
-    
-    // Apply intelligent width limits based on content length rather than column names
-    if (maxLength <= 10) {
-      calculatedWidth = Math.min(maxLength + 2, 12); // Short content
-    } else if (maxLength <= 20) {
-      calculatedWidth = Math.min(maxLength + 2, 18); // Medium content
-    } else if (maxLength <= 30) {
-      calculatedWidth = Math.min(maxLength + 2, 25); // Long content
-    } else {
-      calculatedWidth = Math.min(maxLength + 2, 30); // Very long content
-    }
-    
-    // Ensure minimum readability but keep compact
-    column.width = Math.max(calculatedWidth, 10);
-  });
 
-  // Freeze header row
+    if (maxLength <= 8) {
+      calculatedWidth = Math.min(maxLength, 7); // UPDATED
+    } else if (maxLength <= 15) {
+      calculatedWidth = Math.min(maxLength, 10); // UPDATED
+    } else if (maxLength <= 25) {
+      calculatedWidth = Math.min(maxLength, 14); // UPDATED
+    } else {
+      calculatedWidth = Math.min(maxLength, 18); // UPDATED
+    }
+
+    column.width = Math.max(calculatedWidth, 5); // UPDATED: reduced min from 7 → 5
+  });
+  // ==== END UPDATED SECTION ====
+
   worksheet.views = [{ state: 'frozen', ySplit: currentRow }];
 
-  // Save with proper encoding
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], { 
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -1330,7 +1856,6 @@ export async function exportToExcelWithUnicodeSupport(
   link.href = URL.createObjectURL(blob);
   link.download = filename;
   link.click();
-  
-  // Cleanup
   URL.revokeObjectURL(link.href);
 }
+
