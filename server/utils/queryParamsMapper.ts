@@ -43,7 +43,7 @@ export function mapQueryParamsToPgwModule(clientParams: QueryParams): QueryParam
       field: 'search',
       operator: FilterOperatorPgwModule.Contains,
       value: clientParams.search,
-      manualFilter: false,
+      manualFilter: true,
     })
   }
 
@@ -155,5 +155,3 @@ export function serializePgwModuleParams(
     Filter: pgwParams.filter,
   }
 }
-
-

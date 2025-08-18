@@ -96,6 +96,7 @@ export async function requestToPgwModuleApi<T>(
   useRawQueryParams: boolean = false
 ): Promise<T> {
   try {
+    console.log('asdfASDF')
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
     const query = getQuery<QueryParams | TransactionQueryParams>(event)
 
@@ -177,10 +178,8 @@ export async function requestToPgwModuleApi<T>(
     }
 
     const options = buildFetchInit(event, method, outboundBody, additionalHeaders)
-
-    console.log(`Forwarding request to PGW Module API: ${url}`)
-    console.log(`Request options:`, options)
-
+    console.log(`Requesting PGW Module API: ${url}`, { method, body: outboundBody, headers: options.headers })
+    console.log('Request options:', options)
     const response = await fetch(url, options)
     return handlePgwModuleApiResponse<T>(response)
   } catch (error) {

@@ -240,10 +240,10 @@ const uploadFile = async (file: File) => {
     )
   }
 
-    const getWalletTransactionBySubBiller = async (query?: QueryParams) => {
+  const getWalletTransactionBySubBiller = async (query?: QueryParams) => {
     console.log('Fetching transactions with query:', query)
     const rep = await executeV2(() =>
-      $fetch<WalletTransactionListResponse>(`/api/pgw-module/reports/get_transaction_wallet_payments`, {
+      $fetch<WalletTransactionListResponse>(`/api/pgw-module/reports/get-transaction-wallet-payments`, {
         method: 'GET',
         query,
       })

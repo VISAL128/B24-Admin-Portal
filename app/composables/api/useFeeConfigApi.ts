@@ -2,7 +2,7 @@
 import type { ApiResponse } from '~/models/baseModel'
 import type { FeeModel, SharingSupplier } from '~/models/settlement'
 import { useApiExecutor } from './useApiExecutor'
-import type { FeeConfig} from '~/models/feeConfiguration'
+import type { FeeConfig } from '~/models/feeConfiguration'
 const toast = useToast()
 
 export const useFeeConfigApi = () => {
@@ -35,13 +35,13 @@ export const useFeeConfigApi = () => {
       toast.add({
         title: 'Error',
         description: `Failed to create fee config: ${rep.message}`,
-        color: 'error'
+        color: 'error',
       })
       return null as any
     }
     return rep.data as FeeModel
   }
-  
+
   const updateFeeConfig = async (payload: FeeModel): Promise<FeeModel> => {
     const rep = await executeV2(() =>
       $fetch<ApiResponse<FeeModel>>(`/api/fee/update-fee-config`, { method: 'POST', body: payload })
@@ -50,7 +50,7 @@ export const useFeeConfigApi = () => {
       toast.add({
         title: 'Error',
         description: `Failed to update fee config: ${rep.message}`,
-        color: 'error'
+        color: 'error',
       })
       return null as any
     }
@@ -59,13 +59,16 @@ export const useFeeConfigApi = () => {
 
   const getListFeeConfig = async (payload: { search: string }): Promise<FeeModel[]> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeModel[]>>(`/api/fee/get-fee-configv2`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<FeeModel[]>>(`/api/fee/get-fee-configv2`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       toast.add({
         title: 'Error',
         description: `Failed to fetch fee config: ${rep.message}`,
-        color: 'error'
+        color: 'error',
       })
       return [] as FeeModel[]
     }
@@ -80,13 +83,12 @@ export const useFeeConfigApi = () => {
       toast.add({
         title: 'Error',
         description: `Failed to fetch fee config by ID: ${rep.message}`,
-        color: 'error'
+        color: 'error',
       })
       return null as any
     }
     return rep.data
   }
-
 
   // New API Fee Config
   const getSupplierFeeConfig = async (payload: { search: string }): Promise<FeeConfig[]> => {
@@ -97,7 +99,7 @@ export const useFeeConfigApi = () => {
       toast.add({
         title: 'Error',
         description: `Failed to fetch supplier fee config: ${rep.message}`,
-        color: 'error'
+        color: 'error',
       })
       return [] as FeeConfig[]
     }
@@ -106,13 +108,16 @@ export const useFeeConfigApi = () => {
 
   const saveSupplierFeeConfig = async (payload: FeeConfig[]): Promise<FeeConfig[]> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeConfig[]>>(`/api/fee/update-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponse<FeeConfig[]>>(`/api/fee/update-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       toast.add({
         title: 'Error',
         description: `Failed to save supplier fee config: ${rep.message}`,
-        color: 'error'
+        color: 'error',
       })
       return [] as FeeConfig[]
     }
@@ -127,41 +132,11 @@ export const useFeeConfigApi = () => {
       toast.add({
         title: 'Error',
         description: `Failed to fetch sharing suppliers: ${rep.message}`,
-        color: 'error'
+        color: 'error',
       })
       return null as any
     }
     return rep.data as SharingSupplier[]
-  }
-
-  const addSharingSupplier = async  (payload: SharingSupplier): Promise<SharingSupplier> => {
-    const rep = await executeV2(() =>
-      $fetch<ApiResponse<SharingSupplier>>(`/api/fee/add_sharing_supplier`, { method: 'POST', body: payload })
-    )
-    if (rep.code !== 'SUCCESS') {
-      toast.add({
-        title: 'Error',
-        description: `Failed to add sharing supplier: ${rep.message}`,
-        color: 'error'
-      })
-      return null as any
-    }
-    return rep.data as SharingSupplier
-  }
-
-  const deleteSharingSupplier = async  (payload: SharingSupplier): Promise<SharingSupplier> => {
-    const rep = await executeV2(() =>
-      $fetch<ApiResponse<SharingSupplier>>(`/api/fee/delete_sharing_supplier`, { method: 'POST', body: payload })
-    )
-    if (rep.code !== 'SUCCESS') {
-      toast.add({
-        title: 'Error',
-        description: `Failed to delete sharing supplier: ${rep.message}`,
-        color: 'error'
-      })
-      return null as any
-    }
-    return rep.data as SharingSupplier
   }
 
   return {
@@ -173,7 +148,5 @@ export const useFeeConfigApi = () => {
     getAllSharingSupplier,
     saveSupplierFeeConfig,
     getSupplierFeeConfig,
-    addSharingSupplier,
-    deleteSharingSupplier
   }
 }
