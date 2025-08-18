@@ -1,6 +1,6 @@
 // ~/types/table.ts
 import type { TableColumn } from '@nuxt/ui'
-import type { Bank } from '~/models/bank'
+import type { ActivatedBankResponse } from '~/models/bank'
 import type { SettlementHistoryRecord } from '~/models/settlement'
 import type { TransactionModel } from '~~/server/model/pgw_module_api/transactions/transaction'
 
@@ -45,6 +45,6 @@ export interface SettlementHistoryTableFetchResult extends TableFetchResult<Sett
   sum_failed?: number
 }
 
-export type BankListTableFetchResult = TableFetchResult<Bank[]>
+export type BankListTableFetchResult = TableFetchResult<ActivatedBankResponse[]>
 
 export type TransactionListTableFetchResult = TableFetchResult<TransactionModel[]>

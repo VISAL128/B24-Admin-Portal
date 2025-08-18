@@ -90,15 +90,15 @@ export const useSplashScreen = () => {
         // Step 3: Check for existing profile
         updateProgress('loading_profile', 40)
         const cookie = useCookie('profile')
-        if (cookie.value) {
-          // Step 6: Finalize if profile exists
-          updateProgress('finalizing', 90)
-          await new Promise((resolve) => setTimeout(resolve, 100))
+        // if (cookie.value) {
+        //   // Step 6: Finalize if profile exists
+        //   updateProgress('finalizing', 90)
+        //   await new Promise((resolve) => setTimeout(resolve, 100))
 
-          updateProgress('complete', 100)
-          setAppReady()
-          return true
-        }
+        //   updateProgress('complete', 100)
+        //   setAppReady()
+        //   return true
+        // }
 
         // Step 4: Get user profile from API
         let profile

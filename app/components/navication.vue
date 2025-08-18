@@ -168,13 +168,13 @@ const items = computed<NavigationMenuItem[][]>(() => [
           to: '/settings/generate-details',
           active: activeStates.value.settingsGenerateDetails,
         },
-        {
-          label: t('settings.fee_config'),
-          // icon: 'i-material-symbols-light-switch-access-shortcut',
-          size: 'lg',
-          to: '/settings/fee-configuration',
-          active: activeStates.value.settingsFeeConfig,
-        },
+        // {
+        //   label: t('settings.fee_config'),
+        //   // icon: 'i-material-symbols-light-switch-access-shortcut',
+        //   size: 'lg',
+        //   to: '/settings/fee-configuration',
+        //   active: activeStates.value.settingsFeeConfig,
+        // },
         // {
         //   label: t('navbar.developer_tools'),
         //   // icon: 'i-material-symbols-light-code',

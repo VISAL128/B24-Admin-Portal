@@ -1,12 +1,12 @@
 import { PGW_MODULE_API_ENDPOINTS } from '~~/server/utils/pgw-module-api-endpoints'
 import { requestToPgwModuleApi } from '../../../logic/pgw_module_api_logic'
-import type { Bank } from '~/models/bank'
+import type { ActivatedBankResponse } from '~/models/bank'
 import type { ApiResponse, PgwModuleResponseList } from '~/models/baseModel'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<Bank[]>> => {
+export default defineEventHandler(async (event): Promise<ApiResponse<ActivatedBankResponse[]>> => {
   try {
     // Call the PGW Module API
-    const response = await requestToPgwModuleApi<PgwModuleResponseList<Bank>>(event, PGW_MODULE_API_ENDPOINTS.BANK.GET_BY_WALLET_SERVICE, 'GET')
+    const response = await requestToPgwModuleApi<PgwModuleResponseList<ActivatedBankResponse>>(event, PGW_MODULE_API_ENDPOINTS.BANK.LIST_ACTIVATED, 'GET')
     const banks = response.result || []
 
     return {
