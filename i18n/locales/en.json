@@ -222,7 +222,7 @@
         "collectionBank": "Collection Bank",
         "settlementBank": "Settlement Bank",
         "settlementType": "Settlement Type",
-        "transactionType": "Transaction Type",
+        "tranType": "Transaction Type",
         "currencyId": "Currency",
         "status": "Status",
         "date": "Transaction Date",
