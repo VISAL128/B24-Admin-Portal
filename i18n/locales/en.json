@@ -173,10 +173,13 @@
     },
     "settlement-history": {
       "columns": {
+        "select": "Select",
         "created_date": "Settlement Date",
         "total_amount": "Total Amount",
         "currency_id": "Currency",
-        "total_settled": "Transaction",
+        "total_settled": "Total Transactions",
+        "success": "Success",
+        "failed": "Failed",
         "status": "Status",
         "created_by": "Settled By"
       }
