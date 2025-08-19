@@ -81,6 +81,23 @@ export interface TransactionHistoryRecord {
 }
 
 
+export interface WalletTransaction {
+  tranId: string;
+  tranDate: string;
+  transactionNo: string;
+  bankRefId: string;
+  bank: string;
+  tranType: string;
+  wallet: string;
+  status: string;
+  currencyId: string;
+  amount: number;
+}
+
+export interface WalletTransactionListResponse {
+  param: PaginationParam
+  results: WalletTransaction[]
+}
 export interface TransactionListResponse {
   param: PaginationParam
   results: TransactionHistoryRecord[]

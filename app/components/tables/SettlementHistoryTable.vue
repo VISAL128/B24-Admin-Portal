@@ -526,11 +526,11 @@ const valueClass = 'text-sm font-bold'
 
       <template #close>
         <div class="flex justify-end w-52">
-          <UTooltip :text="t('close')" :kbds="['esc']">
-            <UButton variant="ghost" class="w-8 h-8">
+          <UTooltip :text="t('close')" :kbds="['esc']" :delay-duration="200">
+            <UButton variant="ghost" class="w-8 h-8 px-1.5">
               <UIcon
                 name="material-symbols:close"
-                size="30"
+                size="50"
                 class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 @click="closeSlideover"
               />

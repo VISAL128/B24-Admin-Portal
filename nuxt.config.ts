@@ -61,6 +61,9 @@ export default defineNuxtConfig({
         logoutRedirectUri:
           process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.BASE_URL,
         // pkce: true,
+        additionalAuthParameters: {
+          origin: 'b24',
+        },
         sessionConfiguration: {
           singleSignOut: true,
         },
