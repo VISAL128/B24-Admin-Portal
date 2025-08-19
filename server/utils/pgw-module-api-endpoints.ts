@@ -4,7 +4,7 @@ export const PGW_MODULE_API_ENDPOINTS = {
     GET_BY_WALLET_SERVICE: '/get-current-bank-by-service-id/8',
     DETAILS: '/supplier-bank-service/{id}/details',
     LIST: '/bank/list',
-    LIST_ACTIVATED: '/bank/list-activated',
+    LIST_ACTIVATED: '/activated-banks',
     ACCOUNTS_BY_SBS_ID: '/get-accounts-by-supplier-bank-service-id/{sbs_id}',
   },
   // Transaction endpoints
@@ -17,4 +17,3 @@ export const PGW_MODULE_API_ENDPOINTS = {
     ALLOCATION_DETAILS: '/transaction/allocation/details/{id}',
   },
 }
-
