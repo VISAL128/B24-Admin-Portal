@@ -544,7 +544,6 @@
           search-tooltip="Search transactions"
           date-format="dd/MM/yyyy"
           enabled-auto-refresh
-          :export-options="exportOptions"
           @row-click="handleViewDetails"
         />
       </div>
@@ -585,7 +584,6 @@ import { useFormat } from '~/composables/utils/useFormat'
 import type { QueryParams } from '~/models/baseModel'
 import { FilterOperatorPgwModule } from '~/utils/enumModel'
 import { StatusBadge } from '#components'
-import type { ExportOptions } from '~/components/tables/ExTable.vue'
 
 // Define page meta
 definePageMeta({
@@ -609,8 +607,6 @@ const {
 
 // Wallet store
 const walletStore = useWalletStore()
-const auth = useAuth()
-const user = auth.user
 
 // Component Refs
 const tableRef = ref()
@@ -900,53 +896,6 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
     enableSorting: true,
   }
 ]
-})
-
-const exportOptions = computed((): ExportOptions => {
-  if (!selectedWalletTypeData.value) {
-    return {
-      fileName: 'transactions',
-      title: 'Transaction Report',
-      exportBy: typeof user.value?.fullName === 'string' ? user.value.fullName : 'N/A',
-    }
-  }
-
-  const walletName = selectedWalletTypeData.value.label || 'Wallet'
-  const currency = selectedWalletTypeData.value.currency
-
-  const getFilterValue = (field: string, defaultValue: string = t('all')) => {
-    const filter = lastFetchParams.value?.filters?.find(f => f.field === field)
-    return filter?.value ? String(filter.value) : defaultValue
-  }
-
-  const getMultipleFilterValues = (field: string) => {
-    const filters = lastFetchParams.value?.filters?.filter(f => f.field === field)
-    if (!filters || filters.length === 0) return t('all')
-    
-    // Capitalize each status value
-    return filters.map(f => {
-      const valueStr = String(f.value)
-      return `${valueStr.charAt(0).toUpperCase()}${valueStr.slice(1)}`
-    }).join(', ')
-  }
-
-  const dateRange =   `${lastFetchParams.value?.start_date} ${t('to')} ${lastFetchParams.value?.end_date}`
-
-  // return with type ExportOptions
-  return {
-    fileName: `Transaction_Report_${walletName.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}`,
-    title: `${t('wallet_page.transaction_report')}`,
-    subtitle: `${walletName}`,
-    currency: currency,
-    // exportBy: typeof user.value?.fullName === 'string' ? user.value.fullName : 'N/A',
-    // exportDate: new Date().toISOString().split('T')[0],
-    filter: {
-      [t('date_range')]: dateRange,
-      [t('search')]: getFilterValue('search'),
-      [t('status.header')]: getMultipleFilterValues('status'),
-      [t('wallet_page.transaction_type')]: getMultipleFilterValues('tranType'),
-    },
-  }
 })
 
 const fetchTransactionsForTable = async (params?: QueryParams) => {

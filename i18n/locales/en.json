@@ -1,4 +1,8 @@
 {
+  "page_size":"Page Size",
+  "records_per_page": "Records Per Page",
+  "sorting": "Sorting",
+  "current_page": "Current Page",
   "wallet_info": "Wallet Information",
   "export_date": "Exported Date",
   "exported_by": "Exported By",

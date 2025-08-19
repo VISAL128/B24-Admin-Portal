@@ -1,4 +1,8 @@
 {
+  "page_size": "ចំនួនទំព័រ",
+  "records_per_page": "ចំនួនកំណត់ត្រាក្នុងមួយទំព័រ",
+  "sorting": "លំដាប់",
+  "current_page": "ទំព័របច្ចុប្បន្ន",
   "wallet_info": "ព័ត៌មានកាបូប",
   "export_date":"កាលបរិច្ឆេទ",
   "exported_by": "ទាញចេញដោយ",

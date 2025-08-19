@@ -793,18 +793,104 @@ watch(pageSize, async (_newSize) => {
   }
 })
 
-const resolvedExportOptions = computed(() => ({
-  fileName: props.exportOptions?.fileName ?? `${props.tableId}-export`,
-  title: props.exportOptions?.title ?? props.tableId,
-  subtitle: props.exportOptions?.subtitle ?? '',
-  currency: props.exportOptions?.currency,
-  startDate: props.exportOptions?.startDate ?? startDate.value,
-  endDate: props.exportOptions?.endDate ?? endDate.value,
-  totalAmount: props.exportOptions?.totalAmount,
-  exportDate: new Date().toISOString().split('T')[0],
-  exportBy: typeof user.value?.fullName === 'string' ? user.value.fullName : 'N/A',
-  filter: props.exportOptions?.filter,
-}))
+const resolvedExportOptions = computed((): ExportOptions => {
+  // Auto-generate export options from internal table state
+  const timestamp = new Date().toISOString().split('T')[0]
+  
+  // Build automatic filter display from current table state
+  const autoFilter: Record<string, string> = {}
+  
+  // ALWAYS show date range (even if it's "All Time")
+  if (showDateFilter.value) {
+    if (startDate.value && endDate.value) {
+      const startDateFormatted = new Date(startDate.value).toLocaleDateString()
+      const endDateFormatted = new Date(endDate.value).toLocaleDateString()
+      autoFilter[t('date_range')] = startDateFormatted === endDateFormatted 
+        ? startDateFormatted 
+        : `${startDateFormatted} ${t('to')} ${endDateFormatted}`
+    } else {
+      autoFilter[t('date_range')] = t('all_time')
+    }
+  }
+  
+  // ALWAYS show search filter (even if it's "All")
+  autoFilter[t('search')] = search.value?.trim() || t('all')
+  
+  // ALWAYS show status filters (even if it's "All")
+  const activeStatuses = appliedSelectedStatuses.value.filter(s => s.value !== 'all' && s.value !== '')
+  if (activeStatuses.length > 0) {
+    autoFilter[t('status.header')] = activeStatuses
+      .map(status => status.label || status.value.charAt(0).toUpperCase() + status.value.slice(1))
+      .join(', ')
+  } else {
+    autoFilter[t('status.header')] = t('all')
+  }
+  
+  // ALWAYS show ALL possible column filters (including those set to "All")
+  const allFilterableColumns = filteredColumns.value.filter(col => col.enableColumnFilter === true)
+  
+  allFilterableColumns.forEach(column => {
+    if (column.id) {
+      // Get the display name for this column
+      let displayName = getTranslationHeaderById(column.id)
+      if (displayName.includes('table.') && displayName.includes('.columns.')) {
+        // Translation not found, use column label or formatted field name
+        displayName = getColumnLabel(column)
+      }
+      
+      // Get the current filter value (from applied filters)
+      const currentValue = appliedColumnFilters.value[column.id]
+      
+      if (currentValue && currentValue.trim() !== '' && currentValue !== 'all') {
+        // Show the actual filter value
+        const displayValue = currentValue.charAt(0).toUpperCase() + currentValue.slice(1)
+        autoFilter[displayName] = displayValue
+      } else {
+        // Show "All" for columns that have no filter applied
+        autoFilter[displayName] = t('all')
+      }
+    }
+  })
+  
+  // ALWAYS show sorting information (even if no sorting applied)
+  if (sorting.value.length > 0) {
+    const sortInfo = sorting.value.map(sort => {
+      const column = props.columns.find(col => col.id === sort.id)
+      const columnName = column ? getColumnLabel(column) : sort.id
+      const direction = sort.desc ? t('descending') : t('ascending')
+      return `${columnName} (${direction})`
+    }).join(', ')
+    autoFilter[t('sorting')] = sortInfo
+  } else {
+    autoFilter[t('sorting')] = t('none')
+  }
+  
+  // Add page size information
+  autoFilter[t('page_size')] = `${pageSize.value.value} ${t('records_per_page')}`
+  
+  // Add current page information if applicable
+  if (internalTotalPage.value > 1) {
+    autoFilter[t('current_page')] = `${internalPage.value} ${t('of')} ${internalTotalPage.value}`
+  }
+  
+  // Use export options from props as base, but override with auto-generated values
+  return {
+    fileName: props.exportOptions?.fileName ?? `${props.tableId.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}_${timestamp}`,
+    title: props.exportOptions?.title ?? t(`table.${props.tableId}.title`) !== `table.${props.tableId}.title` ? t(`table.${props.tableId}.title`) : props.tableId.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    subtitle: props.exportOptions?.subtitle ?? '',
+    currency: props.exportOptions?.currency,
+    startDate: startDate.value,
+    endDate: endDate.value,
+    totalAmount: props.exportOptions?.totalAmount ?? 0,
+    exportDate: new Date().toISOString(),
+    exportBy: (user.value?.fullName as string) || t('system') as string,
+    filter: {
+      ...autoFilter,
+      // Allow props to override auto-generated filters if needed
+      ...(props.exportOptions?.filter || {}),
+    },
+  }
+})
 
 const tableRef = useTemplateRef('tableRef')
 const allColumnIds = computed(() =>
