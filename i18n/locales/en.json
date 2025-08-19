@@ -1113,5 +1113,7 @@
   "deactivate": "Deactivate",
   "deactivate_subbiller_confirmation": "Do you really want to deactivate this sub-biller?",
   "logo_recommendation": "Logo recommendation",
-  "updated_sub_biller_success": "Sub-biller updated successfully"
+  "updated_sub_biller_success": "Sub-biller updated successfully",
+  "sub_biller_detail": "Sub Biller Detail",
+  "sub_biller_detail_description": "View detailed information about the sub-biller"
 }

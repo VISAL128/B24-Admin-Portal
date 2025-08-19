@@ -1,6 +1,10 @@
 <template>
-  <div class="w-full h-[calc(100vh-64px)] overflow-hidden">
-    <!-- Mobile Tabs (Wallet / Details) -->
+  <div class="flex flex-col h-[calc(100vh-64px)] pace-y-3">
+    <!-- Page header (always visible) -->
+    <!-- <PageHeader
+      :title="t('sub_biller_detail')"
+      :subtitle="t('sub_biller_detail_description')"
+    /> -->
     <div class="lg:hidden px-4 pt-3">
       <div class="grid grid-cols-2 gap-1 rounded-xl p-1 bg-gray-100 dark:bg-gray-800">
         <button
@@ -33,15 +37,6 @@
     <!-- Make this container relative so the floating expand tab can anchor to it -->
     <div class="flex h-full flex-col lg:flex-row gap-4 relative">
       <!-- Floating expand tab when collapsed (desktop only) -->
-      <button
-        v-if="isDetailsCollapsed"
-        @click="toggleDetails"
-        class="hidden lg:flex absolute right-1 top-1/2 -translate-y-1/2 z-50 p-2 /* bigger click area, still transparent */ text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-full"
-        :aria-expanded="!isDetailsCollapsed"
-        :title="t('expand')"
-      >
-        <UIcon name="i-heroicons-chevron-left-20-solid" class="w-8 h-8" />
-      </button>
 
       <!-- SINGLE CARD with Wallets + Table -->
       <section
@@ -174,7 +169,7 @@
                 :columns="columns"
                 table-id="sub-biller-transaction-table"
                 :fetch-data-fn="fetchTransactions"
-                  :default-sorting="[{ id: 'tranDate', desc: true }]"
+                :default-sorting="[{ id: 'tranDate', desc: true }]"
                 show-row-number
                 show-date-filter
                 date-format="dd/MM/yyyy"
@@ -186,192 +181,191 @@
         </div>
       </section>
 
-      <!-- DETAILS (collapsible horizontally) -->
+      <!-- DETAILS (collapsible like sidebar) -->
       <section
         :class="[
-          'overflow-hidden flex-shrink-0 transition-[width] duration-300 ease-in-out',
-          /* mobile: only show when details tab active */
+          'relative overflow-hidden flex-shrink-0 transition-[width] duration-300 ease-in-out h-full',
           activeTab === 'details' ? 'block' : 'hidden',
-          /* desktop: keep original collapse behavior/width */
-          isDetailsCollapsed ? 'lg:w-0 pointer-events-none' : 'lg:w-[320px]',
+          isDetailsCollapsed ? 'lg:w-[48px]' : 'lg:w-[360px]',
           'lg:block w-full',
         ]"
         :aria-hidden="activeTab !== 'details' && !isDetailsCollapsed"
+        :aria-expanded="!isDetailsCollapsed"
       >
         <div
-          class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full mx-auto h-full relative"
+          class="flex flex-col h-full bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
         >
-          <!-- Collapse handle (visible when expanded) -->
-          <button
+          <!-- Expanded header -->
+          <div
             v-if="!isDetailsCollapsed"
-            @click="toggleDetails"
-            class="hidden lg:flex absolute -left-2 top-1/2 -translate-y-1/2 z-50 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-full"
-            :aria-expanded="!isDetailsCollapsed"
-            :title="t('collapse')"
+            class="relative rounded-t-2xl px-8 py-6 flex flex-col items-center justify-center text-center space-y-4 bg-cover bg-center"
+            :style="{ backgroundImage: `url('${supplierBackgroundImage}')` }"
           >
-            <UIcon name="i-heroicons-chevron-right-20-solid" class="w-8 h-8" />
-          </button>
-
-          <template v-if="isLoadingSupplier">
-            <!-- Top image placeholder -->
             <div
-              class="px-8 py-6 flex flex-col items-center justify-center space-y-4 bg-gray-100 dark:bg-gray-800"
-            >
-              <USkeleton class="w-24 h-24 rounded-full" />
-              <USkeleton class="h-6 w-32 rounded" />
-            </div>
-            <!-- Overview skeleton -->
-            <div class="p-8 space-y-4">
-              <div v-for="n in 6" :key="n" class="flex justify-between items-center">
-                <USkeleton class="w-24 h-4 rounded" />
-                <USkeleton class="w-32 h-4 rounded" />
-              </div>
-            </div>
-          </template>
-
-          <template v-else>
-            <div
-              class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-3xl w-full mx-auto h-full"
-            >
-              <!-- Top Header Area with Blurred Background Image -->
-              <div
-                class="rounded-t-2xl px-8 py-6 flex flex-col items-center justify-center text-center space-y-4 relative bg-cover bg-center w-full"
-                :style="{ backgroundImage: `url('${supplierBackgroundImage}')` }"
-              >
-                <div
-                  class="absolute inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40 w-full h-full pointer-events-none z-0"
-                ></div>
-
-                <!-- TOP-RIGHT ACTIONS (kebab menu via UPopover) -->
-                <div class="absolute top-2 right-2 z-50">
-                  <UPopover placement="bottom-end" :offset="[0, 10]">
+              class="absolute inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40 w-full h-full pointer-events-none z-0"
+            ></div>
+            <div class="absolute top-2 right-2 z-10">
+              <UPopover placement="bottom-end" :offset="[0, 10]">
+                <UButton
+                  variant="ghost"
+                  size="sm"
+                  class="px-2 rounded-full"
+                  :aria-label="t('actions')"
+                >
+                  <UIcon
+                    name="i-heroicons-ellipsis-horizontal-20-solid"
+                    class="w-5 h-5 text-white"
+                  />
+                </UButton>
+                <template #content>
+                  <div class="flex flex-col gap-1 p-2 w-36">
                     <UButton
                       variant="ghost"
                       size="sm"
-                      class="px-2 rounded-full"
-                      :aria-label="t('actions')"
+                      class="justify-start"
+                      block
+                      @click="openEditModal()"
                     >
-                      <UIcon
-                        name="i-heroicons-ellipsis-horizontal-20-solid"
-                        class="w-5 h-5 text-white"
-                      />
+                      <UIcon name="i-heroicons-pencil-square-20-solid" class="w-4 h-4 mr-2" />
+                      {{ t('edit') }}
                     </UButton>
-
-                    <template #content>
-                      <div class="flex flex-col gap-1 p-2 w-36">
-                        <UButton
-                          variant="ghost"
-                          size="sm"
-                          class="justify-start text-left"
-                          block
-                          @click="
-                            () => {
-                              openEditModal()
-                            }
-                          "
-                        >
-                          <UIcon name="i-heroicons-pencil-square-20-solid" class="w-4 h-4 mr-2" />
-                          {{ t('edit') }}
-                        </UButton>
-
-                        <UButton
-                          variant="ghost"
-                          size="sm"
-                          class="justify-start text-left text-red-600 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30"
-                          block
-                          @click="
-                            () => {
-                              isShowDeactivateConfirmModal = true
-                            }
-                          "
-                        >
-                          <UIcon name="i-heroicons-no-symbol-20-solid" class="w-4 h-4 mr-2" />
-                          {{ t('deactivate') }}
-                        </UButton>
-                      </div>
-                    </template>
-                  </UPopover>
-                </div>
-
-                <div class="relative z-10 flex flex-col items-center">
-                  <div
-                    class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center"
-                  >
-                    <template v-if="supplierProfileImage">
-                      <img
-                        :src="supplierProfileImage"
-                        alt="Supplier"
-                        class="w-full h-full object-cover"
-                      />
-                    </template>
-                    <template v-else>
-                      <div class="w-full h-full flex items-center justify-center">
-                        <UIcon
-                          name="material-symbols:home-work-outline"
-                          class="w-10 h-10 text-white"
-                        />
-                      </div>
-                    </template>
+                    <UButton
+                      variant="ghost"
+                      size="sm"
+                      class="justify-start text-left text-red-600 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30"
+                      block
+                      @click="isShowDeactivateConfirmModal = true"
+                    >
+                      <UIcon name="i-heroicons-no-symbol-20-solid" class="w-4 h-4 mr-2" />
+                      {{ t('deactivate') }}
+                    </UButton>
                   </div>
+                </template>
+              </UPopover>
+            </div>
 
-                  <h4 class="text-2xl font-medium text-white mt-4">
-                    {{ supplierData?.name ?? '-' }}
-                  </h4>
-                </div>
+            <div class="relative z-10 flex flex-col items-center">
+              <div
+                class="w-24 h-24 border-3 border-white rounded-full overflow-hidden flex items-center justify-center bg-white/10"
+              >
+                <template v-if="supplierProfileImage">
+                  <img
+                    :src="supplierProfileImage"
+                    alt="Supplier"
+                    class="w-full h-full object-cover"
+                  />
+                </template>
+                <template v-else>
+                  <UIcon name="material-symbols:home-work-outline" class="w-10 h-10 text-white" />
+                </template>
               </div>
+              <h4 class="text-2xl font-medium text-white mt-4">
+                {{ supplierData?.name ?? '-' }}
+              </h4>
+            </div>
+          </div>
 
-              <!-- Details Grid Section -->
-              <div class="grid grid-cols-1 gap-8 px-8 pb-8">
-                <div class="space-y-0">
-                  <div
-                    v-for="(field, index) in supplierOverviewFields"
-                    :key="index"
+          <!-- Collapsed rail header -->
+          <div v-else class="flex-1 flex flex-col items-center justify-start pt-3 gap-2">
+            <!-- Avatar -->
+            <div
+              class="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700"
+            >
+              <template v-if="supplierProfileImage">
+                <img
+                  :src="supplierProfileImage"
+                  alt="Supplier"
+                  class="w-full h-full object-cover"
+                />
+              </template>
+              <template v-else>
+                <div
+                  class="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800"
+                >
+                  <UIcon name="material-symbols:home-work-outline" class="w-5 h-5 text-gray-500" />
+                </div>
+              </template>
+            </div>
+
+            <!-- Edit button (icon-only, no background) -->
+            <UButton
+              variant="ghost"
+              size="sm"
+              square
+              :aria-label="t('edit')"
+              @click="openEditModal()"
+              class="!p-1 hover:bg-transparent focus:ring-0 text-gray-600 dark:text-white"
+            >
+              <UIcon name="i-heroicons-pencil-square-20-solid" class="w-5 h-5 mt-2" />
+            </UButton>
+          </div>
+
+          <!-- Details body (hidden when collapsed) -->
+          <div
+            v-if="!isDetailsCollapsed"
+            class="grid grid-cols-1 gap-8 px-8 pb-20 pt-4 overflow-auto"
+          >
+            <div class="space-y-0">
+              <div
+                v-for="(field, index) in supplierOverviewFields"
+                :key="index"
+                :class="[
+                  'flex items-start py-4',
+                  index !== supplierOverviewFields.length - 1
+                    ? 'border-b border-gray-200 dark:border-gray-700'
+                    : '',
+                ]"
+              >
+                <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">
+                  {{ field.label }}
+                </span>
+
+                <div class="flex-1 text-right">
+                  <TransactionTypeBadge
+                    v-if="field.type === 'badge'"
+                    :transaction-type="field.value"
+                    size="sm"
+                  />
+                  <span
+                    v-else-if="field.type === 'amount'"
+                    class="text-sm text-gray-900 dark:text-white"
+                  >
+                    {{ field.value }}
+                  </span>
+                  <ClipboardBadge
+                    v-else-if="field.type === 'code' && field.copyable"
+                    :text="field.rawValue || field.value"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                  />
+                  <span
+                    v-else
                     :class="[
-                      'flex items-start py-4',
-                      index !== supplierOverviewFields.length - 1
-                        ? 'border-b border-gray-200 dark:border-gray-700'
-                        : '',
+                      'text-sm text-gray-900 dark:text-white',
+                      field.type === 'code' ? 'font-mono break-all' : '',
                     ]"
                   >
-                    <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[120px]">
-                      {{ field.label }}
-                    </span>
-
-                    <div class="flex-1 text-right">
-                      <TransactionTypeBadge
-                        v-if="field.type === 'badge'"
-                        :transaction-type="field.value"
-                        size="sm"
-                      />
-
-                      <span
-                        v-else-if="field.type === 'amount'"
-                        class="text-sm text-gray-900 dark:text-white"
-                      >
-                        {{ field.value }}
-                      </span>
-
-                      <ClipboardBadge
-                        v-else-if="field.type === 'code' && field.copyable"
-                        :text="field.rawValue || field.value"
-                        :copied-tooltip-text="$t('clipboard.copied')"
-                      />
-
-                      <span
-                        v-else
-                        :class="[
-                          'text-sm text-gray-900 dark:text-white',
-                          field.type === 'code' ? 'font-mono break-all' : '',
-                        ]"
-                      >
-                        {{ field.value }}
-                      </span>
-                    </div>
-                  </div>
+                    {{ field.value }}
+                  </span>
                 </div>
               </div>
             </div>
-          </template>
+          </div>
+
+          <!-- Bottom icon-only toggle (no background) -->
+          <div
+            class="absolute bottom-2 left-0 right-0 hidden lg:flex"
+            :class="isDetailsCollapsed ? 'flex justify-center' : 'flex justify-start pl-2'"
+          >
+            <UButton
+              size="sm"
+              variant="ghost"
+              square
+              :icon="isDetailsCollapsed ? 'lucide:panel-left-close' : 'lucide:panel-left-open'"
+              :aria-label="isDetailsCollapsed ? t('expand') : t('collapse')"
+              @click="toggleDetails()"
+              class="rounded-full !p-2 hover:bg-transparent focus:ring-0 text-gray-900 dark:text-white"
+            />
+          </div>
         </div>
       </section>
     </div>
@@ -669,8 +663,9 @@ const isLoadingTable = ref(true)
 
 /** collapse state (desktop only) */
 const isDetailsCollapsed = ref(false)
-const toggleDetails = () => (isDetailsCollapsed.value = !isDetailsCollapsed.value)
-
+const toggleDetails: (e?: MouseEvent) => void = () => {
+  isDetailsCollapsed.value = !isDetailsCollapsed.value
+}
 const isShowEditModal = ref(false)
 const isSavingEdit = ref(false)
 
@@ -936,7 +931,7 @@ const navigateToDetails = (rowId: string) => {
 const transactionTypeFilterOptions = computed(() =>
   Object.entries(TransactionType).map(([key, value]) => ({
     label: key.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to readable format
-    value: value
+    value: value,
   }))
 )
 
@@ -945,32 +940,50 @@ const getTranslatedTransactionStatusLabel = (status: string) => {
   const translated = t(key)
   return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
 }
+
 const transactionStatusFilterOptions = computed(() =>
   Object.values(TransactionStatus).map((status) => ({
     label: getTranslatedTransactionStatusLabel(status),
-    value: status
+    value: status,
   }))
 )
 
+const copyCell = (text?: string | null) =>
+  h(
+    'div',
+    {
+      class: 'inline-flex items-center',
+      onClick: (e: MouseEvent) => e.stopPropagation(),
+      onMousedown: (e: MouseEvent) => e.stopPropagation(),
+    },
+    [
+      h(ClipboardBadge, {
+        text: text ?? '-',
+        copiedTooltipText: t('clipboard.copied'),
+      }),
+    ]
+  )
 
 const columns: BaseTableColumn<WalletTransaction>[] = [
   {
     id: 'tranDate',
     accessorKey: 'tranDate',
     headerText: t('pages.transaction.created_date'),
-    cell: ({ row }) => row.original.tranDate,
+    cell: ({ row }) => useFormat().formatDateTime(row.original.tranDate),
     enableSorting: true,
   },
   {
     id: 'transactionNo',
     accessorKey: 'transactionNo',
     headerText: t('wallet_page.transaction_no'),
+    cell: ({ row }) => copyCell(row.original.transactionNo),
   },
+
   {
     id: 'bankReference',
     accessorKey: 'bank_ref',
     headerText: t('pages.transaction.bank_ref'),
-    cell: ({ row }) => row.original.bankRefId || '-',
+    cell: ({ row }) => copyCell(row.original.bankRefId),
     enableSorting: true,
   },
   {
@@ -1055,7 +1068,6 @@ const fetchSubBillerById = async () => {
 }
 
 const errorHandler = useErrorHandler()
-
 
 const copyToClipboard = async (text: string) => {
   try {
