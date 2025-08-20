@@ -187,6 +187,7 @@
     "banks-list": {
       "columns": {
         "name": "Bank Name",
+        "nameKh": "Bank Name (Khmer)",
         "currency": "Currency",
         "status": "Status",
         "activated_date": "Activated Date",
@@ -1065,6 +1066,8 @@
     }
   },
   "banks": {
+    "settlement": "Settlement Banks",
+    "collection": "Collection Banks",
     "no_accounts_found": "No accounts found",
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
