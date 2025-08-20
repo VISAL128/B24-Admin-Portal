@@ -173,10 +173,13 @@
     },
     "settlement-history": {
       "columns": {
+        "select": "Select",
         "created_date": "Settlement Date",
         "total_amount": "Total Amount",
         "currency_id": "Currency",
-        "total_settled": "Transaction",
+        "total_settled": "Total Transactions",
+        "success": "Success",
+        "failed": "Failed",
         "status": "Status",
         "created_by": "Settled By"
       }
@@ -184,6 +187,7 @@
     "banks-list": {
       "columns": {
         "name": "Bank Name",
+        "nameKh": "Bank Name (Khmer)",
         "currency": "Currency",
         "status": "Status",
         "activated_date": "Activated Date",
@@ -1062,6 +1066,8 @@
     }
   },
   "banks": {
+    "settlement": "Settlement Banks",
+    "collection": "Collection Banks",
     "no_accounts_found": "No accounts found",
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",

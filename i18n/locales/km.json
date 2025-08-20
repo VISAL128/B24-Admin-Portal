@@ -772,10 +772,13 @@
     },
     "settlement-history": {
       "columns": {
+        "select": "ជ្រើសរើស",
         "created_date": "កាលបរិច្ឆេទទូទាត់",
         "total_amount": "ចំនួនទឹកប្រាក់សរុប",
         "currency_id": "រូបិយប័ណ្ណ",
-        "total_settled": "ប្រតិបត្តិការ",
+        "total_settled": "ចំនួនប្រតិបត្តិការសរុប",
+        "success": "ជោគជ័យ",
+        "failed": "បរាជ័យ",
         "status": "ស្ថានភាព",
         "created_by": "ទូទាត់ដោយ"
       }
@@ -783,6 +786,7 @@
     "banks-list": {
       "columns": {
         "name": "ឈ្មោះធនាគារ",
+        "nameKh": "ឈ្មោះធនាគារ (ខ្មែរ)",
         "currency": "រូបិយប័ណ្ណ",
         "status": "ស្ថានភាព",
         "connectedServices": "សេវាកម្មដែលភ្ជាប់",
@@ -1080,6 +1084,8 @@
     }
   },
   "banks": {
+    "settlement": "ធនាគារទូទាត់",
+    "collection": "ធនាគារប្រមូលប្រាក់",
     "no_accounts_found": "រកមិនឃើញគណនី",
     "title": "ធនាគារ",
     "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់រចនាសម្ព័ន្ធធនាគារ",

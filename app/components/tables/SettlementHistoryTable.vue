@@ -251,13 +251,28 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
       },
     },
   },
+  // {
+  //   accessorKey: 'reason',
+  //   header: () => t('settlement.reason'),
+  //   cell: ({ row }) => {
+  //     return h('div', { class: 'text-xs' }, row.original.reason || '-')
+  //   },
+  //   size: 200,
+  //   maxSize: 200,
+  //   meta: {
+  //     class: {
+  //       td(cell) {
+  //         return cell.row.getIsSelected() ? cellClassForRowSelected : ''
+  //       },
+  //     },
+  //   },
+  // },
   {
-    accessorKey: 'settle_amount',
-    header: ({ column }) => createSortableHeader(column, t('settlement.amount'), 'right'),
-    cell: ({ row }) =>
-      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
-    size: 150,
-    maxSize: 150,
+    accessorKey: 'currency',
+    header: () => h('p', { class: 'w-full' }, t('settlement.currency')),
+    cell: () => h('span', { class: '' }, props.currency || 'N/A'),
+    size: 10,
+    maxSize: 30,
     meta: {
       class: {
         td(cell) {
@@ -267,11 +282,12 @@ const columns = ref<TableColumn<SettlementHistoryDetail>[]>([
     },
   },
   {
-    accessorKey: 'currency',
-    header: () => h('p', { class: 'w-full' }, t('settlement.currency')),
-    cell: () => h('span', { class: '' }, props.currency || 'N/A'),
-    size: 10,
-    maxSize: 30,
+    accessorKey: 'settle_amount',
+    header: ({ column }) => createSortableHeader(column, t('settlement.amount'), 'right'),
+    cell: ({ row }) =>
+      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.settle_amount)),
+    size: 150,
+    maxSize: 150,
     meta: {
       class: {
         td(cell) {
