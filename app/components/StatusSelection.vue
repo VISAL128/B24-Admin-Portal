@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 interface Props {
   modelValue?: { label: string; value: string } | { label: string; value: string }[]
@@ -338,6 +338,12 @@ const getTranslatedStatus = (status: string): string => {
       return t('status.active')
     case 'inactive':
       return t('status.inactive')
+    case 'cancel':
+      return t('status.cancel')
+    case 'expire':
+      return t('status.expire')
+    case 'reversed':
+      return t('status.reversed')
     default:
       return status
   }

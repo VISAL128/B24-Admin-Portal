@@ -1,8 +1,6 @@
-import { ColumnType } from '@/utils/enumModel'
-import { format } from 'date-fns/format'
-import { useCurrency } from '~/composables/utils/useCurrency'
-import { useFormat  } from '~/composables/utils/useFormat'
-import type {FormatOptions} from '~/composables/utils/useFormat';
+import { ColumnType } from '@/utils/enumModel';
+import { format } from 'date-fns/format';
+import { useCurrency } from '~/composables/utils/useCurrency';
 // import { useI18n } from 'vue-i18n'
 
 // Helper to support nested accessors like "supplier.code"
@@ -233,7 +231,36 @@ export const getTranslatedStatusLabel = (statusValue: string): string => {
       return t('status.active')
     case 'inactive':
       return t('status.inactive')
+    
     default:
       return statusValue
   }
 }
+
+export const getFilterTranslateTransactionStatusLabel = (statusValue: string): string => {
+  const { t } = useI18n()
+
+  if (statusValue === '') return t('status.all')
+
+  switch (statusValue.toLowerCase()) {
+    case 'success':
+      return t('status.pending')
+    case 'pending':
+      return t('status.pending')
+    case 'completed':
+      return t('status.completed')
+    case 'failed':
+      return t('status.failed')
+    case 'error':
+      return t('status.error')
+    case 'cancel':
+      return t('status.cancel')
+    case 'expire':
+      return t('status.expire')
+    case 'reversed':
+      return t('status.reversed')
+    default:
+      return statusValue
+  }
+}
+
