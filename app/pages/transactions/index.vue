@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Info Banner -->
-    <InfoBanner
+    <!-- <InfoBanner
       v-show="!isTableFullscreen"
       :title="t('pages.transaction.tip')"
       :message="t('pages.transaction.tip_message')"
-    />
+    /> -->
     <!-- Transaction Summary Cards -->
     <SummaryCards
       v-show="!isTableFullscreen"
@@ -26,7 +26,10 @@
       @row-click="handleViewDetails"
       @fullscreen-toggle="handleFullscreenToggle"
       @data-changed="handleDataChanged"
+      @filter-change="handleFilterChange"
+      @bank-filter-scroll="handleBankFilterScroll"
     >
+    
       <template #trailingHeader>
         <!-- Repush Button - Only show when rows are selected -->
         <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
@@ -52,10 +55,9 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import InfoBanner from '~/components/cards/InfoBanner.vue'
 import SummaryCards from '~/components/cards/SummaryCards.vue'
 import TablesExTable from '~/components/tables/ExTable.vue'
-import type { BaseTableColumn } from '~/components/tables/table'
+import type { BankListTableFetchResult, BaseTableColumn } from '~/components/tables/table'
 import { useBankApi } from '~/composables/api/useBankApi'
 import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useErrorHandler } from '~/composables/useErrorHandler'
@@ -65,12 +67,13 @@ import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
-import type { Bank } from '~/models/bank'
-import type { TransactionQueryParams } from '~/models/baseModel'
+import type { ActivatedBankResponse } from '~/models/bank'
+import type { QueryParams, TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import { SettlementType, TransactionStatus, TransactionType } from '~/utils/enumModel'
+import { getFilterTranslateTransactionStatusLabel } from '~/utils/helper'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
-
+const availableStatuses = ref<string[]>(Object.values(TransactionStatus))
 // Helper function to get the enum key from enum value
 const getTransactionTypeKey = (value: string): string => {
   const entry = Object.entries(TransactionType).find(([key, val]) => val === value)
@@ -78,7 +81,7 @@ const getTransactionTypeKey = (value: string): string => {
 }
 
 const {getTransactionList, getTransactionSummary} = useTransactionApi()
-const { getTBanks } = useBankApi()
+const { getBanks } = useBankApi()
 
 const showInfoBanner = ref(true)
 const isLoading = ref(true)
@@ -95,8 +98,8 @@ const handleRepush = () => {
 }
 
 const transactionSummary = ref<TransactionSummaryModel | null>(null)
-const bankData = ref<Bank[]>([])
-
+const bankData = ref<ActivatedBankResponse[]>([])
+const bankDataLoading = ref(false)
 // Reactive computed property that updates when transactionSummary changes
 const summarys = computed(() => {
   const rawSummary = transactionSummary.value?.summarys || []
@@ -178,24 +181,32 @@ const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: st
   }
 }
 
-// Function to fetch bank data from API
-const fetchBankData = async () => {
+// Function to fetch bank data from API with fixed pageSize of 100
+const fetchBankData =  async (params?: QueryParams): Promise<BankListTableFetchResult | undefined> => {
+  // Prevent multiple concurrent calls
+  if (bankDataLoading.value) {
+    return
+  }
+  
   try {
-    const response = await getTBanks()
-    if (response.code === 'SUCCESS' && response.data) {
-      bankData.value = response.data
-      console.log('✅ Frontend: Bank data loaded successfully', response.data)
+    bankDataLoading.value = true
+    const data = await getBanks()
+    bankData.value = data.data
+    return {
+      data: data.data,
+      total_page: data.total_pages || 0,
+      total_record: data.total_records || 0,
     }
-  } catch (error) {
-    console.error('❌ Frontend: Error fetching bank data:', error)
-    // Fallback to hardcoded options if API fails
-    // bankData.value = [
-    //   { id: '1', bank_id: 'ABA', name: 'ABA Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' },
-    //   { id: '2', bank_id: 'ACLEDA', name: 'ACLEDA Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' },
-    //   { id: '3', bank_id: 'AMK', name: 'AMK Bank', is_settlement_bank: true, is_collection_bank: true, active: BankServiceStatus.ACTIVE, activated_date: '' }
-    // ]
+  } catch (error: unknown) {
+    // Show error notification to user
+    errorHandler.handleApiError(error)
+  } finally {
+    bankDataLoading.value = false
   }
 }
+
+
+
 
 // New handler: get the exact dates used by the table fetch and apply to summary
 const handleDataChanged = (result: Record<string, any>) => {
@@ -218,7 +229,7 @@ onMounted(async () => {
   // Load both transaction summary and bank data
   await Promise.all([
     fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 }),
-    fetchBankData()
+    fetchBankData() // Load bank data
   ])
 })
 
@@ -320,34 +331,60 @@ const settlementTypeFilterOptions = computed(() =>
 )
 
 // Build bank filter options from API data
-const bankFilterOptions = computed(() =>
-  bankData.value
+const bankFilterOptions = computed(() => {
+  console.log('🏦 Bank data for filters:', bankData.value)
+  return bankData.value
     //.filter(bank => bank.active === 'ACTIVE')
     .map((bank) => ({
-      label: bank.name || bank.name_kh || 'Unknown Bank',
-      value: bank.bank_id || bank.id || bank.name
+      label: bank.name || bank.nameKh || 'Unknown Bank',
+      value: bank.id || bank.code || bank.name as string | number
     }))
-)
+})
 
 // Build collection bank filter options (only banks that can be used for collection)
-const collectionBankFilterOptions = computed(() =>
-  bankData.value
-   // .filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_collection_bank)
-    .map((bank) => ({
-      label: bank.name || bank.name_kh || 'Unknown Bank',
-      value: bank.bank_id || bank.id || bank.name
-    }))
-)
+// const collectionBankFilterOptions = computed(() => {
+//   // Fetch bank data if not loaded yet
+//   if (bankData.value.length === 0) {
+//     fetchBankData()
+//   }
+//   const options = bankData.value
+//     //.filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_collection_bank)
+//     .map((bank) => ({
+//       label: bank.name || bank.name_kh || 'Unknown Bank',
+//       value: bank.bank_id || bank.id || bank.name
+//     }))
+  
+//   return options
+// })
 
 // Build settlement bank filter options (only banks that can be used for settlement)
-const settlementBankFilterOptions = computed(() =>
-  bankData.value
-    //.filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_settlement_bank)
-    .map((bank) => ({
-      label: bank.name || bank.name_kh || 'Unknown Bank',
-      value: bank.bank_id || bank.id || bank.name
-    }))
-)
+// const settlementBankFilterOptions = computed(() => {
+//   // Fetch bank data if not loaded yet
+//   if (bankData.value.length === 0) {
+//     fetchBankData()
+//   }
+//   const options = bankData.value
+//     //.filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_settlement_bank)
+//     .map((bank) => ({
+//       label: bank.name || bank.name_kh || 'Unknown Bank',
+//       value: bank.bank_id || bank.id || bank.name
+//     }))
+    
+//   // Add loading indicator if there are more pages
+//   if (bankDataPagination.value.hasMore && !bankDataLoading.value) {
+//     options.push({
+//       label: '📄 Load More Settlement Banks...',
+//       value: '__LOAD_MORE__',
+//     })
+//   } else if (bankDataLoading.value) {
+//     options.push({
+//       label: '⏳ Loading settlement banks...',
+//       value: '__LOADING__',
+//     })
+//   }
+  
+//   return options
+// })
 
 const exportHeaders = [
   { key: 'currency_id', label: t('settlement.currency') },
@@ -561,12 +598,36 @@ const handleViewDetails = (transaction: TransactionHistoryRecord) => {
   // Navigate to transaction details page
   navigateToDetails(transaction.id)
 }
-const handleFilterChange = (columnId: string, value: string) => {
-  console.log('Filter changed:', columnId, value)
+
+const handleBankFilterScroll = async (columnId: string) => {
+  console.log('🔄 Bank filter scroll detected for:', columnId)
+  if ((columnId === 'collectionBank' || columnId === 'settlementBank')) {
+    // Show loading state and load more data
+    // await loadMoreBankData()
+  }
+}
+const handleFilterChange = async (columnId: string, value: string) => {
+  
+  // Handle "Load More Banks" selection
+  if (value === '__LOAD_MORE__') {
+    if ((columnId === 'collectionBank' || columnId === 'settlementBank')) {
+      // await loadMoreBankData()
+    }
+    return // Don't apply this as an actual filter
+  }
+  
+  // Ignore loading indicator selection
+  if (value === '__LOADING__') {
+    return
+  }
+  
+  // Bank data is already loaded in onMounted, so no need to fetch again
+  
   // Optional: trigger fetch or other logic
 }
 
-const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
+const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
+  const cols: BaseTableColumn<TransactionHistoryRecord>[] = [
   {
     id: 'select',
     header: ({ table }) =>
@@ -611,15 +672,17 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     header: () => t('pages.transaction.collection_bank'),
     cell: ({ row }) => row.original.collectionBank || '-',
     enableColumnFilter: true,
-    filterOptions: collectionBankFilterOptions.value,
+    filterType: 'select',
+    filterOptions: bankFilterOptions.value,
   },
   {
     id: 'settlementBank',
     accessorKey: 'settlementBank',
-    header: () => t('page.transaction.settlement_bank'),
+    header: () => t('pages.transaction.settlement_bank'),
     cell: ({ row }) => row.original.settlementBank || '-',
     enableColumnFilter: true,
-    filterOptions: settlementBankFilterOptions.value,
+    filterType: 'select',
+    filterOptions: bankFilterOptions.value,
   },
   {
     id: 'settlementType',
@@ -661,7 +724,11 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
     enableColumnFilter: true,
     filterType: 'status',
-    filterOptions: transactionStatusFilterOptions.value,
+    //filterOptions: transactionStatusFilterOptions.value,
+    filterOptions: availableStatuses.value.map((status) => ({
+      label: getTranslatedStatusLabel(status),
+      value: status,
+    })),
   },
   {
     id: 'currency',
@@ -689,5 +756,9 @@ const columns: BaseTableColumn<TransactionHistoryRecord>[] = [
     size: 50,
     maxSize: 150,
   },
-]
+  ]
+  
+  
+  return cols
+})
 </script>

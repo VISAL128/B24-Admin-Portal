@@ -1263,6 +1263,17 @@ const fetchTransactions = async (
       operator: FilterOperatorPgwModule.Equals,
       value: transactionId.value,
     })
+
+    // sort tranDate by default if not set
+    if (params?.sortAsString == '') {
+      params?.sorts?.push({
+        field: 'tranDate',
+        direction: 'desc',
+      })
+      params.sortAsString = 'tranDate-'
+    }
+
+    console.log('Fetching transactions with params:', params)
     const response = await getWalletTransactionBySubBiller(params)
     console.log('Fetched transactions:', response)
     return {
