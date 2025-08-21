@@ -1,10 +1,9 @@
 <template>
-  <div class="flex flex-col h-[calc(100vh-64px)] pace-y-3">
+  <div class="flex flex-col h-[calc(100vh-64px)] space-y-3">
     <!-- Page header (always visible) -->
-    <!-- <PageHeader
-      :title="t('sub_biller_detail')"
-      :subtitle="t('sub_biller_detail_description')"
-    /> -->
+    <div class="flex-shrink-0">
+      <PageHeader :title="t('sub_biller_detail')" :subtitle="t('sub_biller_detail_description')" />
+    </div>
     <div class="lg:hidden px-4 pt-3">
       <div class="grid grid-cols-2 gap-1 rounded-xl p-1 bg-gray-100 dark:bg-gray-800">
         <button
@@ -35,7 +34,7 @@
     </div>
 
     <!-- Make this container relative so the floating expand tab can anchor to it -->
-    <div class="flex h-full flex-col lg:flex-row gap-4 relative">
+    <div class="flex-1 flex flex-col lg:flex-row gap-4 relative overflow-hidden">
       <!-- Floating expand tab when collapsed (desktop only) -->
 
       <!-- SINGLE CARD with Wallets + Table -->
@@ -621,6 +620,7 @@ import type { SubBillerWallet, DeactivateSubBillerReq } from '~/models/subBiller
 import type { Supplier } from '~/models/supplier'
 import type { TransactionHistoryRecord, WalletTransaction } from '~/models/transaction'
 import { FilterOperatorPgwModule } from '~/utils/enumModel'
+import { useMediaQuery } from '@vueuse/core'
 
 definePageMeta({
   auth: false,
@@ -663,6 +663,7 @@ const isLoadingTable = ref(true)
 
 /** collapse state (desktop only) */
 const isDetailsCollapsed = ref(false)
+const isDesktop = useMediaQuery('(min-width: 1024px)') // Tailwind lg breakpoint
 const toggleDetails: (e?: MouseEvent) => void = () => {
   isDetailsCollapsed.value = !isDetailsCollapsed.value
 }
@@ -1262,6 +1263,17 @@ const fetchTransactions = async (
       operator: FilterOperatorPgwModule.Equals,
       value: transactionId.value,
     })
+
+    // sort tranDate by default if not set
+    if (params?.sortAsString == '') {
+      params?.sorts?.push({
+        field: 'tranDate',
+        direction: 'desc',
+      })
+      params.sortAsString = 'tranDate-'
+    }
+
+    console.log('Fetching transactions with params:', params)
     const response = await getWalletTransactionBySubBiller(params)
     console.log('Fetched transactions:', response)
     return {
@@ -1339,5 +1351,12 @@ onMounted(async () => {
   ])
 
   isLoadingTable.value = false
+})
+
+// auto expand when leaving desktop
+watch(isDesktop, (val) => {
+  if (!val) {
+    isDetailsCollapsed.value = false
+  }
 })
 </script>

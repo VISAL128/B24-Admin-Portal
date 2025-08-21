@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 interface Props {
   modelValue?: { label: string; value: string } | { label: string; value: string }[]
@@ -202,6 +202,7 @@ const getStatusColor = (
     case 'error':
       return 'bg-error text-white'
     case 'pending':
+    case 'expired':
     case 'warning':
       return 'bg-warning text-black'
     case 'active':
@@ -210,7 +211,6 @@ const getStatusColor = (
       return 'bg-gray-500 text-white'
     case 'canceled':
     case 'cancelled':
-    case 'expired':
       return 'bg-gray-300 text-black'
     case 'reversed':
       return 'bg-orange-500 text-white'
@@ -338,6 +338,12 @@ const getTranslatedStatus = (status: string): string => {
       return t('status.active')
     case 'inactive':
       return t('status.inactive')
+    case 'cancel':
+      return t('status.cancel')
+    case 'expire':
+      return t('status.expire')
+    case 'reversed':
+      return t('status.reversed')
     default:
       return status
   }

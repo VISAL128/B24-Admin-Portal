@@ -116,9 +116,9 @@
             <template #body>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Select Supplier</label
-                  >
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{
+                    t('s_supplier')
+                  }}</label>
                   <USelectMenu
                     :items="filteredAvailableSuppliers"
                     :placeholder="t('choose_supplier')"
@@ -130,12 +130,6 @@
                     :loading="loading"
                     @update:model-value="handleSupplierSelection"
                   />
-                  <p
-                    v-if="filteredAvailableSuppliers.length === 0 && !loading"
-                    class="text-sm text-gray-500 mt-2"
-                  >
-                    {{ t('all_available_suppliers_added') }}
-                  </p>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-4">
@@ -287,7 +281,7 @@
                 :key="supplier"
                 class="text-gray-600 text-sm dark:text-gray-300"
               >
-                <span class="font-medium">• {{ supplier }}: </span>
+                <span class="font-medium">• {{ getDisplaySupplierName(String(supplier)) }}: </span>
                 <span class="text-primary text-sm dark:text-primary">
                   {{ formatAmount(amount, selectedCurrency, { showSymbol: true }) }}
                 </span>
@@ -577,66 +571,62 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
   // Force reactivity by explicitly depending on visibleSuppliers and tableKey
   const supplierColumns: TableColumn<TransactionFeeRow>[] = visibleSuppliers.value.map(
     (supplier) => {
-      console.log(`Adding column for supplier: ${supplier.name} (${supplier.id})`)
       return {
         accessorKey: `supplier_${supplier.id}`,
-        // header: () => h('div', { class: 'flex items-center justify-end space-x-2' }, [
-        //   h('span', supplier.name),
-        //   h('button', {
-        //     class: 'text-xl text-red-500 hover:text-red-700 transition-colors ml-2',
-        //     onClick: () => confirmRemoveSupplier(supplier)
-        //   }, '×')
-        // ]),
         header: () => {
           const UTooltip = resolveComponent('UTooltip')
           const UButton = resolveComponent('UButton')
           const UIcon = resolveComponent('UIcon')
 
-          return h('div', { class: 'flex items-center justify-end space-x-2' }, [
+          // Build children and conditionally include remove button when supplier.isDisabled === false
+          const children: any[] = [
             // Sharing icon
             h(
               UTooltip,
-              { text: 'Sharing enabled', popper: { placement: 'top' } },
+              { text: t('sharing_enabled'), popper: { placement: 'top' } },
               {
                 default: () =>
                   h(UIcon, {
-                    // Try one of these heroicons depending on your set:
-                    // name: 'i-heroicons-share-20-solid',
-                    // name: 'i-heroicons-arrow-up-tray-20-solid',   // common "share" alt
-                    name: 'i-heroicons-users-20-solid', // if “sharing with others” vibe
+                    name: 'i-heroicons-users-20-solid',
                     class: 'w-4 h-4 text-primary',
                   }),
               }
             ),
-            h('span', supplier.name),
+            h('span', supplier.isDisabled ? `${supplier.name} (${t('you')})` : supplier.name),
+          ]
 
-            h(
-              UTooltip,
-              { text: 'Remove fee sharing supplier', popper: { placement: 'top' } },
-              {
-                default: () =>
-                  h(
-                    UButton,
-                    {
-                      color: 'error',
-                      variant: 'ghost',
-                      size: 'xs',
-                      square: true,
-                      class: 'ml-2',
-                      onClick: (e: MouseEvent) => {
-                        e.stopPropagation() // avoid triggering header sort/resize
-                        confirmRemoveSupplier(supplier)
+          // Only show remove button when supplier.isDisabled is explicitly false
+          if (supplier.isDisabled === false) {
+            children.push(
+              h(
+                UTooltip,
+                { text: t('remove_fee_sharing_supplier'), popper: { placement: 'top' } },
+                {
+                  default: () =>
+                    h(
+                      UButton,
+                      {
+                        color: 'error',
+                        variant: 'ghost',
+                        size: 'xs',
+                        square: true,
+                        class: 'ml-2',
+                        onClick: (e: MouseEvent) => {
+                          e.stopPropagation() // avoid triggering header sort/resize
+                          confirmRemoveSupplier(supplier)
+                        },
                       },
-                    },
-                    {
-                      default: () =>
-                        h(UIcon, { name: 'i-heroicons-x-mark-20-solid', class: 'text-base' }),
-                      // or: default: () => '×'
-                    }
-                  ),
-              }
-            ),
-          ])
+                      {
+                        default: () =>
+                          h(UIcon, { name: 'i-heroicons-x-mark-20-solid', class: 'text-base' }),
+                      }
+                    ),
+                }
+              )
+            )
+          }
+
+          return h('div', { class: 'flex items-center justify-end space-x-2' }, children)
         },
         cell: ({ row, table }) => {
           const index = table.getRowModel().rows.findIndex((r) => r.id === row.id)
@@ -697,7 +687,6 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
   ]
 
   const result = [...staticColumns, ...supplierColumns, ...actionColumn]
-  console.log('Final table columns count:', result.length)
   return result
 })
 
@@ -1524,5 +1513,13 @@ const handleAmountInput = (event: Event, index: number, field: 'start_amount' | 
   nextTick(() => {
     target.setSelectionRange(newCursorPosition, newCursorPosition)
   })
+}
+
+// Add helper: return display name and append "(you)" when supplier.isDisabled === true
+const getDisplaySupplierName = (key: string) => {
+  // try match by id first, then by name
+  const found = visibleSuppliers.value.find((s) => s.id === key || s.name === key)
+  if (!found) return key
+  return found.isDisabled ? `${found.name} (${t('you')})` : found.name
 }
 </script>
