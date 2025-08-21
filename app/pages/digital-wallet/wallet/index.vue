@@ -62,14 +62,6 @@
               :title="t('wallet_page.refresh')"
               @click="refreshBalances"
             />
-
-            <!-- History Icon -->
-            <!-- <UIcon
-              name="material-symbols:history"
-              class="w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200"
-              :title="t('wallet_page.history')"
-              @click="navigateToHistory"
-            /> -->
           </div>
         </div>
       </div>
@@ -261,79 +253,94 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Today -->
           <div
-            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.today') }}
               </h3>
               <div
-                class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center"
+                class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
               >
-                <UIcon name="i-heroicons-sun" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <UIcon name="i-heroicons-sun" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
-              <div>
-                <div class="text-2xl font-bold text-gray-900 dark:text-white">
+            <!-- Content -->
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-4">
+              <!-- Transactions Count -->
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                   {{ currentSummaryData.today.totalTransactions }}
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
                   {{ t('wallet_page.transactions') }}
                 </div>
               </div>
 
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
-                <div class="flex justify-between text-sm mb-2">
-                  <span class="text-gray-500 dark:text-gray-400">{{
-                    t('wallet_page.received')
-                  }}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
+              <!-- Stats Grid -->
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Received Amount -->
+                <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                    {{ currentSummaryData.today.currency }}
+                  </div>
+                  <div class="text-lg font-bold text-green-700 dark:text-green-400 mb-1">
                     {{
                       formatCurrency(
                         currentSummaryData.today.totalReceived,
                         currentSummaryData.today.currency
                       )
                     }}
-                  </span>
+                  </div>
+                  <div class="text-xs text-green-600 dark:text-green-300">
+                    {{ t('wallet_page.received') }}
+                  </div>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-500 dark:text-gray-400">{{
-                    t('wallet_page.settlement')
-                  }}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
+
+                <!-- Settlement Amount -->
+                <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
+                    {{ currentSummaryData.today.currency }}
+                  </div>
+                  <div class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-1">
                     {{
                       formatCurrency(
                         currentSummaryData.today.totalSettlement,
                         currentSummaryData.today.currency
                       )
                     }}
-                  </span>
+                  </div>
+                  <div class="text-xs text-blue-600 dark:text-blue-300">
+                    {{ t('wallet_page.settlement') }}
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Loading State -->
-            <div v-else class="space-y-3">
-              <!-- Header with icon skeleton -->
-              <div class="flex items-center justify-between mb-4">
-                <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse" />
+            <div v-else class="space-y-4">
+              <!-- Header skeleton -->
+              <div class="flex items-center justify-between mb-6">
+                <div class="h-5 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-xl animate-pulse" />
               </div>
-
-              <div>
-                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
-                <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+              <!-- Content skeleton -->
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
               </div>
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
-                <div class="flex justify-between">
-                  <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+              <div class="grid grid-cols-2 gap-3">
+                <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
-                <div class="flex justify-between">
-                  <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
               </div>
             </div>
@@ -341,82 +348,97 @@
 
           <!-- This Week -->
           <div
-            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_week') }}
               </h3>
               <div
-                class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center"
+                class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
               >
                 <UIcon
                   name="i-heroicons-calendar-date-range"
-                  class="w-4 h-4 text-green-600 dark:text-green-400"
+                  class="w-5 h-5 text-green-600 dark:text-green-400"
                 />
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
-              <div>
-                <div class="text-2xl font-bold text-gray-900 dark:text-white">
+            <!-- Content -->
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-4">
+              <!-- Transactions Count -->
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                   {{ currentSummaryData.week.totalTransactions }}
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
                   {{ t('wallet_page.transactions') }}
                 </div>
               </div>
 
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
-                <div class="flex justify-between text-sm mb-2">
-                  <span class="text-gray-500 dark:text-gray-400">{{
-                    t('wallet_page.received')
-                  }}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
+              <!-- Stats Grid -->
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Received Amount -->
+                <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                    {{ currentSummaryData.week.currency }}
+                  </div>
+                  <div class="text-lg font-bold text-green-700 dark:text-green-400 mb-1">
                     {{
                       formatCurrency(
                         currentSummaryData.week.totalReceived,
                         currentSummaryData.week.currency
                       )
                     }}
-                  </span>
+                  </div>
+                  <div class="text-xs text-green-600 dark:text-green-300">
+                    {{ t('wallet_page.received') }}
+                  </div>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-500 dark:text-gray-400">{{
-                    t('wallet_page.settlement')
-                  }}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
+
+                <!-- Settlement Amount -->
+                <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
+                    {{ currentSummaryData.week.currency }}
+                  </div>
+                  <div class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-1">
                     {{
                       formatCurrency(
                         currentSummaryData.week.totalSettlement,
                         currentSummaryData.week.currency
                       )
                     }}
-                  </span>
+                  </div>
+                  <div class="text-xs text-blue-600 dark:text-blue-300">
+                    {{ t('wallet_page.settlement') }}
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Loading State -->
-            <div v-else class="space-y-3">
-              <!-- Header with icon skeleton -->
-              <div class="flex items-center justify-between mb-4">
-                <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse" />
+            <div v-else class="space-y-4">
+              <!-- Header skeleton -->
+              <div class="flex items-center justify-between mb-6">
+                <div class="h-5 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-xl animate-pulse" />
               </div>
-
-              <div>
-                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
-                <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+              <!-- Content skeleton -->
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
               </div>
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
-                <div class="flex justify-between">
-                  <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+              <div class="grid grid-cols-2 gap-3">
+                <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
-                <div class="flex justify-between">
-                  <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
               </div>
             </div>
@@ -424,82 +446,97 @@
 
           <!-- This Month -->
           <div
-            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_month') }}
               </h3>
               <div
-                class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center"
+                class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
               >
                 <UIcon
                   name="i-heroicons-calendar-days"
-                  class="w-4 h-4 text-purple-600 dark:text-purple-400"
+                  class="w-5 h-5 text-purple-600 dark:text-purple-400"
                 />
               </div>
             </div>
 
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-3">
-              <div>
-                <div class="text-2xl font-bold text-gray-900 dark:text-white">
+            <!-- Content -->
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-4">
+              <!-- Transactions Count -->
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                   {{ currentSummaryData.month.totalTransactions }}
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
                   {{ t('wallet_page.transactions') }}
                 </div>
               </div>
 
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
-                <div class="flex justify-between text-sm mb-2">
-                  <span class="text-gray-500 dark:text-gray-400">{{
-                    t('wallet_page.received')
-                  }}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
+              <!-- Stats Grid -->
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Received Amount -->
+                <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                    {{ currentSummaryData.month.currency }}
+                  </div>
+                  <div class="text-lg font-bold text-green-700 dark:text-green-400 mb-1">
                     {{
                       formatCurrency(
                         currentSummaryData.month.totalReceived,
                         currentSummaryData.month.currency
                       )
                     }}
-                  </span>
+                  </div>
+                  <div class="text-xs text-green-600 dark:text-green-300">
+                    {{ t('wallet_page.received') }}
+                  </div>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-500 dark:text-gray-400">{{
-                    t('wallet_page.settlement')
-                  }}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
+
+                <!-- Settlement Amount -->
+                <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
+                    {{ currentSummaryData.month.currency }}
+                  </div>
+                  <div class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-1">
                     {{
                       formatCurrency(
                         currentSummaryData.month.totalSettlement,
                         currentSummaryData.month.currency
                       )
                     }}
-                  </span>
+                  </div>
+                  <div class="text-xs text-blue-600 dark:text-blue-300">
+                    {{ t('wallet_page.settlement') }}
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Loading State -->
-            <div v-else class="space-y-3">
-              <!-- Header with icon skeleton -->
-              <div class="flex items-center justify-between mb-4">
-                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse" />
+            <div v-else class="space-y-4">
+              <!-- Header skeleton -->
+              <div class="flex items-center justify-between mb-6">
+                <div class="h-5 w-24 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-xl animate-pulse" />
               </div>
-
-              <div>
-                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1" />
-                <div class="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+              <!-- Content skeleton -->
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
               </div>
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
-                <div class="flex justify-between">
-                  <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+              <div class="grid grid-cols-2 gap-3">
+                <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
-                <div class="flex justify-between">
-                  <div class="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                  <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
+                <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
               </div>
             </div>
@@ -543,7 +580,7 @@
           show-date-filter
           search-tooltip="Search transactions"
           date-format="dd/MM/yyyy"
-          enabled-auto-refresh
+          :enabled-auto-refresh="false"
           @row-click="handleViewDetails"
         />
       </div>
@@ -604,6 +641,7 @@ const {
   getTransactionTypeIconStyle, 
   getTransactionTypeIconColor 
 } = useTransactionTypeIcon()
+const { transactionStatusCellBuilder, getTransactionStatusTranslationKey } = useStatusBadge()
 
 // Wallet store
 const walletStore = useWalletStore()
@@ -659,6 +697,21 @@ const TABLE_ID = computed(() => {
   const walletType = selectedWallet?.walletType || 'default'
   return `wallet-transactions-table-${walletType}`
 })
+
+
+// Build status filter options from TransactionStatus enum
+const getTranslatedTransactionStatusLabel = (status: string) => {
+  const key = getTransactionStatusTranslationKey(status)
+  const translated = t(key)
+  return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
+}
+
+const transactionStatusFilterOptions = computed(() =>
+  Object.values(TransactionStatus).map((status) => ({
+    label: getTranslatedTransactionStatusLabel(status),
+    value: status
+  }))
+)
 
 // API methods
 const loadWalletTypes = async () => {
@@ -810,6 +863,21 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
       header: t('wallet_page.date'),
       cell: ({ row }) => formatDateTime(row.original.tran_date),
       enableSorting: true,
+      sortDescFirst: true,
+    },
+    {
+      id: 'customerName',
+      accessorKey: 'customer_name',
+      header: t('customerName'),
+      cell: ({ row }) => row.original.customer_name || '-',
+      enableSorting: true
+    },
+    {
+      id: 'bankRefId',
+      accessorKey: 'bank_ref_id',
+      header: t('bank_ref_id'),
+      cell: ({ row }) => row.original.bank_ref_id || '-',
+      enableSorting: true,
     },
     {
       id: 'tranType',
@@ -818,11 +886,11 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
       cell: ({ row }) => 
         h('div', { class: 'flex items-center gap-2' }, [
           h('div', { 
-            class: `w-6 h-6 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transaction_type)}`
+            class: `w-7 h-7 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transaction_type)}`
           }, [
             h(resolveComponent('UIcon'), {
               name: getTransactionTypeIcon(row.original.transaction_type),
-              class: `w-3 h-3 ${getTransactionTypeIconColor(row.original.transaction_type)}`
+              class: `w-4 h-4 ${getTransactionTypeIconColor(row.original.transaction_type)}`
             })
           ]),
           h('span', { class: 'text-sm font-medium' }, row.original.transaction_type || '-')
@@ -835,66 +903,60 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
        ],
       enableSorting: true
     },
-  {
-    id: 'customerName',
-    accessorKey: 'customer_name',
-    header: t('customerName'),
-    cell: ({ row }) => row.original.customer_name || '-',
-    enableSorting: true
-  },
+    // {
+    //   id: 'status',
+    //   header: () => t('pages.transaction.status'),
+    //   cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
+    //   enableColumnFilter: true,
+    //   filterType: 'status',
+    //   filterOptions: transactionStatusFilterOptions.value,
+    // },
     {
-      id: 'bankRefId',
-      accessorKey: 'bank_ref_id',
-      header: t('bank_ref_id'),
-      cell: ({ row }) => row.original.bank_ref_id || '-',
-      enableSorting: true,
+      id: 'status',
+      header: () => t('status.header'),
+      accessorKey: 'status',
+      cell: ({ row }) =>
+        h(StatusBadge, {
+          status: row.original.status,
+          variant: 'subtle',
+          size: 'sm',
+        }),
+      enableColumnFilter: true,
+      filterType: 'status',
+      filterOptions: [
+        { label: t('status.success'), value: 'success' },
+        { label: t('status.pending'), value: 'pending'},
+        { label: t('status.failed'), value: 'failed' },
+        { label: t('status.cancel'), value: 'cancel' },
+        { label: t('status.error'), value: 'error' },
+      ],
+      enableSorting: true
     },
-       {
-    id: 'status',
-    header: () => t('status.header'),
-    accessorKey: 'status',
-    cell: ({ row }) =>
-      h(StatusBadge, {
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
-    enableColumnFilter: true,
-    filterType: 'select',
-    filterOptions: [
-      { label: t('status.success'), value: 'success' },
-      { label: t('status.pending'), value: 'pending'},
-      { label: t('status.failed'), value: 'failed' },
-      { label: t('status.cancel'), value: 'cancel' },
-      { label: t('status.error'), value: 'error' },
-    ],
-    enableSorting: true
-  },
-  {
-    id: 'currencyId',
-    accessorKey: 'currency',
-    header: t('currencyId'),
-    cell: ({ row }) => row.original.currency || '-',
-    enableSorting: true,
-    // enableColumnFilter: true,
-    // filterType: 'select',
-    // filterOptions: [
-    //   { label: t('currency.usd'), value: 'USD' },
-    //   { label: t('currency.khr'), value: 'KHR' },
-    // ],
-  },
-  {
-    id: 'totalAmount',
-    accessorKey: 'amount',
-    header: t('settlement.amount'),
-        cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-center' },
-        useCurrency().formatAmount(row.original.amount, row.original.currency)
-      ),
-    enableSorting: true,
-  }
+    {
+      id: 'currencyId',
+      accessorKey: 'currency',
+      header: t('currencyId'),
+      cell: ({ row }) => row.original.currency || '-',
+      enableSorting: true,
+      // enableColumnFilter: true,
+      // filterType: 'select',
+      // filterOptions: [
+      //   { label: t('currency.usd'), value: 'USD' },
+      //   { label: t('currency.khr'), value: 'KHR' },
+      // ],
+    },
+    {
+      id: 'totalAmount',
+      accessorKey: 'amount',
+      header: t('settlement.amount'),
+          cell: ({ row }) =>
+        h(
+          'div',
+          { class: 'text-center' },
+          useCurrency().formatAmount(row.original.amount, row.original.currency)
+        ),
+      enableSorting: true,
+    }
 ]
 })
 

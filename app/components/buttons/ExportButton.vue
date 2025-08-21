@@ -75,8 +75,12 @@ const exportToExcelHandler = async () => {
       })
       return
     }
-    console.log('Starting Excel export...')
-    const totalAmount = props.data.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0)
+    
+    // const totalAmount = props.data.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0)
+    const totalAmount = props.data.reduce((sum, item) => sum + (Number((item.total_amount || item.amount)) || 0), 0)
+
+    console.log('Starting Excel export...', totalAmount);
+    
     const currentLocale = locale.value as 'km' | 'en'
     const periodText = `${props.exportOptions?.startDate} ${t('to')} ${props.exportOptions?.endDate}`
       await exportToExcelWithUnicodeSupport(

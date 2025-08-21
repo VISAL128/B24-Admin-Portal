@@ -18,31 +18,31 @@
         <button
           :class="[
             'px-6 py-2 text-sm font-medium rounded-md transition-all duration-200',
-            selectedCurrency === 'KHR'
+            selectedCurrency === Currency.KHR
               ? 'bg-primary text-white shadow-sm dark:bg-primary'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
           ]"
-          @click="switchCurrency('KHR')"
+          @click="switchCurrency(Currency.KHR.toString())"
         >
-          KHR
+          {{ Currency.KHR }}
         </button>
         <button
           :class="[
             'px-6 py-2 text-sm font-medium rounded-md transition-all duration-200',
-            selectedCurrency === 'USD'
+            selectedCurrency === Currency.USD
               ? 'bg-primary text-white shadow-sm dark:bg-primary'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
           ]"
-          @click="switchCurrency('USD')"
+          @click="switchCurrency(Currency.USD.toString())"
         >
-          USD
+          {{ Currency.USD }}
         </button>
       </div>
     </div>
 
     <!-- Combined Fee Section -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-[500px] max-h-[500px]"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-[400px] max-h-[500px]"
     >
       <div class="p-2">
         <UTable
@@ -53,7 +53,7 @@
           :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
           :columns="tableColumns"
           sticky
-          class="h-[440px] max-h-[440px] rounded-lg dark:border-gray-700 bg-white dark:bg-gray-800"
+          class="h-[340px] max-h-[440px] rounded-lg dark:border-gray-700 bg-white dark:bg-gray-800"
           :ui="{
             tbody: 'divide-y divide-gray-200 dark:divide-gray-700',
             tr: 'px-2 py-3',
@@ -248,7 +248,7 @@
         <h3 class="text-sm font-semibold text-gray-400 dark:text-gray-500">
           {{ t('preview_fee_calculation_amount') }}:
           {{
-            formatAmount(selectedCurrency === 'USD' ? 100 : 400000, selectedCurrency, {
+            formatAmount(selectedCurrency === Currency.USD ? 100 : 400000, selectedCurrency, {
               showSymbol: true,
             })
           }}
@@ -321,7 +321,7 @@ import type { SharingSupplier } from '~/models/settlement'
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
 import type { TableColumn } from '@nuxt/ui'
 import { h } from 'vue'
-import { get } from '@vueuse/core'
+import { FeeType } from '~/utils/enumModel'
 
 const { t } = useI18n()
 
@@ -331,7 +331,7 @@ definePageMeta({
 })
 
 const feeConfig = ref(new FeeConfiguration())
-const selectedCurrency = ref('KHR')
+const selectedCurrency = ref(Currency.KHR.toString())
 const showAddSuppliers = ref(false)
 const showSettingsDropdown = ref(false)
 const showRemoveSupplierModal = ref(false)
@@ -388,10 +388,11 @@ const feeCalculation = computed(() => {
   }
 
   // Use different test amounts based on currency
-  const testAmount = selectedCurrency.value === 'USD' ? 100 : 400000
+  const testAmount = selectedCurrency.value === Currency.USD ? 100 : 400000
   const calculation = feeConfig.value.calculateFees(selectedCurrency.value, testAmount)
 
   // Patch distribution for correct display based on fee type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any = { ...calculation }
   // Find the row that matches the test amount
   const row = transactionFee.value.find((r) => {
@@ -404,13 +405,13 @@ const feeCalculation = computed(() => {
   if (row && row.supplier_sharings && row.supplier_sharings.length > 0) {
     // Also update transactionFee for preview
     result.transactionFee =
-      row.fee_type === 'fixed' ? row.fee_amount : (row.fee_amount / 100) * testAmount
+      row.fee_type === FeeType.Fixed ? row.fee_amount : (row.fee_amount / 100) * testAmount
     result.distribution = {}
     row.supplier_sharings.forEach((s) => {
-      if (row.fee_type === 'fixed') {
+      if (row.fee_type === FeeType.Fixed) {
         result.distribution[visibleSuppliers.value.find((vs) => vs.id === s.id)?.name || s.id] =
           s.value
-      } else if (row.fee_type === 'percentage') {
+      } else if (row.fee_type === FeeType.Percentage) {
         // Calculate the actual amount for each supplier
         const supplierAmount = (s.value / 100) * result.transactionFee
         result.distribution[visibleSuppliers.value.find((vs) => vs.id === s.id)?.name || s.id] =
@@ -431,8 +432,6 @@ const tableKey = ref(0)
 
 // Computed property for dynamic table columns
 const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
-  console.log('Recomputing table columns, visible suppliers:', visibleSuppliers.value.length)
-
   const staticColumns: TableColumn<TransactionFeeRow>[] = [
     {
       accessorKey: 'startAmount',
@@ -467,12 +466,12 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
           UInput,
           {
             modelValue: rowData.unlimited
-              ? 'Unlimited'
+              ? KEY_CONSTANTS.UNLIMITED
               : formatAmount(rowData.end_amount || 0, selectedCurrency.value, {
                   showSymbol: false,
                 }),
             type: 'text',
-            placeholder: rowData.unlimited ? 'Unlimited' : 'Enter amount',
+            placeholder: rowData.unlimited ? KEY_CONSTANTS.UNLIMITED : 'Enter amount',
             disabled: rowData.unlimited,
             class: 'w-full pe-0',
             size: 'sm',
@@ -512,12 +511,12 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
         return h(USelectMenu, {
           modelValue: {
             label:
-              rowData.fee_type === 'percentage'
+              rowData.fee_type === FeeType.Percentage
                 ? '%'
-                : selectedCurrency.value === 'KHR'
+                : selectedCurrency.value === Currency.KHR
                   ? '៛'
                   : '$',
-            value: rowData.fee_type === 'percentage' ? 'percentage' : 'fixed',
+            value: rowData.fee_type === FeeType.Percentage ? FeeType.Percentage : FeeType.Fixed,
           },
           items: feeTypeOptions.value,
           placeholder: 'Select type',
@@ -543,7 +542,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
           UInput,
           {
             modelValue:
-              rowData.fee_type === 'fixed'
+              rowData.fee_type === FeeType.Fixed
                 ? formatAmount(rowData.fee_amount || 0, selectedCurrency.value, {
                     showSymbol: false,
                   })
@@ -560,7 +559,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
               h(
                 'span',
                 { class: 'text-sm text-gray-500' },
-                rowData.fee_type === 'fixed' ? getCurrencySymbol() : '%'
+                rowData.fee_type === FeeType.Fixed ? getCurrencySymbol() : '%'
               ),
           }
         )
@@ -579,6 +578,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
           const UIcon = resolveComponent('UIcon')
 
           // Build children and conditionally include remove button when supplier.isDisabled === false
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const children: any[] = [
             // Sharing icon
             h(
@@ -637,7 +637,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
             UInput,
             {
               modelValue:
-                rowData.fee_type === 'fixed'
+                rowData.fee_type === FeeType.Fixed
                   ? formatAmount(supplierData?.value || 0, selectedCurrency.value, {
                       showSymbol: false,
                     })
@@ -654,7 +654,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                 h(
                   'span',
                   { class: 'text-sm text-gray-500' },
-                  rowData.fee_type === 'fixed' ? getCurrencySymbol() : '%'
+                  rowData.fee_type === FeeType.Fixed ? getCurrencySymbol() : '%'
                 ),
             }
           )
@@ -745,8 +745,8 @@ const addRow = () => {
 
 // Options for fee type
 const feeTypeOptions = computed(() => [
-  { label: selectedCurrency.value === 'KHR' ? '៛' : '$', value: 'fixed' },
-  { label: '%', value: 'percentage' },
+  { label: selectedCurrency.value === Currency.KHR ? '៛' : '$', value: FeeType.Fixed },
+  { label: '%', value: FeeType.Percentage.toString() },
 ])
 
 const handleFeeDetailTypeChange = (index: number, value: string) => {
@@ -756,11 +756,11 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
     // Update fee type
     transactionFee.value[index] = {
       ...feeDetail,
-      fee_type: value as 'percentage' | 'fixed',
+      fee_type: value as FeeType.Percentage | FeeType.Fixed,
     }
 
     // If switching to percentage, reset fee_amount and each supplier value to 0
-    if (value === 'percentage') {
+    if (value === FeeType.Percentage) {
       transactionFee.value[index].fee_amount = 0
       if (transactionFee.value[index].supplier_sharings) {
         transactionFee.value[index].supplier_sharings.forEach((s) => {
@@ -848,7 +848,7 @@ const validateTableRow = (
   // New: For fixed fee type, fee_amount must not be greater than end_amount (when end_amount applies)
   if (
     field === 'fee_amount' &&
-    row.fee_type === 'fixed' &&
+    row.fee_type === FeeType.Fixed &&
     !row.unlimited &&
     row.fee_amount !== undefined &&
     row.fee_amount !== 0 &&
@@ -871,7 +871,7 @@ const validateTableRow = (
 
   if (
     field === 'fee_amount' &&
-    row.fee_type === 'percentage' &&
+    row.fee_type === FeeType.Percentage &&
     row.end_amount !== null &&
     row.fee_amount !== undefined &&
     ((row.unlimited && row.end_amount === 0) || (!row.unlimited && row.end_amount > 0)) &&
@@ -892,7 +892,7 @@ const validateTableRow = (
     row.supplier_sharings?.reduce((sum, supplier) => sum + (supplier.value || 0), 0) || 0
   const feeChargeValue = row.fee_amount || 0
 
-  if (field === 'field_supplier' && row.fee_type === 'percentage') {
+  if (field === 'field_supplier' && row.fee_type === FeeType.Percentage) {
     // For percentage: total supplier fees cannot exceed the fee charge percentage
     if (totalSupplierFees > 100) {
       if (showToast) {
@@ -949,7 +949,7 @@ const validateAllRows = (): boolean => {
 
     // New: For fixed fee type ensure fee_amount not greater than end_amount
     if (
-      row.fee_type === 'fixed' &&
+      row.fee_type === FeeType.Fixed &&
       !row.unlimited &&
       row.end_amount !== null &&
       row.fee_amount !== undefined &&
@@ -970,7 +970,7 @@ const validateAllRows = (): boolean => {
     const feeChargeValue = row.fee_amount || 0
 
     const EPS = 1e-6
-    if (row.fee_type === 'percentage') {
+    if (row.fee_type === FeeType.Percentage) {
       // Require sum of supplier percentages to equal 100%
       if (Math.abs(totalSupplierFees - 100) > EPS) {
         errors.push(
@@ -1196,7 +1196,7 @@ const toggleUnlimited = (index: number) => {
 }
 
 const getCurrencySymbol = () => {
-  return selectedCurrency.value === 'USD' ? '$' : '៛'
+  return selectedCurrency.value === Currency.USD ? '$' : '៛'
 }
 
 const formatAmount = (
@@ -1212,7 +1212,7 @@ const formatAmount = (
   const curr = currency || selectedCurrency.value
   const showSymbol = options?.showSymbol !== false
 
-  if (curr === 'USD') {
+  if (curr === Currency.USD) {
     const formatted = amount.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -1252,10 +1252,10 @@ const handleFeeAmountInput = (event: Event, field: 'fee_amount', index: number) 
     const supplierCount = suppliers.length
     if (supplierCount > 0) {
       let shareValue = 0
-      if (row.fee_type === 'fixed') {
+      if (row.fee_type === FeeType.Fixed) {
         // Fixed: divide fee_amount equally
         shareValue = numValue / supplierCount
-      } else if (row.fee_type === 'percentage') {
+      } else if (row.fee_type === FeeType.Percentage) {
         // Percentage: divide fee_amount equally
         shareValue = 100 / supplierCount
       }
@@ -1266,7 +1266,7 @@ const handleFeeAmountInput = (event: Event, field: 'fee_amount', index: number) 
           // Last supplier: assign remainder to ensure sum equals fee_amount
           s.value = Math.max(
             0,
-            row.fee_type === 'percentage' ? shareValue : numValue - totalAssigned
+            row.fee_type === FeeType.Percentage ? shareValue : numValue - totalAssigned
           )
         } else {
           s.value = Math.max(0, parseFloat(shareValue.toFixed(6)))
@@ -1282,7 +1282,7 @@ const handleFeeAmountInput = (event: Event, field: 'fee_amount', index: number) 
     updateTransactionRow(index, row)
   }
 
-  if (row?.fee_type === 'fixed') {
+  if (row?.fee_type === FeeType.Fixed) {
     const formattedValue = formatAmount(numValue, selectedCurrency.value, { showSymbol: false })
     target.value = formattedValue
   } else {
@@ -1333,14 +1333,14 @@ const handleSupplierFeeInput = (event: Event, rowIndex: number, supplierId: stri
 
   // Validation: supplier value must not exceed fee amount (fixed) or transaction fee (percentage)
   let maxValue = 0
-  if (row.fee_type === 'fixed') {
+  if (row.fee_type === FeeType.Fixed) {
     maxValue = row.fee_amount || 0
-  } else if (row.fee_type === 'percentage') {
+  } else if (row.fee_type === FeeType.Percentage) {
     // const testAmount = selectedCurrency.value === 'USD' ? 100 : 400000
     maxValue = (row.fee_amount / 100) * totalSupplierFees
   }
   const newSumRowSuppliers = getSumSuppliers + numValue
-  if (row.fee_type === 'fixed' && newSumRowSuppliers !== maxValue) {
+  if (row.fee_type === FeeType.Fixed && newSumRowSuppliers !== maxValue) {
     // Use translation keys with params
     const maxValue = row.fee_amount || 0
     const description = t('total_supplier_fees_must_equal_fee_amount', {
@@ -1370,7 +1370,7 @@ const handleSupplierFeeInput = (event: Event, rowIndex: number, supplierId: stri
       }
     })
     return
-  } else if (row.fee_type === 'percentage' && newSumRowSuppliers !== 100) {
+  } else if (row.fee_type === FeeType.Percentage && newSumRowSuppliers !== 100) {
     // Use translation keys with params
     const description = t('total_supplier_fees_must_equal_100', {
       total: newSumRowSuppliers,
@@ -1406,7 +1406,7 @@ const handleSupplierFeeInput = (event: Event, rowIndex: number, supplierId: stri
     setTimeout(() => validateTableRow(rowIndex, true), 100)
   }
 
-  if (getRowTransactionFee(rowIndex)?.fee_type === 'fixed') {
+  if (getRowTransactionFee(rowIndex)?.fee_type === FeeType.Fixed) {
     const formattedValue = formatAmount(numValue, selectedCurrency.value, { showSymbol: false })
     target.value = formattedValue
   } else {

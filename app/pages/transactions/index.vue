@@ -26,9 +26,8 @@
       @row-click="handleViewDetails"
       @fullscreen-toggle="handleFullscreenToggle"
       @data-changed="handleDataChanged"
-      @filter-change="handleFilterChange"
-      @bank-filter-scroll="handleBankFilterScroll"
     >
+    
     
       <template #trailingHeader>
         <!-- Repush Button - Only show when rows are selected -->
@@ -218,6 +217,8 @@ const handleDataChanged = (result: Record<string, any>) => {
 }
 
 onMounted(async () => {
+  console.log('🔄 Component mounted, loading data...')
+  
   // Default monthly summary (PeriodType=4) custom date range for the current month
   const now = new Date()
   const first = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -231,6 +232,8 @@ onMounted(async () => {
     fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 }),
     fetchBankData() // Load bank data
   ])
+  
+  console.log('✅ All data loaded, bank data:', bankData.value)
 })
 
 const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise<{
@@ -333,12 +336,15 @@ const settlementTypeFilterOptions = computed(() =>
 // Build bank filter options from API data
 const bankFilterOptions = computed(() => {
   console.log('🏦 Bank data for filters:', bankData.value)
-  return bankData.value
+  console.log('🏦 Bank data length:', bankData.value.length)
+  const options = bankData.value
     //.filter(bank => bank.active === 'ACTIVE')
     .map((bank) => ({
       label: bank.name || bank.nameKh || 'Unknown Bank',
       value: bank.id || bank.code || bank.name as string | number
     }))
+  console.log('🏦 Generated filter options:', options)
+  return options
 })
 
 // Build collection bank filter options (only banks that can be used for collection)
@@ -673,7 +679,9 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     cell: ({ row }) => row.original.collectionBank || '-',
     enableColumnFilter: true,
     filterType: 'select',
-    filterOptions: bankFilterOptions.value,
+    get filterOptions() {
+      return bankFilterOptions.value
+    },
   },
   {
     id: 'settlementBank',
@@ -682,7 +690,9 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     cell: ({ row }) => row.original.settlementBank || '-',
     enableColumnFilter: true,
     filterType: 'select',
-    filterOptions: bankFilterOptions.value,
+    get filterOptions() {
+      return bankFilterOptions.value
+    },
   },
   {
     id: 'settlementType',
@@ -726,7 +736,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     filterType: 'status',
     //filterOptions: transactionStatusFilterOptions.value,
     filterOptions: availableStatuses.value.map((status) => ({
-      label: getTranslatedStatusLabel(status),
+      label: getFilterTranslateTransactionStatusLabel(status),
       value: status,
     })),
   },

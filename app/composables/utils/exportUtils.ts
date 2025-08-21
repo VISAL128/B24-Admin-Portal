@@ -1551,10 +1551,6 @@ export async function exportToExcelWithUnicodeSupport(
   } = {}
 ) {
 
-  console.log('Starting Excel export...');
-  console.log('Using headers:', headers);
-
-
   const ExcelJS = (await import('exceljs')).default;
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Sheet1');
@@ -1776,6 +1772,8 @@ export async function exportToExcelWithUnicodeSupport(
         bottom: { style: 'thin' },
         right: { style: 'thin' }
       };
+      // Center align all data cells
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
   });
 
@@ -1792,21 +1790,24 @@ export async function exportToExcelWithUnicodeSupport(
       size: 12,
       name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial'
     };
-    totalRow.alignment = { horizontal: 'right', vertical: 'middle' };
     totalRow.eachCell((cell, colNumber) => {
+      // Center align empty cells, right align for total label and value
       if (colNumber >= headers.length - 1) {
+        cell.alignment = { horizontal: 'right', vertical: 'middle' };
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
           fgColor: { argb: 'FFE6F3FF' }
         };
-        cell.border = {
-          top: { style: 'medium', color: { argb: 'FF000000' } },
-          left: { style: 'thin', color: { argb: 'FF000000' } },
-          bottom: { style: 'medium', color: { argb: 'FF000000' } },
-          right: { style: 'thin', color: { argb: 'FF000000' } }
-        };
+      } else {
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
       }
+      cell.border = {
+        top: { style: 'medium', color: { argb: 'FF000000' } },
+        left: { style: 'thin', color: { argb: 'FF000000' } },
+        bottom: { style: 'medium', color: { argb: 'FF000000' } },
+        right: { style: 'thin', color: { argb: 'FF000000' } }
+      };
     });
     const totalValueCell = totalRow.getCell(headers.length);
     totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };

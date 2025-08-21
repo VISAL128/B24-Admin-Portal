@@ -5,8 +5,8 @@
       <div
         v-for="tab in tabs"
         :key="tab.value"
-        @click="selectTab(tab.value)"
         class="relative flex flex-col items-center"
+        @click="selectTab(tab.value)"
       >
         <!-- Tab Wrapper -->
         <div

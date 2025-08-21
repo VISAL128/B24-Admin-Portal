@@ -805,7 +805,7 @@ definePageMeta({
                 <div class="flex flex-1 sm:flex-col lg:flex-row gap-6 min-h-0">
                   <!-- Master Table -->
                   <div
-                    class="flex-2 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg min-h-0"
+                    class="flex-2 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg min-h-0 bg-default"
                   >
                     <div class="h-full overflow-auto">
                       <!-- Table Skeleton -->
@@ -819,7 +819,7 @@ definePageMeta({
                         :columns="cpoSettlementColumns"
                         :ui="appConfig.ui.table.slots"
                         sticky
-                        class="min-w-[800px] w-full"
+                        class="min-w-[800px] w-full h-full"
                         @row:click="handleRowClick"
                       >
                         <template #empty>

@@ -1,5 +1,6 @@
 {
   "page_size": "ចំនួនទំព័រ",
+  "none": "គ្មាន",
   "records_per_page": "ចំនួនកំណត់ត្រាក្នុងមួយទំព័រ",
   "sorting": "លំដាប់",
   "current_page": "ទំព័របច្ចុប្បន្ន",
@@ -122,13 +123,13 @@
   "status": {
     "all": "គ្រប់ស្ថានភាព",
     "header": "ស្ថានភាព",
-    "active": "សកម្ម",
-    "inactive": "អសកម្ម",
+    "active": "ដំណើរការ",
+    "inactive": "មិនដំណើរការ",
     "pending": "រង់ចាំ",
     "completed": "បានបញ្ចប់",
     "failed": "បរាជ័យ",
     "success": "ជោគជ័យ",
-    "error": "កំហុសsss",
+    "error": "កំហុស",
     "processing": "កំពុងដំណើរការ",
     "yes": "បាទ",
     "no": "ទេ",
@@ -789,6 +790,7 @@
       }
     },
     "banks-list": {
+      "title": "បញ្ជីធនាគារ",
       "columns": {
         "name": "ឈ្មោះធនាគារ",
         "nameKh": "ឈ្មោះធនាគារ (ខ្មែរ)",
@@ -1129,16 +1131,29 @@
     "logo_url": "URL ឡូហ្គោ",
     "website_url": "URL គេហទំព័រ",
     "is_active": "សកម្ម",
+    "status": "ស្ថានភាព",
     "created_at": "បានបង្កើតនៅ",
     "updated_at": "បានអាប់ដេតនៅ",
     "created_by": "បង្កើតដោយ",
     "updated_by": "អាប់ដេតដោយ",
-    "activated_date": "កាលបរិច្ឆេទសកម្ម",
+    "activated_date": "កាលបរិច្ឆេទដំណើរការ",
     "settlement_banks": "ធនាគារទូទាត់",
     "collection_banks": "ធនាគារប្រមូលប្រាក់",
     "bank_details": "ព័ត៌មានលម្អិតធនាគារ",
     "contact_information": "ព័ត៌មានទំនាក់ទំនង",
     "account_information": "ព័ត៌មានគណនី",
+    "connected_services": {
+      "title": "សេវាកម្មដែលភ្ជាប់",
+      "no_services": "រកមិនឃើញសេវាកម្មដែលភ្ជាប់",
+      "name": "ឈ្មោះសេវាកម្ម",
+      "description": "ការពិពណ៌នា",
+      "scroll_hint": "អូសដើម្បីមើលគណនីផ្សេងទៀត",
+      "active": "បើកដំណើរការ",
+      "make_active_hint": "ធ្វើឱ្យសេវាកម្មនេះដំណើរការ?",
+      "inactive": "បិទដំណើរការ",
+      "make_inactive_hint": "ធ្វើឱ្យសេវាកម្មនេះមិនដំណើរការ?",
+      "toggle_status_info": "ប្រតិបត្តិការនេះនឹងត្រូវការពេលខ្លះ"
+    },
     "general_information": "ព័ត៌មានទូទៅ",
     "toggle_status": "ប្តូរស្ថានភាព",
     "activate_bank": "ធ្វើឱ្យធនាគារសកម្ម",
@@ -1176,5 +1191,13 @@
   "logo_recommendation": "ណែនាំ",
   "updated_sub_biller_success": "បានកែប្រែម្ចាស់អាជីវកម្មរងដោយជោគជ័យ",
   "sub_biller_detail": "ព័ត៌មានលម្អិតម្ចាស់អាជីវកម្មរង",
-  "sub_biller_detail_description": "មើលព័ត៌មានលម្អិតអំពីម្ចាស់អាជីវកម្មរង"
+  "sub_biller_detail_description": "មើលព័ត៌មានលម្អិតអំពីម្ចាស់អាជីវកម្មរង",
+  "notifications": {
+    "success": "ជោគជ័យ",
+    "error": "កំហុស",
+    "info": "ព័ត៌មាន",
+    "warning": "ការព្រមាន",
+    "service_status_updated_successfully": "បានធ្វើឱ្យស្ថានភាពសេវាកម្មអាប់ដេតដោយជោគជ័យ",
+    "failed_to_update_service_status": "បានបរាជ័យក្នុងការអាប់ដេតស្ថានភាពសេវាកម្ម"
+  }
 }

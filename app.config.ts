@@ -248,5 +248,17 @@ export default defineAppConfig({
         trailingIcon: 'shrink-0 size-4 text-muted',
       },
     },
+    modal: {
+      slots: {
+        header: 'flex justify-between items-center',
+        footer: 'flex justify-end items-center gap-1.5 p-4 sm:px-6',
+      },
+    },
+    slideover: {
+      slots: {
+        header: 'flex justify-between items-center',
+        footer: 'flex justify-end items-center gap-1.5 p-4 sm:px-6',
+      },
+    },
   },
 })

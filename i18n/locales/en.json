@@ -1,5 +1,6 @@
 {
   "page_size": "Page Size",
+  "none": "None",
   "records_per_page": "Records Per Page",
   "sorting": "Sorting",
   "current_page": "Current Page",
@@ -190,6 +191,7 @@
       }
     },
     "banks-list": {
+      "title": "Bank List",
       "columns": {
         "name": "Bank Name",
         "nameKh": "Bank Name (Khmer)",
@@ -313,7 +315,7 @@
     "completed": "Completed",
     "failed": "Failed",
     "success": "Success",
-    "error": "Errorssssss",
+    "error": "Error",
     "processing": "Processing",
     "yes": "Yes",
     "no": "No",
@@ -1111,6 +1113,7 @@
     "logo_url": "Logo URL",
     "website_url": "Website URL",
     "is_active": "Active",
+    "status": "Status",
     "created_at": "Created At",
     "updated_at": "Updated At",
     "created_by": "Created By",
@@ -1120,6 +1123,18 @@
     "bank_details": "Bank Details",
     "contact_information": "Contact Information",
     "account_information": "Account Information",
+    "connected_services": {
+      "title": "Connected Services",
+      "no_services": "No connected services found",
+      "name": "Service Name",
+      "description": "Description",
+      "scroll_hint": "Scroll to see more accounts",
+      "active": "Active",
+      "make_active_hint": "Make this service active?",
+      "inactive": "Inactive",
+      "make_inactive_hint": "Make this service inactive?",
+      "toggle_status_info": "This operation will take some time"
+    },
     "general_information": "General Information",
     "toggle_status": "Toggle Status",
     "activate_bank": "Activate Bank",
@@ -1155,5 +1170,13 @@
   "logo_recommendation": "Logo recommendation",
   "updated_sub_biller_success": "Sub-biller updated successfully",
   "sub_biller_detail": "Sub Biller Detail",
-  "sub_biller_detail_description": "View detailed information about the sub-biller"
+  "sub_biller_detail_description": "View detailed information about the sub-biller",
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "info": "Information",
+    "warning": "Warning",
+    "service_status_updated_successfully": "Service status updated successfully",
+    "failed_to_update_service_status": "Failed to update service status"
+  }
 }

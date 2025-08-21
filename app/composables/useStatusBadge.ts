@@ -34,8 +34,8 @@ export const useStatusBadge = () => {
         return 'status.pending'
       case TransactionStatus.Failed.toLowerCase():
         return 'status.failed'
-      case TransactionStatus.Error.toLowerCase():
-        return 'status.error'
+      // case TransactionStatus.Error.toLowerCase():
+      //   return 'status.error'
       case TransactionStatus.Cancel.toLowerCase():
         return 'status.cancel'
       case TransactionStatus.Expire.toLowerCase():
@@ -88,7 +88,7 @@ export const useStatusBadge = () => {
       case TransactionStatus.Pending.toLowerCase():
         return 'clock'
       case TransactionStatus.Failed.toLowerCase():
-      case TransactionStatus.Error.toLowerCase():
+      // case TransactionStatus.Error.toLowerCase():
         return 'x-circle'
       case TransactionStatus.Cancel.toLowerCase():
         return 'ban'
