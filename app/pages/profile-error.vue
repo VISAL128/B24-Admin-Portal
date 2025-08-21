@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#43B3DE] to-white"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-white via-[#caf0f8] to-white dark:from-gray-900 dark:via-gray-700 dark:to-gray-900 transition-all duration-500"
   >
     <div
       class="max-w-md mx-auto text-center p-8 bg-white rounded-lg shadow-lg border border-gray-200"

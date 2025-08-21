@@ -407,6 +407,7 @@ const valueClass = 'text-sm font-bold'
       side="right"
       :overlay="false"
       :description="t('settlement.settlement_details_description')"
+      :ui="appConfig.ui.slideover.slots"
       @after:leave="closeSlideover"
     >
       <template #body>
@@ -543,7 +544,7 @@ const valueClass = 'text-sm font-bold'
       <template #close>
         <div class="flex justify-end w-52">
           <UTooltip :text="t('close')" :kbds="['esc']" :delay-duration="200">
-            <UButton variant="ghost" class="w-8 h-8 px-1.5">
+            <UButton variant="ghost" class="w-8 h-8 px-1.5 rounded-2xl" color="neutral">
               <UIcon
                 name="material-symbols:close"
                 size="50"

@@ -57,7 +57,7 @@ const statusColor = computed(() => {
     case 'yes':
       return 'success'
     case 'inactive':
-      return 'neutral'
+      return 'error'
 
     // Other states
     case 'canceled':

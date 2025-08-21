@@ -79,62 +79,66 @@
                 </UTooltip>
                 <!-- Language Switcher -->
                 <UTooltip :text="t('navbar.language')" :delay-duration="500">
-                  <UPopover v-model:open="isLanguagePopoverOpen" placement="bottom-end" :offset="[0, 10]">
-                      <UButton
-                        icon="material-symbols:language"
-                        variant="ghost"
-                        size="sm"
-                        class="px-2"
-                      />
-                      <template #content>
-                        <div class="flex flex-col gap-1 p-2 w-28">
-                          <UButton
-                            variant="ghost"
-                            class="cursor-pointer transition-all justify-start text-left"
-                            block
-                            :class="
-                              locale === 'en' ? 'bg-primary/10 dark:bg-gray-700 text-primary' : ''
-                            "
-                            size="sm"
-                            @click="
-                              () => {
-                                setLanguage('en')
-                                isLanguagePopoverOpen = false
-                              }
-                            "
-                            >🇬🇧
-                            <span class="text-left w-full">
-                              <!-- {{
+                  <UPopover
+                    v-model:open="isLanguagePopoverOpen"
+                    placement="bottom-end"
+                    :offset="[0, 10]"
+                  >
+                    <UButton
+                      icon="material-symbols:language"
+                      variant="ghost"
+                      size="sm"
+                      class="px-2"
+                    />
+                    <template #content>
+                      <div class="flex flex-col gap-1 p-2 w-28">
+                        <UButton
+                          variant="ghost"
+                          class="cursor-pointer transition-all justify-start text-left"
+                          block
+                          :class="
+                            locale === 'en' ? 'bg-primary/10 dark:bg-gray-700 text-primary' : ''
+                          "
+                          size="sm"
+                          @click="
+                            () => {
+                              setLanguage('en')
+                              isLanguagePopoverOpen = false
+                            }
+                          "
+                          >🇬🇧
+                          <span class="text-left w-full">
+                            <!-- {{
                       t("lang.english")
                     }} -->
-                              English
-                            </span>
-                          </UButton>
-                          <UButton
-                            variant="ghost"
-                            class="cursor-pointer transition-all justify-start text-left"
-                            :class="
-                              locale === 'km' ? 'bg-primary/10 dark:bg-gray-700 text-primary' : ''
-                            "
-                            block
-                            size="sm"
-                            @click="
-                              () => {
-                                setLanguage('km')
-                                isLanguagePopoverOpen = false
-                              }
-                            "
-                            >🇰🇭
-                            <span class="text-left w-full">
-                              ភាសាខ្មែរ
-                              <!-- {{
+                            English
+                          </span>
+                        </UButton>
+                        <UButton
+                          variant="ghost"
+                          class="cursor-pointer transition-all justify-start text-left"
+                          :class="
+                            locale === 'km' ? 'bg-primary/10 dark:bg-gray-700 text-primary' : ''
+                          "
+                          block
+                          size="sm"
+                          @click="
+                            () => {
+                              setLanguage('km')
+                              isLanguagePopoverOpen = false
+                            }
+                          "
+                          >🇰🇭
+                          <span class="text-left w-full">
+                            ភាសាខ្មែរ
+                            <!-- {{
                             t("lang.khmer")
                           }} -->
-                            </span></UButton
-                          >
-                        </div>
-                      </template>
-                    </UPopover>
+                          </span></UButton
+                        >
+                      </div>
+                    </template>
+                  </UPopover>
                 </UTooltip>
 
                 <!-- Setting -->
@@ -216,15 +220,26 @@
 
                       <div class="border-t border-gray-200 dark:border-gray-700" />
 
-                      <UButton
-                        variant="ghost"
-                        size="md"
-                        class="w-full justify-start text-red-600 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30"
-                        @click="isShowLogoutConfirmModal = true"
+                      <DialogsConfirmDialog
+                        v-model="isShowLogoutConfirmModal"
+                        :loading="loggingOut"
+                        :message="t('logout_confirmation')"
+                        :cancel-button-text="t('no')"
+                        :confirm-button-text="t('yes_logout')"
+                        confirm-button-color="error"
+                        @confirm="handleLogout"
                       >
-                        <Icon name="material-symbols:logout" class="w-4 h-4 mr-2" />
-                        {{ t('logout') }}
-                      </UButton>
+                        <UButton
+                          variant="soft"
+                          color="error"
+                          size="md"
+                          class="w-full justify-start"
+                          @click="isShowLogoutConfirmModal = true"
+                        >
+                          <Icon name="material-symbols:logout" class="w-4 h-4 mr-2" />
+                          {{ t('logout') }}
+                        </UButton>
+                      </DialogsConfirmDialog>
                     </div>
                   </div>
                 </template>
@@ -232,61 +247,6 @@
             </div>
           </div>
         </UCard>
-
-        <!-- Confirmation Logout Modal -->
-        <UModal
-          v-model:open="isShowLogoutConfirmModal"
-          :title="t('confirmation')"
-          :transition="true"
-          :fullscreen="false"
-          :close="{
-            class: 'rounded-full',
-            onClick: () => logoutEmit('close', false),
-          }"
-        >
-          <template #body>
-            <div class="flex flex-col items-center h-32 text-center">
-              <!-- Icon with circle background using Bill24 colors -->
-              <div
-                class="size-14 rounded-full flex items-center justify-center mb-4"
-                style="background-color: #eaf6fc"
-              >
-                <UIcon
-                  name="material-symbols:question-mark"
-                  size="24"
-                  class="text-3xl opacity-80"
-                  style="color: #43b3de"
-                />
-              </div>
-
-              <!-- Question text -->
-              <h4 class="text-md font-semibold mb-1">
-                {{ t('logout_confirmation') }}
-              </h4>
-            </div>
-          </template>
-          <template #footer>
-            <div class="w-full flex flex-row justify-end gap-2">
-              <UButton
-                :label="t('no')"
-                color="neutral"
-                variant="outline"
-                size="sm"
-                class="w-16 justify-center"
-                @click="closeConfirmationModal"
-              />
-              <UButton
-                :label="t('yes_logout')"
-                color="error"
-                size="sm"
-                :loading="loggingOut"
-                class="justify-center"
-                @click="handleLogout"
-              />
-            </div>
-          </template>
-        </UModal>
-
         <!-- Main content slot -->
         <div class="flex-1 p-2 pt-0 overflow-y-auto h-full w-full">
           <slot />
@@ -316,13 +276,11 @@ definePageMeta({
 const { locale, t } = useI18n()
 const { setLanguage } = useLanguage()
 const popoverRef = ref<{ close: () => void } | null>(null)
-const logoutEmit = defineEmits<{ close: [boolean] }>()
+// const logoutEmit = defineEmits<{ close: [boolean] }>()
 const runtimeCon = useRuntimeConfig()
 
 const isNavExpanded = ref(true)
 const isSmallScreen = useMediaQuery('(max-width: 768px)')
-
-
 
 // Permission checking state
 const isCheckingPermissions = ref(false)
@@ -360,10 +318,6 @@ const handleSettings = () => {
 
 const handleDeveloperTools = () => {
   navigateTo('/settings/developer-tool')
-}
-
-const closeConfirmationModal = () => {
-  isShowLogoutConfirmModal.value = false
 }
 
 const handleLogout = async () => {

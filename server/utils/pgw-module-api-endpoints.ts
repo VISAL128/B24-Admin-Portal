@@ -2,10 +2,11 @@ export const PGW_MODULE_API_ENDPOINTS = {
   // Bank endpoints
   BANK: {
     GET_BY_WALLET_SERVICE: '/get-current-bank-by-service-id/8',
-    DETAILS: '/supplier-bank-service/{id}/details',
+    DETAILS: '/bank-details/{id}',
     LIST: '/bank/list',
     LIST_ACTIVATED: '/activated-banks',
     ACCOUNTS_BY_SBS_ID: '/get-accounts-by-supplier-bank-service-id/{sbs_id}',
+    UPDATE_SBS_STATUS: '/update-supplier-bank-service-status',
   },
   // Transaction endpoints
   TRANSACTION: {

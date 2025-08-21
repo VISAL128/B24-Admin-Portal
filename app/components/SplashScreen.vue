@@ -28,7 +28,7 @@
         </p>
 
         <!-- Loading Animation -->
-        <div class="flex items-center justify-center space-x-2">
+        <!-- <div class="flex items-center justify-center space-x-2">
           <div class="flex space-x-1">
             <div
               v-for="i in 3"
@@ -37,7 +37,7 @@
               :style="{ animationDelay: `${i * 0.2}s` }"
             />
           </div>
-        </div>
+        </div> -->
 
         <!-- Progress Bar -->
         <div class="mt-4 w-64 mx-auto">
