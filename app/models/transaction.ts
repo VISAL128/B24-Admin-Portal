@@ -78,6 +78,7 @@ export interface TransactionHistoryRecord {
   
     extData: string | null;
     description: string | null;
+    accountNumber: string | null; 
 }
 
 

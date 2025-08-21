@@ -12,28 +12,28 @@ export const useTransactionTypeIcon = () => {
       case 'wallet topup':
       case 'wallet top-up':
       case 'wallet top up':
-        return 'i-heroicons-arrow-down-circle' // Incoming money
+        return 'i-heroicons-arrow-down-circle-solid' // Incoming money - solid
       case 'settlement':
       case 'wallet payment':
       case 'payment':
-        return 'i-heroicons-arrow-up-circle' // Outgoing money
+        return 'i-heroicons-arrow-up-circle-solid' // Outgoing money - solid
       case 'transfer':
       case 'bank transfer':
-        return 'i-heroicons-arrow-right-circle' // Transfer
+        return 'i-heroicons-arrow-right-circle-solid' // Transfer - solid
       case 'refund':
-        return 'i-heroicons-arrow-uturn-left' // Refund/Return
+        return 'i-heroicons-arrow-uturn-left-solid' // Refund/Return - solid
       case 'qr pay':
       case 'qr payment':
       case 'qr':
-        return 'i-heroicons-qr-code' // QR Code
+        return 'i-heroicons-qr-code-solid' // QR Code - solid
       case 'deeplink':
       case 'checkout':
       case 'deeplink / checkout':
-        return 'i-heroicons-link' // Link/Web
+        return 'i-heroicons-link-solid' // Link/Web - solid
       case 'subscription':
-        return 'i-heroicons-calendar-date-range' // Recurring
+        return 'i-heroicons-calendar-days-solid' // Recurring - solid (updated from calendar-date-range)
       default:
-        return 'i-heroicons-banknotes' // Default money icon
+        return 'i-heroicons-banknotes-solid' // Default money icon - solid
     }
   }
 

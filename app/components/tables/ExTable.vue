@@ -956,15 +956,28 @@ const activeFilterCount = computed(() => {
 })
 
 const exportHeaders = computed(() =>
-  filteredColumns.value.map((col) => ({
-    key: String(col.accessorKey),
-    label:
-      typeof col.header === 'string'
-        ? col.header
-        : (col.id ? String(getTranslationHeaderById(col.id)) : '')
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, (l) => l.toUpperCase()),
-  }))
+  filteredColumns.value
+    .filter((col) => { 
+      if (
+        col.id === 'select' ||
+        col.accessorKey === 'select' ||
+        // col.id === 'row_number' ||
+        // col.accessorKey === 'row_number' ||
+        col.id === undefined
+      ) {
+        return false 
+      }
+      return true 
+    })
+    .map((col) => ({
+      key: String(col.accessorKey || col.id),
+      label:
+        typeof col.header === 'string'
+          ? col.header
+          : (col.id ? String(getTranslationHeaderById(col.id)) : '')
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, (l) => l.toUpperCase()),
+    }))
 )
 
 // Handler for sort menu changes
@@ -1067,12 +1080,14 @@ const filteredColumns = computed(() => {
   // Create a fresh copy of columns to avoid mutation issues
   const columns = columnsWithRowNumber.value.map((col) => ({ ...col }))
 
+  console.log(`Processing columns: ${columns.map(col => col.id).join(', ')}`)
   columns.forEach((col) => {
     if (
       col.id === 'select' ||
       col.accessorKey === 'select' ||
       col.id === 'row_number' ||
-      col.accessorKey === 'row_number'
+      col.accessorKey === 'row_number' ||
+      col.id === undefined 
     ) {
       // Skip selection column
       return

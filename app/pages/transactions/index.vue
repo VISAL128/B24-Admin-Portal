@@ -62,6 +62,7 @@ import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useErrorHandler } from '~/composables/useErrorHandler'
 import { useNotification } from '~/composables/useNotification'
 import { useStatusBadge } from '~/composables/useStatusBadge'
+import { useTransactionTypeIcon } from '~/composables/useTransactionTypeIcon'
 import { getPDFHeaders } from '~/composables/utils/pdfFonts'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
@@ -70,7 +71,7 @@ import type { ActivatedBankResponse } from '~/models/bank'
 import type { QueryParams, TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord } from '~/models/transaction'
 import { SettlementType, TransactionStatus, TransactionType } from '~/utils/enumModel'
-import { getFilterTranslateTransactionStatusLabel } from '~/utils/helper'
+import { copyCell, getFilterTranslateTransactionStatusLabel } from '~/utils/helper'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 const availableStatuses = ref<string[]>(Object.values(TransactionStatus))
 // Helper function to get the enum key from enum value
@@ -86,6 +87,13 @@ const showInfoBanner = ref(true)
 const isLoading = ref(true)
 // Fullscreen state for table
 const isTableFullscreen = ref(false)
+
+const { 
+  getTransactionTypeIcon, 
+  getTransactionTypeIconStyle, 
+  getTransactionTypeIconColor 
+} = useTransactionTypeIcon()
+
 
 
 // Handle Repush Transaction
@@ -605,32 +613,7 @@ const handleViewDetails = (transaction: TransactionHistoryRecord) => {
   navigateToDetails(transaction.id)
 }
 
-const handleBankFilterScroll = async (columnId: string) => {
-  console.log('🔄 Bank filter scroll detected for:', columnId)
-  if ((columnId === 'collectionBank' || columnId === 'settlementBank')) {
-    // Show loading state and load more data
-    // await loadMoreBankData()
-  }
-}
-const handleFilterChange = async (columnId: string, value: string) => {
-  
-  // Handle "Load More Banks" selection
-  if (value === '__LOAD_MORE__') {
-    if ((columnId === 'collectionBank' || columnId === 'settlementBank')) {
-      // await loadMoreBankData()
-    }
-    return // Don't apply this as an actual filter
-  }
-  
-  // Ignore loading indicator selection
-  if (value === '__LOADING__') {
-    return
-  }
-  
-  // Bank data is already loaded in onMounted, so no need to fetch again
-  
-  // Optional: trigger fetch or other logic
-}
+
 
 const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
   const cols: BaseTableColumn<TransactionHistoryRecord>[] = [
@@ -669,14 +652,29 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     id: 'bankReference',
     accessorKey: 'bankReference',
     header: () => t('pages.transaction.bank_ref'),
-    cell: ({ row }) => row.original.bankReference || '-',
+    // cell: ({ row }) => row.original.bankReference || '-',
+    cell: ({ row }) => copyCell(row.original.bankReference, t),
     enableSorting: true,
   },
   {
     id: 'collectionBank',
     accessorKey: 'collectionBank',
     header: () => t('pages.transaction.collection_bank'),
-    cell: ({ row }) => row.original.collectionBank || '-',
+    //cell: ({ row }) => row.original.collectionBank || '-',
+    cell: ({ row }) => {
+      const UAvatar = resolveComponent('UAvatar')
+      if (row.original.collectionBank) {
+        // If bank logo is available, display it
+        return h('div', { class: 'flex items-center gap-2' }, [
+          h(UAvatar, {
+            src: row.original.collectionBankLogo,
+            size: '3xs',
+          }),
+          h('div', { class: '' }, row.original.collectionBank || '-'),
+        ])
+      }
+      return h('div', { class: '' }, row.original.collectionBank || '-')
+    },
     enableColumnFilter: true,
     filterType: 'select',
     get filterOptions() {
@@ -687,7 +685,21 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     id: 'settlementBank',
     accessorKey: 'settlementBank',
     header: () => t('pages.transaction.settlement_bank'),
-    cell: ({ row }) => row.original.settlementBank || '-',
+    // cell: ({ row }) => row.original.settlementBank || '-',
+    cell: ({ row }) => {
+      const UAvatar = resolveComponent('UAvatar')
+      if (row.original.settlementBank) {
+        // If bank logo is available, display it
+        return h('div', { class: 'flex items-center gap-2' }, [
+          h(UAvatar, {
+            src: row.original.settlementBankLogo,
+            size: '3xs',
+          }),
+          h('div', { class: '' }, row.original.settlementBank || '-'),
+        ])
+      }
+      return h('div', { class: '' }, row.original.settlementBank || '-')
+    },
     enableColumnFilter: true,
     filterType: 'select',
     get filterOptions() {
@@ -706,7 +718,19 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     id: 'transactionType',
     accessorKey: 'transactionType',
     header: () => t('pages.transaction.transaction_type'),
-    cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
+    //cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
+    cell: ({ row }) => 
+      h('div', { class: 'flex items-center gap-2' }, [
+        h('div', { 
+          class: `w-6 h-6 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transactionType)}`
+        }, [
+          h(resolveComponent('UIcon'), {
+            name: getTransactionTypeIcon(row.original.transactionType),
+            class: `w-3 h-3 ${getTransactionTypeIconColor(row.original.transactionType)}`
+          })
+        ]),
+        h('span', { class: 'text-sm font-medium' }, row.original.transactionType || '-')
+      ]),
     enableSorting: true,
     enableColumnFilter: true,
     filterOptions: transactionTypeFilterOptions.value,
@@ -736,7 +760,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     filterType: 'status',
     //filterOptions: transactionStatusFilterOptions.value,
     filterOptions: availableStatuses.value.map((status) => ({
-      label: getFilterTranslateTransactionStatusLabel(status),
+      label: getFilterTranslateTransactionStatusLabel(status, t),
       value: status,
     })),
   },

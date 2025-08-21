@@ -272,7 +272,9 @@
         "transactionAmount": "Total Amount",
         "createdDate": "Transaction Date",
         "walletAccountDisplay": "Wallet",
-        "transactionNo": "Transaction No"
+        "transactionNo": "Transaction No",
+        "wallet": "Wallet",
+        "tranDate": "Transaction Date"
       }
     },
     "sub-billers-table": {
