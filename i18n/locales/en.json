@@ -1118,6 +1118,15 @@
     "bank_details": "Bank Details",
     "contact_information": "Contact Information",
     "account_information": "Account Information",
+    "connected_services": {
+        "title": "Connected Services",
+        "no_services": "No connected services found",
+        "name": "Service Name",
+        "description": "Description",
+        "scroll_hint": "Scroll to see more accounts",
+        "active": "Active",
+        "inactive": "Inactive"
+    },
     "general_information": "General Information",
     "toggle_status": "Toggle Status",
     "activate_bank": "Activate Bank",

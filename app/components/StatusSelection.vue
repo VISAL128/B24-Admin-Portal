@@ -202,6 +202,7 @@ const getStatusColor = (
     case 'error':
       return 'bg-error text-white'
     case 'pending':
+    case 'expired':
     case 'warning':
       return 'bg-warning text-black'
     case 'active':
@@ -210,7 +211,6 @@ const getStatusColor = (
       return 'bg-gray-500 text-white'
     case 'canceled':
     case 'cancelled':
-    case 'expired':
       return 'bg-gray-300 text-black'
     case 'reversed':
       return 'bg-orange-500 text-white'
