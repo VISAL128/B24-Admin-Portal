@@ -62,14 +62,6 @@
               :title="t('wallet_page.refresh')"
               @click="refreshBalances"
             />
-
-            <!-- History Icon -->
-            <!-- <UIcon
-              name="material-symbols:history"
-              class="w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200"
-              :title="t('wallet_page.history')"
-              @click="navigateToHistory"
-            /> -->
           </div>
         </div>
       </div>
@@ -543,7 +535,7 @@
           show-date-filter
           search-tooltip="Search transactions"
           date-format="dd/MM/yyyy"
-          enabled-auto-refresh
+          :enabled-auto-refresh="false"
           @row-click="handleViewDetails"
         />
       </div>
@@ -604,6 +596,7 @@ const {
   getTransactionTypeIconStyle, 
   getTransactionTypeIconColor 
 } = useTransactionTypeIcon()
+const { transactionStatusCellBuilder, getTransactionStatusTranslationKey } = useStatusBadge()
 
 // Wallet store
 const walletStore = useWalletStore()
@@ -659,6 +652,21 @@ const TABLE_ID = computed(() => {
   const walletType = selectedWallet?.walletType || 'default'
   return `wallet-transactions-table-${walletType}`
 })
+
+
+// Build status filter options from TransactionStatus enum
+const getTranslatedTransactionStatusLabel = (status: string) => {
+  const key = getTransactionStatusTranslationKey(status)
+  const translated = t(key)
+  return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
+}
+
+const transactionStatusFilterOptions = computed(() =>
+  Object.values(TransactionStatus).map((status) => ({
+    label: getTranslatedTransactionStatusLabel(status),
+    value: status
+  }))
+)
 
 // API methods
 const loadWalletTypes = async () => {
@@ -810,6 +818,21 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
       header: t('wallet_page.date'),
       cell: ({ row }) => formatDateTime(row.original.tran_date),
       enableSorting: true,
+      sortDescFirst: true,
+    },
+    {
+      id: 'customerName',
+      accessorKey: 'customer_name',
+      header: t('customerName'),
+      cell: ({ row }) => row.original.customer_name || '-',
+      enableSorting: true
+    },
+    {
+      id: 'bankRefId',
+      accessorKey: 'bank_ref_id',
+      header: t('bank_ref_id'),
+      cell: ({ row }) => row.original.bank_ref_id || '-',
+      enableSorting: true,
     },
     {
       id: 'tranType',
@@ -818,11 +841,11 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
       cell: ({ row }) => 
         h('div', { class: 'flex items-center gap-2' }, [
           h('div', { 
-            class: `w-6 h-6 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transaction_type)}`
+            class: `w-7 h-7 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transaction_type)}`
           }, [
             h(resolveComponent('UIcon'), {
               name: getTransactionTypeIcon(row.original.transaction_type),
-              class: `w-3 h-3 ${getTransactionTypeIconColor(row.original.transaction_type)}`
+              class: `w-4 h-4 ${getTransactionTypeIconColor(row.original.transaction_type)}`
             })
           ]),
           h('span', { class: 'text-sm font-medium' }, row.original.transaction_type || '-')
@@ -835,66 +858,60 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
        ],
       enableSorting: true
     },
-  {
-    id: 'customerName',
-    accessorKey: 'customer_name',
-    header: t('customerName'),
-    cell: ({ row }) => row.original.customer_name || '-',
-    enableSorting: true
-  },
+    // {
+    //   id: 'status',
+    //   header: () => t('pages.transaction.status'),
+    //   cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
+    //   enableColumnFilter: true,
+    //   filterType: 'status',
+    //   filterOptions: transactionStatusFilterOptions.value,
+    // },
     {
-      id: 'bankRefId',
-      accessorKey: 'bank_ref_id',
-      header: t('bank_ref_id'),
-      cell: ({ row }) => row.original.bank_ref_id || '-',
-      enableSorting: true,
+      id: 'status',
+      header: () => t('status.header'),
+      accessorKey: 'status',
+      cell: ({ row }) =>
+        h(StatusBadge, {
+          status: row.original.status,
+          variant: 'subtle',
+          size: 'sm',
+        }),
+      enableColumnFilter: true,
+      filterType: 'status',
+      filterOptions: [
+        { label: t('status.success'), value: 'success' },
+        { label: t('status.pending'), value: 'pending'},
+        { label: t('status.failed'), value: 'failed' },
+        { label: t('status.cancel'), value: 'cancel' },
+        { label: t('status.error'), value: 'error' },
+      ],
+      enableSorting: true
     },
-       {
-    id: 'status',
-    header: () => t('status.header'),
-    accessorKey: 'status',
-    cell: ({ row }) =>
-      h(StatusBadge, {
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
-    enableColumnFilter: true,
-    filterType: 'select',
-    filterOptions: [
-      { label: t('status.success'), value: 'success' },
-      { label: t('status.pending'), value: 'pending'},
-      { label: t('status.failed'), value: 'failed' },
-      { label: t('status.cancel'), value: 'cancel' },
-      { label: t('status.error'), value: 'error' },
-    ],
-    enableSorting: true
-  },
-  {
-    id: 'currencyId',
-    accessorKey: 'currency',
-    header: t('currencyId'),
-    cell: ({ row }) => row.original.currency || '-',
-    enableSorting: true,
-    // enableColumnFilter: true,
-    // filterType: 'select',
-    // filterOptions: [
-    //   { label: t('currency.usd'), value: 'USD' },
-    //   { label: t('currency.khr'), value: 'KHR' },
-    // ],
-  },
-  {
-    id: 'totalAmount',
-    accessorKey: 'amount',
-    header: t('settlement.amount'),
-        cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-center' },
-        useCurrency().formatAmount(row.original.amount, row.original.currency)
-      ),
-    enableSorting: true,
-  }
+    {
+      id: 'currencyId',
+      accessorKey: 'currency',
+      header: t('currencyId'),
+      cell: ({ row }) => row.original.currency || '-',
+      enableSorting: true,
+      // enableColumnFilter: true,
+      // filterType: 'select',
+      // filterOptions: [
+      //   { label: t('currency.usd'), value: 'USD' },
+      //   { label: t('currency.khr'), value: 'KHR' },
+      // ],
+    },
+    {
+      id: 'totalAmount',
+      accessorKey: 'amount',
+      header: t('settlement.amount'),
+          cell: ({ row }) =>
+        h(
+          'div',
+          { class: 'text-center' },
+          useCurrency().formatAmount(row.original.amount, row.original.currency)
+        ),
+      enableSorting: true,
+    }
 ]
 })
 
