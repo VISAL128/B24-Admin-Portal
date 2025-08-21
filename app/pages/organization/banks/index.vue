@@ -62,20 +62,20 @@ const summarys = computed<SummaryCard[]>(() => [
     dateRange: '',
   },
   {
-    title: t('banks.active_banks'),
+    title: t('banks.settlement'),
     values: [
       {
-        value: bankData.value.filter((_bank) => true).length,
+        value: bankData.value.filter((_bank) => _bank.isSettlementBank).length,
       },
     ],
     filterLabel: '',
     dateRange: '',
   },
   {
-    title: t('banks.inactive_banks'),
+    title: t('banks.collection'),
     values: [
       {
-        value: bankData.value.filter((_bank) => false).length,
+        value: bankData.value.filter((_bank) => _bank.isCollectionBank).length,
       },
     ],
     filterLabel: '',
@@ -183,6 +183,14 @@ const columns: BaseTableColumn<ActivatedBankResponse>[] = [
     // ]
   },
   {
+    id: 'nameKh',
+    accessorKey: 'nameKh',
+    header: () => t('table.banks-list.columns.bank_name_kh'),
+    cell: ({ row }) => h('div', { class: 'font-medium' }, row.original.nameKh),
+    enableSorting: true,
+    size: 200,
+  },
+  {
     id: 'connectedServices',
     accessorKey: 'connected_services',
     header: () => t('table.banks-list.columns.connected_services'),
@@ -219,32 +227,32 @@ const columns: BaseTableColumn<ActivatedBankResponse>[] = [
     },
     size: 200,
   },
-  // {
-  //   id: 'is_settlement_bank',
-  //   accessorKey: 'is_settlement_bank',
-  //   header: () => t('table.banks-list.columns.is_settlement_bank'),
-  //   cell: ({ row }) => statusCellBuilder(row.original.is_settlement_bank ? 'yes' : 'no'),
-  //   size: 120,
-  // },
-  // {
-  //   id: 'is_collection_bank',
-  //   accessorKey: 'is_collection_bank',
-  //   header: () => t('table.banks-list.columns.is_collection_bank'),
-  //   cell: ({ row }) => statusCellBuilder(row.original.is_collection_bank ? 'yes' : 'no'),
-  //   size: 120,
-  // },
   {
-    id: 'active',
-    accessorKey: 'active',
-    header: () => t('table.banks-list.columns.status'),
-    cell: () => statusCellBuilder('active'),
-    filterOptions: [
-      { label: getTranslatedStatusLabel('active'), value: BankServiceStatus.Active },
-      { label: getTranslatedStatusLabel('inactive'), value: BankServiceStatus.Inactive },
-    ],
-    filterType: 'select',
-    enableColumnFilter: true,
-    size: 100,
+    id: 'is_settlement_bank',
+    accessorKey: 'is_settlement_bank',
+    header: () => t('table.banks-list.columns.is_settlement_bank'),
+    cell: ({ row }) => statusCellBuilder(row.original.isSettlementBank ? 'yes' : 'no'),
+    size: 120,
   },
+  {
+    id: 'is_collection_bank',
+    accessorKey: 'is_collection_bank',
+    header: () => t('table.banks-list.columns.is_collection_bank'),
+    cell: ({ row }) => statusCellBuilder(row.original.isCollectionBank ? 'yes' : 'no'),
+    size: 120,
+  },
+  // {
+  //   id: 'active',
+  //   accessorKey: 'active',
+  //   header: () => t('table.banks-list.columns.status'),
+  //   cell: () => statusCellBuilder('active'),
+  //   filterOptions: [
+  //     { label: getTranslatedStatusLabel('active'), value: BankServiceStatus.Active },
+  //     { label: getTranslatedStatusLabel('inactive'), value: BankServiceStatus.Inactive },
+  //   ],
+  //   filterType: 'select',
+  //   enableColumnFilter: true,
+  //   size: 100,
+  // },
 ]
 </script>

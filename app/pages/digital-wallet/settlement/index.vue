@@ -62,23 +62,23 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, resolveComponent, shallowRef, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
+import { UButton } from '#components'
 import { CalendarDate } from '@internationalized/date'
-import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
+import { computed, h, ref, resolveComponent, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
+import ExTable from '~/components/tables/ExTable.vue'
+import type { BaseTableColumn, SettlementHistoryTableFetchResult } from '~/components/tables/table'
+import { useSupplierApi } from '~/composables/api/useSupplierApi'
+import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
-import { UButton } from '#components'
-import { useCurrency } from '~/composables/utils/useCurrency'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type { QueryParams } from '~/models/baseModel'
+import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { DEFAULT_PAGE_SIZE } from '~/utils/constants'
 import { SettlementHistoryStatus } from '~/utils/enumModel'
-import type { BaseTableColumn, SettlementHistoryTableFetchResult } from '~/components/tables/table'
-import ExTable from '~/components/tables/ExTable.vue'
-import type { QueryParams } from '~/models/baseModel'
-import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
 
 definePageMeta({
   auth: false,
@@ -319,50 +319,74 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
   {
     id: 'total_settled',
     accessorKey: 'total_settled',
+    enableHiding: true,
     header: ({ column }) => createSortableHeader(column, t('settlement.transaction')),
     cell: ({ row }) => {
-      const success = row.original.success
-      const failed = row.original.failed
+      // const success = row.original.success
+      // const failed = row.original.failed
       const total = row.original.total_settled
 
       const UBadge = resolveComponent('UBadge')
-      const Icon = resolveComponent('UIcon')
+      // const Icon = resolveComponent('UIcon')
 
-      return h('div', { class: 'flex gap-2 items-center' }, [
-        h(
-          UBadge,
-          {
-            color: 'primary',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`)]
-        ),
-        // Success and Fail badges
-        h(
-          UBadge,
-          {
-            color: 'success',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-        ),
-        h(
-          UBadge,
-          {
-            color: 'error',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, failed)]
-        ),
-      ])
+      return h(
+        UBadge,
+        {
+          color: 'primary',
+          variant: 'subtle',
+          class: 'flex items-center justify-center gap-2',
+        },
+        () => [h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`)]
+      )
     },
     enableSorting: true,
   },
   {
+    id: 'success',
+    accessorKey: 'success',
+    header: () => t('success.header'),
+    sortableHeaderAlignment: 'center',
+    cell: ({ row }) => {
+      const UBadge = resolveComponent('UBadge')
+      const Icon = resolveComponent('UIcon')
+      return h(
+        UBadge,
+        {
+          color: 'success',
+          variant: 'subtle',
+          class: 'flex items-center justify-center gap-2',
+        },
+        () => [
+          h(Icon, { name: 'material-symbols:check-circle-rounded', class: 'w-4 h-4' }),
+          h('span', {}, row.original.success),
+        ]
+      )
+    },
+  },
+  {
+    id: 'failed',
+    accessorKey: 'failed',
+    header: () => t('failed.header'),
+    cell: ({ row }) => {
+      const UBadge = resolveComponent('UBadge')
+      const Icon = resolveComponent('UIcon')
+      return h(
+        UBadge,
+        {
+          color: 'error',
+          variant: 'subtle',
+          class: 'flex items-center justify-center gap-2',
+        },
+        () => [
+          h(Icon, { name: 'material-symbols:cancel-rounded', class: 'w-4 h-4' }),
+          h('span', {}, row.original.failed),
+        ]
+      )
+    },
+  },
+  {
     id: 'status',
+    accessorKey: 'status',
     header: () => t('status.header'),
     cell: ({ row }) => statusCellBuilder(row.original.status, true),
     enableColumnFilter: true,
@@ -371,6 +395,18 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
       label: getTranslatedStatusLabel(status),
       value: status,
     })),
+  },
+  {
+    id: 'currency_id',
+    accessorKey: 'currency_id',
+    header: () => t('settlement.currency'),
+    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
+    enableColumnFilter: true,
+    filterOptions: [
+      { label: t('currency.usd'), value: 'USD' },
+      { label: t('currency.khr'), value: 'KHR' },
+    ],
+    size: 50,
   },
   {
     id: 'total_amount',
@@ -387,18 +423,6 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     enableSorting: true,
     size: 50,
     maxSize: 150,
-  },
-  {
-    id: 'currency_id',
-    accessorKey: 'currency_id',
-    header: () => t('settlement.currency'),
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('currency.usd'), value: 'USD' },
-      { label: t('currency.khr'), value: 'KHR' },
-    ],
-    size: 50,
   },
 ]
 </script>

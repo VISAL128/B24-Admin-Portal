@@ -1,5 +1,5 @@
 {
-  "page_size":"Page Size",
+  "page_size": "Page Size",
   "records_per_page": "Records Per Page",
   "sorting": "Sorting",
   "current_page": "Current Page",
@@ -19,6 +19,7 @@
   "choose_supplier": "Choose a supplier...",
   "add_row": "Add Row",
   "add_supplier": "Add Supplier",
+  "s_supplier": "Supplier",
   "all_available_suppliers_added": "All available suppliers have been added.",
   "confirm": "Confirm",
   "bank": "Bank",
@@ -76,12 +77,12 @@
   "preview_fee_calculation_amount": "Fee Calculation for Transaction Amount",
   "preview_fee_calculation_tip": "No fee configuration available. Add rows to see calculation preview.",
   "preview_fee_calculation_no_supplier": "No fee sharing suppliers configured.",
-  "transaction_fee":  "Transaction Fee",
-  "distribution_fee":  "Distribution Fee",
-  "supplier_sharing_fee":  "Supplier Sharing Fee",
+  "transaction_fee": "Transaction Fee",
+  "distribution_fee": "Distribution Fee",
+  "supplier_sharing_fee": "Supplier Sharing Fee",
   "add_fee_sharing_supplier_title": "Add Fee Sharing Supplier",
   "add_fee_sharing_supplier_description": "Select a supplier to share transaction fees with in the fee configuration.",
-  "remove_supplier_sharing":  "Are you sure you want to remove ({name})? This action cannot be undone.",
+  "remove_supplier_sharing": "Are you sure you want to remove ({name})? This action cannot be undone.",
   "total_supplier_fees_must_equal_fee_charge": "Total supplier fees ({total}) must equal fee charge ({fee})",
   "total_supplier_fees_must_equal_100": "Total supplier fees ({total}%) must equal 100%",
   "total_supplier_fees_must_equal_fee_amount": "Total supplier fees ({total}) must equal fee amount ({fee})",
@@ -91,6 +92,9 @@
   "start_amount": "Start Amount",
   "end_amount": "End Amount",
   "fee_amount": "Fee Amount",
+  "sharing_enabled": "Sharing enabled",
+  "remove_fee_sharing_supplier": "Remove fee sharing supplier",
+  "you": "You",
   "fee_rate": "Fee Rate",
   "title_create_fee": "Create Fee",
   "title_edit_fee": "Edit Fee",
@@ -162,6 +166,7 @@
     "loading": "Loading...",
     "no_records_found": "No records found",
     "search_placeholder": "Search...",
+    "search_filter": "Search options...",
     "enter_fullscreen": "Enter Fullscreen",
     "exit_fullscreen": "Exit Fullscreen",
     "column_config": {
@@ -173,10 +178,13 @@
     },
     "settlement-history": {
       "columns": {
+        "select": "Select",
         "created_date": "Settlement Date",
         "total_amount": "Total Amount",
         "currency_id": "Currency",
-        "total_settled": "Transaction",
+        "total_settled": "Total Transactions",
+        "success": "Success",
+        "failed": "Failed",
         "status": "Status",
         "created_by": "Settled By"
       }
@@ -184,6 +192,7 @@
     "banks-list": {
       "columns": {
         "name": "Bank Name",
+        "nameKh": "Bank Name (Khmer)",
         "currency": "Currency",
         "status": "Status",
         "activated_date": "Activated Date",
@@ -1032,7 +1041,9 @@
       "total_customer": "Total Customer",
       "bank_ref": "Bank Reference",
       "collection_bank": "Collection Bank",
+      "select_collection_bank": "Select Collection Bank",
       "settlement_bank": "Settlement Bank",
+      "select_settlement_bank": "Select Settlement Bank",
       "settlement_type": "Settlement Type",
       "transaction_type": "Transaction Type",
       "sub_biller": "Sub Biller",
@@ -1062,6 +1073,8 @@
     }
   },
   "banks": {
+    "settlement": "Settlement Banks",
+    "collection": "Collection Banks",
     "no_accounts_found": "No accounts found",
     "title": "Banks",
     "subtitle": "Manage bank information and configurations",
@@ -1105,6 +1118,15 @@
     "bank_details": "Bank Details",
     "contact_information": "Contact Information",
     "account_information": "Account Information",
+    "connected_services": {
+        "title": "Connected Services",
+        "no_services": "No connected services found",
+        "name": "Service Name",
+        "description": "Description",
+        "scroll_hint": "Scroll to see more accounts",
+        "active": "Active",
+        "inactive": "Inactive"
+    },
     "general_information": "General Information",
     "toggle_status": "Toggle Status",
     "activate_bank": "Activate Bank",
@@ -1138,5 +1160,7 @@
   "deactivate": "Deactivate",
   "deactivate_subbiller_confirmation": "Do you really want to deactivate this sub-biller?",
   "logo_recommendation": "Logo recommendation",
-  "updated_sub_biller_success": "Sub-biller updated successfully"
+  "updated_sub_biller_success": "Sub-biller updated successfully",
+  "sub_biller_detail": "Sub Biller Detail",
+  "sub_biller_detail_description": "View detailed information about the sub-biller"
 }

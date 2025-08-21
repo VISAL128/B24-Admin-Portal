@@ -45,6 +45,8 @@ export interface ActivatedBankResponse {
   name: string,
   nameKh: string,
   logoUrl?: string,
+  isSettlementBank: boolean,
+  isCollectionBank: boolean,
   connectedServices: ConnectedService[]
 }
 

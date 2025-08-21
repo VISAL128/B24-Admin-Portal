@@ -1,7 +1,7 @@
 // export default FeeConfiguration;
 import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
 
-export interface SupplierFee {    
+export interface SupplierFee {
   id: string
   value: number
 }
@@ -22,16 +22,10 @@ export interface DistributionFeeRow {
   supplierFees: { [supplierId: string]: number }
 }
 
-export interface DynamicColumns {
-  id: string
-  name: string
-  visible: boolean
-}
-
 export interface Supplier {
   id: string
   name: string
-  visible: boolean
+  isDisabled: boolean
 }
 
 export interface FeeConfig {
@@ -202,7 +196,7 @@ class FeeConfiguration {
     config.allocate_details.push({
       id: supplierId,
       name: supplierName,
-      visible: true,
+      isDisabled: false,
     })
   }
 
