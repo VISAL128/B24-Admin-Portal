@@ -56,92 +56,103 @@
                   <div class="flex flex-col flex-1 gap-2">
                     <Divider />
                     <div class="px-2 flex flex-col flex-1 min-h-0 overflow-y-auto pr-1">
-                       <template v-for="col in filteredColumns" :key="col.id">
-                         <template v-if="col.enableColumnFilter">
-                           <div class="space-y-1">
-                             <!-- Filter Label -->
-                             <label 
-                               :for="`filter-${col.id}`" 
-                               class="text-xs font-medium text-gray-700 dark:text-gray-300"
-                             >
-                               {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
-                             </label>
-                             
-                             <template v-if="'filterType' in col && col.filterType === 'status'">
-                               <StatusSelection
-                                 :id="`filter-${col.id}`"
-                                 :model-value="selectedStatuses"
-                                 :multiple="true"
-                                 :available-statuses="['all' , ...getColumnFilterOptions(col).map((status) => status.value.toString()) || []]"
-                                 :include-all-statuses="false"
-                                 :placeholder="t('settlement.select_status')"
-                                 :searchable="false"
-                                 @update:model-value="(val) => {
-                                   val = val as { label: string; value: string }[]
-                                   selectedStatuses = val
-                                   emit('filter-change', col.id, val.map((s) => s.value).join(','))
-                                 }"
-                               />
-                             </template>
-                             <template v-else>
-                               <USelectMenu
-                                 :id="`filter-${col.id}`"
-                                 :model-value="getSelectedFilterOption(col, columnFilters[col.id] || '')"
-                                 :default-value="{ label: t('all'), value: '' }"
-                                 :items="[
-                                   { label: t('all'), value: '' },
-                                   ...getColumnFilterOptions(col),
-                                 ]"
-                                 option-attribute="label"
-                                 value-attribute="value"
-                                 size="sm"
-                                 class="w-full"
-                                 searchable
-                                 :search-input="true"
-                                 :search-placeholder="t('table.search_filter')"
-                                 @update:model-value="
-                                   (val) => {
-                                     columnFilters[col.id] = String(val?.value || '')
-                                     emit('filter-change', col.id, columnFilters[col.id] || '')
-                                   }
-                                 "
-                               />
-                             </template>
-                           </div>
-                         </template>
-                       </template>
-                     </div>
-                     <Divider />
-                   </div>
-                  <div class="flex flex-wrap justify-between px-2 sticky bottom-0 bg-default pt-2 border-t border-gray-200 dark:border-gray-700">
-                     <UButton
-                       variant="link"
-                       size="xs"
-                       color="neutral"
-                       class="underline"
-                       :ui="{
-                         ...appConfig.ui.button.slots,
-                         leadingIcon: 'shrink-0 size-3 text-muted',
-                       }"
-                       @click="() => resetColumnFilters()"
-                     >
-                       <template #default>
-                         {{ t('table.column_config.reset') }}
-                       </template>
-                     </UButton>
-                     <UButton
-                       size="sm"
-                       :ui="appConfig.ui.button.slots"
-                       @click="onApplyColumnFilters"
-                     >
-                       <template #default>
-                         {{ t('table.column_config.apply') }}
-                       </template>
-                     </UButton>
-                   </div>
-                 </div>
-               </div>
-             </template>
+                      <template v-for="col in filteredColumns" :key="col.id">
+                        <template v-if="col.enableColumnFilter">
+                          <div class="space-y-1">
+                            <!-- Filter Label -->
+                            <label
+                              :for="`filter-${col.id}`"
+                              class="text-xs font-medium text-gray-700 dark:text-gray-300"
+                            >
+                              {{ getTranslationHeaderById(col.id) || getColumnLabel(col) }}
+                            </label>
+
+                            <template v-if="'filterType' in col && col.filterType === 'status'">
+                              <StatusSelection
+                                :id="`filter-${col.id}`"
+                                :model-value="selectedStatuses"
+                                :multiple="true"
+                                :available-statuses="[
+                                  'all',
+                                  ...(getColumnFilterOptions(col).map((status) =>
+                                    status.value.toString()
+                                  ) || []),
+                                ]"
+                                :include-all-statuses="false"
+                                :placeholder="t('settlement.select_status')"
+                                :searchable="false"
+                                @update:model-value="
+                                  (val) => {
+                                    val = val as { label: string; value: string }[]
+                                    selectedStatuses = val
+                                    emit('filter-change', col.id, val.map((s) => s.value).join(','))
+                                  }
+                                "
+                              />
+                            </template>
+                            <template v-else>
+                              <USelectMenu
+                                :id="`filter-${col.id}`"
+                                :model-value="
+                                  getSelectedFilterOption(col, columnFilters[col.id] || '')
+                                "
+                                :default-value="{ label: t('all'), value: '' }"
+                                :items="[
+                                  { label: t('all'), value: '' },
+                                  ...getColumnFilterOptions(col),
+                                ]"
+                                option-attribute="label"
+                                value-attribute="value"
+                                size="sm"
+                                class="w-full"
+                                searchable
+                                :search-input="true"
+                                :search-placeholder="t('table.search_filter')"
+                                @update:model-value="
+                                  (val) => {
+                                    columnFilters[col.id] = String(val?.value || '')
+                                    emit('filter-change', col.id, columnFilters[col.id] || '')
+                                  }
+                                "
+                              />
+                            </template>
+                          </div>
+                        </template>
+                      </template>
+                    </div>
+                    <Divider />
+                  </div>
+                  <div
+                    class="flex flex-wrap justify-between px-2 sticky bottom-0 bg-default pt-2 border-t border-gray-200 dark:border-gray-700"
+                  >
+                    <UButton
+                      variant="link"
+                      size="xs"
+                      color="neutral"
+                      class="underline"
+                      :ui="{
+                        ...appConfig.ui.button.slots,
+                        leadingIcon: 'shrink-0 size-3 text-muted',
+                      }"
+                      @click="() => resetColumnFilters()"
+                    >
+                      <template #default>
+                        {{ t('table.column_config.reset') }}
+                      </template>
+                    </UButton>
+                    <UButton
+                      size="sm"
+                      :ui="appConfig.ui.button.slots"
+                      @click="onApplyColumnFilters"
+                    >
+                      <template #default>
+                        {{ t('table.column_config.apply') }}
+                      </template>
+                    </UButton>
+                  </div>
+                </div>
+              </div>
+            </template>
           </UPopover>
           <!-- Auto Refresh -->
           <div v-if="props.enabledAutoRefresh" class="flex items-center gap-1">
@@ -316,7 +327,7 @@
       </template>
 
       <template #empty>
-        <TableEmptyState />
+        <TableEmptyState class="h-full" />
       </template>
     </UTable>
 
@@ -806,40 +817,45 @@ watch(pageSize, async (_newSize) => {
 const resolvedExportOptions = computed((): ExportOptions => {
   // Auto-generate export options from internal table state
   const timestamp = new Date().toISOString().split('T')[0]
-  
+
   // Build automatic filter display from current table state
   const autoFilter: Record<string, string> = {}
-  
+
   // ALWAYS show date range (even if it's "All Time")
   if (showDateFilter.value) {
     if (startDate.value && endDate.value) {
       const startDateFormatted = new Date(startDate.value).toLocaleDateString()
       const endDateFormatted = new Date(endDate.value).toLocaleDateString()
-      autoFilter[t('date_range')] = startDateFormatted === endDateFormatted 
-        ? startDateFormatted 
-        : `${startDateFormatted} ${t('to')} ${endDateFormatted}`
+      autoFilter[t('date_range')] =
+        startDateFormatted === endDateFormatted
+          ? startDateFormatted
+          : `${startDateFormatted} ${t('to')} ${endDateFormatted}`
     } else {
       autoFilter[t('date_range')] = t('all_time')
     }
   }
-  
+
   // ALWAYS show search filter (even if it's "All")
   autoFilter[t('search')] = search.value?.trim() || t('all')
-  
+
   // ALWAYS show status filters (even if it's "All")
-  const activeStatuses = appliedSelectedStatuses.value.filter(s => s.value !== 'all' && s.value !== '')
+  const activeStatuses = appliedSelectedStatuses.value.filter(
+    (s) => s.value !== 'all' && s.value !== ''
+  )
   if (activeStatuses.length > 0) {
     autoFilter[t('status.header')] = activeStatuses
-      .map(status => status.label || status.value.charAt(0).toUpperCase() + status.value.slice(1))
+      .map((status) => status.label || status.value.charAt(0).toUpperCase() + status.value.slice(1))
       .join(', ')
   } else {
     autoFilter[t('status.header')] = t('all')
   }
-  
+
   // ALWAYS show ALL possible column filters (including those set to "All")
-  const allFilterableColumns = filteredColumns.value.filter(col => col.enableColumnFilter === true)
-  
-  allFilterableColumns.forEach(column => {
+  const allFilterableColumns = filteredColumns.value.filter(
+    (col) => col.enableColumnFilter === true
+  )
+
+  allFilterableColumns.forEach((column) => {
     if (column.id) {
       // Get the display name for this column
       let displayName = getTranslationHeaderById(column.id)
@@ -847,10 +863,10 @@ const resolvedExportOptions = computed((): ExportOptions => {
         // Translation not found, use column label or formatted field name
         displayName = getColumnLabel(column)
       }
-      
+
       // Get the current filter value (from applied filters)
       const currentValue = appliedColumnFilters.value[column.id]
-      
+
       if (currentValue && currentValue.trim() !== '' && currentValue !== 'all') {
         // Show the actual filter value
         const displayValue = currentValue.charAt(0).toUpperCase() + currentValue.slice(1)
@@ -861,39 +877,47 @@ const resolvedExportOptions = computed((): ExportOptions => {
       }
     }
   })
-  
+
   // ALWAYS show sorting information (even if no sorting applied)
   if (sorting.value.length > 0) {
-    const sortInfo = sorting.value.map(sort => {
-      const column = props.columns.find(col => col.id === sort.id)
-      const columnName = column ? getColumnLabel(column) : sort.id
-      const direction = sort.desc ? t('descending') : t('ascending')
-      return `${columnName} (${direction})`
-    }).join(', ')
+    const sortInfo = sorting.value
+      .map((sort) => {
+        const column = props.columns.find((col) => col.id === sort.id)
+        const columnName = column ? getColumnLabel(column) : sort.id
+        const direction = sort.desc ? t('descending') : t('ascending')
+        return `${columnName} (${direction})`
+      })
+      .join(', ')
     autoFilter[t('sorting')] = sortInfo
   } else {
     autoFilter[t('sorting')] = t('none')
   }
-  
+
   // Add page size information
   autoFilter[t('page_size')] = `${pageSize.value.value} ${t('records_per_page')}`
-  
+
   // Add current page information if applicable
   if (internalTotalPage.value > 1) {
     autoFilter[t('current_page')] = `${internalPage.value} ${t('of')} ${internalTotalPage.value}`
   }
-  
+
   // Use export options from props as base, but override with auto-generated values
   return {
-    fileName: props.exportOptions?.fileName ?? `${props.tableId.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}_${timestamp}`,
-    title: props.exportOptions?.title ?? t(`table.${props.tableId}.title`) !== `table.${props.tableId}.title` ? t(`table.${props.tableId}.title`) : props.tableId.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    fileName:
+      props.exportOptions?.fileName ??
+      `${props.tableId.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}_${timestamp}`,
+    title:
+      (props.exportOptions?.title ??
+      t(`table.${props.tableId}.title`) !== `table.${props.tableId}.title`)
+        ? t(`table.${props.tableId}.title`)
+        : props.tableId.replace(/[_-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
     subtitle: props.exportOptions?.subtitle ?? '',
     currency: props.exportOptions?.currency,
     startDate: startDate.value,
     endDate: endDate.value,
     totalAmount: props.exportOptions?.totalAmount ?? 0,
     exportDate: new Date().toISOString(),
-    exportBy: (user.value?.fullName as string) || t('system') as string,
+    exportBy: (user.value?.fullName as string) || (t('system') as string),
     filter: {
       ...autoFilter,
       // Allow props to override auto-generated filters if needed
@@ -1006,15 +1030,15 @@ function getSelectedFilterOption(col: BaseTableColumn<T>, selectedValue: string)
   if (!selectedValue) {
     return { label: t('all'), value: '' }
   }
-  
+
   // Find the selected option from the column's filter options
   const options = getColumnFilterOptions(col)
-  const selectedOption = options.find(option => String(option.value) === selectedValue)
-  
+  const selectedOption = options.find((option) => String(option.value) === selectedValue)
+
   if (selectedOption) {
     return selectedOption
   }
-  
+
   // Fallback: create option with the selected value
   return { label: selectedValue, value: selectedValue }
 }

@@ -178,8 +178,17 @@ export async function requestToPgwModuleApi<T>(
     }
 
     const options = buildFetchInit(event, method, outboundBody, additionalHeaders)
-    console.log(`Requesting PGW Module API: ${url}`, { method, body: outboundBody, headers: options.headers })
-    console.log('Request options:', options)
+    console.log(`Requesting PGW Module API: ${url}`)
+    // Log options but redact sensitive auth header
+    const headersObj = (options.headers as Record<string, string>) || {}
+    const logOptions = {
+      ...options,
+      headers: {
+        ...headersObj,
+        Authorization: headersObj.Authorization ? '[REDACTED]' : undefined,
+      },
+    }
+    console.log('Request options:', logOptions)
     const response = await fetch(url, options)
     return handlePgwModuleApiResponse<T>(response)
   } catch (error) {
@@ -199,6 +208,11 @@ function handlePgwModuleApiResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     throw createError({ statusCode: response.status, statusMessage: response.statusText })
   }
+
+  if (response.status === 204) {
+    return true as unknown as Promise<T> // 204 No Content
+  }
+
   return response.json() as Promise<T>
 }
 

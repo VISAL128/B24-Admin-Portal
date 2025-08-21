@@ -96,10 +96,10 @@ export const useBankApi = () => {
   }) => {
     const response = await execute<BankListResponse>(() => {
       const query = new URLSearchParams()
-      
+
       // Required parameter
       query.append('service_id', params.service_id)
-      
+
       // Optional parameters
       if (params.search) query.append('search', params.search)
       if (params._page) query.append('_page', params._page.toString())
@@ -149,48 +149,33 @@ export const useBankApi = () => {
   const getAccountsBySupplierBankServiceId = async (sbs_id: string): Promise<BankAccount[]> => {
     try {
       const response = await execute<BankAccount[]>(() =>
-      $fetch<ApiResponse<BankAccount[]>>(`/api/pgw-module/bank/${sbs_id}/accounts`, {
-        method: 'GET',
-      })
-    )
+        $fetch<ApiResponse<BankAccount[]>>(`/api/pgw-module/bank/${sbs_id}/accounts`, {
+          method: 'GET',
+        })
+      )
 
-    if (response.code !== 'SUCCESS') {
+      if (response.code !== 'SUCCESS') {
+        return []
+      }
+      return response.data
+    } catch (error) {
+      if (import.meta.env.MODE === 'development')
+        console.error('Error fetching accounts by supplier bank service ID:', error)
       return []
     }
-    return response.data
-  } catch (error) {
-    if (import.meta.env.MODE === 'development') console.error('Error fetching accounts by supplier bank service ID:', error)
-    return []
-  }
-}
-
-  /**
-   * Delete a bank
-   */
-  const deleteBank = async (id: string): Promise<boolean> => {
-    const response = await execute<Record<string, never>>(() =>
-      $fetch<ApiResponse<Record<string, never>>>(`/api/management/banks/${id}`, {
-        method: 'DELETE',
-      })
-    )
-
-    return response.code === 'SUCCESS'
   }
 
   /**
    * Toggle bank active status
    */
-  const toggleBankStatus = async (id: string, isActive: boolean): Promise<Bank | null> => {
-    const response = await execute<Bank>(() =>
-      $fetch<ApiResponse<Bank>>(`/api/management/banks/${id}/status`, {
+  const updateBankServiceStatus = async (sbsId: string, isActive: boolean): Promise<boolean> => {
+    const response = await execute<boolean>(() =>
+      $fetch<ApiResponse<boolean>>('/api/pgw-module/bank/service/update-status', {
         method: 'PATCH',
-        body: { is_active: isActive },
+        body: { sbsId, status: isActive },
       })
     )
-
-    if (response.code !== 'SUCCESS') {
-      return null
-    }
+    
     return response.data
   }
 
@@ -232,10 +217,9 @@ export const useBankApi = () => {
     getBanksByServiceId,
     getBanksFromPgwModule,
     getBankById,
-    deleteBank,
-    toggleBankStatus,
+    updateBankServiceStatus,
     getSettlementBanks,
     getCollectionBanks,
-    getAccountsBySupplierBankServiceId
+    getAccountsBySupplierBankServiceId,
   }
 }
