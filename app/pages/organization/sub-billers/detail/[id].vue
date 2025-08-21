@@ -965,6 +965,8 @@ const copyCell = (text?: string | null) =>
     ]
   )
 
+const wallets = ref<SubBillerWallet[]>([])
+
 const columns: BaseTableColumn<WalletTransaction>[] = [
   {
     id: 'tranDate',
@@ -992,6 +994,12 @@ const columns: BaseTableColumn<WalletTransaction>[] = [
     accessorKey: 'wallet',
     headerText: t('wallet'),
     cell: ({ row }) => row.original.wallet || '-',
+    enableColumnFilter: true,
+    filterType: 'select',
+    filterOptions: wallets.value.map((w) => ({
+      label: w.accountNo ?? '-',
+      value: w.walletId ?? '', // 👈 adjust if your API expects walletNo instead
+    })),
   },
   {
     id: 'tranType',
@@ -1091,8 +1099,6 @@ const fetchWallets = async () => {
     errorMsg.value = t('failed_to_load_wallets')
   }
 }
-
-const wallets = ref<SubBillerWallet[]>([])
 
 // Push Back Transaction Data (kept from your snippet)
 const webhookHistoryData = ref([

@@ -847,7 +847,9 @@
         "subSupplier": "ម្ចាស់អាជីវកម្មរង",
         "transactionAmount": "ចំនួនទឹកប្រាក់",
         "walletAccountDisplay": "កាបូប",
-        "transactionNo": "លេខប្រតិបត្តិការ"
+        "transactionNo": "លេខប្រតិបត្តិការ",
+        "wallet": "កាបូប",
+        "tranDate": "កាលបរិច្ឆេទប្រតិបត្តិការ"
       }
     },
     "sub-billers-table": {
