@@ -77,3 +77,7 @@ export const RoutePath = {
   GenerateSettlement: '/digital-wallet/settlement/generate',
   Settlement: '/digital-wallet/settlement',
 }
+
+export const KEY_CONSTANTS = {
+  UNLIMITED: 'Unlimited',
+}
