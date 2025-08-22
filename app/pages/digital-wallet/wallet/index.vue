@@ -256,7 +256,7 @@
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.today') }}
               </h3>
@@ -351,7 +351,7 @@
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_week') }}
               </h3>
@@ -449,7 +449,7 @@
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_month') }}
               </h3>
