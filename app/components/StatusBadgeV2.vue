@@ -92,6 +92,14 @@ const displayText = computed(() => {
         return t('status.yes')
       case 'no':
         return t('status.no')
+      case 'canceled':
+      case 'cancelled':
+      case 'cancel':
+        return t('status.cancel')
+      case 'expire':
+        return t('status.expire')
+      case 'reversed':
+        return t('status.reversed')
       default:
         return props.status
     }

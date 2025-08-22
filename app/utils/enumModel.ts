@@ -101,10 +101,69 @@ export enum TransactionType {
   PayBill = 'pay_bill',
   PayPersonalBill = 'pay_personal_bill',
   Proxy = 'proxy',
-  QrPay = 'qr_pay',
+  Qr = 'qr_pay',
   WalletPayment = 'wallet_payment',
   WalletTopup = 'wallet_topup',
 }
+export enum TranTypeGroup{
+  PayBill,
+  Qr,
+  DeeplinkCheckout,
+  DirectDebit,
+  WalletTopup,
+  WalletPayment
+}
+
+export const transTypeGroups: Record<TranTypeGroup, TransactionType[]> = {
+  [TranTypeGroup.PayBill]: [
+    TransactionType.PayBill,
+    TransactionType.Deposit,  
+    TransactionType.Proxy,
+  ],
+  [TranTypeGroup.DeeplinkCheckout]: [
+    TransactionType.Deeplink,
+    TransactionType.Checkout,
+  ],
+  [TranTypeGroup.Qr]: [
+    TransactionType.Qr,
+  ],
+  [TranTypeGroup.DirectDebit]: [
+    TransactionType.DirectDebit,
+  ],
+  [TranTypeGroup.WalletTopup]: [
+    TransactionType.WalletTopup,
+  ],
+  [TranTypeGroup.WalletPayment]: [
+    TransactionType.WalletPayment,
+  ],
+}
+
+// 1) Get transaction types by group
+export const tranTypesByGroup = (group: TranTypeGroup): TransactionType[] => {
+  return transTypeGroups[group] ?? [];
+};
+
+// 2) Cache & lookup group by transaction type
+const _savedTranGroup = new Map<TransactionType, TranTypeGroup>();
+
+export const groupByTranType = (
+  type?: TransactionType | null
+): TranTypeGroup | null => {
+  if (!type) return null;
+
+  const cached = _savedTranGroup.get(type);
+  if (cached) return cached;
+
+  for (const [group, types] of Object.entries(transTypeGroups)) {
+    const groupKey = Number(group) as TranTypeGroup;
+    if (types.includes(type)) {
+      _savedTranGroup.set(type, groupKey);
+      return groupKey;
+    }
+  }
+  return null;
+};
+
 
 export enum SettlementType {
   HUB = 'HUB',
