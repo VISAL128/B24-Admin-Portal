@@ -32,7 +32,13 @@
         />
 
         <!-- Optional breadcrumb slot -->
-        <div v-if="$slots.breadcrumbs" class="hidden sm:flex items-center text-xs text-gray-500 dark:text-gray-400">
+        <div
+          v-if="$slots.breadcrumbs"
+          :class="[
+            props.showBreadcrumbsOnMobile ? 'flex' : 'hidden sm:flex',
+            'items-center text-xs text-gray-500 dark:text-gray-400'
+          ]"
+        >
           <slot name="breadcrumbs" />
         </div>
 
@@ -131,6 +137,8 @@ interface Props {
   borderColor?: string
   /** Hide the vertical divider between breadcrumbs/back and title */
   hideDivider?: boolean
+  /** Show breadcrumb slot also on mobile (< sm). Defaults to false */
+  showBreadcrumbsOnMobile?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -146,7 +154,8 @@ const props = withDefaults(defineProps<Props>(), {
   fallbackTo: '/',
   dividerColor: 'bg-gray-200 dark:bg-gray-800',
   borderColor: 'border-gray-200 dark:border-gray-800',
-  hideDivider: false
+  hideDivider: false,
+  showBreadcrumbsOnMobile: false
 })
 
 const emit = defineEmits<{

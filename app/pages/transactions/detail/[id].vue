@@ -2,7 +2,7 @@
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Page Header Back Button -->
     <div class="flex-shrink-0">
-      <ExPageHeader>
+      <ExPageHeader :show-breadcrumbs-on-mobile="true">
         <template #breadcrumbs>
           <NuxtLink class="hover:underline text-sm" to="/transactions">{{ t('pages.transaction.title') }}</NuxtLink>
           <span class="mx-1 text-gray-400">/</span>
