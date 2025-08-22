@@ -257,10 +257,21 @@ export const useTransactionTypeIcon = () => {
     }
     return null;
   };
-  
+
+  // --- Text only label (no icon)
+  const getTransactionTypeGroupDisplayText = (transactionType: string | TransactionType): string => {
+    const group = groupByTranType(transactionType as TransactionType)
+    if (group !== null) {
+      const groupName = TranTypeGroup[group]
+      if (groupName) {
+        if (groupName === 'DeeplinkCheckout') return 'Deeplink/Checkout'
+        return groupName.replace(/([A-Z])/g, ' $1').trim()
+      }
+    }
+    return (transactionType as string) || '-'
+  }
 
   
-
   return {
     getTransactionTypeIcon,
     getTransactionTypeIconStyle,
@@ -270,6 +281,7 @@ export const useTransactionTypeIcon = () => {
     getTranTypeGroupIconStyle,
     getTranTypeGroupIconColor,
     groupByTranType,
-    tranTypesByGroup
+    tranTypesByGroup,
+    
   }
 }

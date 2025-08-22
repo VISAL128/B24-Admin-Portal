@@ -633,7 +633,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
         return h('div', { class: 'flex items-center gap-2' }, [
           h(UAvatar, {
             src: row.original.collectionBankLogo,
-            size: '3xs',
+            size: 'xs',
           }),
           h('div', { class: '' }, row.original.collectionBank || '-'),
         ])
@@ -657,7 +657,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
         return h('div', { class: 'flex items-center gap-2' }, [
           h(UAvatar, {
             src: row.original.settlementBankLogo,
-            size: '3xs',
+            size: 'xs',
           }),
           h('div', { class: '' }, row.original.settlementBank || '-'),
         ])

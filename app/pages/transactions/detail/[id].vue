@@ -810,6 +810,7 @@ import appConfig from '~~/app.config'
 import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
 import type { TransactionAllocationModel } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
+import { useTransactionTypeIcon } from '~/composables/useTransactionTypeIcon'
 definePageMeta({
   auth: false,
   breadcrumbs: [
@@ -844,6 +845,7 @@ const selectedActivityLog = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
 const { transactionAllocationStatusCellBuilder } = useStatusBadge()
+const { getTransactionTypeGroupDisplayText } = useTransactionTypeIcon()
 
 const activeRepushTab = ref('repush_transaction_summary')
 const isRepushing = ref(false)
@@ -1463,8 +1465,10 @@ const transactionOverviewFields = computed(() => {
     },
     {
       label: t('pages.transaction.transaction_type'),
-      value: txData.transactionType,
-      type: 'badge',
+      // value: txData.transactionType,
+      // type: 'badge',
+      value: getTransactionTypeGroupDisplayText(txData.transactionType),
+      type: 'text'
     },
     {
       label: t('pages.transaction.created_date'),
