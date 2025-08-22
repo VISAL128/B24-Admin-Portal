@@ -1,7 +1,20 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
+    <!-- Page Header Back Button -->
+    <div class="flex-shrink-0">
+      <ExPageHeader>
+        <template #breadcrumbs>
+          <NuxtLink class="hover:underline text-sm" to="/transactions">{{ t('pages.transaction.title') }}</NuxtLink>
+          <span class="mx-1 text-gray-400">/</span>
+          <span class="text-primary font-medium dark:text-primary text-sm">{{ t('pages.transaction_detail.title') }}</span>
+        </template>
+      </ExPageHeader>
+    </div>
+
     <!-- Main Layout: Left and Right Sections -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <!-- Scrollable content wrapper -->
+    <div class="flex-1 overflow-auto space-y-3 pr-1">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3"> 
       <!-- Left Section: Transaction Detail (50% width) -->
       <div class="lg:col-span-1 flex flex-col h-full">
         <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-3 flex-1 flex flex-col">
@@ -137,8 +150,8 @@
               <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_bank') }}</span>
               <div class="flex items-center space-x-2">
                 <UAvatar
-                  :src="computedTransactionData.settlementBankLogo || 'https://b24-upload.s3.ap-southeast-1.amazonaws.com/banklogo2024/AC.png'"
-                  :alt="computedTransactionData.settlementBank || 'Bank'"
+                  :src="computedTransactionData.settlementBankLogo || ''"
+                  :alt="computedTransactionData.settlementBank || ''"
                   size="sm"
                 />
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
@@ -496,6 +509,8 @@
         </div>
       </div>
     </div>
+  </div>
+   
     
     <!-- Repush Transaction Detail Slideover -->
     <!-- TODO: Currently disabled - will be available in future releases -->
@@ -794,6 +809,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
 import CopyableCodeBlock from '~/components/CopyableCodeBlock.vue'
+import ExPageHeader from '~/components/ExPageHeader.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import ExTab from '~/components/tabs/ExTab.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
@@ -801,6 +817,7 @@ import { useTransactionApi } from '~/composables/api/useTransactionApi'
 import { useClipboard } from '~/composables/useClipboard'
 import { useNotification } from '~/composables/useNotification'
 import { useStatusBadge } from '~/composables/useStatusBadge'
+import { useTransactionTypeIcon } from '~/composables/useTransactionTypeIcon'
 import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
@@ -810,13 +827,12 @@ import appConfig from '~~/app.config'
 import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
 import type { TransactionAllocationModel } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
-import { useTransactionTypeIcon } from '~/composables/useTransactionTypeIcon'
 definePageMeta({
   auth: false,
   breadcrumbs: [
     { label: 'transactions', to: '/transactions' },
-    { label: 'details', active: true },
-  ],
+    // { label: 'details', active: true },
+  ]
 })
 
 const route = useRoute()
@@ -1436,6 +1452,7 @@ const computedTransactionData = computed(() => {
     supplierFee: data.billerFee || 0,
     bankReference: data.bankReference || '',
     collectionBank: data.collectionBank || '',
+    collectionBankLogo: data.collectionBankLogo || '',
     settlementBank: data.settlementBank || '',
     settlementBankLogo: data.settlementBankLogo || '',
     accountNumber: data.accountNumber || '',
@@ -1495,7 +1512,7 @@ const transactionOverviewFields = computed(() => {
     },
     {
       label: t('pages.transaction.settlement_bank'),
-      value: txData.settlementBank,
+      value: txData.collectionBank,
       type: 'text',
     },
     {
