@@ -282,6 +282,6 @@ export const useTransactionTypeIcon = () => {
     getTranTypeGroupIconColor,
     groupByTranType,
     tranTypesByGroup,
-    
+    getTransactionTypeGroupDisplayText
   }
 }
