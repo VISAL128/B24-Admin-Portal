@@ -360,9 +360,10 @@
                                     >
                                       {{ t('banks.account_number') }}
                                     </label>
-                                    <p class="text-sm text-gray-900 dark:text-white font-mono">
-                                      {{ account.code }}
-                                    </p>
+                                    <AccountNumber
+                                      :account-number="account.code"
+                                      initially-hidden
+                                    />
                                   </div>
                                   <div>
                                     <label

@@ -96,7 +96,6 @@ export async function requestToPgwModuleApi<T>(
   useRawQueryParams: boolean = false
 ): Promise<T> {
   try {
-    console.log('asdfASDF')
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
     const query = getQuery<QueryParams | TransactionQueryParams>(event)
 

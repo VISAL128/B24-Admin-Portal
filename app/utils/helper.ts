@@ -1,7 +1,8 @@
 import { ColumnType } from '@/utils/enumModel';
 import { format } from 'date-fns/format';
+import { h } from 'vue';
+import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue';
 import { useCurrency } from '~/composables/utils/useCurrency';
-// import { useI18n } from 'vue-i18n'
 
 // Helper to support nested accessors like "supplier.code"
 export function getNestedValue(obj: any, path: string): any {
@@ -213,52 +214,74 @@ export const formatDateForBackendRequest = (dateStr: string, formatStr: string =
   }
 }
 
-export const getTranslatedStatusLabel = (statusValue: string): string => {
-  const { t } = useI18n()
+export const copyCell = (text?: string | null, t?: (key: string) => string) => {
+  const translationFn = t || ((key: string) => key) // Fallback if no translation function provided
+  
+  return h(
+    'div',
+    {
+      class: 'inline-flex items-center',
+      onClick: (e: MouseEvent) => e.stopPropagation(),
+      onMousedown: (e: MouseEvent) => e.stopPropagation(),
+    },
+    [
+      h(ClipboardBadge, {
+        text: text ?? '-',
+        copiedTooltipText: translationFn('clipboard.copied'),
+      }),
+    ]
+  )
+}
 
-  if (statusValue === '') return t('status.all')
+
+export const getTranslatedStatusLabel = (statusValue: string, t?: (key: string) => string): string => {
+  // Provide fallback if no translation function is passed
+  const translationFn = t || ((key: string) => key.split('.').pop() || key)
+
+  if (statusValue === '') return translationFn('status.all')
 
   switch (statusValue.toLowerCase()) {
     case 'pending':
-      return t('status.pending')
+      return translationFn('status.pending')
     case 'processing':
-      return t('status.processing')
+      return translationFn('status.processing')
     case 'completed':
-      return t('status.completed')
+      return translationFn('status.completed')
     case 'failed':
-      return t('status.failed')
+      return translationFn('status.failed')
     case 'active':
-      return t('status.active')
+      return translationFn('status.active')
     case 'inactive':
-      return t('status.inactive')
+      return translationFn('status.inactive')
     
     default:
       return statusValue
   }
 }
 
-export const getFilterTranslateTransactionStatusLabel = (statusValue: string): string => {
-  const { t } = useI18n()
+export const getFilterTranslateTransactionStatusLabel = (statusValue: string, t?: (key: string) => string): string => {
+  // Provide fallback if no translation function is passed
+  const translationFn = t || ((key: string) => key.split('.').pop() || key)
 
-  if (statusValue === '') return t('status.all')
+  if (statusValue === '') return translationFn('status.all')
 
   switch (statusValue.toLowerCase()) {
     case 'success':
-      return t('status.pending')
+      return translationFn('status.success')
     case 'pending':
-      return t('status.pending')
+      return translationFn('status.pending')
     case 'completed':
-      return t('status.completed')
+      return translationFn('status.completed')
     case 'failed':
-      return t('status.failed')
+      return translationFn('status.failed')
     case 'error':
-      return t('status.error')
+      return translationFn('status.error')
     case 'cancel':
-      return t('status.cancel')
+      return translationFn('status.cancel')
     case 'expire':
-      return t('status.expire')
+      return translationFn('status.expire')
     case 'reversed':
-      return t('status.reversed')
+      return translationFn('status.reversed')
     default:
       return statusValue
   }

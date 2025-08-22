@@ -161,7 +161,7 @@
             <div class="flex justify-between items-center">
               <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_amount') }}</span>
               <span class="text-lg font-bold">
-                {{ useCurrency().formatAmount(computedTransactionData.settlementAmount) }}
+                {{ computedTransactionData.settlementAmount }}
                 {{ computedTransactionData.currency }}
               </span>
             </div>
@@ -1413,7 +1413,7 @@ const computedTransactionData = computed(() => {
       settlementBank: '',
       settlementBankLogo: '',
       accountNumber: '',
-      biller: '',
+      subBiller: '',
       transactionReference: '',
       settlementStatus: '',
       extData: '',
@@ -1429,15 +1429,15 @@ const computedTransactionData = computed(() => {
     currency: data.currency || data.currencyId || '',
     status: data.status || '',
     transactionAmount: data.totalAmount || 0,
-    settlementAmount: parseFloat(data.settlementAmount || '0'),
+    settlementAmount: data.settlementAmount || 0,
     customerFee: data.customerFee || 0,
     supplierFee: data.billerFee || 0,
     bankReference: data.bankReference || '',
     collectionBank: data.collectionBank || '',
     settlementBank: data.settlementBank || '',
     settlementBankLogo: data.settlementBankLogo || '',
-    accountNumber: data.walletAccountDisplay || data.walletAccount || '',
-    biller: data.biller || data.billerNameKh || '',
+    accountNumber: data.accountNumber || '',
+    subBiller: data.subBiller || data.subBillerNameKh || '',
     transactionReference: data.bankReference || '',
     settlementStatus: data.status || '',
     extData: data.extData || '',
@@ -1486,7 +1486,7 @@ const transactionOverviewFields = computed(() => {
     },
     {
       label: t('pages.transaction.sub_biller'),
-      value: txData.biller,
+      value: txData.subBiller,
       type: 'text',
     },
     {
