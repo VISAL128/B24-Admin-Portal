@@ -1010,6 +1010,7 @@
   },
   "pages": {
     "transaction_detail": {
+      "subtitle": "View Transaction Details",
       "customer": "Customer",
       "customerCode": "Customer Code",
       "currency": "Currency",

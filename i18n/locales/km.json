@@ -1028,6 +1028,7 @@
   },
   "pages": {
     "transaction_detail": {
+      "subtitle": "មើលព័ត៌មានលម្អិតអំពីប្រតិបត្តិការ",
       "customer": "អតិថិជន",
       "customerCode": "លេខកូដអតិថិជន",
       "currency": "រូបិយប័ណ្ណ",

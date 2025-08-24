@@ -2,13 +2,14 @@
   <div class="flex flex-col h-full w-full space-y-3">
     <!-- Page Header Back Button -->
     <div class="flex-shrink-0">
-      <ExPageHeader :show-breadcrumbs-on-mobile="true">
+      <!-- <ExPageHeader :show-breadcrumbs-on-mobile="true">
         <template #breadcrumbs>
           <NuxtLink class="hover:underline text-sm" to="/transactions">{{ t('pages.transaction.title') }}</NuxtLink>
           <span class="mx-1 text-gray-400">/</span>
           <span class="text-primary font-medium dark:text-primary text-sm">{{ t('pages.transaction_detail.title') }}</span>
         </template>
-      </ExPageHeader>
+      </ExPageHeader> -->
+        <PageHeader :title="t('pages.transaction_detail.title')" :subtitle="t('pages.transaction_detail.subtitle')" />
     </div>
 
     <!-- Main Layout: Left and Right Sections -->
@@ -809,7 +810,6 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ClipboardBadge from '~/components/buttons/ClipboardBadge.vue'
 import CopyableCodeBlock from '~/components/CopyableCodeBlock.vue'
-import ExPageHeader from '~/components/ExPageHeader.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import ExTab from '~/components/tabs/ExTab.vue'
 import TransactionTypeBadge from '~/components/TransactionTypeBadge.vue'
@@ -831,7 +831,7 @@ definePageMeta({
   auth: false,
   breadcrumbs: [
     { label: 'transactions', to: '/transactions' },
-    // { label: 'details', active: true },
+    { label: 'details', active: true },
   ]
 })
 
@@ -1014,13 +1014,13 @@ const customerColumns = [
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerCode),
     enableSorting: true,
   },
-  {
-    id: 'billNumber',
-    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.billNo'), 'left'),
-    accessorKey: 'billNumber',
-    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
-    enableSorting: true,
-  },
+  // {
+  //   id: 'billNumber',
+  //   header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.billNo'), 'left'),
+  //   accessorKey: 'billNumber',
+  //   cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
+  //   enableSorting: true,
+  // },
   {
     id: 'amount',
     header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.amount'), 'right'),

@@ -53,7 +53,7 @@
           <h1 v-if="title" class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
             {{ title }}
           </h1>
-          <p v-if="subtitle" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+          <p v-if="subtitle" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
             {{ subtitle }}
           </p>
         </div>
