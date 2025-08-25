@@ -45,10 +45,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  auth: false,
-  breadcrumbs: [{ label: 'transactions', to: '/transactions' }],
-})
+
 
 import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent } from 'vue'
@@ -74,6 +71,11 @@ import { SettlementType, TransactionStatus, TransactionType, TranTypeGroup } fro
 import { copyCell } from '~/utils/helper'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 const availableStatuses = ref<string[]>(Object.values(TransactionStatus))
+
+definePageMeta({
+  auth: false,
+  breadcrumbs: [{ label: 'transactions', to: '/transactions' }],
+})
 // Helper function to get the enum key from enum value
 const getTransactionTypeKey = (value: string): string => {
   const entry = Object.entries(TransactionType).find(([key, val]) => val === value)
@@ -633,7 +635,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
         return h('div', { class: 'flex items-center gap-2' }, [
           h(UAvatar, {
             src: row.original.collectionBankLogo,
-            size: 'xs',
+            size: '2xs',
           }),
           h('div', { class: '' }, row.original.collectionBank || '-'),
         ])
