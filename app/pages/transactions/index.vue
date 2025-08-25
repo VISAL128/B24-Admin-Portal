@@ -296,7 +296,7 @@ const fetchTransactionHistory = async (
     const response = await getTransactionList(
       {
         ...params,
-        statuses: params?.statuses || [], // Pass statuses as array
+        Statuses: params?.Statuses || [], // Pass statuses as array
         Types: transactionTypes, // Pass transaction types directly as Types parameter
         filters: cleanedFilters, // Pass cleaned filters without transactionType
       },
