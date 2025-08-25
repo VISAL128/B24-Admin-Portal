@@ -70,33 +70,6 @@ export default defineNuxtConfig({
       },
     },
   },
-  // openidConnect: {
-  //   addPlugin: true,
-  //   op: {
-  //     issuer: process.env.KEYCLOAK_URL + "/realms/" + process.env.KEYCLOAK_REALM,
-  //     clientId: process.env.KEYCLOAK_CLIENT_ID || "b24-admin-portal",
-  //     clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "SECRET_KEY",
-  //     callbackUrl: 'http://localhost:3000/oidc/callback', //process.env.KEYCLOAK_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/oidc/callback`,
-  //     scope: ["openid", "email", "profile", "address"],
-  //   },
-  //   config: {
-  //     debug: process.env.NODE_ENV === 'development',
-  //     response_type: "code",
-  //     secret: "oidc._sessionid",
-  //     cookie: { loginName: "" },
-  //     cookiePrefix: "oidc._",
-  //     cookieEncrypt: true,
-  //     cookieEncryptKey: process.env.KEYCLOAK_COOKIE_ENCRYPT_KEY || "bfnuxt9c2470cb477d907b1e0917oidc",
-  //     cookieEncryptIV: process.env.KEYCLOAK_COOKIE_ENCRYPT_IV || "ab83667c72eec9e4",
-  //     cookieEncryptALGO: process.env.KEYCLOAK_COOKIE_ENCRYPT_ALGO || "aes-256-cbc",
-  //     cookieMaxAge: process.env.KEYCLOAK_COOKIE_MAX_AGE ? Number(process.env.KEYCLOAK_COOKIE_MAX_AGE) : 24 * 60 * 60,
-  //     cookieFlags: {
-  //       access_token: {
-  //         httpOnly: true,
-  //         secure: process.env.NODE_ENV === 'production',
-  //       },
-  //     },
-  //   },},
   sourcemap: {
     server: true,
     client: true,
@@ -104,6 +77,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     managementApiUrl: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
     pgwModuleApiUrl: process.env.PGW_MODULE_API_URL || 'https://staging.bill24.io:22043',
+    mtcApiUrl: process.env.MTC_API_URL || 'https://mtc-stg.oone.bz',
     // Public runtime config
     public: {
       appVersion: process.env.APP_VERSION || 'v1.0.1',
