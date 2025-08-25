@@ -256,7 +256,7 @@
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
             <!-- Header -->
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-6">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.today') }}
               </h3>
@@ -268,31 +268,29 @@
             </div>
 
             <!-- Content -->
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-4">
-              <!-- Transactions Count -->
-              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                  {{ currentSummaryData.today.totalTransactions }}
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes">
+              <!-- Stats Grid - 3 Columns -->
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Transactions Count -->
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div :class="['font-bold text-gray-900 dark:text-white mb-1 break-words', getNumberSizeClass(currentSummaryData.today.totalTransactions)]" :title="currentSummaryData.today.totalTransactions.toLocaleString()">
+                    {{ currentSummaryData.today.totalTransactions.toLocaleString() }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ t('wallet_page.transactions') }}
+                  </div>
                 </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ t('wallet_page.transactions') }}
-                </div>
-              </div>
 
-              <!-- Stats Grid -->
-              <div class="grid grid-cols-2 gap-3">
                 <!-- Received Amount -->
                 <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
                     {{ currentSummaryData.today.currency }}
                   </div>
-                  <div class="text-lg font-bold text-green-700 dark:text-green-400 mb-1">
-                    {{
-                      formatCurrency(
-                        currentSummaryData.today.totalReceived,
-                        currentSummaryData.today.currency
-                      )
-                    }}
+                  <div 
+                    :class="['font-bold text-green-700 dark:text-green-400 mb-1 break-words', getCurrencySizeClass(currentSummaryData.today.totalReceived)]"
+                    :title="formatCurrency(currentSummaryData.today.totalReceived, currentSummaryData.today.currency)"
+                  >
+                    {{ formatCurrency(currentSummaryData.today.totalReceived, currentSummaryData.today.currency) }}
                   </div>
                   <div class="text-xs text-green-600 dark:text-green-300">
                     {{ t('wallet_page.received') }}
@@ -304,13 +302,11 @@
                   <div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
                     {{ currentSummaryData.today.currency }}
                   </div>
-                  <div class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-1">
-                    {{
-                      formatCurrency(
-                        currentSummaryData.today.totalSettlement,
-                        currentSummaryData.today.currency
-                      )
-                    }}
+                  <div 
+                    :class="['font-bold text-blue-700 dark:text-blue-400 mb-1 break-words', getCurrencySizeClass(currentSummaryData.today.totalSettlement)]"
+                    :title="formatCurrency(currentSummaryData.today.totalSettlement, currentSummaryData.today.currency)"
+                  >
+                    {{ formatCurrency(currentSummaryData.today.totalSettlement, currentSummaryData.today.currency) }}
                   </div>
                   <div class="text-xs text-blue-600 dark:text-blue-300">
                     {{ t('wallet_page.settlement') }}
@@ -320,26 +316,26 @@
             </div>
 
             <!-- Loading State -->
-            <div v-else class="space-y-4">
+            <div v-else>
               <!-- Header skeleton -->
-              <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center justify-between mb-4">
                 <div class="h-5 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
                 <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-xl animate-pulse" />
               </div>
               <!-- Content skeleton -->
-              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-3 gap-3">
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div class="h-6 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
+                </div>
                 <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
                   <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
                 <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
                   <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
               </div>
@@ -351,7 +347,7 @@
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
             <!-- Header -->
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-6">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_week') }}
               </h3>
@@ -366,31 +362,32 @@
             </div>
 
             <!-- Content -->
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-4">
-              <!-- Transactions Count -->
-              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                  {{ currentSummaryData.week.totalTransactions }}
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes">
+              <!-- Stats Grid - 3 Columns -->
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Transactions Count -->
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div 
+                    :class="['font-bold text-gray-900 dark:text-white mb-1 break-words', getNumberSizeClass(currentSummaryData.week.totalTransactions)]"
+                    :title="currentSummaryData.week.totalTransactions.toLocaleString()"
+                  >
+                    {{ currentSummaryData.week.totalTransactions.toLocaleString() }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ t('wallet_page.transactions') }}
+                  </div>
                 </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ t('wallet_page.transactions') }}
-                </div>
-              </div>
 
-              <!-- Stats Grid -->
-              <div class="grid grid-cols-2 gap-3">
                 <!-- Received Amount -->
                 <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
                     {{ currentSummaryData.week.currency }}
                   </div>
-                  <div class="text-lg font-bold text-green-700 dark:text-green-400 mb-1">
-                    {{
-                      formatCurrency(
-                        currentSummaryData.week.totalReceived,
-                        currentSummaryData.week.currency
-                      )
-                    }}
+                  <div 
+                    :class="['font-bold text-green-700 dark:text-green-400 mb-1 break-words', getCurrencySizeClass(currentSummaryData.week.totalReceived)]"
+                    :title="formatCurrency(currentSummaryData.week.totalReceived, currentSummaryData.week.currency)"
+                  >
+                    {{ formatCurrency(currentSummaryData.week.totalReceived, currentSummaryData.week.currency) }}
                   </div>
                   <div class="text-xs text-green-600 dark:text-green-300">
                     {{ t('wallet_page.received') }}
@@ -402,13 +399,11 @@
                   <div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
                     {{ currentSummaryData.week.currency }}
                   </div>
-                  <div class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-1">
-                    {{
-                      formatCurrency(
-                        currentSummaryData.week.totalSettlement,
-                        currentSummaryData.week.currency
-                      )
-                    }}
+                  <div 
+                    :class="['font-bold text-blue-700 dark:text-blue-400 mb-1 break-words', getCurrencySizeClass(currentSummaryData.week.totalSettlement)]"
+                    :title="formatCurrency(currentSummaryData.week.totalSettlement, currentSummaryData.week.currency)"
+                  >
+                    {{ formatCurrency(currentSummaryData.week.totalSettlement, currentSummaryData.week.currency) }}
                   </div>
                   <div class="text-xs text-blue-600 dark:text-blue-300">
                     {{ t('wallet_page.settlement') }}
@@ -418,26 +413,26 @@
             </div>
 
             <!-- Loading State -->
-            <div v-else class="space-y-4">
+            <div v-else>
               <!-- Header skeleton -->
-              <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center justify-between mb-4">
                 <div class="h-5 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
                 <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-xl animate-pulse" />
               </div>
               <!-- Content skeleton -->
-              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-3 gap-3">
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div class="h-6 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
+                </div>
                 <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
                   <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
                 <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
                   <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
               </div>
@@ -449,7 +444,7 @@
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200"
           >
             <!-- Header -->
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-6">
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="flex items-center justify-between mb-4">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('wallet_page.this_month') }}
               </h3>
@@ -464,31 +459,32 @@
             </div>
 
             <!-- Content -->
-            <div v-if="!isLoadingSummary && !isLoadingWalletTypes" class="space-y-4">
-              <!-- Transactions Count -->
-              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                  {{ currentSummaryData.month.totalTransactions }}
+            <div v-if="!isLoadingSummary && !isLoadingWalletTypes">
+              <!-- Stats Grid - 3 Columns -->
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Transactions Count -->
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div 
+                    :class="['font-bold text-gray-900 dark:text-white mb-1 break-words', getNumberSizeClass(currentSummaryData.month.totalTransactions)]"
+                    :title="currentSummaryData.month.totalTransactions.toLocaleString()"
+                  >
+                    {{ currentSummaryData.month.totalTransactions.toLocaleString() }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ t('wallet_page.transactions') }}
+                  </div>
                 </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ t('wallet_page.transactions') }}
-                </div>
-              </div>
 
-              <!-- Stats Grid -->
-              <div class="grid grid-cols-2 gap-3">
                 <!-- Received Amount -->
                 <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
                     {{ currentSummaryData.month.currency }}
                   </div>
-                  <div class="text-lg font-bold text-green-700 dark:text-green-400 mb-1">
-                    {{
-                      formatCurrency(
-                        currentSummaryData.month.totalReceived,
-                        currentSummaryData.month.currency
-                      )
-                    }}
+                  <div 
+                    :class="['font-bold text-green-700 dark:text-green-400 mb-1 break-words', getCurrencySizeClass(currentSummaryData.month.totalReceived)]"
+                    :title="formatCurrency(currentSummaryData.month.totalReceived, currentSummaryData.month.currency)"
+                  >
+                    {{ formatCurrency(currentSummaryData.month.totalReceived, currentSummaryData.month.currency) }}
                   </div>
                   <div class="text-xs text-green-600 dark:text-green-300">
                     {{ t('wallet_page.received') }}
@@ -500,13 +496,11 @@
                   <div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
                     {{ currentSummaryData.month.currency }}
                   </div>
-                  <div class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-1">
-                    {{
-                      formatCurrency(
-                        currentSummaryData.month.totalSettlement,
-                        currentSummaryData.month.currency
-                      )
-                    }}
+                  <div 
+                    :class="['font-bold text-blue-700 dark:text-blue-400 mb-1 break-words', getCurrencySizeClass(currentSummaryData.month.totalSettlement)]"
+                    :title="formatCurrency(currentSummaryData.month.totalSettlement, currentSummaryData.month.currency)"
+                  >
+                    {{ formatCurrency(currentSummaryData.month.totalSettlement, currentSummaryData.month.currency) }}
                   </div>
                   <div class="text-xs text-blue-600 dark:text-blue-300">
                     {{ t('wallet_page.settlement') }}
@@ -516,26 +510,26 @@
             </div>
 
             <!-- Loading State -->
-            <div v-else class="space-y-4">
+            <div v-else>
               <!-- Header skeleton -->
-              <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center justify-between mb-4">
                 <div class="h-5 w-24 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
                 <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-xl animate-pulse" />
               </div>
               <!-- Content skeleton -->
-              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="h-8 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                <div class="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-3 gap-3">
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div class="h-6 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
+                </div>
                 <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
                   <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
                 <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div class="h-3 w-8 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
-                  <div class="h-6 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
+                  <div class="h-4 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1 mx-auto" />
                   <div class="h-3 w-12 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mx-auto" />
                 </div>
               </div>
@@ -641,13 +635,31 @@ const {
   getTransactionTypeIconStyle, 
   getTransactionTypeIconColor 
 } = useTransactionTypeIcon()
-const { transactionStatusCellBuilder, getTransactionStatusTranslationKey } = useStatusBadge()
+// Helper functions for dynamic sizing based on number length
+const getNumberSizeClass = (num: number): string => {
+  const numStr = num.toString()
+  if (numStr.length >= 10) return 'text-xs' // Very large numbers (10+ digits)
+  if (numStr.length >= 8) return 'text-sm'   // Large numbers (8-9 digits)
+  if (numStr.length >= 6) return 'text-base' // Medium numbers (6-7 digits)
+  return 'text-xl' // Default size for smaller numbers
+}
+
+const getCurrencySizeClass = (amount: number): string => {
+  const amountStr = Math.abs(amount).toString()
+  if (amountStr.length >= 10) return 'text-xs' // Very large amounts
+  if (amountStr.length >= 8) return 'text-sm'   // Large amounts
+  if (amountStr.length >= 6) return 'text-base' // Medium amounts
+  return 'text-sm' // Default size for currency amounts
+}
 
 // Wallet store
 const walletStore = useWalletStore()
 
 // Component Refs
 const tableRef = ref()
+
+const availableStatuses = ref<string[]>(Object.values(TransactionStatus))
+
 
 // Reactive data
 const isRefreshing = ref(false)
@@ -700,19 +712,6 @@ const TABLE_ID = computed(() => {
 
 
 // Build status filter options from TransactionStatus enum
-const getTranslatedTransactionStatusLabel = (status: string) => {
-  const key = getTransactionStatusTranslationKey(status)
-  const translated = t(key)
-  return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
-}
-
-const transactionStatusFilterOptions = computed(() =>
-  Object.values(TransactionStatus).map((status) => ({
-    label: getTranslatedTransactionStatusLabel(status),
-    value: status
-  }))
-)
-
 // API methods
 const loadWalletTypes = async () => {
   try {
@@ -876,7 +875,9 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
       id: 'bankRefId',
       accessorKey: 'bank_ref_id',
       header: t('bank_ref_id'),
-      cell: ({ row }) => row.original.bank_ref_id || '-',
+      // cell: ({ row }) => row.original.bank_ref_id || '-',
+      cell: ({ row }) => copyCell(row.original.bank_ref_id, t),
+
       enableSorting: true,
     },
     {
@@ -923,14 +924,10 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
         }),
       enableColumnFilter: true,
       filterType: 'status',
-      filterOptions: [
-        { label: t('status.success'), value: 'success' },
-        { label: t('status.pending'), value: 'pending'},
-        { label: t('status.failed'), value: 'failed' },
-        { label: t('status.cancel'), value: 'cancel' },
-        { label: t('status.error'), value: 'error' },
-      ],
-      enableSorting: true
+      filterOptions: availableStatuses.value.map((status) => ({
+        label: getFilterTranslateTransactionStatusLabel(status, t),
+        value: status,
+      })),
     },
     {
       id: 'currencyId',
@@ -961,6 +958,7 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
 })
 
 const fetchTransactionsForTable = async (params?: QueryParams) => {
+  console.log("fetchTransactionsForTable called with params:", params)
   lastFetchParams.value = params
 
   console.log("Fetching transactions for wallet:", {

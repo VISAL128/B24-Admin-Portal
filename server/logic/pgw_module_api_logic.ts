@@ -98,7 +98,7 @@ export async function requestToPgwModuleApi<T>(
   try {
     let url = `${useRuntimeConfig(event).pgwModuleApiUrl}${endpoint}`
     const query = getQuery<QueryParams | TransactionQueryParams>(event)
-
+    
     if (useRawQueryParams && method === 'GET') {
       const isQueryParams =
         query && typeof query === 'object' && 'page' in query && 'page_size' in query
@@ -109,15 +109,17 @@ export async function requestToPgwModuleApi<T>(
         const serialized = serializePgwModuleParams(pgwParams)
         for (const [k, v] of Object.entries(serialized)) {
           if (v !== undefined && v !== null && v !== '') {
-            Array.isArray(v)
-              ? finalParams.append(k, JSON.stringify(v))
-              : finalParams.append(k, String(v))
+            if (Array.isArray(v)) {
+              finalParams.append(k.charAt(0).toUpperCase() + k.slice(1), JSON.stringify(v))
+            } else {
+              finalParams.append(k.charAt(0).toUpperCase() + k.slice(1), String(v))
+            }
           }
         }
       }
 
       for (const [k, v] of Object.entries(query)) {
-        if ((k === 'Statuses' || k === 'Types') && v != null && v !== '') {
+        if ((k.toLowerCase() === 'statuses' || k === 'Types') && v != null && v !== '') {
           if (Array.isArray(v)) v.forEach((x) => x != null && finalParams.append(k, String(x)))
           else finalParams.append(k, String(v))
         }

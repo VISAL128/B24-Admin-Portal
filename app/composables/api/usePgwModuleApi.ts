@@ -164,7 +164,6 @@ export const usePgwModuleApi = () => {
 
   const getTopUpWalletTransactions = async (params?: QueryParams) => {
     const url = `/api/pgw-module/walletmgnt/top-up/transactions`
-
     return await executeV2(() =>
       $fetch(url, {
         method: 'GET',

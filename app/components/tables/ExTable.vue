@@ -707,7 +707,7 @@ const fetchData = async (refresh = false) => {
       end_date: props.showDateFilter
         ? formatDateForBackendRequest(endDate.value, endDateFormatPattern.value)
         : undefined,
-      statuses: selectedStatuses.value
+      Statuses: selectedStatuses.value
         .filter((s) => s.value !== 'all' && s.value !== '')
         .map((s) => s.value),
       sorts: Array.from(sorts),

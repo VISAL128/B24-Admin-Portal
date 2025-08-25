@@ -93,9 +93,15 @@
       <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
         <!-- Transaction Information -->
         <div class="space-y-3">
+          
           <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('wallet_page.transaction_id') }}:</span>
-            <CopyableText :text="transaction.transaction_id" />
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-900 dark:text-white">
+                {{ transaction.transaction_id.length > 20 ? transaction.transaction_id.slice(0, 8) + '...' + transaction.transaction_id.slice(-4) : transaction.transaction_id }}
+              </span>
+              <CopyableText :text="transaction.transaction_id" />
+            </div>
           </div>
 
           <div class="flex justify-between items-center">
@@ -107,10 +113,15 @@
 
           <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('wallet_page.bank_ref_id') }}:</span>
+            <div class="flex items-center gap-2"> 
+            <span class="text-sm font-medium text-gray-900 dark:text-white">
+              {{ transaction.bank_ref_id }}
+            </span>
             <CopyableText 
               :text="transaction.bank_ref_id || 'N/A'" 
               :show-copy="!!transaction.bank_ref_id"
             />
+            </div>
           </div>
 
           <div class="flex justify-between items-start">
