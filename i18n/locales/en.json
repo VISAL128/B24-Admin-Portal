@@ -1018,14 +1018,18 @@
       "amount": "Amount",
       "title": "Transaction Detail",
       "settlement_bank": "Settlement Bank",
-      "bank_name": "Bank Name",
+      "bank_name": "Bank",
       "account_number": "Account Number",
       "settlement_amount": "Settlement Amount",
       "error_transaction_detail": "Failed to load transaction details",
-      "error_allocation": "Failed to load Transaction Allocation"
+      "error_allocation": "Failed to load Transaction Allocation",
+      "settlement_detail": "Settlement Detail",
+      "settlement_date": "Settlement Date",
+      "description": "Description"
     },
     "transaction_allocation": {
       "title": "Transaction Allocation",
+      "detail": "Transaction Allocation Detail",
       "id": "ID",
       "customer": "Customer",
       "transaction_amount": "Transaction Amount",
@@ -1034,6 +1038,7 @@
       "outstanding_amount": "Outstanding Balance",
       "currency": "Currency",
       "date": "Transaction Date",
+      "total_settlement": "Total Settlement",
       "status": {
         "status": "Status",
         "complete": "Complete",
