@@ -8,8 +8,9 @@ import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
 export default defineEventHandler(async (event) => {
   try {
 
+    
     const fullEndpoint = `/walletmgnt/top-up/transactions`
-    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET')
+    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', undefined, undefined, true)
     return response
     
   } catch (error) {

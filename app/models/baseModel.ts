@@ -51,7 +51,7 @@ export interface QueryParams {
   search?: string
   start_date?: string
   end_date?: string
-  statuses?: string[]
+  Statuses?: string[]
   sorts?: {
     field: string
     direction: 'asc' | 'desc'

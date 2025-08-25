@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   try {
 
     const fullEndpoint = `/walletmgnt/settlement/transactions`
-    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET')
+    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', undefined, undefined, true)
 
     return response
   } catch (error) {

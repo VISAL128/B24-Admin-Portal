@@ -38,6 +38,7 @@ export const useTransactionApi = () => {
    * Get paginated transaction list from transaction API
    */
   const getTransactionList = async (query?: TransactionQueryParams, locale?: string) => {
+   
     console.log('Fetching transactions with query:', query)
     
     const headers: Record<string, string> = {}
@@ -65,6 +66,7 @@ export const useTransactionApi = () => {
       formattedQuery.Types = query.Types
     }
     
+
     
     console.log('Final formatted query for transaction API:', formattedQuery)
     
