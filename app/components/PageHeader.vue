@@ -1,23 +1,33 @@
 <template>
-  <div class="flex items-center justify-between px-2 py-2 bg-white dark:bg-gray-900 rounded shadow">
+  <div class="flex items-center justify-between px-2 py-2 bg-white dark:bg-gray-900 rounded ">
     <!-- Left Section -->
     <div class="flex items-center gap-2">
-      <UButton
-        v-if="showBackButton"
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        size="sm"
-        @click="handleBack"
-      >
-        {{ backButtonText || t('back') }}
-      </UButton>
+       <UButton
+          v-if="showBackButton"
+          variant="soft"
+          color="primary"
+          size="sm"
+          class="sm:inline-flex"
+          icon="i-lucide-arrow-left"
+          @click="handleBack"
+        >
+        </UButton>
+    <!-- <UButton
+      v-if="showBackButton"
+      variant="ghost"
+      icon="i-lucide-arrow-left"
+      size="sm"
+      @click="handleBack"
+    >
+      {{ backButtonText || t('back') }}
+    </UButton> -->
       
       <!-- Title section -->
       <div v-if="title || subtitle" class="ml-2">
         <h1 v-if="title" class="text-md font-semibold text-gray-900 dark:text-white">
           {{ title }}
         </h1>
-        <p v-if="subtitle" class="text-xs text-gray-500 dark:text-gray-400">
+  <p v-if="subtitle" class="text-xs text-gray-500 dark:text-gray-400">
           {{ subtitle }}
         </p>
       </div>
