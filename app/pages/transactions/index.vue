@@ -45,10 +45,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  auth: false,
-  breadcrumbs: [{ label: 'transactions', to: '/transactions' }],
-})
+
 
 import type { DropdownMenuItem } from '@nuxt/ui'
 import { computed, h, onMounted, ref, resolveComponent } from 'vue'
@@ -70,10 +67,15 @@ import { useTable } from '~/composables/utils/useTable'
 import type { ActivatedBankResponse } from '~/models/bank'
 import type { QueryParams, TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import { SettlementType, TransactionStatus, TransactionType } from '~/utils/enumModel'
-import { copyCell, getFilterTranslateTransactionStatusLabel } from '~/utils/helper'
+import { SettlementType, TransactionStatus, TransactionType, TranTypeGroup } from '~/utils/enumModel'
+import { copyCell } from '~/utils/helper'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 const availableStatuses = ref<string[]>(Object.values(TransactionStatus))
+
+definePageMeta({
+  auth: false,
+  breadcrumbs: [{ label: 'transactions', to: '/transactions' }],
+})
 // Helper function to get the enum key from enum value
 const getTransactionTypeKey = (value: string): string => {
   const entry = Object.entries(TransactionType).find(([key, val]) => val === value)
@@ -89,10 +91,22 @@ const isLoading = ref(true)
 const isTableFullscreen = ref(false)
 
 const { 
-  getTransactionTypeIcon, 
-  getTransactionTypeIconStyle, 
-  getTransactionTypeIconColor 
+  getTranTypeGroupIcon,
+  getTranTypeGroupIconStyle,
+  getTranTypeGroupIconColor,
+  groupByTranType,
+  tranTypesByGroup
 } = useTransactionTypeIcon()
+
+// Helper function to convert group names to transaction types
+const getTransactionTypesByGroupName = (groupName: string): string[] => {
+  // Find the TranTypeGroup enum value by name
+  const groupValue = TranTypeGroup[groupName as keyof typeof TranTypeGroup]
+  if (typeof groupValue === 'number') {
+    return tranTypesByGroup(groupValue as TranTypeGroup)
+  }
+  return []
+}
 
 
 
@@ -258,11 +272,15 @@ const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise
     if (cleanedFilters.length > 0) {
       cleanedFilters = cleanedFilters.filter(filter => {
         if (filter.field === 'transactionType') {
-          // Extract transaction type values and add to Types array
+          // Extract transaction type group values and convert to actual transaction types
           if (Array.isArray(filter.value)) {
-            transactionTypes.push(...filter.value)
+            filter.value.forEach(groupName => {
+              const types = getTransactionTypesByGroupName(String(groupName))
+              transactionTypes.push(...types)
+            })
           } else {
-            transactionTypes.push(String(filter.value))
+            const types = getTransactionTypesByGroupName(String(filter.value))
+            transactionTypes.push(...types)
           }
           return false // Remove from filters array
         }
@@ -294,7 +312,7 @@ const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise
 
 
 const { createSortableHeader, createRowNumberCell } = useTable()
-const { transactionStatusCellBuilder, getTransactionStatusTranslationKey } = useStatusBadge()
+const { transactionStatusCellBuilder, getTransactionStatusTranslationKey , statusCellBuilder} = useStatusBadge()
 const { t, locale } = useI18n()
 const errorHandler = useErrorHandler()
 const table = ref<any>(null)
@@ -311,26 +329,21 @@ const navigateToDetails = (transactionId: string) => {
   router.push(`/transactions/detail/${transactionId}`)
 }
 
-// Build status filter options from TransactionStatus enum
-const getTranslatedTransactionStatusLabel = (status: string) => {
-  const key = getTransactionStatusTranslationKey(status)
-  const translated = t(key)
-  return translated !== key ? translated : status.charAt(0).toUpperCase() + status.slice(1)
-}
-
-const transactionStatusFilterOptions = computed(() =>
-  Object.values(TransactionStatus).map((status) => ({
-    label: getTranslatedTransactionStatusLabel(status),
-    value: status
-  }))
-)
-
-// Build transaction type filter options from TransactionType enum
-const transactionTypeFilterOptions = computed(() =>
-  Object.entries(TransactionType).map(([key, value]) => ({
-    label: key.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to readable format
-    value: value
-  }))
+// Build transaction type group filter options from TranTypeGroup enum
+const transactionTypeGroupFilterOptions = computed(() =>
+  Object.entries(TranTypeGroup)
+    .filter(([key, value]) => typeof value === 'number') // Only get numeric enum values
+    .map(([key, value]) => {
+      // Special case for DeeplinkCheckout display name
+      const displayName = key === 'DeeplinkCheckout' 
+        ? 'Deeplink/Checkout' 
+        : key.replace(/([A-Z])/g, ' $1').trim()
+      
+      return {
+        label: displayName,
+        value: key // Use the enum key as value for filtering
+      }
+    })
 )
 
 // Build settlement type filter options from SettlementType enum
@@ -355,258 +368,7 @@ const bankFilterOptions = computed(() => {
   return options
 })
 
-// Build collection bank filter options (only banks that can be used for collection)
-// const collectionBankFilterOptions = computed(() => {
-//   // Fetch bank data if not loaded yet
-//   if (bankData.value.length === 0) {
-//     fetchBankData()
-//   }
-//   const options = bankData.value
-//     //.filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_collection_bank)
-//     .map((bank) => ({
-//       label: bank.name || bank.name_kh || 'Unknown Bank',
-//       value: bank.bank_id || bank.id || bank.name
-//     }))
-  
-//   return options
-// })
 
-// Build settlement bank filter options (only banks that can be used for settlement)
-// const settlementBankFilterOptions = computed(() => {
-//   // Fetch bank data if not loaded yet
-//   if (bankData.value.length === 0) {
-//     fetchBankData()
-//   }
-//   const options = bankData.value
-//     //.filter(bank => bank.active === BankServiceStatus.ACTIVE && bank.is_settlement_bank)
-//     .map((bank) => ({
-//       label: bank.name || bank.name_kh || 'Unknown Bank',
-//       value: bank.bank_id || bank.id || bank.name
-//     }))
-    
-//   // Add loading indicator if there are more pages
-//   if (bankDataPagination.value.hasMore && !bankDataLoading.value) {
-//     options.push({
-//       label: '📄 Load More Settlement Banks...',
-//       value: '__LOAD_MORE__',
-//     })
-//   } else if (bankDataLoading.value) {
-//     options.push({
-//       label: '⏳ Loading settlement banks...',
-//       value: '__LOADING__',
-//     })
-//   }
-  
-//   return options
-// })
-
-const exportHeaders = [
-  { key: 'currency_id', label: t('settlement.currency') },
-  { key: 'created_date', label: t('settlement_history_details.settlement_date') },
-  { key: 'total_supplier', label: t('settlement_history_details.total_supplier') },
-  { key: 'created_by', label: t('settled_by') },
-  { key: 'total_amount', label: t('total_amount') },
-  // { key: "status", label: t("status") },
-]
-
-// Dynamic headers for PDF that support both languages
-const pdfExportHeaders = computed(() => getPDFHeaders(t))
-
-const exportToExcelHandler = async () => {
-  // ...existing export logic...
-  // try {
-  //   const selectedRows = table.value?.getSelectedRows() || []
-  //   const dataToExport =
-  //     selectedRows.length > 0
-  //       ? selectedRows.map((row: { original: any }) => row.original)
-  //       : allRows.value
-
-  //   if (dataToExport.length === 0) {
-  //     toast.add({
-  //       title: t('no_data_to_export'),
-  //       description: t('please_ensure_there_is_data_to_export'),
-  //       color: 'warning',
-  //     })
-  //     return
-  //   }
-
-  //   // Calculate total amount
-  //   const totalAmount = dataToExport.reduce(
-  //     (sum: number, item: { total_amount: number | string }) =>
-  //       sum + (Number(item.total_amount) || 0),
-  //     0
-  //   )
-
-  //   // Get current locale from the existing locale ref
-  //   const currentLocale = locale.value as 'km' | 'en'
-
-  //   // Create period string from date range
-  //   const periodText = `${startDate.value} ${t('to')} ${endDate.value}`
-
-  //   // Try the new Unicode-supported Excel export first, fallback to regular if it fails
-  //   try {
-  //     await exportToExcelWithUnicodeSupport(
-  //       dataToExport,
-  //       exportHeaders,
-  //       `settlement-history-${new Date().toISOString().slice(0, 10)}.xlsx`,
-  //       t('settlement_history_title'),
-  //       t('settlement_history_subtitle', {
-  //         date: new Date().toLocaleDateString(currentLocale === 'km' ? 'km-KH' : 'en-US'),
-  //       }),
-  //       {
-  //         locale: currentLocale,
-  //         t: t,
-  //         currency: dataToExport[0]?.currency_id || 'USD',
-  //         totalAmount: totalAmount,
-  //         period: periodText,
-  //       }
-  //     )
-  //   } catch (unicodeError) {
-  //     console.warn('Unicode Excel export failed, falling back to standard Excel:', unicodeError)
-  //     // Fallback to standard Excel export
-  //     await exportToExcelStyled(
-  //       dataToExport,
-  //       exportHeaders,
-  //       'settlement-history.xlsx',
-  //       t('settlement_history_title'),
-  //       t('settlement_history_subtitle', {
-  //         date: new Date().toLocaleDateString(),
-  //       })
-  //     )
-  //   }
-
-  //   toast.add({
-  //     title: t('export_successful'),
-  //     description: t('exported_records_to_excel', {
-  //       count: dataToExport.length,
-  //       selected: selectedRows.length > 0 ? t('selected') : '',
-  //     }),
-  //     color: 'success',
-  //   })
-  // } catch (error) {
-  //   console.error('Excel export error:', error)
-  //   toast.add({
-  //     title: t('export_failed'),
-  //     description: t('failed_to_export_to_excel'),
-  //     color: 'error',
-  //   })
-  // }
-}
-
-const exportToPDFHandler = async () => {
-  // ...existing export logic...
-  try {
-    // const selectedRows = table.value?.getSelectedRows() || []
-    // const dataToExport =
-    //   selectedRows.length > 0
-    //     ? selectedRows.map((row: { original: any }) => row.original)
-    //     : allRows.value
-    // if (dataToExport.length === 0) {
-    //   toast.add({
-    //     title: t('no_data_to_export'),
-    //     description: t('please_ensure_there_is_data_to_export'),
-    //     color: 'warning',
-    //   })
-    //   return
-    // }
-
-    // // Calculate total amount
-    // const totalAmount = dataToExport.reduce(
-    //   (sum: number, item: { total_amount: number | string }) =>
-    //     sum + (Number(item.total_amount) || 0),
-    //   0
-    // )
-
-    // // Get current locale from the existing locale ref
-    // const currentLocale = locale.value as 'km' | 'en'
-
-    // // Create period string from date range
-    // const periodText = `${startDate.value} to ${endDate.value}`
-
-    // try {
-    //   await exportToPDFWithUnicodeSupport(
-    //     dataToExport,
-    //     pdfExportHeaders.value,
-    //     `settlement-history-${new Date().toISOString().slice(0, 10)}.pdf`,
-    //     'Transaction Report', // Let the function use dynamic titles
-    //     'Transaction Report', // Let the function use dynamic titles
-    //     periodText,
-    //     {
-    //       // company: 'WINGKH',
-    //       // currency: dataToExport[0]?.currency_id || 'USD',
-    //       totalAmount: totalAmount,
-    //       locale: currentLocale,
-    //       t: t, // Pass the translation function
-    //     }
-    //   )
-    // } catch (unicodeError) {
-    //   console.warn('Unicode PDF export failed, falling back to standard PDF:', unicodeError)
-    //   // Fallback to standard PDF export
-    //   await exportToPDFStyled(
-    //     dataToExport,
-    //     pdfExportHeaders.value,
-    //     'settlement-history.pdf',
-    //     'Transaction Report', // Let the function use dynamic titles
-    //     'Transaction Report', // Let the function use dynamic titles
-    //     periodText,
-    //     {
-    //       company: 'WINGKH',
-    //       currency: dataToExport[0]?.currency_id || 'USD',
-    //       totalAmount: totalAmount,
-    //       locale: currentLocale,
-    //       t: t, // Pass the translation function
-    //     }
-    //   )
-    // }
-
-    // toast.add({
-    //   title: t('export_successful'),
-    //   description: t('exported_records_to_pdf', {
-    //     count: dataToExport.length,
-    //     selected: selectedRows.length > 0 ? t('selected') : '',
-    //   }),
-    //   color: 'success',
-    // })
-  } catch (error) {
-    console.error('PDF export error:', error)
-    toast.add({
-      title: t('export_failed'),
-      description: t('failed_to_export_to_pdf'),
-      color: 'error',
-    })
-  }
-}
-
-const exportItems = ref<DropdownMenuItem[]>([
-  {
-    label: t('pdf'),
-    icon: 'i-lucide-file-text',
-    onSelect() {
-      exportToPDFHandler()
-    },
-  },
-  {
-    label: t('excel'),
-    icon: 'i-lucide-file-spreadsheet',
-    onSelect() {
-      exportToExcelHandler()
-    },
-  },
-])
-
-// Add translation keys
-const translations = {
-  actions: 'Actions',
-  view: 'View',
-  view_details: 'View Details',
-  // Add more translations as needed
-}
-
-// const handleExport = (item: { click: () => void }) => {
-//   if (item.click) {
-//     item.click()
-//   }
-// }
 
 const handleViewDetails = (transaction: TransactionHistoryRecord) => {
   // Navigate to transaction details page
@@ -652,7 +414,6 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     id: 'bankReference',
     accessorKey: 'bankReference',
     header: () => t('pages.transaction.bank_ref'),
-    // cell: ({ row }) => row.original.bankReference || '-',
     cell: ({ row }) => copyCell(row.original.bankReference, t),
     enableSorting: true,
   },
@@ -660,7 +421,6 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     id: 'collectionBank',
     accessorKey: 'collectionBank',
     header: () => t('pages.transaction.collection_bank'),
-    //cell: ({ row }) => row.original.collectionBank || '-',
     cell: ({ row }) => {
       const UAvatar = resolveComponent('UAvatar')
       if (row.original.collectionBank) {
@@ -668,7 +428,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
         return h('div', { class: 'flex items-center gap-2' }, [
           h(UAvatar, {
             src: row.original.collectionBankLogo,
-            size: '3xs',
+            size: '2xs',
           }),
           h('div', { class: '' }, row.original.collectionBank || '-'),
         ])
@@ -685,7 +445,6 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     id: 'settlementBank',
     accessorKey: 'settlementBank',
     header: () => t('pages.transaction.settlement_bank'),
-    // cell: ({ row }) => row.original.settlementBank || '-',
     cell: ({ row }) => {
       const UAvatar = resolveComponent('UAvatar')
       if (row.original.settlementBank) {
@@ -693,7 +452,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
         return h('div', { class: 'flex items-center gap-2' }, [
           h(UAvatar, {
             src: row.original.settlementBankLogo,
-            size: '3xs',
+            size: 'xs',
           }),
           h('div', { class: '' }, row.original.settlementBank || '-'),
         ])
@@ -718,22 +477,40 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
     id: 'transactionType',
     accessorKey: 'transactionType',
     header: () => t('pages.transaction.transaction_type'),
-    //cell: ({ row }) => getTransactionTypeKey(row.original.transactionType) || '-',
-    cell: ({ row }) => 
-      h('div', { class: 'flex items-center gap-2' }, [
-        h('div', { 
-          class: `w-6 h-6 rounded-full flex items-center justify-center ${getTransactionTypeIconStyle(row.original.transactionType)}`
-        }, [
-          h(resolveComponent('UIcon'), {
-            name: getTransactionTypeIcon(row.original.transactionType),
-            class: `w-3 h-3 ${getTransactionTypeIconColor(row.original.transactionType)}`
-          })
-        ]),
-        h('span', { class: 'text-sm font-medium' }, row.original.transactionType || '-')
-      ]),
+    cell: ({ row }) => {
+      const group = groupByTranType(row.original.transactionType as TransactionType)
+      if (group !== null) {
+        // Convert enum number to readable string and format it nicely
+        const groupName = TranTypeGroup[group]
+        if (groupName) {
+          // Get display text
+          let displayText = ''
+          if (groupName === 'DeeplinkCheckout') {
+            displayText = 'Deeplink/Checkout'
+          } else {
+            // Convert camelCase to readable format (e.g., "PayBill" → "Pay Bill")
+            displayText = groupName.replace(/([A-Z])/g, ' $1').trim()
+          }
+
+          // Create element with icon and text
+          return h('div', { class: 'flex items-center gap-2' }, [
+            h('div', { 
+              class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`
+            }, [
+              h(resolveComponent('UIcon'), {
+                name: getTranTypeGroupIcon(group),
+                class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`
+              })
+            ]),
+            h('span', { class: 'text-sm' }, displayText)
+          ])
+        }
+      }
+      return row.original.transactionType || '-'
+    },
     enableSorting: true,
     enableColumnFilter: true,
-    filterOptions: transactionTypeFilterOptions.value,
+    filterOptions: transactionTypeGroupFilterOptions.value,
   },
   {
     id: 'subSupplier',
@@ -755,10 +532,10 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
   {
     id: 'status',
     header: () => t('pages.transaction.status'),
-    cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
+    // cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
+    cell: ({row}) => statusCellBuilder(row.original.status, true),
     enableColumnFilter: true,
     filterType: 'status',
-    //filterOptions: transactionStatusFilterOptions.value,
     filterOptions: availableStatuses.value.map((status) => ({
       label: getFilterTranslateTransactionStatusLabel(status, t),
       value: status,

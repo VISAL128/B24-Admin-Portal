@@ -3,6 +3,8 @@
  * Provides consistent icons, colors, and styles for different transaction types
  */
 
+import { TranTypeGroup, TransactionType } from '~/utils/enumModel'
+
 export const useTransactionTypeIcon = () => {
   const getTransactionTypeIcon = (transactionType: string): string => {
     switch (transactionType.toLowerCase()) {
@@ -139,10 +141,147 @@ export const useTransactionTypeIcon = () => {
     }
   }
 
+  /**
+   * Get icon for TranTypeGroup
+   */
+  const getTranTypeGroupIcon = (group: TranTypeGroup): string => {
+    switch (group) {
+      case TranTypeGroup.PayBill:
+        return 'i-heroicons-banknotes-solid'
+      case TranTypeGroup.DeeplinkCheckout:
+        return 'i-heroicons-link-solid'
+      case TranTypeGroup.Qr:
+        return 'i-heroicons-qr-code-solid'
+      case TranTypeGroup.DirectDebit:
+        return 'i-heroicons-arrow-right-circle-solid'
+      case TranTypeGroup.WalletTopup:
+        return 'i-heroicons-arrow-down-circle-solid'
+      case TranTypeGroup.WalletPayment:
+        return 'i-heroicons-arrow-up-circle-solid'
+      default:
+        return 'i-heroicons-banknotes-solid'
+    }
+  }
+
+  /**
+   * Get background style for TranTypeGroup
+   */
+  const getTranTypeGroupIconStyle = (group: TranTypeGroup): string => {
+    switch (group) {
+      case TranTypeGroup.PayBill:
+        return 'bg-blue-100 dark:bg-blue-900/30'
+      case TranTypeGroup.DeeplinkCheckout:
+        return 'bg-indigo-100 dark:bg-indigo-900/30'
+      case TranTypeGroup.Qr:
+        return 'bg-purple-100 dark:bg-purple-900/30'
+      case TranTypeGroup.DirectDebit:
+        return 'bg-orange-100 dark:bg-orange-900/30'
+      case TranTypeGroup.WalletTopup:
+        return 'bg-green-100 dark:bg-green-900/30'
+      case TranTypeGroup.WalletPayment:
+        return 'bg-red-100 dark:bg-red-900/30'
+      default:
+        return 'bg-gray-100 dark:bg-gray-700'
+    }
+  }
+
+  /**
+   * Get icon color for TranTypeGroup
+   */
+  const getTranTypeGroupIconColor = (group: TranTypeGroup): string => {
+    switch (group) {
+      case TranTypeGroup.PayBill:
+        return 'text-blue-600 dark:text-blue-400'
+      case TranTypeGroup.DeeplinkCheckout:
+        return 'text-indigo-600 dark:text-indigo-400'
+      case TranTypeGroup.Qr:
+        return 'text-purple-600 dark:text-purple-400'
+      case TranTypeGroup.DirectDebit:
+        return 'text-orange-600 dark:text-orange-400'
+      case TranTypeGroup.WalletTopup:
+        return 'text-green-600 dark:text-green-400'
+      case TranTypeGroup.WalletPayment:
+        return 'text-red-600 dark:text-red-400'
+      default:
+        return 'text-gray-600 dark:text-gray-400'
+    }
+  }
+
+
+  const transTypeGroups: Record<TranTypeGroup, TransactionType[]> = {
+    [TranTypeGroup.PayBill]: [
+      TransactionType.PayBill,
+      TransactionType.Deposit,  
+      TransactionType.Proxy,
+    ],
+    [TranTypeGroup.DeeplinkCheckout]: [
+      TransactionType.Deeplink,
+      TransactionType.Checkout,
+    ],
+    [TranTypeGroup.Qr]: [
+      TransactionType.Qr,
+    ],
+    [TranTypeGroup.DirectDebit]: [
+      TransactionType.DirectDebit,
+    ],
+    [TranTypeGroup.WalletTopup]: [
+      TransactionType.WalletTopup,
+    ],
+    [TranTypeGroup.WalletPayment]: [
+      TransactionType.WalletPayment,
+    ],
+  }
+  
+  // 1) Get transaction types by group
+  const tranTypesByGroup = (group: TranTypeGroup): TransactionType[] => {
+    return transTypeGroups[group] ?? [];
+  };
+  
+  // 2) Cache & lookup group by transaction type
+  const _savedTranGroup = new Map<TransactionType, TranTypeGroup>();
+  
+  const groupByTranType = (
+    type?: TransactionType | null
+  ): TranTypeGroup | null => {
+    if (!type) return null;
+  
+    const cached = _savedTranGroup.get(type);
+    if (cached) return cached;
+  
+    for (const [group, types] of Object.entries(transTypeGroups)) {
+      const groupKey = Number(group) as TranTypeGroup;
+      if (types.includes(type)) {
+        _savedTranGroup.set(type, groupKey);
+        return groupKey;
+      }
+    }
+    return null;
+  };
+
+  // --- Text only label (no icon)
+  const getTransactionTypeGroupDisplayText = (transactionType: string | TransactionType): string => {
+    const group = groupByTranType(transactionType as TransactionType)
+    if (group !== null) {
+      const groupName = TranTypeGroup[group]
+      if (groupName) {
+        if (groupName === 'DeeplinkCheckout') return 'Deeplink/Checkout'
+        return groupName.replace(/([A-Z])/g, ' $1').trim()
+      }
+    }
+    return (transactionType as string) || '-'
+  }
+
+  
   return {
     getTransactionTypeIcon,
     getTransactionTypeIconStyle,
     getTransactionTypeIconColor,
     getTransactionTypeDescription,
+    getTranTypeGroupIcon,
+    getTranTypeGroupIconStyle,
+    getTranTypeGroupIconColor,
+    groupByTranType,
+    tranTypesByGroup,
+    getTransactionTypeGroupDisplayText
   }
 }
