@@ -19,7 +19,7 @@
       :table-id="TABLE_ID"
       :fetch-data-fn="fetchTransactionHistory"
       show-row-number
-      date-format="dd/MM/yyyy" 
+      date-format="dd/MM/yyyy"
       show-date-filter
       enabled-auto-refresh
       enabled-repush
@@ -27,8 +27,6 @@
       @fullscreen-toggle="handleFullscreenToggle"
       @data-changed="handleDataChanged"
     >
-    
-    
       <template #trailingHeader>
         <!-- Repush Button - Only show when rows are selected -->
         <UTooltip v-if="selectedRows.length > 0" :text="t('pages.transaction.repush_description')">
@@ -39,7 +37,7 @@
             </template>
           </UButton>
         </UTooltip>
-    </template>
+      </template>
     </TablesExTable>
   </div>
 </template>
@@ -67,7 +65,12 @@ import { useTable } from '~/composables/utils/useTable'
 import type { ActivatedBankResponse } from '~/models/bank'
 import type { QueryParams, TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord } from '~/models/transaction'
-import { SettlementType, TransactionStatus, TransactionType, TranTypeGroup } from '~/utils/enumModel'
+import {
+  SettlementType,
+  TransactionStatus,
+  TransactionType,
+  TranTypeGroup,
+} from '~/utils/enumModel'
 import { copyCell } from '~/utils/helper'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 const availableStatuses = ref<string[]>(Object.values(TransactionStatus))
@@ -82,7 +85,7 @@ const getTransactionTypeKey = (value: string): string => {
   return entry ? entry[0] : value
 }
 
-const {getTransactionList, getTransactionSummary} = useTransactionApi()
+const { getTransactionList, getTransactionSummary } = useTransactionApi()
 const { getBanks } = useBankApi()
 
 const showInfoBanner = ref(true)
@@ -90,12 +93,12 @@ const isLoading = ref(true)
 // Fullscreen state for table
 const isTableFullscreen = ref(false)
 
-const { 
+const {
   getTranTypeGroupIcon,
   getTranTypeGroupIconStyle,
   getTranTypeGroupIconColor,
   groupByTranType,
-  tranTypesByGroup
+  tranTypesByGroup,
 } = useTransactionTypeIcon()
 
 // Helper function to convert group names to transaction types
@@ -107,8 +110,6 @@ const getTransactionTypesByGroupName = (groupName: string): string[] => {
   }
   return []
 }
-
-
 
 // Handle Repush Transaction
 const handleRepush = () => {
@@ -124,20 +125,20 @@ const bankDataLoading = ref(false)
 // Reactive computed property that updates when transactionSummary changes
 const summarys = computed(() => {
   const rawSummary = transactionSummary.value?.summarys || []
-  
+
   // Manual mapping for summary card titles with translations
   const titleMapping: Record<string, string> = {
     'Total Transaction': t('pages.transaction.summary.total_transaction'),
-    'Total Amount': t('pages.transaction.summary.total_amount'), 
+    'Total Amount': t('pages.transaction.summary.total_amount'),
     'Failed Transactions': t('pages.transaction.summary.failed_transaction'),
     'Total Settlement': t('pages.transaction.summary.total_settlement'),
     // Add more mappings as needed
   }
-  
+
   // Map the summary data with translated titles
   return rawSummary.map((summary: any) => ({
     ...summary,
-    title: titleMapping[summary.title] || summary.title // Use mapped translation or fallback to original
+    title: titleMapping[summary.title] || summary.title, // Use mapped translation or fallback to original
   }))
 })
 
@@ -147,7 +148,6 @@ const skeletonCount = computed(() => {
   // If no data yet, use a default of 4 (which matches your mock data structure)
   return transactionSummary.value?.summarys?.length || 4
 })
-
 
 // Handle fullscreen toggle from ExTable
 const handleFullscreenToggle = (fullscreen: boolean) => {
@@ -189,7 +189,11 @@ const toYMD = (dateStr?: string): string | undefined => {
 }
 
 // Function to fetch transaction summary from API
-const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: string; PeriodType?: number }) => {
+const fetchTransactionSummary = async (params?: {
+  FromDate?: string
+  ToDate?: string
+  PeriodType?: number
+}) => {
   try {
     isLoading.value = true
     const response = await getTransactionSummary(params, locale.value)
@@ -203,12 +207,14 @@ const fetchTransactionSummary = async (params?: { FromDate?: string; ToDate?: st
 }
 
 // Function to fetch bank data from API with fixed pageSize of 100
-const fetchBankData =  async (params?: QueryParams): Promise<BankListTableFetchResult | undefined> => {
+const fetchBankData = async (
+  params?: QueryParams
+): Promise<BankListTableFetchResult | undefined> => {
   // Prevent multiple concurrent calls
   if (bankDataLoading.value) {
     return
   }
-  
+
   try {
     bankDataLoading.value = true
     const data = await getBanks()
@@ -226,9 +232,6 @@ const fetchBankData =  async (params?: QueryParams): Promise<BankListTableFetchR
   }
 }
 
-
-
-
 // New handler: get the exact dates used by the table fetch and apply to summary
 const handleDataChanged = (result: Record<string, any>) => {
   const FromDate = toYMD(result?.start_date)
@@ -240,7 +243,7 @@ const handleDataChanged = (result: Record<string, any>) => {
 
 onMounted(async () => {
   console.log('🔄 Component mounted, loading data...')
-  
+
   // Default monthly summary (PeriodType=4) custom date range for the current month
   const now = new Date()
   const first = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -252,13 +255,15 @@ onMounted(async () => {
   // Load both transaction summary and bank data
   await Promise.all([
     fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 }),
-    fetchBankData() // Load bank data
+    fetchBankData(), // Load bank data
   ])
-  
+
   console.log('✅ All data loaded, bank data:', bankData.value)
 })
 
-const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise<{
+const fetchTransactionHistory = async (
+  params?: TransactionQueryParams
+): Promise<{
   data: TransactionHistoryRecord[]
   total_record: number
   total_page: number
@@ -267,14 +272,14 @@ const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise
     // Extract transactionType from filters and move to Types parameter
     let cleanedFilters = params?.filters || []
     let transactionTypes: string[] = []
-    
+
     // Find and extract transactionType filters
     if (cleanedFilters.length > 0) {
-      cleanedFilters = cleanedFilters.filter(filter => {
+      cleanedFilters = cleanedFilters.filter((filter) => {
         if (filter.field === 'transactionType') {
           // Extract transaction type group values and convert to actual transaction types
           if (Array.isArray(filter.value)) {
-            filter.value.forEach(groupName => {
+            filter.value.forEach((groupName) => {
               const types = getTransactionTypesByGroupName(String(groupName))
               transactionTypes.push(...types)
             })
@@ -287,15 +292,23 @@ const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise
         return true // Keep other filters
       })
     }
-    
-    const response = await getTransactionList({
-      ...params,
-      statuses: params?.statuses || [], // Pass statuses as array
-      Types: transactionTypes, // Pass transaction types directly as Types parameter
-      filters: cleanedFilters, // Pass cleaned filters without transactionType
-    }, locale.value) // Pass current locale
-    
-    console.log('Fetched transactions with Types:', transactionTypes, 'and filters:', cleanedFilters)
+
+    const response = await getTransactionList(
+      {
+        ...params,
+        Statuses: params?.Statuses || [], // Pass statuses as array
+        Types: transactionTypes, // Pass transaction types directly as Types parameter
+        filters: cleanedFilters, // Pass cleaned filters without transactionType
+      },
+      locale.value
+    ) // Pass current locale
+
+    console.log(
+      'Fetched transactions with Types:',
+      transactionTypes,
+      'and filters:',
+      cleanedFilters
+    )
     return {
       data: response.results || [],
       total_record: response.param?.rowCount || 0,
@@ -310,9 +323,9 @@ const fetchTransactionHistory = async (params?: TransactionQueryParams): Promise
   }
 }
 
-
 const { createSortableHeader, createRowNumberCell } = useTable()
-const { transactionStatusCellBuilder, getTransactionStatusTranslationKey , statusCellBuilder} = useStatusBadge()
+const { transactionStatusCellBuilder, getTransactionStatusTranslationKey, statusCellBuilder } =
+  useStatusBadge()
 const { t, locale } = useI18n()
 const errorHandler = useErrorHandler()
 const table = ref<any>(null)
@@ -335,13 +348,12 @@ const transactionTypeGroupFilterOptions = computed(() =>
     .filter(([key, value]) => typeof value === 'number') // Only get numeric enum values
     .map(([key, value]) => {
       // Special case for DeeplinkCheckout display name
-      const displayName = key === 'DeeplinkCheckout' 
-        ? 'Deeplink/Checkout' 
-        : key.replace(/([A-Z])/g, ' $1').trim()
-      
+      const displayName =
+        key === 'DeeplinkCheckout' ? 'Deeplink/Checkout' : key.replace(/([A-Z])/g, ' $1').trim()
+
       return {
         label: displayName,
-        value: key // Use the enum key as value for filtering
+        value: key, // Use the enum key as value for filtering
       }
     })
 )
@@ -350,7 +362,7 @@ const transactionTypeGroupFilterOptions = computed(() =>
 const settlementTypeFilterOptions = computed(() =>
   Object.values(SettlementType).map((type) => ({
     label: type,
-    value: type
+    value: type,
   }))
 )
 
@@ -362,20 +374,16 @@ const bankFilterOptions = computed(() => {
     //.filter(bank => bank.active === 'ACTIVE')
     .map((bank) => ({
       label: bank.name || bank.nameKh || 'Unknown Bank',
-      value: bank.id || bank.code || bank.name as string | number
+      value: bank.id || bank.code || (bank.name as string | number),
     }))
   console.log('🏦 Generated filter options:', options)
   return options
 })
 
-
-
 const handleViewDetails = (transaction: TransactionHistoryRecord) => {
   // Navigate to transaction details page
   navigateToDetails(transaction.id)
 }
-
-
 
 const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
   const cols: BaseTableColumn<TransactionHistoryRecord>[] = [
@@ -492,84 +500,84 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
             displayText = groupName.replace(/([A-Z])/g, ' $1').trim()
           }
 
-          // Create element with icon and text
-          return h('div', { class: 'flex items-center gap-2' }, [
-            h('div', { 
-              class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`
-            }, [
-              h(resolveComponent('UIcon'), {
-                name: getTranTypeGroupIcon(group),
-                class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`
-              })
-            ]),
-            h('span', { class: 'text-sm' }, displayText)
-          ])
+            // Create element with icon and text
+            return h('div', { class: 'flex items-center gap-2' }, [
+              h(
+                'div',
+                {
+                  class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`,
+                },
+                [
+                  h(resolveComponent('UIcon'), {
+                    name: getTranTypeGroupIcon(group),
+                    class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`,
+                  }),
+                ]
+              ),
+              h('span', { class: 'text-sm' }, displayText),
+            ])
+          }
         }
-      }
-      return row.original.transactionType || '-'
+        return row.original.transactionType || '-'
+      },
+      enableSorting: true,
+      enableColumnFilter: true,
+      filterOptions: transactionTypeGroupFilterOptions.value,
     },
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: transactionTypeGroupFilterOptions.value,
-  },
-  {
-    id: 'subSupplier',
-    accessorKey: 'subSupplier',
-    header: () => t('pages.transaction.sub_biller'),
-    cell: ({ row }) => row.original.subBiller || '-',
-    enableSorting: true,
-  },
-  {
-    id: 'numberOfCustomer',
-    accessorKey: 'numberOfCustomer',
-    header : ({ column }) => createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
-    cell: ({ row }) =>  h(
-        'div',
-        { class: 'text-right' },
-        row.original.countTotalCustomer || '-',
-      ),
-  },
-  {
-    id: 'status',
-    header: () => t('pages.transaction.status'),
-    // cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
-    cell: ({row}) => statusCellBuilder(row.original.status, true),
-    enableColumnFilter: true,
-    filterType: 'status',
-    filterOptions: availableStatuses.value.map((status) => ({
-      label: getFilterTranslateTransactionStatusLabel(status, t),
-      value: status,
-    })),
-  },
-  {
-    id: 'currency',
-    accessorKey: 'currency',
-    header: () => t('pages.transaction.currency'),
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('currency.usd'), value: 'USD' },
-      { label: t('currency.khr'), value: 'KHR' },
-    ],
-  },
-  {
-    id: 'transactionAmount',
-    accessorKey: 'transactionAmount',
-    header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        useCurrency().formatAmount(row.original.transactionAmount, row.original.currency)
-      ),
-    enableMultiSort: true,
-    enableSorting: true,
-    size: 50,
-    maxSize: 150,
-  },
+    {
+      id: 'subSupplier',
+      accessorKey: 'subSupplier',
+      header: () => t('pages.transaction.sub_biller'),
+      cell: ({ row }) => row.original.subBiller || '-',
+      enableSorting: true,
+    },
+    {
+      id: 'numberOfCustomer',
+      accessorKey: 'numberOfCustomer',
+      header: ({ column }) =>
+        createSortableHeader(column, t('pages.transaction.total_customer'), 'right'),
+      cell: ({ row }) => h('div', { class: 'text-right' }, row.original.countTotalCustomer || '-'),
+    },
+    {
+      id: 'status',
+      header: () => t('pages.transaction.status'),
+      // cell: ({ row }) => transactionStatusCellBuilder(row.original.status, true),
+      cell: ({ row }) => statusCellBuilder(row.original.status, true),
+      enableColumnFilter: true,
+      filterType: 'status',
+      filterOptions: availableStatuses.value.map((status) => ({
+        label: getFilterTranslateTransactionStatusLabel(status, t),
+        value: status,
+      })),
+    },
+    {
+      id: 'currency',
+      accessorKey: 'currency',
+      header: () => t('pages.transaction.currency'),
+      cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
+      enableColumnFilter: true,
+      filterOptions: [
+        { label: t('currency.usd'), value: 'USD' },
+        { label: t('currency.khr'), value: 'KHR' },
+      ],
+    },
+    {
+      id: 'transactionAmount',
+      accessorKey: 'transactionAmount',
+      header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
+      cell: ({ row }) =>
+        h(
+          'div',
+          { class: 'text-right' },
+          useCurrency().formatAmount(row.original.transactionAmount, row.original.currency)
+        ),
+      enableMultiSort: true,
+      enableSorting: true,
+      size: 50,
+      maxSize: 150,
+    },
   ]
-  
-  
+
   return cols
 })
 </script>

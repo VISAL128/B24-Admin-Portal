@@ -1005,7 +1005,37 @@ const columns: BaseTableColumn<WalletTransaction>[] = [
     id: 'tranType',
     accessorKey: 'transaction_type',
     headerText: t('transaction_type'),
-    cell: ({ row }) => getTransactionTypeKey(row.original.tranType) || '-',
+        cell: ({ row }) => {
+      const group = groupByTranType(row.original.tranType as TransactionType)
+      if (group !== null) {
+        // Convert enum number to readable string and format it nicely
+        const groupName = TranTypeGroup[group]
+        if (groupName) {
+          // Get display text
+          let displayText = ''
+          if (groupName === 'DeeplinkCheckout') {
+            displayText = 'Deeplink/Checkout'
+          } else {
+            // Convert camelCase to readable format (e.g., "PayBill" → "Pay Bill")
+            displayText = groupName.replace(/([A-Z])/g, ' $1').trim()
+          }
+
+          // Create element with icon and text
+          return h('div', { class: 'flex items-center gap-2' }, [
+            h('div', { 
+              class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`
+            }, [
+              h(resolveComponent('UIcon'), {
+                name: getTranTypeGroupIcon(group),
+                class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`
+              })
+            ]),
+            h('span', { class: 'text-sm' }, displayText)
+          ])
+        }
+      }
+      return row.original.tranType || '-'
+    },
     enableSorting: true,
     enableColumnFilter: true,
     filterOptions: transactionTypeFilterOptions.value,
@@ -1020,7 +1050,7 @@ const columns: BaseTableColumn<WalletTransaction>[] = [
         size: 'sm',
       }),
     enableColumnFilter: true,
-    filterType: 'select',
+    filterType: 'status',
     filterOptions: transactionStatusFilterOptions.value,
   },
   {
@@ -1060,6 +1090,14 @@ const {
   getWalletTransactionBySubBiller,
 } = usePgwModuleApi()
 const { getTransactionList } = useTransactionApi()
+
+const { 
+  getTranTypeGroupIcon,
+  getTranTypeGroupIconStyle,
+  getTranTypeGroupIconColor,
+  groupByTranType,
+  tranTypesByGroup
+} = useTransactionTypeIcon()
 
 const supplierData = ref<Supplier | null>(null)
 
