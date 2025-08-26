@@ -15,6 +15,6 @@ export const PGW_MODULE_API_ENDPOINTS = {
     GET_BY_ID: '/transaction/{id}/v2',
     ALLOCATION: '/transaction/allocation',
     ALLOCATION_BY_ID: '/transaction/{id}/allocations',
-    ALLOCATION_DETAILS: '/transaction/allocation/details/{id}',
+    ALLOCATION_DETAILS: '/transaction/{id}/allocations/{allocation_id}',
   },
 }

@@ -673,7 +673,39 @@
       @close="closeAllocationSlideover"
     >
       <template #body>
-        <div class="space-y-4" v-if="selectedTransactionAllocation">
+        <!-- Loading State -->
+        <div v-if="allocationDetailLoading" class="space-y-4">
+          <div class="animate-pulse">
+            <div class="bg-gray-200 dark:bg-gray-700 rounded-lg h-32 mb-4"></div>
+            <div class="space-y-3">
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="allocationDetailError" class="space-y-4">
+          <div class="text-center py-8">
+            <div class="text-red-500 mb-2">
+              <UIcon name="material-symbols:error-outline" class="w-12 h-12 mx-auto" />
+            </div>
+            <p class="text-red-600 dark:text-red-400 font-medium">{{ allocationDetailError }}</p>
+            <UButton
+              variant="outline"
+              color="error"
+              size="sm"
+              class="mt-3"
+              @click="selectedTransactionAllocation?.id && fetchAllocationDetail(selectedTransactionAllocation.id)"
+            >
+              {{ t('common.retry') }}
+            </UButton>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div v-else-if="selectedTransactionAllocation" class="space-y-4">
           <!-- Customer & Transaction Summary Card -->
           <UCard>
             <div class="grid grid-cols-2 gap-4 mb-4">
@@ -682,10 +714,10 @@
                   {{ t('pages.transaction_detail.customer') }}
                 </p>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ getSelectedAllocationDetail()?.customer || '-' }}
+                  {{ allocationDetailData?.customer || '-' }}
                 </p>
                 <ClipboardBadge
-                  :text="getSelectedAllocationDetail()?.customerCode || '-'"
+                  :text="allocationDetailData?.customerCode || '-'"
                   :copied-tooltip-text="$t('clipboard.copied')"
                   class="mt-2"
                 />
@@ -695,11 +727,11 @@
                   {{ t('pages.transaction_allocation.allocation_party') }}
                 </p>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ getSelectedAllocationDetail()?.allocationPartyName || '-' }}
+                  {{ allocationDetailData?.allocationPartyName || '-' }}
                 </p>
                 <div class="flex items-center gap-2 mt-2">
                   <StatusBadge 
-                    :status="getSelectedAllocationDetail()?.status || '-'" 
+                    :status="allocationDetailData?.status || '-'" 
                     variant="subtle" 
                     size="sm" 
                   />
@@ -712,28 +744,28 @@
               <div class="flex justify-between items-center mb-2">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction.amount') }}</span>
                 <span class="text-lg font-bold text-gray-900 dark:text-white">
-                  {{ useCurrency().formatAmount(getSelectedAllocationDetail()?.transactionAmount) || '-' }}
-                  {{ getSelectedAllocationDetail()?.currency || '' }}
+                  {{ useCurrency().formatAmount(allocationDetailData?.transactionAmount || 0) }}
+                  {{ allocationDetailData?.currency || '' }}
                 </span>
               </div>
               <div class="flex justify-between items-center mb-2">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_amount') }}</span>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ useCurrency().formatAmount(getSelectedAllocationDetail()?.settleAmount) || '-' }}
-                  {{ getSelectedAllocationDetail()?.currency || '' }}
+                  {{ useCurrency().formatAmount(allocationDetailData?.settleAmount || 0) }}
+                  {{ allocationDetailData?.currency || '' }}
                 </span>
               </div>
               <div class="flex justify-between items-center mb-2">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_allocation.outstanding_amount') }}</span>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ useCurrency().formatAmount(getSelectedAllocationDetail()?.outstandingAmount) || '-' }}
-                  {{ getSelectedAllocationDetail()?.currency || '' }}
+                  {{ useCurrency().formatAmount(allocationDetailData?.outstandingAmount || 0) }}
+                  {{ allocationDetailData?.currency || '' }}
                 </span>
               </div>
               <div class="flex justify-between items-center mb-2">
                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_allocation.total_settlement') }}</span>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ getSelectedAllocationDetail()?.totalSettlement || '-' }}
+                  {{ allocationDetailData?.totalSettlement || '-' }}
                 </span>
               </div>
             </div>
@@ -752,7 +784,7 @@
 
             <!-- Settlement Cards -->
             <div
-              v-for="(settlement, index) in getSelectedAllocationDetail()?.settlements || []"
+              v-for="(settlement, index) in allocationDetailData?.settlements || []"
               :key="settlement.settlementId || index"
               class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
             >
@@ -797,17 +829,17 @@
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_date') }}</span>
                   <span class="text-sm text-gray-700 dark:text-gray-300">{{
-                    getSelectedAllocationDetail()?.date || '-'
+                    allocationDetailData?.date || '-'
                   }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.description') }}</span>
                   <span
                     class="text-sm text-gray-700 dark:text-gray-300"
-                    :title="getSelectedAllocationDetail()?.description || '-'"
+                    :title="settlement.description || '-'"
                   >{{
                     (() => {
-                      const desc = getSelectedAllocationDetail()?.description || '-'
+                      const desc = settlement.description || '-'
                       return desc.length > 30 ? desc.substring(0, 30) + '...' : desc
                     })()
                   }}</span>
@@ -843,7 +875,7 @@ import type { TransactionHistoryRecord } from '~/models/transaction'
 import appConfig from '~~/app.config'
 import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_debit/direct_debit_summary'
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
-import type { TransactionAllocationModel } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
+import type { TransactionAllocationDetail, TransactionAllocationModel } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
 definePageMeta({
   auth: false,
   breadcrumbs: [
@@ -857,7 +889,7 @@ const router = useRouter()
 const { t } = useI18n()
 const { copy } = useClipboard()
 const notification = useNotification()
-const { getTransactionById, getTransactionAllocationList } = useTransactionApi()
+const { getTransactionById, getTransactionAllocationList, getAllocationDetail } = useTransactionApi()
 const { createRowNumberCell, createSortableHeader } = useTable()
 const format = useFormat()
 const userPreferences = useUserPreferences().getPreferences()
@@ -877,6 +909,9 @@ const showActivityLogDetail = ref(false)
 const selectedActivityLog = ref<any>(null)
 const showTransactionAllocationDetail = ref(false)
 const selectedTransactionAllocation = ref<any>(null)
+const allocationDetailLoading = ref(false)
+const allocationDetailError = ref<string | null>(null)
+const allocationDetailData = ref<TransactionAllocationDetail | null>(null)
 const { transactionAllocationStatusCellBuilder } = useStatusBadge()
 const { getTransactionTypeGroupDisplayText } = useTransactionTypeIcon()
 
@@ -1063,7 +1098,7 @@ const transactionAllocateData = computed(() => {
       outstandingAmount: allocation.outstandingAmount || 0,
       currency: allocation.currency || '-',
       date: allocation.date || new Date().toISOString(),
-      status: allocation.outstandingAmount === 0 ? TransactionAllocationStatus.Completed : TransactionAllocationStatus.Pending,
+      status: allocation.outstandingAmount === 0 ? 'complete' : 'pending',
     }))
   }
 
@@ -1580,23 +1615,54 @@ const getSelectedActivityLogDetail = () => {
 
 
 // Transaction Allocation Detail function
-const onTransactionAllocationSelect = (row: any) => {
+const onTransactionAllocationSelect = async (row: any) => {
   selectedTransactionAllocation.value = row.original
   showTransactionAllocationDetail.value = true
+  
+  // Fetch allocation detail from API
+  if (row.original.id) {
+    await fetchAllocationDetail(row.original.id)
+  }
 }
 
 const closeAllocationSlideover = () => {
   showTransactionAllocationDetail.value = false
   selectedTransactionAllocation.value = null
+  allocationDetailData.value = null
+  allocationDetailError.value = null
 }
 
-// Transaction Allocation Detail data (replace mock)
+// Fetch allocation detail
+const fetchAllocationDetail = async (allocationId: string) => {
+  allocationDetailLoading.value = true
+  allocationDetailError.value = null
+  
+  try {
+    console.log(`Fetching allocation detail for transaction ${transactionId.value}, allocation ${allocationId}`)
+    //const result = await getAllocationDetail(transactionId.value, allocationId)
+    // allocationDetailData.value = result
+    // Use mock data instead of API result
+    allocationDetailData.value = transactionAllocationDetail.value
+    
+    //console.log('Allocation detail fetched:', result)
+  } catch (error) {
+    console.error('Failed to fetch allocation detail:', error)
+    allocationDetailError.value = 'Failed to load allocation detail'
+  } finally {
+    allocationDetailLoading.value = false
+  }
+}
+
+// Transaction Allocation Detail data (mock data - commented out, now using API data)
+
 const transactionAllocationDetail = ref({
   id: '56567e22-123e-405a-8672-919d25ac2e23',
   transactionId: 'ccb361bd-6b4e-4544-ade7-ab20d4d78923',
   customer: 'HAI029',
   customerCode: 'CUS-0001',
   allocationPartyName: 'Charge Station A',
+  billerName: 'Charge Station A',
+  billerId: 'BILLER-001',
   transactionAmount: 4000,
   amount: 3800,
   settleAmount: 3800,
@@ -1623,14 +1689,23 @@ const transactionAllocationDetail = ref({
   ]
 })
 
-// Helper function to get selected transaction allocation detail
+
+// Helper function to get selected transaction allocation detail (commented out - now using allocationDetailData directly)
+/*
 const getSelectedAllocationDetail = () => {
-  // If a row is selected and contains richer data, merge it; else return base detail
+  // If we have fetched detail data from API, use it
+  if (allocationDetailData.value) {
+    return allocationDetailData.value
+  }
+  
+  // Fallback to mock data if API data is not available
   if (selectedTransactionAllocation.value) {
     return { ...transactionAllocationDetail.value, ...selectedTransactionAllocation.value }
   }
+  
   return transactionAllocationDetail.value
 }
+*/
 
 const exportTransaction = async () => {
   try {

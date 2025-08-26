@@ -1,7 +1,7 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { TransactionQueryParams } from '~/models/baseModel'
 import type { TransactionHistoryRecord, TransactionListResponse } from '~/models/transaction'
-import type { TransactionAllocationResponse } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
+import type { TransactionAllocationDetail, TransactionAllocationResponse } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
 import type { TransactionSummaryModel } from '~~/server/model/pgw_module_api/transactions/transaction_summary'
 
 export const useTransactionApi = () => {
@@ -101,11 +101,21 @@ export const useTransactionApi = () => {
     )
   }
 
+  /**
+   * Get transaction allocation detail
+   */
+  const getAllocationDetail = async (transactionId: string, allocationId: string) => {
+    return await executeV2(() =>
+      $fetch<TransactionAllocationDetail>(`/api/pgw-module/transaction/${transactionId}/allocations/${allocationId}`)
+    )
+  }
+
 
   return {
     getTransactionSummary,
     getTransactionList,
     getTransactionById,
-    getTransactionAllocationList
+    getTransactionAllocationList,
+    getAllocationDetail
   }
 }
