@@ -1,16 +1,9 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3">
-    <!-- Page Header Back Button -->
-    <div class="flex-shrink-0">
-      <!-- <ExPageHeader :show-breadcrumbs-on-mobile="true">
-        <template #breadcrumbs>
-          <NuxtLink class="hover:underline text-sm" to="/transactions">{{ t('pages.transaction.title') }}</NuxtLink>
-          <span class="mx-1 text-gray-400">/</span>
-          <span class="text-primary font-medium dark:text-primary text-sm">{{ t('pages.transaction_detail.title') }}</span>
-        </template>
-      </ExPageHeader> -->
-        <PageHeader :title="t('pages.transaction_detail.title')" :subtitle="t('pages.transaction_detail.subtitle')" />
-    </div>
+    <!-- Page Header -->
+    <!-- <div class="flex-shrink-0">
+      <PageHeader :title="t('pages.transaction_detail.title')" :subtitle="t('pages.transaction_detail.subtitle')" />
+    </div> -->
 
     <!-- Main Layout: Left and Right Sections -->
     <!-- Scrollable content wrapper -->
@@ -919,7 +912,6 @@ const activeRepushTab = ref('repush_transaction_summary')
 const isRepushing = ref(false)
 const isVerifying = ref(false)
 const isVoidRequesting = ref(false)
-
 
 const repushTabs = [
   {

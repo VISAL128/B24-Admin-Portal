@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-full w-full space-y-3 overflow-hidden">
-    <!-- Header -->
-    <PageHeader :title="bank?.nameKh" :subtitle="bank?.name" />
+    <!-- Header - Commented out since breadcrumb back button provides navigation -->
+    <!-- <PageHeader :title="bank?.nameKh" :subtitle="bank?.name" /> -->
 
     <!-- <UnderDevelopment v-if="true" /> -->
     <!-- Content -->
@@ -479,26 +479,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
+import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
+import ConfirmDialog from '~/components/dialogs/ConfirmDialog.vue'
+import StatusBadge from '~/components/StatusBadge.vue'
+import ExTable from '~/components/tables/ExTable.vue'
+import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
+import ReusableTabs from '~/components/ui/ReusableTabs.vue'
 import { useBankApi } from '~/composables/api/useBankApi'
 import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import { useFormat } from '~/composables/utils/useFormat'
 import { useErrorHandler } from '~/composables/useErrorHandler'
+import { useFormat } from '~/composables/utils/useFormat'
 import type { BankAccount, BankDetailsResponse, BankService } from '~/models/bank'
-import type { SettlementHistoryRecord, SettlementHistoryQuery } from '~/models/settlement'
-import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import type { QueryParams } from '~/models/baseModel'
+import type { SettlementHistoryQuery, SettlementHistoryRecord } from '~/models/settlement'
 import { ColumnType, SettlementHistoryStatus } from '~/utils/enumModel'
-import { getTranslatedStatusLabel, formatAmountV2 } from '~/utils/helper'
-import ExTable from '~/components/tables/ExTable.vue'
-import StatusBadge from '~/components/StatusBadge.vue'
-import PageHeader from '~/components/PageHeader.vue'
-import ReusableTabs from '~/components/ui/ReusableTabs.vue'
-import type { SummaryCard } from '~/components/cards/SummaryCards.vue'
+import { formatAmountV2, getTranslatedStatusLabel } from '~/utils/helper'
 import appConfig from '~~/app.config'
-import ConfirmDialog from '~/components/dialogs/ConfirmDialog.vue'
 
 definePageMeta({
   auth: true,
@@ -798,7 +797,7 @@ const fetchSettlements = async (
       search: params.search || undefined,
       start_date: params.start_date || undefined,
       end_date: params.end_date || undefined,
-      status: params.statuses || undefined,
+      status: params.Statuses || undefined,
       banks: [bank.value.id],
       currencies:
         params.filters

@@ -259,11 +259,11 @@
   </div>
 </template>
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { UserPreferences } from '~/models/userPreference'
-import { useMediaQuery } from '@vueuse/core'
 
 definePageMeta({
   middleware: [

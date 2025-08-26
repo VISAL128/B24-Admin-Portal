@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col h-[calc(100vh-64px)] space-y-3">
-    <!-- Page header (always visible) -->
-    <div class="flex-shrink-0">
+    <!-- Page header - Commented out since breadcrumb back button provides navigation -->
+    <!-- <div class="flex-shrink-0">
       <PageHeader :title="t('sub_biller_detail')" :subtitle="t('sub_biller_detail_description')" />
-    </div>
+    </div> -->
     <div class="lg:hidden px-4 pt-3">
       <div class="grid grid-cols-2 gap-1 rounded-xl p-1 bg-gray-100 dark:bg-gray-800">
         <button
@@ -600,6 +600,7 @@
 </template>
 
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import { computed, h, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -616,11 +617,10 @@ import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import type { QueryParams } from '~/models/baseModel'
-import type { SubBillerWallet, DeactivateSubBillerReq } from '~/models/subBiller'
+import type { SubBillerWallet } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import type { TransactionHistoryRecord, WalletTransaction } from '~/models/transaction'
 import { FilterOperatorPgwModule } from '~/utils/enumModel'
-import { useMediaQuery } from '@vueuse/core'
 
 definePageMeta({
   auth: false,

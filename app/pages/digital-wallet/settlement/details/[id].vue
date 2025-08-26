@@ -1,9 +1,10 @@
 <template>
   <div class="flex flex-col h-full space-y-4">
-    <PageHeader
+    <!-- PageHeader - Commented out since breadcrumb back button provides navigation -->
+    <!-- <PageHeader
       :title="t('settlement_history_details.title')"
       :subtitle="t('settlement_history_details.subtitle')"
-    />
+    /> -->
     <!-- Loading skeleton that matches the actual content layout -->
     <div v-if="loading" class="gap-4 flex flex-col space-y-4">
       <!-- Main content row skeleton -->
@@ -313,18 +314,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { useI18n } from '#i18n'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import type {
-  SettlementHistoryDetail,
-  SettlementHistoryDetailResponse,
-  SettlementHistoryDetailQuery,
-} from '~/models/settlement'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import SettlementHistoryTable from '~/components/tables/SettlementHistoryTable.vue'
+import { useSupplierApi } from '~/composables/api/useSupplierApi'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type {
+  SettlementHistoryDetail,
+  SettlementHistoryDetailQuery,
+  SettlementHistoryDetailResponse,
+} from '~/models/settlement'
 import appConfig from '~~/app.config'
 const supplierApi = useSupplierApi()
 

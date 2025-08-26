@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import type { StepperItem, TableColumn } from '@nuxt/ui'
-import { ref, onMounted } from 'vue'
-import { useFormat } from '~/composables/utils/useFormat'
-import { useUserPreferences } from '~/composables/utils/useUserPreferences'
-import type {
-  Cpo,
-  SettlementInquiryResponse,
-  Settlement,
-  TransactionAllocation,
-  ConfirmSettlementRequest,
-  ConfirmSettlementResponse,
-  InitQuerySettlement,
-} from '~/models/settlement'
-import type { CurrencyConfig } from '~/composables/utils/useCurrency'
 import { CalendarDateTime, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import { useSupplierApi } from '~/composables/api/useSupplierApi'
-import { useCurrency } from '~/composables/utils/useCurrency'
+import type { StepperItem, TableColumn } from '@nuxt/ui'
+import { onMounted, ref } from 'vue'
 import EmptyState from '~/components/TableEmptyState.vue'
 import SumTranDataUnderTable from '~/components/tables/SumTranDataUnderTable.vue'
 import TableShimmer from '~/components/tables/TableShimmer.vue'
-import type { SupplierProfile } from '~/models/supplier'
+import { useSupplierApi } from '~/composables/api/useSupplierApi'
+import type { CurrencyConfig } from '~/composables/utils/useCurrency'
+import { useCurrency } from '~/composables/utils/useCurrency'
+import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
+import type {
+  ConfirmSettlementRequest,
+  ConfirmSettlementResponse,
+  Cpo,
+  InitQuerySettlement,
+  Settlement,
+  SettlementInquiryResponse,
+  TransactionAllocation,
+} from '~/models/settlement'
+import type { SupplierProfile } from '~/models/supplier'
 import appConfig from '~~/app.config'
 
 const UButton = resolveComponent('UButton')
@@ -615,10 +615,11 @@ definePageMeta({
 </script>
 <template>
   <div class="w-full h-full flex flex-col gap-3">
-    <PageHeader
+    <!-- PageHeader - Commented out since breadcrumb back button provides navigation -->
+    <!-- <PageHeader
       :title="$t('pages.generate_settlement.title')"
       :subtitle="$t('pages.generate_settlement.description')"
-    />
+    /> -->
     <div
       class="bg-white rounded-lg p-6 shadow-lg dark:bg-gray-800 dark:text-gray-200 flex-1 overflow-auto"
     >
