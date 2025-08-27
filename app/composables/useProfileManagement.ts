@@ -6,19 +6,22 @@
  */
 
 import type { SupplierProfile } from '~/models/supplier'
+import { useMtcApi } from '~/composables/api/useMtcApi'
+import type { TenantAccess } from '~/composables/api/useMtcApi'
 
 export const useProfileManagement = () => {
   const auth = useAuth()
   const { t } = useI18n()
   const toast = useToast()
+  const { getOrganizationList } = useMtcApi()
 
   // Reactive state
-  const availableProfiles = ref<SupplierProfile[]>([])
+  const availableProfiles = ref<TenantAccess[]>([])
   const loadingProfiles = ref(false)
 
   /**
    * Load available profiles for the current user
-   * TODO: Replace with actual API call when backend is ready
+   * Uses real API call to get organization list from MTC API
    */
   const loadAvailableProfiles = async (forceReload = false): Promise<void> => {
     if (availableProfiles.value.length > 0 && !forceReload) return // Already loaded
@@ -26,44 +29,18 @@ export const useProfileManagement = () => {
     try {
       loadingProfiles.value = true
 
-      // TODO: Replace with actual API call
-      // const response = await $fetch('/api/user/profiles')
+      // Call the real API to get organization list
+      const response = await getOrganizationList({ moduleCode: 'b24-billflow-app' })
 
-      // For now, we'll use mock data
-      await new Promise((resolve) => setTimeout(resolve, 800)) // Simulate API delay
+      if (response.success && response.data) {
+        const profiles: TenantAccess[] = response.data
 
-      const mockProfiles: SupplierProfile[] = [
-        {
-          id: 'profile-1',
-          code: 'EV001',
-          name: 'EV Charging Station Alpha',
-        },
-        {
-          id: 'profile-2',
-          code: 'EV002',
-          name: 'EV Charging Station Beta',
-        },
-        {
-          id: 'profile-3',
-          code: 'EV003',
-          name: 'EV Charging Station Gamma',
-        },
-        {
-          id: 'profile-4',
-          code: 'PAY001',
-          name: 'Payment Gateway Services',
-        },
-        {
-          id: 'profile-5',
-          code: 'BIL001',
-          name: 'Bill24 Main Services',
-        },
-      ]
-
-      // Filter out the current profile from available profiles
-      availableProfiles.value = mockProfiles.filter(
-        (profile) => profile.id !== auth.currentProfile.value?.id
-      )
+        // Filter out the current profile from available profiles
+        availableProfiles.value = profiles
+      } else {
+        console.error('Failed to load organizations:', response.message)
+        throw new Error(response.message || 'Failed to load organizations')
+      }
     } catch (error) {
       console.error('Failed to load available profiles:', error)
       toast.add({
@@ -79,15 +56,22 @@ export const useProfileManagement = () => {
   /**
    * Switch to a different profile
    */
-  const switchProfile = async (profile: SupplierProfile): Promise<void> => {
+  const switchProfile = async (profile: TenantAccess): Promise<void> => {
     try {
+      // Convert TenantAccess to SupplierProfile format for auth system
+      const supplierProfile: SupplierProfile = {
+        id: profile.tenantId,
+        code: profile.tenantCode,
+        name: profile.tenant,
+      }
+
       // Set the new profile
-      auth.setProfileToCookie(profile)
+      auth.setProfileToCookie(supplierProfile)
 
       // Show success notification
       toast.add({
         title: t('success'),
-        description: t('profile_popup.profile_switched') + `: ${profile.name}`,
+        description: t('profile_popup.profile_switched') + `: ${profile.tenant}`,
         color: 'success',
       })
 

@@ -16,6 +16,7 @@ export default defineEventHandler(async (event): Promise<BaseResponse<TenantAcce
       'GET'
     )
 
+    console.log('MTC API Module Response:', response)
     // Return the organization data from the module response
     return {
       success: true,

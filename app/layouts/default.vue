@@ -92,17 +92,14 @@
                             class="w-4 h-4 text-primary"
                           />
                           <div class="flex flex-col flex-1">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <span class="text-sm font-medium text-primary">
                               {{ auth.currentProfile.value.name }}
                             </span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">
                               {{ auth.currentProfile.value.code }}
                             </span>
                           </div>
-                          <Icon
-                            name="material-symbols:check-circle"
-                            class="w-4 h-4 text-green-500"
-                          />
+                          <Icon name="material-symbols:check-circle" class="w-4 h-4 text-primary" />
                         </div>
                       </div>
 
@@ -135,36 +132,67 @@
                           v-else-if="availableProfiles.length > 0"
                           class="space-y-1 max-h-48 overflow-y-auto"
                         >
-                          <button
+                          <DialogsConfirmDialog
                             v-for="profile in availableProfiles"
-                            :key="profile.id"
-                            :class="[
-                              'w-full flex items-center gap-2 p-2 rounded-lg transition-colors text-left',
-                              profile.id === auth.currentProfile.value?.id
-                                ? 'bg-primary/10 dark:bg-primary/20 cursor-default'
-                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
-                            ]"
-                            :disabled="profile.id === auth.currentProfile.value?.id"
-                            @click="handleSwitchProfile(profile)"
+                            :key="profile.tenantId"
+                            :model-value="!!profileSwitchDialogs[profile.tenantId]"
+                            :title="t('organization_popup.switch_organization')"
+                            :message="
+                              t('organization_popup.switch_organization_confirmation', {
+                                from: auth.currentProfile.value?.name || '',
+                                to: profile.tenant,
+                              })
+                            "
+                            :cancel-button-text="t('cancel')"
+                            :confirm-button-text="t('organization_popup.switch_organization')"
+                            confirm-button-color="primary"
+                            @confirm="() => confirmProfileSwitch(profile)"
+                            @update:model-value="
+                              (value) => (profileSwitchDialogs[profile.tenantId] = value)
+                            "
                           >
-                            <Icon
-                              name="material-symbols:home-work-outline"
-                              class="w-4 h-4 text-primary"
-                            />
-                            <div class="flex flex-col flex-1">
-                              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {{ profile.name }}
-                              </span>
-                              <span class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ profile.code }}
-                              </span>
-                            </div>
-                            <Icon
-                              v-if="profile.id === auth.currentProfile.value?.id"
-                              name="material-symbols:check-circle"
-                              class="w-4 h-4 text-green-500"
-                            />
-                          </button>
+                            <UButton
+                              variant="ghost"
+                              :class="[
+                                'w-full flex items-center gap-2 p-2 rounded-lg transition-colors text-left justify-start',
+                                profile.tenantId === auth.currentProfile.value?.id
+                                  ? 'bg-primary/10 dark:bg-primary/20 cursor-default'
+                                  : 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
+                              ]"
+                              :disabled="profile.tenantId === auth.currentProfile.value?.id"
+                              @click="
+                                () => {
+                                  profileSwitchDialogs[profile.tenantId] = true
+                                }
+                              "
+                            >
+                              <Icon
+                                name="material-symbols:home-work-outline"
+                                class="w-4 h-4 text-primary"
+                              />
+                              <div class="flex flex-col flex-1 min-w-0">
+                                <UTooltip :text="profile.tenant" :delay-duration="500">
+                                  <span
+                                    class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate"
+                                  >
+                                    {{ profile.tenant }}
+                                  </span>
+                                </UTooltip>
+                                <CopyableText
+                                  :text="profile.tenantCode"
+                                  :display-text="profile.tenantCode"
+                                  text-class="text-xs text-gray-500 dark:text-gray-400"
+                                  :show-icon="false"
+                                  variant="subtle"
+                                />
+                              </div>
+                              <Icon
+                                v-if="profile.tenantId === auth.currentProfile.value?.id"
+                                name="material-symbols:check-circle"
+                                class="w-4 h-4 text-green-500"
+                              />
+                            </UButton>
+                          </DialogsConfirmDialog>
                         </div>
 
                         <!-- No Organizations State -->
@@ -379,25 +407,6 @@
 
     <!-- Toast notifications -->
     <UToaster />
-
-    <!-- Organization Switch Confirmation Dialog -->
-    <DialogsConfirmDialog
-      v-model="isShowProfileSwitchConfirmModal"
-      :loading="false"
-      :title="t('organization_popup.switch_organization')"
-      :message="
-        selectedProfileForSwitch
-          ? t('organization_popup.switch_organization_confirmation', {
-              from: auth.currentProfile.value?.name || '',
-              to: selectedProfileForSwitch.name,
-            })
-          : ''
-      "
-      :cancel-button-text="t('cancel')"
-      :confirm-button-text="t('organization_popup.switch_organization')"
-      confirm-button-color="primary"
-      @confirm="confirmProfileSwitch"
-    />
   </div>
 </template>
 <script setup lang="ts">
@@ -431,8 +440,7 @@ const isLanguagePopoverOpen = ref(false)
 
 // Organization management state
 const isOrganizationPopoverOpen = ref(false)
-const isShowProfileSwitchConfirmModal = ref(false)
-const selectedProfileForSwitch = ref<{ id: string; name: string; code: string } | null>(null)
+const profileSwitchDialogs = ref<Record<string, boolean>>({})
 const { availableProfiles, loadingProfiles, loadAvailableProfiles, switchProfile } =
   useProfileManagement()
 
@@ -479,27 +487,20 @@ const handleLogout = async () => {
 }
 
 // Organization management wrapper methods
-const handleSwitchProfile = async (profile: { id: string; name: string; code: string }) => {
-  // Store the profile to switch to and show confirmation
-  selectedProfileForSwitch.value = profile
-  isOrganizationPopoverOpen.value = false
-  isShowProfileSwitchConfirmModal.value = true
-}
-
-const confirmProfileSwitch = async () => {
-  if (selectedProfileForSwitch.value) {
-    await switchProfile(selectedProfileForSwitch.value)
-    selectedProfileForSwitch.value = null
+const confirmProfileSwitch = async (profile: {
+  tenantId: string
+  tenant: string
+  tenantCode: string
+  superUser: boolean
+}) => {
+  if (profile) {
+    await switchProfile(profile)
+    // Close the specific dialog
+    profileSwitchDialogs.value[profile.tenantId] = false
+    // Close the organization popover
+    isOrganizationPopoverOpen.value = false
   }
-  isShowProfileSwitchConfirmModal.value = false
 }
-
-// Watch for modal close to clear selected profile
-watch(isShowProfileSwitchConfirmModal, (isOpen) => {
-  if (!isOpen && selectedProfileForSwitch.value) {
-    selectedProfileForSwitch.value = null
-  }
-})
 
 // Check if user has admin role and redirect if not
 const checkAdminAccess = async () => {

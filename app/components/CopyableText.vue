@@ -11,7 +11,6 @@
       {{ displayText }}
     </span>
     <button
-      @click="handleCopy"
       :class="[
         'inline-flex items-center justify-center w-4 h-4 rounded transition-colors',
         copied
@@ -19,6 +18,7 @@
           : 'text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
       ]"
       :title="copied ? 'Copied!' : 'Copy to clipboard'"
+      @click="handleCopy"
     >
       <UIcon :name="copied ? 'i-heroicons-check' : 'i-lucide-copy'" class="w-3 h-3" />
     </button>
@@ -51,7 +51,13 @@ const { copy } = useClipboard()
 const notification = useNotification()
 const copied = ref(false)
 
-const handleCopy = async () => {
+const handleCopy = async (event?: Event) => {
+  // Prevent event propagation to parent elements (like buttons)
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
   try {
     await copy(props.text)
     copied.value = true
@@ -67,7 +73,7 @@ const handleCopy = async () => {
     setTimeout(() => {
       copied.value = false
     }, 2000)
-  } catch (error) {
+  } catch {
     if (props.showNotification) {
       notification.showError({
         title: 'Error',
