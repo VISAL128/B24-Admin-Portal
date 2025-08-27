@@ -114,7 +114,30 @@
     "edit_profile": "កែប្រែអាជីវកម្ម",
     "logout": "ចាកចេញ",
     "current_profile": "អាជីវកម្មបច្ចុប្បន្ន",
-    "business_profile": "អាជីវកម្ម"
+    "business_profile": "អាជីវកម្ម",
+    "available_profiles": "អាជីវកម្មដែលអាចប្រើបាន",
+    "switch_profile": "ប្តូរអាជីវកម្ម",
+    "no_profiles_available": "មិនមានអាជីវកម្មបន្ថែមទេ",
+    "loading_profiles": "កំពុងទាញយកអាជីវកម្ម...",
+    "profile_switched": "បានប្តូរអាជីវកម្មដោយជោគជ័យ",
+    "switch_profile_confirmation": "តើអ្នកប្រាកដជាចង់ប្តូរពី '{from}' ទៅ '{to}' ទេ? នេះនឹងធ្វើឱ្យទំព័របើកឡើងវិញជាមួយបរិបទអាជីវកម្មថ្មី។"
+  },
+  "organization_popup": {
+    "title": "ស្ថាប័នអ្នកប្រើប្រាស់",
+    "settings": "ការកំណត់",
+    "subtitle": "គ្រប់គ្រងព័ត៌មាន និងការកំណត់របស់អ្នក",
+    "edit_organization": "កែប្រែស្ថាប័ន",
+    "logout": "ចាកចេញ",
+    "current_organization": "ស្ថាប័នបច្ចុប្បន្ន",
+    "business_organization": "ស្ថាប័ន",
+    "available_organizations": "ស្ថាប័នដែលអាចប្រើបាន",
+    "switch_organization": "ប្តូរស្ថាប័ន",
+    "no_organizations_available": "មិនមានស្ថាប័នបន្ថែមទេ",
+    "loading_organizations": "កំពុងទាញយកស្ថាប័ន...",
+    "organization_switched": "បានប្តូរស្ថាប័នដោយជោគជ័យ",
+    "switch_organization_confirmation": "តើអ្នកប្រាកដជាចង់ប្តូរពី '{from}' ទៅ '{to}' ទេ? នេះនឹងធ្វើឱ្យទំព័របើកឡើងវិញជាមួយបរិបទស្ថាប័នថ្មី។",
+    "organization_singular": "ស្ថាប័ន",
+    "organization_plural": "ស្ថាប័ន"
   },
   "lang": {
     "english": "អង់គ្លេស",

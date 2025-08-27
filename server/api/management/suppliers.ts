@@ -1,9 +1,9 @@
 import { defineEventHandler } from 'h3'
 import type { Supplier } from '~/models/settlement'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import { getSupplierCsms } from '../../logic/management_api_logic'
 
-export default defineEventHandler(async (): Promise<ApiResponse<Supplier[]>> => {
+export default defineEventHandler(async (): Promise<ApiResponseList<Supplier[]>> => {
   const response = await getSupplierCsms({ service_code: 'WALLET' })
   // Do NOT call .json() again here!
   return {

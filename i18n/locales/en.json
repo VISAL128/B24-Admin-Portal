@@ -110,7 +110,30 @@
     "edit_profile": "Edit Profile",
     "logout": "Logout",
     "current_profile": "Current Profile",
-    "business_profile": "Business Profile"
+    "business_profile": "Business Profile",
+    "available_profiles": "Available Profiles",
+    "switch_profile": "Switch Profile",
+    "no_profiles_available": "No additional profiles available",
+    "loading_profiles": "Loading profiles...",
+    "profile_switched": "Profile switched successfully",
+    "switch_profile_confirmation": "Are you sure you want to switch from '{from}' to '{to}'? This will reload the page with the new profile context."
+  },
+  "organization_popup": {
+    "title": "User Organization",
+    "settings": "Settings",
+    "subtitle": "Manage your information and settings",
+    "edit_organization": "Edit Organization",
+    "logout": "Logout",
+    "current_organization": "Current Organization",
+    "business_organization": "Business Organization",
+    "available_organizations": "Available Organizations",
+    "switch_organization": "Switch Organization",
+    "no_organizations_available": "No additional organizations available",
+    "loading_organizations": "Loading organizations...",
+    "organization_switched": "Organization switched successfully",
+    "switch_organization_confirmation": "Are you sure you want to switch from '{from}' to '{to}'? This will reload the page with the new organization context.",
+    "organization_singular": "organization",
+    "organization_plural": "organizations"
   },
   "lang": {
     "english": "English",

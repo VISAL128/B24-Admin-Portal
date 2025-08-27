@@ -6,7 +6,7 @@ import type {
   BankDetailsResponse,
   BankListResponse,
 } from '~/models/bank'
-import type { ApiResponse, QueryParams } from '~/models/baseModel'
+import type { ApiResponseList, QueryParams } from '~/models/baseModel'
 
 export const useBankApi = () => {
   const { execute } = useApiExecutor()
@@ -14,9 +14,11 @@ export const useBankApi = () => {
   /**
    * Get list of banks with optional filtering and pagination (Legacy endpoint)
    */
-  const getBanks = async (query?: QueryParams): Promise<ApiResponse<ActivatedBankResponse[]>> => {
+  const getBanks = async (
+    query?: QueryParams
+  ): Promise<ApiResponseList<ActivatedBankResponse[]>> => {
     const response = await execute<ActivatedBankResponse[]>(() =>
-      $fetch<ApiResponse<ActivatedBankResponse[]>>('/api/pgw-module/bank/list', {
+      $fetch<ApiResponseList<ActivatedBankResponse[]>>('/api/pgw-module/bank/list', {
         method: 'GET',
         query,
       })
@@ -38,9 +40,9 @@ export const useBankApi = () => {
   /**
    * Get TBanks from real API (http://172.16.81.141:22043/bank/list)
    */
-  const getTBanks = async (query?: QueryParams): Promise<ApiResponse<Bank[]>> => {
+  const getTBanks = async (query?: QueryParams): Promise<ApiResponseList<Bank[]>> => {
     const response = await execute<Bank[]>(() =>
-      $fetch<ApiResponse<Bank[]>>('/api/pgw-module/bank/tbanks', {
+      $fetch<ApiResponseList<Bank[]>>('/api/pgw-module/bank/tbanks', {
         method: 'GET',
         query,
       })
@@ -112,7 +114,9 @@ export const useBankApi = () => {
       }
       if (params.currency) query.append('currency', params.currency)
 
-      return $fetch<ApiResponse<BankListResponse>>(`/api/pgw-module/bank/list?${query.toString()}`)
+      return $fetch<ApiResponseList<BankListResponse>>(
+        `/api/pgw-module/bank/list?${query.toString()}`
+      )
     })
 
     if (response.code !== 'SUCCESS') {
@@ -132,7 +136,7 @@ export const useBankApi = () => {
    */
   const getBankById = async (id: string): Promise<BankDetailsResponse | null> => {
     const response = await execute<BankDetailsResponse>(() =>
-      $fetch<ApiResponse<BankDetailsResponse>>(`/api/pgw-module/bank/${id}`, {
+      $fetch<ApiResponseList<BankDetailsResponse>>(`/api/pgw-module/bank/${id}`, {
         method: 'GET',
       })
     )
@@ -149,7 +153,7 @@ export const useBankApi = () => {
   const getAccountsBySupplierBankServiceId = async (sbs_id: string): Promise<BankAccount[]> => {
     try {
       const response = await execute<BankAccount[]>(() =>
-        $fetch<ApiResponse<BankAccount[]>>(`/api/pgw-module/bank/${sbs_id}/accounts`, {
+        $fetch<ApiResponseList<BankAccount[]>>(`/api/pgw-module/bank/${sbs_id}/accounts`, {
           method: 'GET',
         })
       )
@@ -170,12 +174,12 @@ export const useBankApi = () => {
    */
   const updateBankServiceStatus = async (sbsId: string, isActive: boolean): Promise<boolean> => {
     const response = await execute<boolean>(() =>
-      $fetch<ApiResponse<boolean>>('/api/pgw-module/bank/service/update-status', {
+      $fetch<ApiResponseList<boolean>>('/api/pgw-module/bank/service/update-status', {
         method: 'PATCH',
         body: { sbsId, status: isActive },
       })
     )
-    
+
     return response.data
   }
 
@@ -184,7 +188,7 @@ export const useBankApi = () => {
    */
   const getSettlementBanks = async (): Promise<Bank[]> => {
     const response = await execute<Bank[]>(() =>
-      $fetch<ApiResponse<Bank[]>>('/api/management/banks/settlement', {
+      $fetch<ApiResponseList<Bank[]>>('/api/management/banks/settlement', {
         method: 'GET',
       })
     )
@@ -200,7 +204,7 @@ export const useBankApi = () => {
    */
   const getCollectionBanks = async (): Promise<Bank[]> => {
     const response = await execute<Bank[]>(() =>
-      $fetch<ApiResponse<Bank[]>>('/api/management/banks/collection', {
+      $fetch<ApiResponseList<Bank[]>>('/api/management/banks/collection', {
         method: 'GET',
       })
     )

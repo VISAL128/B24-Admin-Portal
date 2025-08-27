@@ -13,14 +13,16 @@ import type {
   SettlementHistoryDetailResponse,
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 
 export const useSupplierApi = () => {
   const { execute } = useApiExecutor()
   const { locale } = useI18n()
 
   const getSuppliers = async (): Promise<Supplier[]> => {
-    const rep = await execute(() => $fetch<ApiResponse<Supplier[]>>('/api/management/suppliers'))
+    const rep = await execute(() =>
+      $fetch<ApiResponseList<Supplier[]>>('/api/management/suppliers')
+    )
     if (rep.code !== 'SUCCESS') {
       return []
     }
@@ -29,7 +31,7 @@ export const useSupplierApi = () => {
 
   const getListCPOApi = async (payload: CpoBySupplierRequest): Promise<Cpo[]> => {
     const rep = await execute(() =>
-      $fetch<ApiResponse<Cpo[]>>(`/api/management/getcpo`, { method: 'POST', body: payload })
+      $fetch<ApiResponseList<Cpo[]>>(`/api/management/getcpo`, { method: 'POST', body: payload })
     )
     if (rep.code !== 'SUCCESS') {
       return []
@@ -41,7 +43,7 @@ export const useSupplierApi = () => {
     payload: InitQuerySettlement
   ): Promise<SettlementInquiryResponse | null> => {
     const rep = await execute(() =>
-      $fetch<ApiResponse<SettlementInquiryResponse>>(`/api/management/inquiry-settlement`, {
+      $fetch<ApiResponseList<SettlementInquiryResponse>>(`/api/management/inquiry-settlement`, {
         method: 'POST',
         body: payload,
       })
@@ -60,7 +62,7 @@ export const useSupplierApi = () => {
         throw new Error('Token is required for settlement confirmation')
       }
       const rep = await execute(() =>
-        $fetch<ApiResponse<ConfirmSettlementResponse>>(`/api/management/submit-settlement`, {
+        $fetch<ApiResponseList<ConfirmSettlementResponse>>(`/api/management/submit-settlement`, {
           method: 'POST',
           body: payload,
         })
@@ -82,7 +84,7 @@ export const useSupplierApi = () => {
   ): Promise<SettlementHistoryResponse | null> => {
     payload.supplier_id = useAuth().currentProfile.value?.id || ''
     const rep = await execute(() =>
-      $fetch<ApiResponse<SettlementHistoryResponse>>('/api/management/settlement-history', {
+      $fetch<ApiResponseList<SettlementHistoryResponse>>('/api/management/settlement-history', {
         method: 'POST',
         body: payload,
       })
@@ -99,7 +101,7 @@ export const useSupplierApi = () => {
   ): Promise<SettlementHistoryDetailResponse> => {
     const rep = await execute(
       () =>
-        $fetch<ApiResponse<SettlementHistoryDetailResponse>>(
+        $fetch<ApiResponseList<SettlementHistoryDetailResponse>>(
           `/api/management/find-settlement-history-detail`,
           {
             method: 'POST',

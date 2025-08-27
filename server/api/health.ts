@@ -6,9 +6,9 @@
  */
 
 import { getAuthContext } from '../middleware/auth'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<any>> => {
+export default defineEventHandler(async (event): Promise<ApiResponseList<any>> => {
   const auth = getAuthContext(event)
 
   const healthData = {

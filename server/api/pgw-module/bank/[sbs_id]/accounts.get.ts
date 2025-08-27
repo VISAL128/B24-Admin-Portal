@@ -1,11 +1,11 @@
 import type { BankAccount } from '~/models/bank'
-import type { ApiResponse, PgwModuleResponse } from '~/models/baseModel'
+import type { ApiResponseList, PgwModuleResponse } from '~/models/baseModel'
 import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
 // import { PGW_MODULE_API_ENDPOINTS } from '~~/server/utils/pgw-module-api-endpoints'
 // import { requestToPgwModuleApi } from '../../../../logic/pgw_module_api_logic'
 // import type { PgwModuleResponse } from '~/models/baseModel'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<BankAccount[]>> => {
+export default defineEventHandler(async (event): Promise<ApiResponseList<BankAccount[]>> => {
   try {
     const sbsId = getRouterParam(event, 'sbs_id')
 

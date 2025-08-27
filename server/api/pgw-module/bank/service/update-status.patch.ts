@@ -1,4 +1,4 @@
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import { requestToPgwModuleApi } from '../../../../logic/pgw_module_api_logic'
 import { z } from 'zod'
 
@@ -21,10 +21,10 @@ export default defineEventHandler(async (event) => {
     })
 
     return {
-        code: "SUCCESS",
-        message: '',
-        data: response
-      } as ApiResponse<boolean>
+      code: 'SUCCESS',
+      message: '',
+      data: response,
+    } as ApiResponseList<boolean>
   } catch (error) {
     // Handle different types of errors
     if (error && typeof error === 'object' && 'statusCode' in error) {

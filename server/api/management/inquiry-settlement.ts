@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody } from 'h3'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import type {
   SettlementInquiryRequest,
   SettlementInquiryResponse,
@@ -7,7 +7,7 @@ import type {
 import { inquirySettlementWallet } from '../../logic/management_api_logic'
 
 export default defineEventHandler(
-  async (event): Promise<ApiResponse<SettlementInquiryResponse>> => {
+  async (event): Promise<ApiResponseList<SettlementInquiryResponse>> => {
     const walletInquiryRequest = await readBody<SettlementInquiryRequest>(event)
 
     const response = await inquirySettlementWallet(walletInquiryRequest)

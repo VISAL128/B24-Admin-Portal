@@ -1,10 +1,10 @@
 import { defineEventHandler, readBody } from 'h3'
 import type { ConfirmSettlementRequest, ConfirmSettlementResponse } from '~/models/settlement'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import { submitSettlement } from '../../logic/management_api_logic'
 
 export default defineEventHandler(
-  async (event): Promise<ApiResponse<ConfirmSettlementResponse | null>> => {
+  async (event): Promise<ApiResponseList<ConfirmSettlementResponse | null>> => {
     const payload = await readBody<ConfirmSettlementRequest>(event)
 
     const response = await submitSettlement(payload)

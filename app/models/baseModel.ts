@@ -1,6 +1,6 @@
 import type { FilterOperatorPgwModule } from '~/utils/enumModel'
 
-export interface ApiResponse<T> {
+export interface ApiResponseList<T> {
   code: string | number // e.g., "SUCCESS"
   message: string
   message_kh?: string // Optional localized message

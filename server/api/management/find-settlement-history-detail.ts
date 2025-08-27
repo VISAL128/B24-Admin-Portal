@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody } from 'h3'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import type {
   SettlementHistoryDetailQuery,
   SettlementHistoryDetailResponse,
@@ -8,7 +8,7 @@ import type {
 import { getSettlementHistoryById } from '../../logic/management_api_logic'
 
 export default defineEventHandler(
-  async (event): Promise<ApiResponse<SettlementHistoryDetailResponse>> => {
+  async (event): Promise<ApiResponseList<SettlementHistoryDetailResponse>> => {
     const payload = await readBody<SettlementHistoryDetailQuery>(event)
 
     if (!payload.settlement_history_id) {
