@@ -1048,7 +1048,21 @@
       "error_allocation": "Failed to load Transaction Allocation",
       "settlement_detail": "Settlement Detail",
       "settlement_date": "Settlement Date",
-      "description": "Description"
+      "description": "Description",
+      "repush_biller": "Repush Biller Summary",
+      "repush_bank": "Repush Bank Summary",
+      "activity_log": "Activity Logs",
+      "total_repush": "Total Repush",
+      "type": "Type",
+      "last_repush_date": "Last Repush Date",
+      "view_details": "Click to view detail",
+      "repush_biller_action": "Repush to Biller",
+      "repush_bank_action": "Repush to Bank",
+      "repushing": "Repushing...",
+      "status_code": "Status Code",
+      "date": "Date",
+      "repush_bank_description": "Repush Bank Summary feature is under development and will be available in a future release."
+  
     },
     "transaction_allocation": {
       "title": "Transaction Allocation",
@@ -1066,7 +1080,8 @@
         "status": "Status",
         "complete": "Complete",
         "pending": "Pending"
-      }
+      },
+      "failed_allocation_detail": "Failed to load allocation detail"
     },
     "transaction": {
       "supplier_fee": "Supplier Fee",
