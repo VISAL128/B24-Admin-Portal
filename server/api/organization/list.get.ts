@@ -1,7 +1,7 @@
 import { requestToMtcApi } from '../../logic/mtc_api_logic'
 import { mtcApiEndpoints } from '../../utils/mtc-api-endpoints'
 import type { ModuleResponse, TenantAccess } from '../../model/mtc_api/module'
-import type { BaseResponse } from '~~/server/model/base'
+import type { BaseResponse } from '~/types/api'
 
 export default defineEventHandler(async (event): Promise<BaseResponse<TenantAccess[]>> => {
   try {
@@ -19,6 +19,7 @@ export default defineEventHandler(async (event): Promise<BaseResponse<TenantAcce
     // Return the organization data from the module response
     return {
       success: true,
+      code: 'SUCCESS',
       data: response.canAccessByTenants,
       message: 'Organizations retrieved successfully',
     }

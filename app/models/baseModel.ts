@@ -11,6 +11,14 @@ export interface ApiResponseList<T> {
   data: T
 }
 
+export interface ApiResponse<T> {
+  code: string | number // e.g., "SUCCESS"
+  message: string
+  message_kh?: string // Optional localized message
+  is_success: boolean
+  data: T
+}
+
 export interface PgwModuleResponse<T> {
   code: string // '000'
   message: string // 'Success'
