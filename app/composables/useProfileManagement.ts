@@ -13,7 +13,7 @@ export const useProfileManagement = () => {
   const auth = useAuth()
   const { t } = useI18n()
   const toast = useToast()
-  const { getOrganizationList } = useMtcApi()
+  const { getOrganizationList, switchOrganization } = useMtcApi()
 
   // Reactive state
   const availableProfiles = ref<TenantAccess[]>([])
@@ -30,7 +30,7 @@ export const useProfileManagement = () => {
       loadingProfiles.value = true
 
       // Call the real API to get organization list
-      const response = await getOrganizationList({ moduleCode: 'b24-billflow-app' })
+      const response = await getOrganizationList({ moduleCode: useRuntimeConfig().moduleCode })
 
       if (response.success && response.data) {
         const profiles: TenantAccess[] = response.data
@@ -58,6 +58,15 @@ export const useProfileManagement = () => {
    */
   const switchProfile = async (profile: TenantAccess): Promise<void> => {
     try {
+      // First, call the real API to switch organization on the server side
+      const apiResponse = await switchOrganization({
+        toTenantId: profile.tenantId,
+      })
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.message || 'Failed to switch organization on server')
+      }
+
       // Convert TenantAccess to SupplierProfile format for auth system
       const supplierProfile: SupplierProfile = {
         id: profile.tenantId,
@@ -65,7 +74,7 @@ export const useProfileManagement = () => {
         name: profile.tenant,
       }
 
-      // Set the new profile
+      // Set the new profile locally
       auth.setProfileToCookie(supplierProfile)
 
       // Show success notification
@@ -86,7 +95,7 @@ export const useProfileManagement = () => {
       console.error('Failed to switch profile:', error)
       toast.add({
         title: t('error.something_went_wrong'),
-        description: 'Failed to switch profile',
+        description: error instanceof Error ? error.message : 'Failed to switch profile',
         color: 'error',
       })
     }

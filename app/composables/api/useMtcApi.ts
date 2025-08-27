@@ -23,6 +23,15 @@ export interface OrganizationListParams {
   moduleCode?: string // defaults to 'pgw' in the server endpoint
 }
 
+export interface SwitchOrganizationParams {
+  toTenantId: string
+}
+
+export interface SwitchOrganizationResponse {
+  success: boolean
+  message?: string
+}
+
 export const useMtcApi = () => {
   const { executeV2 } = useApiExecutor()
 
@@ -44,8 +53,27 @@ export const useMtcApi = () => {
     )
   }
 
+  /**
+   * Switch to a different organization/tenant
+   * Calls the /api/organization/switch endpoint which calls MTC API
+   */
+  const switchOrganization = async (
+    params: SwitchOrganizationParams
+  ): Promise<BaseResponse<SwitchOrganizationResponse>> => {
+    return await executeV2(() =>
+      $fetch<BaseResponse<SwitchOrganizationResponse>>('/api/organization/switch', {
+        method: 'PUT',
+        body: params,
+        onResponseError() {
+          // Handle response errors if needed
+        },
+      })
+    )
+  }
+
   return {
     // Organization methods
     getOrganizationList,
+    switchOrganization,
   }
 }

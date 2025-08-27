@@ -78,6 +78,7 @@ export default defineNuxtConfig({
     managementApiUrl: process.env.MANAGEMENT_API_URL || 'https://managementapi-staging.bill24.io',
     pgwModuleApiUrl: process.env.PGW_MODULE_API_URL || 'https://staging.bill24.io:22043',
     mtcApiUrl: process.env.MTC_API_URL || 'https://mtc-stg.oone.bz',
+    moduleCode: process.env.MODULE_CODE || 'pgw',
     // Public runtime config
     public: {
       appVersion: process.env.APP_VERSION || 'v1.0.1',

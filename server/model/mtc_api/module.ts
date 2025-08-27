@@ -28,3 +28,12 @@ export interface OrganizationListResponse {
   data: ModuleResponse
   message: string
 }
+
+export interface SwitchTenantRequest {
+  toTenantId: string
+}
+
+export interface SwitchTenantResponse {
+  success: boolean
+  message?: string
+}
