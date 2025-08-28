@@ -5,9 +5,9 @@ import type { BaseResponse } from '~/types/api'
 
 export default defineEventHandler(async (event): Promise<BaseResponse<TenantAccess[]>> => {
   try {
-    // Get the module code from query parameters, default to 'pgw'
-    const query = getQuery(event)
-    const moduleCode = (query.moduleCode as string) || 'pgw'
+    // Get the module code from runtime config
+    const runtimeConfig = useRuntimeConfig()
+    const moduleCode = runtimeConfig.moduleCode
 
     // Make request to MTC API to get module by code (which contains organization data)
     const response: ModuleResponse = await requestToMtcApi(

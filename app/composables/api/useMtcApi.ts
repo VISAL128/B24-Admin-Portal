@@ -19,10 +19,6 @@ export interface TenantAccess {
   // Add more fields based on your actual TenantAccess structure
 }
 
-export interface OrganizationListParams {
-  moduleCode?: string // defaults to 'pgw' in the server endpoint
-}
-
 export interface SwitchOrganizationParams {
   toTenantId: string
 }
@@ -39,13 +35,11 @@ export const useMtcApi = () => {
    * Get organization list from MTC API
    * Calls the /api/organization/list endpoint which fetches from MTC API
    */
-  const getOrganizationList = async (
-    params?: OrganizationListParams
-  ): Promise<BaseResponse<TenantAccess[]>> => {
+  const getOrganizationList = async (): Promise<BaseResponse<TenantAccess[]>> => {
+    console.log('Fetching organization list')
     return await executeV2(() =>
-      $fetch<BaseResponse<TenantAccess[]>>('/api/organization/list', {
+      $fetch<BaseResponse<TenantAccess[]>>(`/api/organization/list`, {
         method: 'GET',
-        query: params,
         onResponseError() {
           // Handle response errors if needed
         },
