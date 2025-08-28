@@ -1061,8 +1061,9 @@
       "repushing": "Repushing...",
       "status_code": "Status Code",
       "date": "Date",
-      "repush_bank_description": "Repush Bank Summary feature is under development and will be available in a future release."
-  
+      "repush_bank_description": "Repush Bank Summary feature is currently being developed and will be available soon",
+      "repush_development_message": "The Repush Biller Summary feature is currently being developed and will be available soon."
+
     },
     "transaction_allocation": {
       "title": "Transaction Allocation",

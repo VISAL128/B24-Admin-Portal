@@ -1079,7 +1079,8 @@
       "repushing": "កំពុងផ្ញើឡើងវិញ...",
       "status_code": "លេខកូដស្ថានភាព",
       "date": "កាលបរិច្ឆេទ",
-      "repush_bank_description": "មុខងារ Repush Bank Summary កំពុងស្ថិតក្នុងដំណាក់កាលអភិវឌ្ឍ និងនឹងមាននៅក្នុងការចេញផ្សាយអនាគត"
+      "repush_bank_description": "មុខងារ Repush Bank Summary កំពុងស្ថិតក្នុងដំណាក់កាលអភិវឌ្ឍ និងនឹងមាននៅក្នុងការចេញផ្សាយឆាប់ៗនេះ",
+      "repush_development_message": "មុខងារ Repush Biller Summary កំពុងស្ថិតក្នុងដំណាក់កាលអភិវឌ្ឍ និងនឹងមាននៅក្នុងការចេញផ្សាយឆាប់ៗនេះ"
     },
     "transaction_allocation": {
       "title": "ការបែងចែកប្រតិបត្តិការ",

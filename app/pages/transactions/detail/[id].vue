@@ -316,12 +316,25 @@
           <template #default="{ activeTab }">
             <!-- Tab Content -->
             <div class="relative h-72 overflow-hidden">
-              <!-- Repush Summary Tab Content -->
+              <!-- Under Development Content -->
+              <div class="h-full flex flex-col items-center justify-center space-y-4">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                  <UIcon name="material-symbols:construction" class="w-8 h-8 text-gray-400" />
+                </div>
+                <div class="text-center space-y-2">
+                  <h5 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('underDevelopment.title') }}</h5>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                    {{ t('pages.transaction_detail.repush_development_message') }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Commented Out: Original Repush Transaction Content -->
+              <!-- 
               <div
                 v-show="activeTab === 'repush_transaction_summary'"
                 class="h-full"
               >
-                <!-- Clickable Summary Card -->
                 <div
                   class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
                   @click="openRepushDetail"
@@ -350,7 +363,6 @@
                     </div>
                   </div>
                   
-                  <!-- Click indicator -->
                   <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
                       <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
@@ -359,7 +371,6 @@
                   </div>
                 </div>
                 
-                <!-- Repush Button -->
                 <div class="mt-3">
                   <UButton
                     size="md"
@@ -375,7 +386,6 @@
                 </div>
               </div>
 
-              <!-- Activity Logs Tab Content -->
               <div
                 v-show="activeTab === 'repush_activity_logs'"
                 class="h-full"
@@ -398,6 +408,7 @@
                   />
                 </div>
               </div>
+              -->
             </div>
           </template>
         </ExTab>
