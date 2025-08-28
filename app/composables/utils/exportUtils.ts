@@ -1806,7 +1806,12 @@ export async function exportToExcelWithUnicodeSupport(
   currentRow++
 
   const headerRow = worksheet.addRow(headers.map((h) => h.label))
+
+  // Save the header row position for freeze pane (header row itself)
+  const headerRowPosition = currentRow - 1
+
   currentRow++ // Increment for the header row
+
   headerRow.font = {
     bold: true,
     name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
@@ -1943,7 +1948,8 @@ export async function exportToExcelWithUnicodeSupport(
   })
   // ==== END UPDATED SECTION ====
 
-  worksheet.views = [{ state: 'frozen', ySplit: currentRow }]
+  // Freeze pane after header row (not after all data)
+  worksheet.views = [{ state: 'frozen', ySplit: headerRowPosition }]
 
   const buffer = await workbook.xlsx.writeBuffer()
   const blob = new Blob([buffer], {
