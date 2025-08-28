@@ -44,6 +44,17 @@ const props = defineProps<{
 
 const pdfExportHeaders = computed(() => props.headers)
 
+// Check if the table has amount-related columns
+const hasAmountColumns = computed(() => {
+  return props.headers.some(
+    (header) =>
+      header.key.toLowerCase().includes('amount') ||
+      header.key.toLowerCase().includes('total') ||
+      header.label.toLowerCase().includes('amount') ||
+      header.label.toLowerCase().includes('total')
+  )
+})
+
 // Transform data using exportValue functions when available
 const transformedData = computed(() => {
   if (!props.columns || !props.data) return props.data
@@ -108,10 +119,11 @@ const exportToExcelHandler = async () => {
 
     // Use transformed data for export
     const dataToExport = transformedData.value
-    const totalAmount = dataToExport.reduce(
-      (sum, item) => sum + (Number(item.total_amount || item.amount) || 0),
-      0
-    )
+
+    // Only calculate total amount if table has amount columns
+    const totalAmount = hasAmountColumns.value
+      ? dataToExport.reduce((sum, item) => sum + (Number(item.total_amount || item.amount) || 0), 0)
+      : undefined
 
     console.log('Starting Excel export...', totalAmount)
 
@@ -165,10 +177,11 @@ const exportToPDFHandler = async () => {
 
     // Use transformed data for export
     const dataToExport = transformedData.value
-    const totalAmount = dataToExport.reduce(
-      (sum, item) => sum + (Number(item.total_amount || item.amount) || 0),
-      0
-    )
+
+    // Only calculate total amount if table has amount columns
+    const totalAmount = hasAmountColumns.value
+      ? dataToExport.reduce((sum, item) => sum + (Number(item.total_amount || item.amount) || 0), 0)
+      : undefined
     const currentLocale = locale.value as 'km' | 'en'
 
     await exportToPDFWithUnicodeSupport(
