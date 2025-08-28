@@ -55,6 +55,23 @@ const hasAmountColumns = computed(() => {
   )
 })
 
+// Calculate totals by currency
+const calculateCurrencyTotals = (data: ExportDataRow[]) => {
+  const totals: Record<string, number> = {}
+
+  data.forEach((item) => {
+    const amount = Number(item.total_amount || item.amount) || 0
+    const currency = String(item.currency_id || item.currency || 'USD')
+
+    if (!totals[currency]) {
+      totals[currency] = 0
+    }
+    totals[currency] += amount
+  })
+
+  return totals
+}
+
 // Transform data using exportValue functions when available
 const transformedData = computed(() => {
   if (!props.columns || !props.data) return props.data
@@ -121,11 +138,11 @@ const exportToExcelHandler = async () => {
     const dataToExport = transformedData.value
 
     // Only calculate total amount if table has amount columns
-    const totalAmount = hasAmountColumns.value
-      ? dataToExport.reduce((sum, item) => sum + (Number(item.total_amount || item.amount) || 0), 0)
+    const currencyTotals = hasAmountColumns.value
+      ? calculateCurrencyTotals(dataToExport)
       : undefined
 
-    console.log('Starting Excel export...', totalAmount)
+    console.log('Starting Excel export...', currencyTotals)
 
     const currentLocale = locale.value as 'km' | 'en'
     const periodText = `${props.exportOptions?.startDate} ${t('to')} ${props.exportOptions?.endDate}`
@@ -140,7 +157,7 @@ const exportToExcelHandler = async () => {
         locale: currentLocale,
         t,
         currency: props.exportOptions?.currency ?? 'USD',
-        totalAmount,
+        currencyTotals,
         period: periodText,
         filter: props.exportOptions?.filter,
         exportBy: props.exportOptions?.exportBy,
@@ -179,8 +196,8 @@ const exportToPDFHandler = async () => {
     const dataToExport = transformedData.value
 
     // Only calculate total amount if table has amount columns
-    const totalAmount = hasAmountColumns.value
-      ? dataToExport.reduce((sum, item) => sum + (Number(item.total_amount || item.amount) || 0), 0)
+    const currencyTotals = hasAmountColumns.value
+      ? calculateCurrencyTotals(dataToExport)
       : undefined
     const currentLocale = locale.value as 'km' | 'en'
 
@@ -192,7 +209,7 @@ const exportToPDFHandler = async () => {
       props.exportOptions?.subtitle || '',
       {
         currency: props.exportOptions?.currency,
-        totalAmount,
+        currencyTotals,
         locale: currentLocale,
         t,
         filter: props.exportOptions?.filter,
