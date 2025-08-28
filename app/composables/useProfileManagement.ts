@@ -28,9 +28,8 @@ export const useProfileManagement = () => {
 
     try {
       loadingProfiles.value = true
-
       // Call the real API to get organization list
-      const response = await getOrganizationList({ moduleCode: useRuntimeConfig().moduleCode })
+      const response = await getOrganizationList()
 
       if (response.success && response.data) {
         const profiles: TenantAccess[] = response.data
