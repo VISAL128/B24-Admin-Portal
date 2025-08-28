@@ -197,6 +197,7 @@
         <ExportButton
           :data="filteredData"
           :headers="exportHeaders"
+          :columns="filteredColumns"
           :export-options="resolvedExportOptions"
         />
         <div class="flex items-center gap-0">
@@ -921,7 +922,7 @@ const resolvedExportOptions = computed((): ExportOptions => {
     filter: {
       ...autoFilter,
       // Allow props to override auto-generated filters if needed
-      ...(props.exportOptions?.filter || {}),
+      ...props.exportOptions?.filter,
     },
   }
 })
@@ -957,7 +958,7 @@ const activeFilterCount = computed(() => {
 
 const exportHeaders = computed(() =>
   filteredColumns.value
-    .filter((col) => { 
+    .filter((col) => {
       if (
         col.id === 'select' ||
         col.accessorKey === 'select' ||
@@ -965,9 +966,9 @@ const exportHeaders = computed(() =>
         // col.accessorKey === 'row_number' ||
         col.id === undefined
       ) {
-        return false 
+        return false
       }
-      return true 
+      return true
     })
     .map((col) => ({
       key: String(col.accessorKey || col.id),
@@ -1080,14 +1081,14 @@ const filteredColumns = computed(() => {
   // Create a fresh copy of columns to avoid mutation issues
   const columns = columnsWithRowNumber.value.map((col) => ({ ...col }))
 
-  console.log(`Processing columns: ${columns.map(col => col.id).join(', ')}`)
+  console.log(`Processing columns: ${columns.map((col) => col.id).join(', ')}`)
   columns.forEach((col) => {
     if (
       col.id === 'select' ||
       col.accessorKey === 'select' ||
       col.id === 'row_number' ||
       col.accessorKey === 'row_number' ||
-      col.id === undefined 
+      col.id === undefined
     ) {
       // Skip selection column
       return

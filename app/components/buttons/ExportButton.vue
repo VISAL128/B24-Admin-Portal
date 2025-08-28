@@ -38,17 +38,47 @@ type ExportDataRow = {
 const props = defineProps<{
   data: ExportDataRow[]
   headers: { key: string; label: string }[]
+  columns?: unknown[]
   exportOptions?: ExportOptions
 }>()
 
 const pdfExportHeaders = computed(() => props.headers)
+
+// Transform data using exportValue functions when available
+const transformedData = computed(() => {
+  if (!props.columns || !props.data) return props.data
+
+  return props.data.map((row) => {
+    const transformedRow: ExportDataRow = {}
+
+    props.headers.forEach(({ key }) => {
+      // Find the column configuration for this key
+
+      const column = props.columns?.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (col: any) => (col.accessorKey && String(col.accessorKey) === key) || col.id === key
+      )
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((column as any)?.exportValue) {
+        // Use the custom exportValue function
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        transformedRow[key] = (column as any).exportValue(row)
+      } else {
+        // Use the original value
+        transformedRow[key] = row[key]
+      }
+    })
+
+    return transformedRow
+  })
+})
 
 // const handleExport = (item: { click: () => void }) => {
 //   if (item.click) item.click()
 // }
 
 const exportItems: DropdownMenuItem[] = [
-  
   {
     label: t('excel'),
     icon: 'tabler:file-excel',
@@ -62,7 +92,7 @@ const exportItems: DropdownMenuItem[] = [
     onSelect() {
       exportToPDFHandler()
     },
-  }
+  },
 ]
 
 const exportToExcelHandler = async () => {
@@ -75,36 +105,40 @@ const exportToExcelHandler = async () => {
       })
       return
     }
-    
-    // const totalAmount = props.data.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0)
-    const totalAmount = props.data.reduce((sum, item) => sum + (Number((item.total_amount || item.amount)) || 0), 0)
 
-    console.log('Starting Excel export...', totalAmount);
-    
+    // Use transformed data for export
+    const dataToExport = transformedData.value
+    const totalAmount = dataToExport.reduce(
+      (sum, item) => sum + (Number(item.total_amount || item.amount) || 0),
+      0
+    )
+
+    console.log('Starting Excel export...', totalAmount)
+
     const currentLocale = locale.value as 'km' | 'en'
     const periodText = `${props.exportOptions?.startDate} ${t('to')} ${props.exportOptions?.endDate}`
-      await exportToExcelWithUnicodeSupport(
-        props.data,
-        props.headers,
-        `${props.exportOptions?.fileName || 'export'}.xlsx`,
-        props.exportOptions?.title || '',
+    await exportToExcelWithUnicodeSupport(
+      dataToExport,
+      props.headers,
+      `${props.exportOptions?.fileName || 'export'}.xlsx`,
+      props.exportOptions?.title || '',
 
-        props.exportOptions?.subtitle || '',
-        {
-          locale: currentLocale,
-          t,
-          currency: props.exportOptions?.currency ?? 'USD',
-          totalAmount,
-          period: periodText,
-          filter: props.exportOptions?.filter,
-          exportBy: props.exportOptions?.exportBy,
-          exportDate: props.exportOptions?.exportDate,
-        }
-      )
+      props.exportOptions?.subtitle || '',
+      {
+        locale: currentLocale,
+        t,
+        currency: props.exportOptions?.currency ?? 'USD',
+        totalAmount,
+        period: periodText,
+        filter: props.exportOptions?.filter,
+        exportBy: props.exportOptions?.exportBy,
+        exportDate: props.exportOptions?.exportDate,
+      }
+    )
 
     toast.add({
       title: t('export_successful'),
-      description: t('exported_records_to_excel', { count: props.data.length }),
+      description: t('exported_records_to_excel', { count: dataToExport.length }),
       color: 'success',
     })
   } catch (error) {
@@ -128,12 +162,17 @@ const exportToPDFHandler = async () => {
       })
       return
     }
-    const totalAmount = props.data.reduce((sum, item) => sum + (Number((item.total_amount || item.amount)) || 0), 0)
+
+    // Use transformed data for export
+    const dataToExport = transformedData.value
+    const totalAmount = dataToExport.reduce(
+      (sum, item) => sum + (Number(item.total_amount || item.amount) || 0),
+      0
+    )
     const currentLocale = locale.value as 'km' | 'en'
 
- 
     await exportToPDFWithUnicodeSupport(
-      props.data,
+      dataToExport,
       pdfExportHeaders.value,
       `${props.exportOptions?.fileName || 'export'}.pdf`,
       props.exportOptions?.title || '',
@@ -151,7 +190,7 @@ const exportToPDFHandler = async () => {
 
     toast.add({
       title: t('export_successful'),
-      description: t('exported_records_to_pdf', { count: props.data.length }),
+      description: t('exported_records_to_pdf', { count: dataToExport.length }),
       color: 'success',
     })
   } catch (e) {
