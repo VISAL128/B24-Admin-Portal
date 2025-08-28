@@ -36,9 +36,18 @@ const { createSortableHeader, createRowNumberCell } = useTable<Settlement>()
 const isLoadingCpoList = ref(false)
 const isLoadingInquiry = ref(false)
 
-// Create a CalendarDate for today in the local time zone
+// Create a CalendarDate for yesterday in the local time zone
 const today = new Date()
-const now = new CalendarDateTime(today.getFullYear(), today.getMonth() + 1, today.getDate(), 23, 59)
+const yesterday = new Date(today)
+yesterday.setDate(today.getDate() - 1)
+const now = new CalendarDateTime(
+  yesterday.getFullYear(),
+  yesterday.getMonth() + 1,
+  yesterday.getDate(),
+  23,
+  59,
+  59
+)
 const cutOffDatetime = shallowRef(now) // Default with time
 
 // Create computed properties that sync with cutOffDatetime
@@ -87,6 +96,10 @@ const getPeriodOptions = computed(() => {
 // Handle hour selection based on format
 const cutOffDateHour = computed({
   get: () => {
+    if (!cutOffDatetime.value) {
+      return { label: '00', value: 0 }
+    }
+
     if (userPreferences?.hour12 || false) {
       const hour24 = cutOffDatetime.value.hour
       const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24
@@ -102,6 +115,8 @@ const cutOffDateHour = computed({
     }
   },
   set: (hour: { label: string; value: number }) => {
+    if (!cutOffDatetime.value) return
+
     if (userPreferences?.hour12 || false) {
       // Convert 12-hour to 24-hour format
       const period = cutOffDatePeriod.value.value
@@ -120,22 +135,36 @@ const cutOffDateHour = computed({
 
 // Handle minute selection
 const cutOffDateMinute = computed({
-  get: () => ({
-    label: cutOffDatetime.value.minute.toString().padStart(2, '0'),
-    value: cutOffDatetime.value.minute,
-  }),
+  get: () => {
+    if (!cutOffDatetime.value) {
+      return { label: '00', value: 0 }
+    }
+
+    return {
+      label: cutOffDatetime.value.minute.toString().padStart(2, '0'),
+      value: cutOffDatetime.value.minute,
+    }
+  },
   set: (minute: { label: string; value: number }) => {
+    if (!cutOffDatetime.value) return
     cutOffDatetime.value = cutOffDatetime.value.set({ minute: minute.value })
   },
 })
 
 // Handle second selection
 const cutOffDateSecond = computed({
-  get: () => ({
-    label: cutOffDatetime.value.second.toString().padStart(2, '0'),
-    value: cutOffDatetime.value.second,
-  }),
+  get: () => {
+    if (!cutOffDatetime.value) {
+      return { label: '00', value: 0 }
+    }
+
+    return {
+      label: cutOffDatetime.value.second.toString().padStart(2, '0'),
+      value: cutOffDatetime.value.second,
+    }
+  },
   set: (second: { label: string; value: number }) => {
+    if (!cutOffDatetime.value) return
     cutOffDatetime.value = cutOffDatetime.value.set({ second: second.value })
   },
 })
@@ -143,12 +172,19 @@ const cutOffDateSecond = computed({
 // Handle AM/PM selection for 12-hour format
 const cutOffDatePeriod = computed({
   get: () => {
+    if (!cutOffDatetime.value) {
+      const labelPeriod = t('settlement.generate.form.time_format.am')
+      return { label: labelPeriod, value: 'AM' }
+    }
+
     const hour = cutOffDatetime.value.hour
     const period = hour >= 12 ? 'PM' : 'AM'
     const labelPeriod = t(`settlement.generate.form.time_format.${period.toLowerCase()}`)
     return { label: labelPeriod, value: period }
   },
   set: (period: { label: string; value: string }) => {
+    if (!cutOffDatetime.value) return
+
     const currentHour = cutOffDatetime.value.hour
     let newHour = currentHour
 
@@ -159,6 +195,25 @@ const cutOffDatePeriod = computed({
     }
 
     cutOffDatetime.value = cutOffDatetime.value.set({ hour: newHour })
+  },
+})
+
+// Create computed property for calendar date handling
+const calendarDate = computed({
+  get: () => cutOffDatetime.value,
+  set: (value) => {
+    if (value) {
+      // Preserve the existing time when date changes, or use default time
+      const existingTime = cutOffDatetime.value
+      cutOffDatetime.value = new CalendarDateTime(
+        value.year,
+        value.month,
+        value.day,
+        existingTime?.hour ?? 23,
+        existingTime?.minute ?? 59,
+        existingTime?.second ?? 59
+      )
+    }
   },
 })
 
@@ -473,6 +528,27 @@ watch(
   { immediate: true }
 )
 
+// Watch for cutOffDatetime changes to ensure it has time components
+watch(
+  cutOffDatetime,
+  (newValue) => {
+    // If cutOffDatetime becomes undefined or doesn't have time components, reinitialize with time
+    if (!newValue || typeof newValue.hour === 'undefined') {
+      const dateOnly = newValue || now
+      // Set default time to 23:59:59 if no time is set
+      cutOffDatetime.value = new CalendarDateTime(
+        dateOnly.year || now.year,
+        dateOnly.month || now.month,
+        dateOnly.day || now.day,
+        23,
+        59,
+        59
+      )
+    }
+  },
+  { immediate: true }
+)
+
 // Watch for currency or cutoff date changes to auto-refresh settlement data
 watch(
   selectedCurrency,
@@ -652,7 +728,19 @@ definePageMeta({
                       </UButton>
                       <template #content>
                         <div class="p-4 space-y-4 lg:min-w-96 sm:min-w-80">
-                          <UCalendar v-model="cutOffDatetime" :max-value="now" />
+                          <UCalendar
+                            v-model="calendarDate"
+                            :max-value="
+                              new CalendarDateTime(
+                                yesterday.getFullYear(),
+                                yesterday.getMonth() + 1,
+                                yesterday.getDate(),
+                                23,
+                                59,
+                                59
+                              )
+                            "
+                          />
                           <Divider />
                           <div>
                             <label class="block text-sm font-semibold mb-2">
