@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col h-[calc(100vh-64px)] space-y-3">
     <!-- Page header (always visible) -->
-    <div class="flex-shrink-0">
+    <!-- <div class="flex-shrink-0">
       <PageHeader :title="t('sub_biller_detail')" :subtitle="t('sub_biller_detail_description')" />
-    </div>
+    </div> -->
     <div class="lg:hidden px-4 pt-3">
       <div class="grid grid-cols-2 gap-1 rounded-xl p-1 bg-gray-100 dark:bg-gray-800">
         <button
