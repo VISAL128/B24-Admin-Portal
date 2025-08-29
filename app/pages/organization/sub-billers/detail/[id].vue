@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col h-[calc(100vh-64px)] space-y-3">
-    <!-- Page header - Commented out since breadcrumb back button provides navigation -->
-    <!-- <div class="flex-shrink-0">
+    <!-- Page header (always visible) -->
+    <div class="flex-shrink-0">
       <PageHeader :title="t('sub_biller_detail')" :subtitle="t('sub_biller_detail_description')" />
-    </div> -->
+    </div>
     <div class="lg:hidden px-4 pt-3">
       <div class="grid grid-cols-2 gap-1 rounded-xl p-1 bg-gray-100 dark:bg-gray-800">
         <button
@@ -266,9 +266,14 @@
 
           <!-- Collapsed rail header -->
           <div v-else class="flex-1 flex flex-col items-center justify-start pt-3 gap-2">
-            <!-- Avatar -->
-            <div
-              class="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700"
+            <!-- Avatar as a button to expand -->
+            <button
+              type="button"
+              @click="isDetailsCollapsed = false"
+              @keyup.enter="isDetailsCollapsed = false"
+              @keyup.space.prevent="isDetailsCollapsed = false"
+              :aria-label="t('expand')"
+              class="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900 cursor-pointer"
             >
               <template v-if="supplierProfileImage">
                 <img
@@ -284,7 +289,7 @@
                   <UIcon name="material-symbols:home-work-outline" class="w-5 h-5 text-gray-500" />
                 </div>
               </template>
-            </div>
+            </button>
 
             <!-- Edit button (icon-only, no background) -->
             <UButton
@@ -600,7 +605,6 @@
 </template>
 
 <script setup lang="ts">
-import { useMediaQuery } from '@vueuse/core'
 import { computed, h, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -617,10 +621,11 @@ import { useCurrency } from '~/composables/utils/useCurrency'
 import { useFormat } from '~/composables/utils/useFormat'
 import { useTable } from '~/composables/utils/useTable'
 import type { QueryParams } from '~/models/baseModel'
-import type { SubBillerWallet } from '~/models/subBiller'
+import type { SubBillerWallet, DeactivateSubBillerReq } from '~/models/subBiller'
 import type { Supplier } from '~/models/supplier'
 import type { TransactionHistoryRecord, WalletTransaction } from '~/models/transaction'
 import { FilterOperatorPgwModule } from '~/utils/enumModel'
+import { useMediaQuery } from '@vueuse/core'
 
 definePageMeta({
   auth: false,
@@ -1005,7 +1010,7 @@ const columns: BaseTableColumn<WalletTransaction>[] = [
     id: 'tranType',
     accessorKey: 'transaction_type',
     headerText: t('transaction_type'),
-        cell: ({ row }) => {
+    cell: ({ row }) => {
       const group = groupByTranType(row.original.tranType as TransactionType)
       if (group !== null) {
         // Convert enum number to readable string and format it nicely
@@ -1022,15 +1027,19 @@ const columns: BaseTableColumn<WalletTransaction>[] = [
 
           // Create element with icon and text
           return h('div', { class: 'flex items-center gap-2' }, [
-            h('div', { 
-              class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`
-            }, [
-              h(resolveComponent('UIcon'), {
-                name: getTranTypeGroupIcon(group),
-                class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`
-              })
-            ]),
-            h('span', { class: 'text-sm' }, displayText)
+            h(
+              'div',
+              {
+                class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`,
+              },
+              [
+                h(resolveComponent('UIcon'), {
+                  name: getTranTypeGroupIcon(group),
+                  class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`,
+                }),
+              ]
+            ),
+            h('span', { class: 'text-sm' }, displayText),
           ])
         }
       }
@@ -1091,12 +1100,12 @@ const {
 } = usePgwModuleApi()
 const { getTransactionList } = useTransactionApi()
 
-const { 
+const {
   getTranTypeGroupIcon,
   getTranTypeGroupIconStyle,
   getTranTypeGroupIconColor,
   groupByTranType,
-  tranTypesByGroup
+  tranTypesByGroup,
 } = useTransactionTypeIcon()
 
 const supplierData = ref<Supplier | null>(null)
@@ -1369,14 +1378,7 @@ const supplierOverviewFields = computed(() => [
   { label: 'Email', value: supplierData.value?.email || '-', type: 'text' },
   { label: 'Address', value: supplierData.value?.address || '-', type: 'text' },
   { label: 'TIN', value: supplierData.value?.tinNumber || '-', type: 'text' },
-  { label: 'Active', value: supplierData.value?.isActive ? 'Yes' : 'No', type: 'badge' },
-  {
-    label: 'Created Date',
-    value: supplierData.value?.createdDate
-      ? new Date(supplierData.value.createdDate).toLocaleString('en-GB')
-      : '-',
-    type: 'text',
-  },
+  { label: 'Status', value: supplierData.value?.isActive ? 'Active' : 'Inactive', type: 'badge' },
 ])
 
 // Download functions

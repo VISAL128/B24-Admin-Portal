@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const fullEndpoint = `/reports/get-transaction-wallet-payments`
     console.log(`Fetching wallet payments from PGW Module API: ${fullEndpoint}`)
     console.log(`Fetching wallet payments from PGW Module API: ${event}`)
-    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', true)
+    const response = await requestToPgwModuleApi(event, fullEndpoint, 'GET', undefined, undefined, true)
 
     return response
   } catch (error) {
