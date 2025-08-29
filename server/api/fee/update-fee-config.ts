@@ -1,9 +1,9 @@
 import { defineEventHandler, readBody } from 'h3'
 import type { FeeModel } from '~/models/settlement'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import type { FeeConfig } from '~/models/feeConfiguration'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<FeeConfig[] | null>> => {
+export default defineEventHandler(async (event): Promise<ApiResponseList<FeeConfig[] | null>> => {
   const payload = await readBody<FeeModel>(event)
   console.log('Update Supplier Fee Config API:', payload)
   console.log('Update Supplier Fee Config API Payload:', JSON.stringify(payload, null, 2))
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<FeeConfig[]
   try {
     const apiUrl = useRuntimeConfig(event).pgwModuleApiUrl // 🔹 update with your service URL
 
-    const response = await $fetch<ApiResponse<FeeConfig[]>>('/updatefeeconfig', {
+    const response = await $fetch<ApiResponseList<FeeConfig[]>>('/updatefeeconfig', {
       baseURL: apiUrl,
       method: 'POST',
       body: payload,

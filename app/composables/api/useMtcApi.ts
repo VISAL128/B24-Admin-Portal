@@ -1,0 +1,73 @@
+import { useApiExecutor } from '~/composables/api/useApiExecutor'
+import type { BaseResponse } from '~/types/api'
+
+// Define MTC API service response types
+export interface MtcServiceResponse<T = unknown> {
+  code: string
+  message: string
+  message_kh?: string
+  data?: T
+}
+
+// Define organization-related types based on the server endpoint
+export interface TenantAccess {
+  // Add specific tenant access properties as needed
+  tenantId: string
+  tenant: string
+  tenantCode: string
+  superUser: boolean
+  // Add more fields based on your actual TenantAccess structure
+}
+
+export interface SwitchOrganizationParams {
+  toTenantId: string
+}
+
+export interface SwitchOrganizationResponse {
+  success: boolean
+  message?: string
+}
+
+export const useMtcApi = () => {
+  const { executeV2 } = useApiExecutor()
+
+  /**
+   * Get organization list from MTC API
+   * Calls the /api/organization/list endpoint which fetches from MTC API
+   */
+  const getOrganizationList = async (): Promise<BaseResponse<TenantAccess[]>> => {
+    console.log('Fetching organization list')
+    return await executeV2(() =>
+      $fetch<BaseResponse<TenantAccess[]>>(`/api/organization/list`, {
+        method: 'GET',
+        onResponseError() {
+          // Handle response errors if needed
+        },
+      })
+    )
+  }
+
+  /**
+   * Switch to a different organization/tenant
+   * Calls the /api/organization/switch endpoint which calls MTC API
+   */
+  const switchOrganization = async (
+    params: SwitchOrganizationParams
+  ): Promise<BaseResponse<SwitchOrganizationResponse>> => {
+    return await executeV2(() =>
+      $fetch<BaseResponse<SwitchOrganizationResponse>>('/api/organization/switch', {
+        method: 'PUT',
+        body: params,
+        onResponseError() {
+          // Handle response errors if needed
+        },
+      })
+    )
+  }
+
+  return {
+    // Organization methods
+    getOrganizationList,
+    switchOrganization,
+  }
+}

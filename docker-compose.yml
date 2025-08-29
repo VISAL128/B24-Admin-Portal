@@ -7,22 +7,23 @@ services:
     #   dockerfile: Dockerfile
     #   no_cache: true
     restart: always
-    image: registry.bill24.io/b24/payment-portal:beta-1.0.19
+    image: registry.bill24.io/b24/payment-portal:beta-1.0.20
     ports:
       - '21019:3000'
     # env_file:
     #   - .env
     environment:
       - NODE_ENV=production
-      - NUXT_BASE_URL=http://172.16.81.141:21019
+      - NUXT_BASE_URL=https://payments-staging.bill24.io
       - NUXT_KEYCLOAK_URL=https://oauth.oone.bz
       - NUXT_KEYCLOAK_REALM=oone-ids
       - NUXT_KEYCLOAK_CLIENT_ID=b24-payment-portal
       - NUXT_KEYCLOAK_CLIENT_SECRET=bNoRzEBQLDqLw237IWUZ9IBnAZ3OWg0y
       - NUXT_KEYCLOAK_COOKIE_MAX_AGE=86400
-      - NUXT_KEYCLOAK_REDIRECT_URI=http://172.16.81.141:21019/auth/keycloak/callback
+      - NUXT_KEYCLOAK_REDIRECT_URI=https://payments-staging.bill24.io/auth/keycloak/callback
       - NUXT_MANAGEMENT_API_URL=https://managementapi-staging.bill24.io
       - NUXT_PGW_MODULE_API_URL=http://172.16.81.141:22043
       - NUXT_SECURITY_API_URL=https://staging.bill24.io:22030
-      - NUXT_PUBLIC_APP_VERSION=1.0.19
-      - NUXT_PUBLIC_USER_PROFILE_URL=https://oauth.oone.bz/realms/oone-ids/account
+      - NUXT_MODULE_CODE=b24-billflow-app
+      - NUXT_PUBLIC_APP_VERSION=1.0.20
+      - NUXT_PUBLIC_USER_PROFILE_URL=https://b24-onboard.oone.bz/dashboard

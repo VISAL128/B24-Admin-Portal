@@ -1,9 +1,9 @@
 import { defineEventHandler, readBody } from 'h3'
 import type { Cpo, CpoBySupplierRequest } from '~/models/settlement'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import { getCPOsBySuppliers } from '../../logic/management_api_logic'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<Cpo[]>> => {
+export default defineEventHandler(async (event): Promise<ApiResponseList<Cpo[]>> => {
   const body = await readBody<CpoBySupplierRequest>(event)
 
   const response = await getCPOsBySuppliers(body)

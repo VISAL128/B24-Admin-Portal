@@ -46,21 +46,185 @@
             <breadcrumb />
             <div class="flex flex-row items-center justify-end gap-4 h-full">
               <div class="flex items-center gap-2">
-                <!-- Profile Display -->
                 <div
-                  v-if="auth.currentProfile.value"
-                  class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-primary/50 dark:border-primary/20"
+                  class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-primary/50 dark:border-primary/20 transition-colors"
                 >
                   <Icon name="material-symbols:home-work-outline" class="w-4 h-4 text-primary" />
                   <div class="flex flex-col">
                     <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
-                      {{ auth.currentProfile.value.name }}
+                      {{ auth.currentProfile.value?.name }}
                     </span>
                     <!-- <span class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ auth.currentProfile.value.code }}
-                      </span> -->
+                          {{ auth.currentProfile.value.code }}
+                        </span> -->
                   </div>
                 </div>
+                <!-- Organization Display with Popover -->
+                <UPopover
+                  v-if="auth.currentProfile.value && false"
+                  v-model:open="isOrganizationPopoverOpen"
+                  placement="bottom-end"
+                  :offset="[0, 10]"
+                >
+                  <div
+                    class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-primary/50 dark:border-primary/20 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                    @click="() => loadAvailableProfiles()"
+                  >
+                    <Icon name="material-symbols:home-work-outline" class="w-4 h-4 text-primary" />
+                    <div class="flex flex-col">
+                      <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
+                        {{ auth.currentProfile.value.name }}
+                      </span>
+                      <!-- <span class="text-xs text-gray-500 dark:text-gray-400">
+                          {{ auth.currentProfile.value.code }}
+                        </span> -->
+                    </div>
+                    <Icon
+                      name="material-symbols:keyboard-arrow-down"
+                      class="w-4 h-4 text-gray-500"
+                    />
+                  </div>
+
+                  <template #content>
+                    <div class="w-80 p-2">
+                      <!-- Current Organization Section -->
+                      <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ t('organization_popup.current_organization') }}
+                          </span>
+                          <UBadge color="primary" variant="soft" size="xs">
+                            {{ t('organization_popup.business_organization') }}
+                          </UBadge>
+                        </div>
+                        <div
+                          class="flex items-center gap-2 mt-2 p-2 bg-primary/5 dark:bg-primary/10 rounded-lg"
+                        >
+                          <Icon
+                            name="material-symbols:home-work-outline"
+                            class="w-4 h-4 text-primary"
+                          />
+                          <div class="flex flex-col flex-1">
+                            <span class="text-sm font-medium text-primary">
+                              {{ auth.currentProfile.value.name }}
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ auth.currentProfile.value.code }}
+                            </span>
+                          </div>
+                          <Icon name="material-symbols:check-circle" class="w-4 h-4 text-primary" />
+                        </div>
+                      </div>
+
+                      <!-- Available Organizations Section -->
+                      <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ t('organization_popup.available_organizations') }}
+                          </span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ availableProfiles.length }}
+                            {{
+                              availableProfiles.length === 1
+                                ? t('organization_popup.organization_singular')
+                                : t('organization_popup.organization_plural')
+                            }}
+                          </span>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div v-if="loadingProfiles" class="flex items-center justify-center py-4">
+                          <LoadingSpinner size="sm" />
+                          <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">{{
+                            t('organization_popup.loading_organizations')
+                          }}</span>
+                        </div>
+
+                        <!-- Organizations List -->
+                        <div
+                          v-else-if="availableProfiles.length > 0"
+                          class="space-y-1 max-h-48 overflow-y-auto"
+                        >
+                          <DialogsConfirmDialog
+                            v-for="profile in availableProfiles"
+                            :key="profile.tenantId"
+                            :model-value="!!profileSwitchDialogs[profile.tenantId]"
+                            :title="t('organization_popup.switch_organization')"
+                            :message="
+                              t('organization_popup.switch_organization_confirmation', {
+                                from: auth.currentProfile.value?.name || '',
+                                to: profile.tenant,
+                              })
+                            "
+                            :cancel-button-text="t('cancel')"
+                            :confirm-button-text="t('organization_popup.switch_organization')"
+                            confirm-button-color="primary"
+                            @confirm="() => confirmProfileSwitch(profile)"
+                            @update:model-value="
+                              (value) => (profileSwitchDialogs[profile.tenantId] = value)
+                            "
+                          >
+                            <UButton
+                              variant="ghost"
+                              :class="[
+                                'w-full flex items-center gap-2 p-2 rounded-lg transition-colors text-left justify-start',
+                                profile.tenantId === auth.currentProfile.value?.id
+                                  ? 'bg-primary/10 dark:bg-primary/20 cursor-default'
+                                  : 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
+                              ]"
+                              :disabled="profile.tenantId === auth.currentProfile.value?.id"
+                              @click="
+                                () => {
+                                  profileSwitchDialogs[profile.tenantId] = true
+                                }
+                              "
+                            >
+                              <Icon
+                                name="material-symbols:home-work-outline"
+                                class="w-4 h-4 text-primary"
+                              />
+                              <div class="flex flex-col flex-1 min-w-0">
+                                <UTooltip :text="profile.tenant" :delay-duration="500">
+                                  <span
+                                    class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate"
+                                  >
+                                    {{ profile.tenant }}
+                                  </span>
+                                </UTooltip>
+                                <CopyableText
+                                  :text="profile.tenantCode"
+                                  :display-text="profile.tenantCode"
+                                  text-class="text-xs text-gray-500 dark:text-gray-400"
+                                  :show-icon="false"
+                                  variant="subtle"
+                                />
+                              </div>
+                              <Icon
+                                v-if="profile.tenantId === auth.currentProfile.value?.id"
+                                name="material-symbols:check-circle"
+                                class="w-4 h-4 text-green-500"
+                              />
+                            </UButton>
+                          </DialogsConfirmDialog>
+                        </div>
+
+                        <!-- No Organizations State -->
+                        <div
+                          v-else
+                          class="flex flex-col items-center justify-center py-4 text-center"
+                        >
+                          <Icon
+                            name="material-symbols:business-center-outline"
+                            class="w-8 h-8 text-gray-400 mb-2"
+                          />
+                          <span class="text-sm text-gray-500 dark:text-gray-400">{{
+                            t('organization_popup.no_organizations_available')
+                          }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </UPopover>
                 <!-- Theme Switcher -->
                 <UTooltip :text="t('navbar.theme')" :delay-duration="500">
                   <UButton
@@ -215,7 +379,7 @@
                         @click="handleSettings"
                       >
                         <Icon name="material-symbols:settings-outline" class="w-4 h-4 mr-2" />
-                        {{ t('profile_popup.settings') }}
+                        {{ t('organization_popup.settings') }}
                       </UButton>
 
                       <div class="border-t border-gray-200 dark:border-gray-700" />
@@ -287,6 +451,12 @@ const isCheckingPermissions = ref(false)
 const isShowLogoutConfirmModal = ref(false)
 const isLanguagePopoverOpen = ref(false)
 
+// Organization management state
+const isOrganizationPopoverOpen = ref(false)
+const profileSwitchDialogs = ref<Record<string, boolean>>({})
+const { availableProfiles, loadingProfiles, loadAvailableProfiles, switchProfile } =
+  useProfileManagement()
+
 const auth = useAuth()
 const user = auth.user
 const pref = useUserPreferences().getPreferences()
@@ -326,6 +496,22 @@ const handleLogout = async () => {
     await auth.logout()
   } catch (error) {
     console.error('Logout failed:', error)
+  }
+}
+
+// Organization management wrapper methods
+const confirmProfileSwitch = async (profile: {
+  tenantId: string
+  tenant: string
+  tenantCode: string
+  superUser: boolean
+}) => {
+  if (profile) {
+    await switchProfile(profile)
+    // Close the specific dialog
+    profileSwitchDialogs.value[profile.tenantId] = false
+    // Close the organization popover
+    isOrganizationPopoverOpen.value = false
   }
 }
 

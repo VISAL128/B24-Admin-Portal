@@ -6,7 +6,7 @@ import type {
 } from '~/models/settlement'
 import type { SettlementInquiryRequest } from '~~/server/model/management_api/settlement'
 import type { H3Event } from 'h3'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import { MANAGEMENT_API_ENDPOINTS } from '../utils/management-api-endpoints'
 
 let token: string | PromiseLike<string | null> | null = null
@@ -135,34 +135,36 @@ export async function requestToManagementApi<T>(
 
 export async function inquirySettlementWallet(
   body: SettlementInquiryRequest
-): Promise<ApiResponse<unknown>> {
+): Promise<ApiResponseList<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.WALLET_INQUIRY, 'POST', body)
 }
-export async function submitSettlement(body: unknown): Promise<ApiResponse<unknown>> {
+export async function submitSettlement(body: unknown): Promise<ApiResponseList<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.WALLET_SUBMIT, 'POST', body)
 }
-export async function getSupplierCsms(body: unknown): Promise<ApiResponse<unknown>> {
+export async function getSupplierCsms(body: unknown): Promise<ApiResponseList<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.DYNAMIC.SUPPLIERS_CSMS, 'POST', body)
 }
-export async function getCPOsBySuppliers(body: unknown): Promise<ApiResponse<unknown>> {
+export async function getCPOsBySuppliers(body: unknown): Promise<ApiResponseList<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.DYNAMIC.SUPPLIERS_CPO, 'POST', body)
 }
 export async function getSettlementHistory(
   body: SettlementHistoryQuery,
   event: H3Event
-): Promise<ApiResponse<SettlementHistoryResponse>> {
+): Promise<ApiResponseList<SettlementHistoryResponse>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.HISTORY, 'POST', body, event)
 }
 export async function getSettlementHistoryById(
   body: SettlementHistoryDetailQuery
-): Promise<ApiResponse<SettlementHistoryResponse>> {
+): Promise<ApiResponseList<SettlementHistoryResponse>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.HISTORY_DETAILS, 'POST', body)
 }
 
-export async function getListFeeConfig(body: { search: string }): Promise<ApiResponse<unknown>> {
+export async function getListFeeConfig(body: {
+  search: string
+}): Promise<ApiResponseList<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.LIST, 'POST', body)
 }
-export async function createFeeConfig(body: FeeModel): Promise<ApiResponse<unknown>> {
+export async function createFeeConfig(body: FeeModel): Promise<ApiResponseList<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.CREATE, 'POST', body)
 }
 export async function updateFeeConfig(body: FeeModel): Promise<any> {

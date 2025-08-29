@@ -7,6 +7,7 @@
       :message="t('pages.transaction.tip_message')"
     /> -->
     <!-- Transaction Summary Cards -->
+     
     <SummaryCards
       v-show="!isTableFullscreen"
       :cards="summarys"

@@ -1,13 +1,13 @@
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 
 export const useApiExecutor = () => {
   const errorHandler = useErrorHandler()
   const { locale } = useI18n()
 
   const execute = async <T>(
-    requestFn: () => Promise<ApiResponse<T>>,
+    requestFn: () => Promise<ApiResponseList<T>>,
     showErrorMessage: boolean = true
-  ): Promise<ApiResponse<T>> => {
+  ): Promise<ApiResponseList<T>> => {
     try {
       const response = await requestFn()
 

@@ -164,3 +164,15 @@ export interface ApiRequestParams {
 export type ApiFetchFunction<T, R extends ApiResponseDynamic<T> = ApiResponseDynamic<T>> = (
   params?: ApiRequestParams
 ) => Promise<R | null | undefined>
+
+
+/**
+ * This model use for standard response between app server and client
+ */
+export type BaseResponse<T> = {
+  success: boolean
+  data: T
+  code: string | number // e.g., "SUCCESS"
+  message: string
+  message_kh?: string // Optional localized message
+}

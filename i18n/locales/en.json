@@ -110,7 +110,30 @@
     "edit_profile": "Edit Profile",
     "logout": "Logout",
     "current_profile": "Current Profile",
-    "business_profile": "Business Profile"
+    "business_profile": "Business Profile",
+    "available_profiles": "Available Profiles",
+    "switch_profile": "Switch Profile",
+    "no_profiles_available": "No additional profiles available",
+    "loading_profiles": "Loading profiles...",
+    "profile_switched": "Profile switched successfully",
+    "switch_profile_confirmation": "Are you sure you want to switch from '{from}' to '{to}'? This will reload the page with the new profile context."
+  },
+  "organization_popup": {
+    "title": "User Organization",
+    "settings": "Settings",
+    "subtitle": "Manage your information and settings",
+    "edit_organization": "Edit Organization",
+    "logout": "Logout",
+    "current_organization": "Current Organization",
+    "business_organization": "Business Organization",
+    "available_organizations": "Available Organizations",
+    "switch_organization": "Switch Organization",
+    "no_organizations_available": "No additional organizations available",
+    "loading_organizations": "Loading organizations...",
+    "organization_switched": "Organization switched successfully",
+    "switch_organization_confirmation": "Are you sure you want to switch from '{from}' to '{to}'? This will reload the page with the new organization context.",
+    "organization_singular": "organization",
+    "organization_plural": "organizations"
   },
   "lang": {
     "english": "English",
@@ -1025,7 +1048,22 @@
       "error_allocation": "Failed to load Transaction Allocation",
       "settlement_detail": "Settlement Detail",
       "settlement_date": "Settlement Date",
-      "description": "Description"
+      "description": "Description",
+      "repush_biller": "Repush Biller Summary",
+      "repush_bank": "Repush Bank Summary",
+      "activity_log": "Activity Logs",
+      "total_repush": "Total Repush",
+      "type": "Type",
+      "last_repush_date": "Last Repush Date",
+      "view_details": "Click to view detail",
+      "repush_biller_action": "Repush to Biller",
+      "repush_bank_action": "Repush to Bank",
+      "repushing": "Repushing...",
+      "status_code": "Status Code",
+      "date": "Date",
+      "repush_bank_description": "Repush Bank Summary feature is currently being developed and will be available soon",
+      "repush_development_message": "The Repush Biller Summary feature is currently being developed and will be available soon."
+
     },
     "transaction_allocation": {
       "title": "Transaction Allocation",
@@ -1043,7 +1081,8 @@
         "status": "Status",
         "complete": "Complete",
         "pending": "Pending"
-      }
+      },
+      "failed_allocation_detail": "Failed to load allocation detail"
     },
     "transaction": {
       "supplier_fee": "Supplier Fee",

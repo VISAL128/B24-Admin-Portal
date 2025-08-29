@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { defineEventHandler, readBody } from 'h3'
 import type { FeeConfig } from '~/models/feeConfiguration'
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
 import { RESPONSE_HTTP_CODE } from '~/utils/constants'
 
@@ -172,14 +172,14 @@ import { RESPONSE_HTTP_CODE } from '~/utils/constants'
 //     }
 // ];
 
-export default defineEventHandler(async (event): Promise<ApiResponse<FeeConfig[] | null>> => {
+export default defineEventHandler(async (event): Promise<ApiResponseList<FeeConfig[] | null>> => {
   const payload = await readBody<FeeConfig>(event)
   try {
     const response = (await requestToPgwModuleApi(
       event,
       '/getfeeconfig',
       'GET'
-    )) as ApiResponse<FeeConfig[]>
+    )) as ApiResponseList<FeeConfig[]>
 
     if (!response || response.code !== RESPONSE_HTTP_CODE.SUCCESS) {
       return {
@@ -202,5 +202,3 @@ export default defineEventHandler(async (event): Promise<ApiResponse<FeeConfig[]
     })
   }
 })
-
-

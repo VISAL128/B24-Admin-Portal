@@ -303,8 +303,8 @@
     </div>
 
     <!-- Repush Transaction Summary and Auto Direct Debit Summary Cards -->
-    <!-- TODO: Currently disabled - will be available in future releases -->
-    <div v-if="false" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <!-- Re-enabled: Available features for repush and direct debit -->
+    <div v-if="true" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <!-- Left Card: Repush Transaction Summary with Tabs -->
       <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-86">
         <!-- Reusable Tabs Component -->
@@ -316,31 +316,44 @@
           <template #default="{ activeTab }">
             <!-- Tab Content -->
             <div class="relative h-72 overflow-hidden">
-              <!-- Repush Summary Tab Content -->
+              <!-- Under Development Content -->
+              <div class="h-full flex flex-col items-center justify-center space-y-4">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                  <UIcon name="material-symbols:construction" class="w-8 h-8 text-gray-400" />
+                </div>
+                <div class="text-center space-y-2">
+                  <h5 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('underDevelopment.title') }}</h5>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                    {{ t('pages.transaction_detail.repush_development_message') }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Commented Out: Original Repush Transaction Content -->
+              <!-- 
               <div
                 v-show="activeTab === 'repush_transaction_summary'"
                 class="h-full"
               >
-                <!-- Clickable Summary Card -->
                 <div
                   class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
                   @click="openRepushDetail"
                 >
                   <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-600 dark:text-gray-400">Total Repush</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.total_repush') }}</span>
                       <span class="text-lg font-bold text-gray-900 dark:text-white">{{ summary.totalRepush }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction.status') }}</span>
                       <StatusBadge :status="summary.status" variant="subtle" size="sm" />
                     </div>
                     <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.type') }}</span>
                       <span class="text-sm font-medium text-gray-900 dark:text-white">{{ summary.type }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-600 dark:text-gray-400">Last Repush Date</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.last_repush_date') }}</span>
                       <span class="text-sm text-gray-600 dark:text-gray-400">
                         {{ format.formatDateTime(summary.date, {
                           dateStyle: userPreferences?.dateFormat || 'medium',
@@ -350,16 +363,14 @@
                     </div>
                   </div>
                   
-                  <!-- Click indicator -->
                   <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
                       <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
-                      Click to view details
+                    {{ t('pages.transaction_detail.view_details') }}
                     </div>
                   </div>
                 </div>
                 
-                <!-- Repush Button -->
                 <div class="mt-3">
                   <UButton
                     size="md"
@@ -370,12 +381,11 @@
                     :loading="isRepushing"
                     :disabled="isRepushing"
                   >
-                    {{ isRepushing ? 'Repushing...' : 'Repush Transaction' }}
+                    {{ isRepushing ? t('pages.transaction_detail.repushing') : t('pages.transaction_detail.repush_biller_action') }}
                   </UButton>
                 </div>
               </div>
 
-              <!-- Activity Logs Tab Content -->
               <div
                 v-show="activeTab === 'repush_activity_logs'"
                 class="h-full"
@@ -398,6 +408,7 @@
                   />
                 </div>
               </div>
+              -->
             </div>
           </template>
         </ExTab>
@@ -409,17 +420,36 @@
           <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
             <UIcon name="material-symbols:account-balance-wallet-outline" class="w-4 h-4 text-primary" />
           </div>
-          Auto Direct Debit Summary
+          {{ t('pages.transaction_detail.repush_bank') }}
         </h4>
         <!-- Content area -->
         <div class="relative h-72 overflow-hidden py-4">
-          <!-- Clickable Summary Card -->
+          <!-- Under Development Content -->
+          <div class="h-full flex flex-col items-center justify-center space-y-4">
+            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <UIcon name="material-symbols:construction" class="w-8 h-8 text-gray-400" />
+            </div>
+            <div class="text-center space-y-2">
+              <h5 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('underDevelopment.title') }}</h5>
+              <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                {{ t('pages.transaction_detail.repush_bank_description') }}
+              </p>
+            </div>
+            <!-- <div class="w-full max-w-xs">
+              <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="bg-primary h-2 rounded-full" style="width: 45%"></div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">Development Progress: 45%</p>
+            </div> -->
+          </div>
+
+          <!-- Commented Out: Original Auto Direct Debit Content -->
+          <!-- 
           <div
             class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
             @click="openDirectDebitDetail"
           >
             <div class="space-y-3">
-              <!-- Bank Logo + Bank Name -->
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600 dark:text-gray-400">Bank</span>
                 <div class="flex items-center space-x-2">
@@ -434,7 +464,6 @@
                 </div>
               </div>
               
-              <!-- Bank Reference -->
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600 dark:text-gray-400">Bank Reference</span>
                  <ClipboardBadge
@@ -444,13 +473,11 @@
                   />
               </div>
               
-              <!-- Status -->
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
                 <StatusBadge :status="summaryDirectDebit.status" variant="subtle" size="sm" />
               </div>
               
-              <!-- Last Push Date -->
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600 dark:text-gray-400">Last Push Date</span>
                 <span class="text-sm text-gray-600 dark:text-gray-400">
@@ -462,7 +489,6 @@
               </div>
             </div>
             
-            <!-- Click indicator -->
             <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
               <div class="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
                 <UIcon name="material-symbols:visibility-outline" class="w-3 h-3 mr-1" />
@@ -471,7 +497,6 @@
             </div>
           </div>
           
-          <!-- Verify Button -->
           <div class="mt-3">
             <UButton
               size="md"
@@ -485,6 +510,7 @@
               {{ isVerifying ? 'Verifying...' : 'Verify Transaction' }}
             </UButton>
           </div>
+          -->
         </div>
       </div>
     </div>
@@ -492,9 +518,9 @@
    
     
     <!-- Repush Transaction Detail Slideover -->
-    <!-- TODO: Currently disabled - will be available in future releases -->
+    <!-- Re-enabled: Available for repush transaction details -->
     <USlideover
-      v-if="false"
+      v-if="true"
       v-model:open="showPushBackDetail"
       side="right"
       :overlay="false"
@@ -581,9 +607,9 @@
     </USlideover>
 
     <!-- Activity Log Detail Slideover -->
-    <!-- TODO: Currently disabled - will be available in future releases -->
+    <!-- Re-enabled: Available for activity log details -->
     <USlideover
-      v-if="false"
+      v-if="true"
       v-model:open="showActivityLogDetail"
       side="right"
       :overlay="false"
@@ -692,7 +718,7 @@
               class="mt-3"
               @click="selectedTransactionAllocation?.id && fetchAllocationDetail(selectedTransactionAllocation.id)"
             >
-              {{ t('common.retry') }}
+              {{ t('wallet_page.retry') }}
             </UButton>
           </div>
         </div>
@@ -915,12 +941,12 @@ const isVoidRequesting = ref(false)
 
 const repushTabs = [
   {
-    label: 'Repush Summary',
+    label: t('pages.transaction_detail.repush_biller'),
     value: 'repush_transaction_summary',
     icon: 'material-symbols:sync-outline'
   },
   {
-    label: 'Activity Logs',
+    label: t('pages.transaction_detail.activity_log'),
     value: 'repush_activity_logs',
     icon: 'material-symbols:history'
   }
@@ -1389,7 +1415,7 @@ const repushDetailsColumns = [
   },
   {
     id: 'date',
-    header: ({ column }: any) => createSortableHeader(column, 'Date', 'left'),
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.date'), 'left'),
     accessorKey: 'date',
     enableSorting: true,
     cell: ({ row }: any) => {
@@ -1404,7 +1430,7 @@ const repushDetailsColumns = [
   },
   {
     id: 'status',
-    header: () => h('div', { class: 'text-left' }, 'Status'),
+    header: () => h('div', { class: 'text-left' }, t('pages.transaction.status')),
     accessorKey: 'status',
     enableSorting: false,
     cell: ({ row }: any) =>
@@ -1418,7 +1444,7 @@ const repushDetailsColumns = [
   },
   {
     id: 'statusCode',
-    header: () => h('div', { class: 'text-center' }, 'Status Code'),
+    header: () => h('div', { class: 'text-center' }, t('pages.transaction_detail.status_code')),
     accessorKey: 'metaData.statusCode',
     enableSorting: false,
     cell: ({ row }: any) =>
@@ -1631,15 +1657,15 @@ const fetchAllocationDetail = async (allocationId: string) => {
   
   try {
     console.log(`Fetching allocation detail for transaction ${transactionId.value}, allocation ${allocationId}`)
-    //const result = await getAllocationDetail(transactionId.value, allocationId)
-    // allocationDetailData.value = result
+    const result = await getAllocationDetail(transactionId.value, allocationId)
+    allocationDetailData.value = result
     // Use mock data instead of API result
-    allocationDetailData.value = transactionAllocationDetail.value
+    //allocationDetailData.value = transactionAllocationDetail.value
     
     //console.log('Allocation detail fetched:', result)
   } catch (error) {
     console.error('Failed to fetch allocation detail:', error)
-    allocationDetailError.value = 'Failed to load allocation detail'
+    allocationDetailError.value = t('pages.transaction_allocation.failed_allocation_detail')
   } finally {
     allocationDetailLoading.value = false
   }

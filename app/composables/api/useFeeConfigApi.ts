@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ApiResponse } from '~/models/baseModel'
+import type { ApiResponseList } from '~/models/baseModel'
 import type { FeeModel, SharingSupplier } from '~/models/settlement'
 import { useApiExecutor } from './useApiExecutor'
 import type { FeeConfig } from '~/models/feeConfiguration'
@@ -29,7 +29,10 @@ export const useFeeConfigApi = () => {
 
   const createFeeConfig = async (payload: FeeModel): Promise<FeeModel> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeModel>>(`/api/fee/create-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponseList<FeeModel>>(`/api/fee/create-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       toast.add({
@@ -44,7 +47,10 @@ export const useFeeConfigApi = () => {
 
   const updateFeeConfig = async (payload: FeeModel): Promise<FeeModel> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeModel>>(`/api/fee/update-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponseList<FeeModel>>(`/api/fee/update-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       toast.add({
@@ -59,7 +65,7 @@ export const useFeeConfigApi = () => {
 
   const getListFeeConfig = async (payload: { search: string }): Promise<FeeModel[]> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeModel[]>>(`/api/fee/get-fee-configv2`, {
+      $fetch<ApiResponseList<FeeModel[]>>(`/api/fee/get-fee-configv2`, {
         method: 'POST',
         body: payload,
       })
@@ -77,7 +83,10 @@ export const useFeeConfigApi = () => {
 
   const findFeeConfigById = async (payload: { id: string }): Promise<FeeModel> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeModel>>(`/api/fee/find-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponseList<FeeModel>>(`/api/fee/find-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       toast.add({
@@ -93,7 +102,10 @@ export const useFeeConfigApi = () => {
   // New API Fee Config
   const getSupplierFeeConfig = async (payload: { search: string }): Promise<FeeConfig[]> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeConfig[]>>(`/api/fee/get-fee-config`, { method: 'POST', body: payload })
+      $fetch<ApiResponseList<FeeConfig[]>>(`/api/fee/get-fee-config`, {
+        method: 'POST',
+        body: payload,
+      })
     )
     if (rep.code !== 'SUCCESS') {
       toast.add({
@@ -108,7 +120,7 @@ export const useFeeConfigApi = () => {
 
   const saveSupplierFeeConfig = async (payload: FeeConfig[]): Promise<FeeConfig[]> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<FeeConfig[]>>(`/api/fee/update-fee-config`, {
+      $fetch<ApiResponseList<FeeConfig[]>>(`/api/fee/update-fee-config`, {
         method: 'POST',
         body: payload,
       })
@@ -126,7 +138,7 @@ export const useFeeConfigApi = () => {
 
   const getAllSharingSupplier = async (): Promise<SharingSupplier[]> => {
     const rep = await executeV2(() =>
-      $fetch<ApiResponse<SharingSupplier[]>>(`/api/fee/get_sharing_supplier`, { method: 'GET' })
+      $fetch<ApiResponseList<SharingSupplier[]>>(`/api/fee/get_sharing_supplier`, { method: 'GET' })
     )
     if (rep.code !== 'SUCCESS') {
       toast.add({
