@@ -930,6 +930,7 @@
     "powered_by": "Powered by",
     "bill24": "Bill24",
     "progress": {
+      "loading_app": "Loading application...",
       "initializing": "Initializing application...",
       "checking_auth": "Checking authentication...",
       "loading_profile": "Loading user profile...",
