@@ -1082,7 +1082,8 @@
         "complete": "Complete",
         "pending": "Pending"
       },
-      "failed_allocation_detail": "Failed to load allocation detail"
+      "failed_allocation_detail": "Failed to load allocation detail",
+      "no_settlement": "No settlements available for this transaction"
     },
     "transaction": {
       "supplier_fee": "Supplier Fee",

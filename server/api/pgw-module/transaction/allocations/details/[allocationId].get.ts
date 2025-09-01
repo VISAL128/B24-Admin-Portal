@@ -3,15 +3,7 @@ import { TransactionAllocationDetail } from "~~/server/model/pgw_module_api/tran
 
 
 export default defineEventHandler(async (event) => {
-  const transactionId = getRouterParam(event, 'transactionId')
   const allocationId = getRouterParam(event, 'allocationId')
-
-  if (!transactionId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Transaction ID is required',
-    })
-  }
 
   if (!allocationId) {
     throw createError({
@@ -21,11 +13,11 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    console.log(`Fetching allocation detail for transaction ${transactionId}, allocation ${allocationId}`)
+    console.log(`Fetching allocation detail for transaction  allocation ${allocationId}`)
     
     const result = await requestToPgwModuleApi<TransactionAllocationDetail>(
       event,
-      `/transaction/${transactionId}/allocations/${allocationId}`,
+      `/transaction/allocations/${allocationId}/details`,
       'GET'
     )
 
