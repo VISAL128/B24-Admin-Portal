@@ -680,6 +680,7 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
   {
     id: 'success',
     accessorKey: 'success',
+    header: t('table.settlement-history.columns.success'),
     headerText: 'table.settlement-history.columns.success',
     type: ColumnType.Number,
     cell: ({ row }) => {

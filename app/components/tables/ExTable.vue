@@ -546,8 +546,12 @@ const columnConfig = computed(() => {
   return config
 })
 
-const getTranslationHeaderById = (id: string) => {
-  return t(`table.${props.tableId}.columns.${id}`)
+const getTranslationHeaderById = (id: string): string => {
+  const column: BaseTableColumn<T> | undefined = props.columns?.find((col) => col.id === id)
+  if (column && column.headerText) {
+    return t(column.headerText) as string
+  }
+  return t(`table.${props.tableId}.columns.${id}`) as string
 }
 
 const search = ref('')
@@ -972,8 +976,9 @@ const exportHeaders = computed(() =>
     })
     .map((col) => ({
       key: String(col.accessorKey || col.id),
-      label:
-        typeof col.header === 'string'
+      label: col.headerText
+        ? t(col.headerText)
+        : typeof col.header === 'string'
           ? col.header
           : (col.id ? String(getTranslationHeaderById(col.id)) : '')
               .replace(/_/g, ' ')
@@ -1020,6 +1025,7 @@ function getColumnFilterOptions(col: BaseTableColumn<T>) {
 }
 
 function getColumnLabel(col: BaseTableColumn<T>): string {
+  if (col.headerText) return t(col.headerText)
   if (typeof col.header === 'string') return col.header
   if (typeof col.header === 'function' && col.id) {
     return col.id.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
