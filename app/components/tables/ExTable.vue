@@ -268,7 +268,7 @@
           </UPopover>
 
           <!-- More Options Dropdown -->
-          <UPopover>
+          <UPopover v-model:open="showMoreOptionsPopup">
             <template #default>
               <UTooltip :text="t('table.more_options')" :delay-duration="200" placement="top">
                 <UButton variant="ghost" class="p-2">
@@ -292,7 +292,7 @@
                       : 'material-symbols:fullscreen'
                   "
                   class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                  @click="toggleFullscreen"
+                  @click="onToggleFullscreen"
                 >
                   {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
                 </UButton>
@@ -600,6 +600,7 @@ const autoRefresh = ref(false)
 const isRefreshing = ref(false)
 
 const showColumnFilterPopup = ref(false)
+const showMoreOptionsPopup = ref(false)
 
 const emit = defineEmits<{
   (e: 'filter-change', columnId: string, value: string): void
@@ -1409,6 +1410,12 @@ const resetSorting = () => {
 const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value
   emit('fullscreen-toggle', isFullscreen.value)
+}
+
+// Fullscreen toggle function that also closes the popup
+const onToggleFullscreen = () => {
+  toggleFullscreen()
+  showMoreOptionsPopup.value = false
 }
 
 defineExpose({
