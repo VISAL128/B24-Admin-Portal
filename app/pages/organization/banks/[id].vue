@@ -643,7 +643,7 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
     id: 'created_date',
     accessorKey: 'created_date',
     header: t('table.settlement-history.columns.created_date'),
-    type: ColumnType.Date,
+    type: ColumnType.DateTime,
     enableSorting: true,
     cell: ({ row }) => formatDateTime(row.original.created_date),
   },
