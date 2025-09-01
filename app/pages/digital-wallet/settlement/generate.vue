@@ -40,7 +40,15 @@ const isLoadingInquiry = ref(false)
 const today = new Date()
 const yesterday = new Date(today)
 yesterday.setDate(today.getDate() - 1)
-const now = new CalendarDateTime(
+const todayCalendarDt = new CalendarDateTime(
+  today.getFullYear(),
+  today.getMonth() + 1,
+  today.getDate(),
+  23,
+  59,
+  59
+)
+const yesterdayCalendarDateTime = new CalendarDateTime(
   yesterday.getFullYear(),
   yesterday.getMonth() + 1,
   yesterday.getDate(),
@@ -48,7 +56,7 @@ const now = new CalendarDateTime(
   59,
   59
 )
-const cutOffDatetime = shallowRef(now) // Default with time
+const cutOffDatetime = shallowRef(yesterdayCalendarDateTime) // Default with time
 
 // Create computed properties that sync with cutOffDatetime
 // Generate hour options based on user preference
@@ -534,12 +542,12 @@ watch(
   (newValue) => {
     // If cutOffDatetime becomes undefined or doesn't have time components, reinitialize with time
     if (!newValue || typeof newValue.hour === 'undefined') {
-      const dateOnly = newValue || now
+      const dateOnly = newValue || yesterdayCalendarDateTime
       // Set default time to 23:59:59 if no time is set
       cutOffDatetime.value = new CalendarDateTime(
-        dateOnly.year || now.year,
-        dateOnly.month || now.month,
-        dateOnly.day || now.day,
+        dateOnly.year || yesterdayCalendarDateTime.year,
+        dateOnly.month || yesterdayCalendarDateTime.month,
+        dateOnly.day || yesterdayCalendarDateTime.day,
         23,
         59,
         59
@@ -728,19 +736,7 @@ definePageMeta({
                       </UButton>
                       <template #content>
                         <div class="p-4 space-y-4 lg:min-w-96 sm:min-w-80">
-                          <UCalendar
-                            v-model="calendarDate"
-                            :max-value="
-                              new CalendarDateTime(
-                                yesterday.getFullYear(),
-                                yesterday.getMonth() + 1,
-                                yesterday.getDate(),
-                                23,
-                                59,
-                                59
-                              )
-                            "
-                          />
+                          <UCalendar v-model="calendarDate" :max-value="todayCalendarDt" />
                           <Divider />
                           <div>
                             <label class="block text-sm font-semibold mb-2">
