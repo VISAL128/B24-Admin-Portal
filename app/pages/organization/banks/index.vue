@@ -215,30 +215,35 @@ const columns: BaseTableColumn<ActivatedBankResponse>[] = [
             h(
               'div',
               {
-                class:
-                  'text-sm text-primary cursor-help underline decoration-dotted',
+                class: 'text-sm text-primary cursor-help underline decoration-dotted',
               },
-              services.length === 1 
+              services.length === 1
                 ? t('banks.connected_services_single', { count: services.length })
                 : t('banks.connected_services_multiple', { count: services.length })
             ),
         }
       )
     },
+    exportValue: (row) => {
+      const services = row.connectedServices || []
+      return services.map((service) => service.serviceName).join(', ')
+    },
     size: 200,
   },
   {
     id: 'is_settlement_bank',
-    accessorKey: 'is_settlement_bank',
+    accessorKey: 'isSettlementBank',
     header: () => t('table.banks-list.columns.is_settlement_bank'),
     cell: ({ row }) => statusCellBuilder(row.original.isSettlementBank ? 'yes' : 'no'),
+    exportValue: (row) => t(row.isSettlementBank ? 'yes' : 'no') as string,
     size: 120,
   },
   {
     id: 'is_collection_bank',
-    accessorKey: 'is_collection_bank',
+    accessorKey: 'isCollectionBank',
     header: () => t('table.banks-list.columns.is_collection_bank'),
     cell: ({ row }) => statusCellBuilder(row.original.isCollectionBank ? 'yes' : 'no'),
+    exportValue: (row) => t(row.isCollectionBank ? 'yes' : 'no') as string,
     size: 120,
   },
   // {

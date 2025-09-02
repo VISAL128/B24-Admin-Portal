@@ -643,7 +643,7 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
     id: 'created_date',
     accessorKey: 'created_date',
     header: t('table.settlement-history.columns.created_date'),
-    type: ColumnType.Date,
+    type: ColumnType.DateTime,
     enableSorting: true,
     cell: ({ row }) => formatDateTime(row.original.created_date),
   },
@@ -658,47 +658,68 @@ const settlementColumns = computed((): BaseTableColumn<SettlementHistoryRecord>[
   {
     id: 'total_settled',
     accessorKey: 'total_settled',
-    header: t('table.settlement-history.columns.total_settled'),
+    headerText: 'table.settlement-history.columns.total_settled',
     type: ColumnType.Number,
     enableSorting: true,
     cell: ({ row }) => {
-      const success = row.original.success
-      const failed = row.original.failed
       const total = row.original.total_settled
 
       const UBadge = resolveComponent('UBadge')
-      const Icon = resolveComponent('UIcon')
 
-      return h('div', { class: 'flex gap-2 items-center' }, [
-        h(
-          UBadge,
-          {
-            color: 'primary',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`)]
-        ),
-        // Success and Fail badges
-        h(
-          UBadge,
-          {
-            color: 'success',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h(Icon, { name: 'i-lucide-check', class: 'w-4 h-4' }), h('span', {}, success)]
-        ),
-        h(
-          UBadge,
-          {
-            color: 'error',
-            variant: 'subtle',
-            class: 'flex items-center gap-1',
-          },
-          () => [h(Icon, { name: 'i-lucide-x', class: 'w-4 h-4' }), h('span', {}, failed)]
-        ),
-      ])
+      return h(
+        UBadge,
+        {
+          color: 'primary',
+          variant: 'subtle',
+          class: 'flex items-center justify-center gap-2',
+        },
+        () => [h('span', { class: 'text-xs h-4' }, `${t('total')}: ${total}`)]
+      )
+    },
+  },
+  {
+    id: 'success',
+    accessorKey: 'success',
+    header: t('table.settlement-history.columns.success'),
+    headerText: 'table.settlement-history.columns.success',
+    type: ColumnType.Number,
+    cell: ({ row }) => {
+      const UBadge = resolveComponent('UBadge')
+      const Icon = resolveComponent('UIcon')
+      return h(
+        UBadge,
+        {
+          color: 'success',
+          variant: 'subtle',
+          class: 'flex items-center justify-center gap-2',
+        },
+        () => [
+          h(Icon, { name: 'material-symbols:check-circle-rounded', class: 'w-4 h-4' }),
+          h('span', {}, row.original.success),
+        ]
+      )
+    },
+  },
+  {
+    id: 'failed',
+    accessorKey: 'failed',
+    headerText: 'table.settlement-history.columns.failed',
+    type: ColumnType.Number,
+    cell: ({ row }) => {
+      const UBadge = resolveComponent('UBadge')
+      const Icon = resolveComponent('UIcon')
+      return h(
+        UBadge,
+        {
+          color: 'error',
+          variant: 'subtle',
+          class: 'flex items-center justify-center gap-2',
+        },
+        () => [
+          h(Icon, { name: 'material-symbols:cancel-rounded', class: 'w-4 h-4' }),
+          h('span', {}, row.original.failed),
+        ]
+      )
     },
   },
   {

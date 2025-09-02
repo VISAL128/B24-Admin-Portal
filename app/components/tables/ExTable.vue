@@ -197,6 +197,7 @@
         <ExportButton
           :data="filteredData"
           :headers="exportHeaders"
+          :columns="filteredColumns"
           :export-options="resolvedExportOptions"
         />
         <div class="flex items-center gap-0">
@@ -267,7 +268,7 @@
           </UPopover>
 
           <!-- More Options Dropdown -->
-          <UPopover>
+          <UPopover v-model:open="showMoreOptionsPopup">
             <template #default>
               <UTooltip :text="t('table.more_options')" :delay-duration="200" placement="top">
                 <UButton variant="ghost" class="p-2">
@@ -291,7 +292,7 @@
                       : 'material-symbols:fullscreen'
                   "
                   class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                  @click="toggleFullscreen"
+                  @click="onToggleFullscreen"
                 >
                   {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
                 </UButton>
@@ -545,8 +546,12 @@ const columnConfig = computed(() => {
   return config
 })
 
-const getTranslationHeaderById = (id: string) => {
-  return t(`table.${props.tableId}.columns.${id}`)
+const getTranslationHeaderById = (id: string): string => {
+  const column: BaseTableColumn<T> | undefined = props.columns?.find((col) => col.id === id)
+  if (column && column.headerText) {
+    return t(column.headerText) as string
+  }
+  return t(`table.${props.tableId}.columns.${id}`) as string
 }
 
 const search = ref('')
@@ -595,6 +600,7 @@ const autoRefresh = ref(false)
 const isRefreshing = ref(false)
 
 const showColumnFilterPopup = ref(false)
+const showMoreOptionsPopup = ref(false)
 
 const emit = defineEmits<{
   (e: 'filter-change', columnId: string, value: string): void
@@ -921,7 +927,7 @@ const resolvedExportOptions = computed((): ExportOptions => {
     filter: {
       ...autoFilter,
       // Allow props to override auto-generated filters if needed
-      ...(props.exportOptions?.filter || {}),
+      ...props.exportOptions?.filter,
     },
   }
 })
@@ -957,7 +963,7 @@ const activeFilterCount = computed(() => {
 
 const exportHeaders = computed(() =>
   filteredColumns.value
-    .filter((col) => { 
+    .filter((col) => {
       if (
         col.id === 'select' ||
         col.accessorKey === 'select' ||
@@ -965,14 +971,15 @@ const exportHeaders = computed(() =>
         // col.accessorKey === 'row_number' ||
         col.id === undefined
       ) {
-        return false 
+        return false
       }
-      return true 
+      return true
     })
     .map((col) => ({
       key: String(col.accessorKey || col.id),
-      label:
-        typeof col.header === 'string'
+      label: col.headerText
+        ? t(col.headerText)
+        : typeof col.header === 'string'
           ? col.header
           : (col.id ? String(getTranslationHeaderById(col.id)) : '')
               .replace(/_/g, ' ')
@@ -1019,6 +1026,7 @@ function getColumnFilterOptions(col: BaseTableColumn<T>) {
 }
 
 function getColumnLabel(col: BaseTableColumn<T>): string {
+  if (col.headerText) return t(col.headerText)
   if (typeof col.header === 'string') return col.header
   if (typeof col.header === 'function' && col.id) {
     return col.id.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
@@ -1080,14 +1088,14 @@ const filteredColumns = computed(() => {
   // Create a fresh copy of columns to avoid mutation issues
   const columns = columnsWithRowNumber.value.map((col) => ({ ...col }))
 
-  console.log(`Processing columns: ${columns.map(col => col.id).join(', ')}`)
+  console.log(`Processing columns: ${columns.map((col) => col.id).join(', ')}`)
   columns.forEach((col) => {
     if (
       col.id === 'select' ||
       col.accessorKey === 'select' ||
       col.id === 'row_number' ||
       col.accessorKey === 'row_number' ||
-      col.id === undefined 
+      col.id === undefined
     ) {
       // Skip selection column
       return
@@ -1402,6 +1410,12 @@ const resetSorting = () => {
 const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value
   emit('fullscreen-toggle', isFullscreen.value)
+}
+
+// Fullscreen toggle function that also closes the popup
+const onToggleFullscreen = () => {
+  toggleFullscreen()
+  showMoreOptionsPopup.value = false
 }
 
 defineExpose({
