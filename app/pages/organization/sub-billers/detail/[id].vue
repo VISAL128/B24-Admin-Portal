@@ -935,10 +935,15 @@ const navigateToDetails = (rowId: string) => {
 }
 
 const transactionTypeFilterOptions = computed(() =>
-  Object.entries(TransactionType).map(([key, value]) => ({
-    label: key.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to readable format
-    value: value,
-  }))
+  Object.entries(TransactionType)
+    .filter(
+      ([key, value]) =>
+        value === TransactionType.WalletPayment || value === TransactionType.WalletTopup
+    )
+    .map(([key, value]) => ({
+      label: key.replace(/([A-Z])/g, ' $1').trim(),
+      value: value,
+    }))
 )
 
 const getTranslatedTransactionStatusLabel = (status: string) => {
@@ -972,7 +977,13 @@ const copyCell = (text?: string | null) =>
 
 const wallets = ref<SubBillerWallet[]>([])
 
-const columns: BaseTableColumn<WalletTransaction>[] = [
+const walletFilterOptions = computed(() =>
+  wallets.value.map((w) => ({ label: w.accountNo ?? '-', value: w.walletId ?? '' }))
+)
+const columns = ref<BaseTableColumn<WalletTransaction>[]>([])
+
+function buildColumns() {
+  columns.value = [
   {
     id: 'tranDate',
     accessorKey: 'tranDate',
@@ -1001,10 +1012,7 @@ const columns: BaseTableColumn<WalletTransaction>[] = [
     cell: ({ row }) => row.original.wallet || '-',
     enableColumnFilter: true,
     filterType: 'select',
-    filterOptions: wallets.value.map((w) => ({
-      label: w.accountNo ?? '-',
-      value: w.walletId ?? '', // 👈 adjust if your API expects walletNo instead
-    })),
+    filterOptions: walletFilterOptions.value,
   },
   {
     id: 'tranType',
@@ -1089,6 +1097,7 @@ const columns: BaseTableColumn<WalletTransaction>[] = [
     maxSize: 150,
   },
 ]
+}
 
 const {
   getSubBillerById,
@@ -1393,7 +1402,10 @@ onMounted(async () => {
 
   await Promise.all([
     fetchSubBillerById().finally(() => (isLoadingSupplier.value = false)),
-    fetchWallets().finally(() => (isLoadingWallets.value = false)),
+    fetchWallets().finally(() => {
+      isLoadingWallets.value = false
+    buildColumns()
+    }),
   ])
 
   isLoadingTable.value = false
