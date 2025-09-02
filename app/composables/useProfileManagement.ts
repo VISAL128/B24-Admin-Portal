@@ -7,16 +7,17 @@
 
 import type { SupplierProfile } from '~/models/supplier'
 import { useMtcApi } from '~/composables/api/useMtcApi'
-import type { TenantAccess } from '~/composables/api/useMtcApi'
+import { usePgwModuleApi } from './api/usePgwModuleApi'
 
 export const useProfileManagement = () => {
   const auth = useAuth()
   const { t } = useI18n()
   const toast = useToast()
-  const { getOrganizationList, switchOrganization } = useMtcApi()
+  const { switchOrganization } = useMtcApi()
+  const { getOrganizationList } = usePgwModuleApi()
 
   // Reactive state
-  const availableProfiles = ref<TenantAccess[]>([])
+  const availableProfiles = ref<SupplierProfile[]>([])
   const loadingProfiles = ref(false)
 
   /**
@@ -31,14 +32,21 @@ export const useProfileManagement = () => {
       // Call the real API to get organization list
       const response = await getOrganizationList()
 
-      if (response.success && response.data) {
-        const profiles: TenantAccess[] = response.data
+      if (response) {
+        const tenantData: SupplierProfile[] = response.data
+
+        // Transform TenantAccess to SupplierProfile format
+        const profiles: SupplierProfile[] = tenantData.map((tenant) => ({
+          id: tenant.id,
+          code: tenant.code,
+          name: tenant.name,
+          mappedRef: tenant.mappedRef || null,
+        }))
 
         // Filter out the current profile from available profiles
         availableProfiles.value = profiles
       } else {
-        console.error('Failed to load organizations:', response.message)
-        throw new Error(response.message || 'Failed to load organizations')
+        throw new Error('Failed to load organizations')
       }
     } catch (error) {
       console.error('Failed to load available profiles:', error)
@@ -55,31 +63,24 @@ export const useProfileManagement = () => {
   /**
    * Switch to a different profile
    */
-  const switchProfile = async (profile: TenantAccess): Promise<void> => {
+  const switchProfile = async (profile: SupplierProfile): Promise<void> => {
     try {
       // First, call the real API to switch organization on the server side
       const apiResponse = await switchOrganization({
-        toTenantId: profile.tenantId,
+        toTenantId: profile.mappedRef ?? '',
       })
 
       if (!apiResponse.success) {
         throw new Error(apiResponse.message || 'Failed to switch organization on server')
       }
 
-      // Convert TenantAccess to SupplierProfile format for auth system
-      const supplierProfile: SupplierProfile = {
-        id: profile.tenantId,
-        code: profile.tenantCode,
-        name: profile.tenant,
-      }
-
-      // Set the new profile locally
-      auth.setProfileToCookie(supplierProfile)
+      // Set the new profile locally (already in SupplierProfile format)
+      auth.setProfileToCookie(profile)
 
       // Show success notification
       toast.add({
         title: t('success'),
-        description: t('profile_popup.profile_switched') + `: ${profile.tenant}`,
+        description: t('profile_popup.profile_switched') + `: ${profile.name}`,
         color: 'success',
       })
 
@@ -89,7 +90,7 @@ export const useProfileManagement = () => {
       // Reload the page to refresh all profile-dependent data
       // TODO: In the future, we might want to implement a more elegant solution
       // that updates the reactive state without a full page reload
-      window.location.reload()
+      // window.location.reload()
     } catch (error) {
       console.error('Failed to switch profile:', error)
       toast.add({

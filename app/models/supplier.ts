@@ -2,6 +2,7 @@ export interface SupplierProfile {
   id: string
   code: string
   name: string
+  mappedRef?: string | null
 }
 
 export interface Supplier {
@@ -30,6 +31,6 @@ export interface Supplier {
   paymentWidgetSetting?: string | null // JSON string
   paymentWidgetSettingPreview?: string | null
   directDebitResponse?: string | null
-  checkoutPageConfig?: any | null // Unknown structure
+  checkoutPageConfig?: unknown | null // Unknown structure
   extData?: string | null // JSON string
 }

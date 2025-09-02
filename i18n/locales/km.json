@@ -131,11 +131,11 @@
     "current_organization": "ស្ថាប័នបច្ចុប្បន្ន",
     "business_organization": "ស្ថាប័ន",
     "available_organizations": "ស្ថាប័នដែលអាចប្រើបាន",
-    "switch_organization": "ប្តូរស្ថាប័ន",
+    "switch_organization": "បាទ, ប្តូរ",
     "no_organizations_available": "មិនមានស្ថាប័នបន្ថែមទេ",
     "loading_organizations": "កំពុងទាញយកស្ថាប័ន...",
     "organization_switched": "បានប្តូរស្ថាប័នដោយជោគជ័យ",
-    "switch_organization_confirmation": "តើអ្នកប្រាកដជាចង់ប្តូរពី '{from}' ទៅ '{to}' ទេ? នេះនឹងធ្វើឱ្យទំព័របើកឡើងវិញជាមួយបរិបទស្ថាប័នថ្មី។",
+    "switch_organization_confirmation": "នឹងប្តូរពី '{from}' ទៅ '{to}'?",
     "organization_singular": "ស្ថាប័ន",
     "organization_plural": "ស្ថាប័ន"
   },
@@ -1098,7 +1098,7 @@
         "complete": "បញ្ចប់",
         "pending": "កំពុងដំណើរការ"
       },
-       "failed_allocation_detail": "បរាជ័យក្នុងការទាញយកព័ត៌មានលម្អិតការបែងចែក"
+      "failed_allocation_detail": "បរាជ័យក្នុងការទាញយកព័ត៌មានលម្អិតការបែងចែក"
     },
     "transaction": {
       "supplier_fee": "កម្រៃសេវាអ្នកចេញវិក្កយបត្រ",

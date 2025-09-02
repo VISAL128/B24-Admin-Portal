@@ -1,27 +1,19 @@
-import { requestToMtcApi } from '../../logic/mtc_api_logic'
-import { mtcApiEndpoints } from '../../utils/mtc-api-endpoints'
-import type { ModuleResponse, TenantAccess } from '../../model/mtc_api/module'
 import type { BaseResponse } from '~/types/api'
+import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
+import type { SupplierProfile } from '~/models/supplier'
 
-export default defineEventHandler(async (event): Promise<BaseResponse<TenantAccess[]>> => {
+export default defineEventHandler(async (event): Promise<BaseResponse<SupplierProfile[]>> => {
   try {
-    // Get the module code from runtime config
-    const runtimeConfig = useRuntimeConfig()
-    const moduleCode = runtimeConfig.moduleCode
-
-    // Make request to MTC API to get module by code (which contains organization data)
-    const response: ModuleResponse = await requestToMtcApi(
+    const response: SupplierProfile[] = await requestToPgwModuleApi(
       event,
-      mtcApiEndpoints.getModuleByCode(moduleCode),
+      PGW_MODULE_API_ENDPOINTS.PROFILE.LIST,
       'GET'
     )
-
-    console.log('MTC API Module Response:', response)
-    // Return the organization data from the module response
+    
     return {
       success: true,
       code: 'SUCCESS',
-      data: response.canAccessByTenants,
+      data: response,
       message: 'Organizations retrieved successfully',
     }
   } catch (error) {
