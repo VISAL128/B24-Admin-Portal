@@ -35,16 +35,8 @@ export const useProfileManagement = () => {
       if (response) {
         const tenantData: SupplierProfile[] = response.data
 
-        // Transform TenantAccess to SupplierProfile format
-        const profiles: SupplierProfile[] = tenantData.map((tenant) => ({
-          id: tenant.id,
-          code: tenant.code,
-          name: tenant.name,
-          mappedData: tenant.mappedData || null,
-        }))
-
         // Filter out the current profile from available profiles
-        availableProfiles.value = profiles
+        availableProfiles.value = tenantData
       } else {
         throw new Error('Failed to load organizations')
       }

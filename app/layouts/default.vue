@@ -46,22 +46,9 @@
             <breadcrumb />
             <div class="flex flex-row items-center justify-end gap-4 h-full">
               <div class="flex items-center gap-2">
-                <div
-                  class="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-primary/50 dark:border-primary/20 transition-colors"
-                >
-                  <Icon name="material-symbols:home-work-outline" class="w-4 h-4 text-primary" />
-                  <div class="flex flex-col">
-                    <span class="text-xs font-medium text-gray-900 dark:text-gray-100">
-                      {{ auth.currentProfile.value?.name }}
-                    </span>
-                    <!-- <span class="text-xs text-gray-500 dark:text-gray-400">
-                          {{ auth.currentProfile.value.code }}
-                        </span> -->
-                  </div>
-                </div>
                 <!-- Organization Display with Popover -->
                 <UPopover
-                  v-if="auth.currentProfile.value && true"
+                  v-if="auth.currentProfile.value"
                   v-model:open="isOrganizationPopoverOpen"
                   placement="bottom-end"
                   :offset="[0, 10]"
@@ -163,7 +150,7 @@
                             :cancel-button-text="t('cancel')"
                             :confirm-button-text="t('organization_popup.switch_organization')"
                             confirm-button-color="primary"
-                            @confirm="() => confirmProfileSwitch(profile)"
+                            @confirm="() => confirmProfileSwitch(profile as SupplierProfile)"
                             @update:model-value="
                               (value) => (profileSwitchDialogs[profile.id] = value)
                             "
