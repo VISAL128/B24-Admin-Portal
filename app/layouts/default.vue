@@ -80,7 +80,7 @@
                           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                             {{ t('organization_popup.current_organization') }}
                           </span>
-                          <UBadge color="primary" variant="soft" size="xs">
+                          <UBadge v-if="false" color="primary" variant="soft" size="xs">
                             {{ t('organization_popup.business_organization') }}
                           </UBadge>
                         </div>
