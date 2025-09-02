@@ -17,4 +17,8 @@ export const PGW_MODULE_API_ENDPOINTS = {
     ALLOCATION_BY_ID: '/transaction/{id}/allocations',
     ALLOCATION_DETAILS: '/transaction/{id}/allocations/{allocation_id}',
   },
+  PROFILE: {
+    GET_PROFILE: '/profile/get-profile',
+    LIST: '/organizationprofiles',
+  }
 }

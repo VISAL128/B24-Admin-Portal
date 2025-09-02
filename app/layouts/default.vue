@@ -93,7 +93,7 @@
                           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                             {{ t('organization_popup.current_organization') }}
                           </span>
-                          <UBadge color="primary" variant="soft" size="xs">
+                          <UBadge v-if="false" color="primary" variant="soft" size="xs">
                             {{ t('organization_popup.business_organization') }}
                           </UBadge>
                         </div>
@@ -108,9 +108,13 @@
                             <span class="text-sm font-medium text-primary">
                               {{ auth.currentProfile.value.name }}
                             </span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                              {{ auth.currentProfile.value.code }}
-                            </span>
+                            <CopyableText
+                              :text="auth.currentProfile.value.code"
+                              :display-text="auth.currentProfile.value.code"
+                              text-class="text-xs text-gray-500 dark:text-gray-400"
+                              :show-icon="false"
+                              variant="subtle"
+                            />
                           </div>
                           <Icon name="material-symbols:check-circle" class="w-4 h-4 text-primary" />
                         </div>
@@ -123,9 +127,9 @@
                             {{ t('organization_popup.available_organizations') }}
                           </span>
                           <span class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ availableProfiles.length }}
+                            {{ profileList.length }}
                             {{
-                              availableProfiles.length === 1
+                              profileList.length === 1
                                 ? t('organization_popup.organization_singular')
                                 : t('organization_popup.organization_plural')
                             }}
@@ -133,49 +137,49 @@
                         </div>
 
                         <!-- Loading State -->
-                        <div v-if="loadingProfiles" class="flex items-center justify-center py-4">
-                          <LoadingSpinner size="sm" />
-                          <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">{{
-                            t('organization_popup.loading_organizations')
-                          }}</span>
-                        </div>
+                        <LoadingSpinner
+                          v-if="loadingProfiles"
+                          size="sm"
+                          :message="t('organization_popup.loading_organizations')"
+                        />
 
                         <!-- Organizations List -->
                         <div
-                          v-else-if="availableProfiles.length > 0"
+                          v-else-if="profileList.length > 0"
                           class="space-y-1 max-h-48 overflow-y-auto"
                         >
                           <DialogsConfirmDialog
-                            v-for="profile in availableProfiles"
-                            :key="profile.tenantId"
-                            :model-value="!!profileSwitchDialogs[profile.tenantId]"
+                            v-for="profile in profileList"
+                            :key="profile.id"
+                            :model-value="!!profileSwitchDialogs[profile.id]"
                             :title="t('organization_popup.switch_organization')"
                             :message="
                               t('organization_popup.switch_organization_confirmation', {
                                 from: auth.currentProfile.value?.name || '',
-                                to: profile.tenant,
+                                to: profile.name,
                               })
                             "
+                            :loading="isSwitchingProfile"
                             :cancel-button-text="t('cancel')"
                             :confirm-button-text="t('organization_popup.switch_organization')"
                             confirm-button-color="primary"
                             @confirm="() => confirmProfileSwitch(profile)"
                             @update:model-value="
-                              (value) => (profileSwitchDialogs[profile.tenantId] = value)
+                              (value) => (profileSwitchDialogs[profile.id] = value)
                             "
                           >
                             <UButton
                               variant="ghost"
                               :class="[
                                 'w-full flex items-center gap-2 p-2 rounded-lg transition-colors text-left justify-start',
-                                profile.tenantId === auth.currentProfile.value?.id
+                                profile.id === auth.currentProfile.value?.id
                                   ? 'bg-primary/10 dark:bg-primary/20 cursor-default'
                                   : 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
                               ]"
-                              :disabled="profile.tenantId === auth.currentProfile.value?.id"
+                              :disabled="profile.id === auth.currentProfile.value?.id"
                               @click="
                                 () => {
-                                  profileSwitchDialogs[profile.tenantId] = true
+                                  profileSwitchDialogs[profile.id] = true
                                 }
                               "
                             >
@@ -184,23 +188,23 @@
                                 class="w-4 h-4 text-primary"
                               />
                               <div class="flex flex-col flex-1 min-w-0">
-                                <UTooltip :text="profile.tenant" :delay-duration="500">
+                                <UTooltip :text="profile.name" :delay-duration="500">
                                   <span
                                     class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate"
                                   >
-                                    {{ profile.tenant }}
+                                    {{ profile.name }}
                                   </span>
                                 </UTooltip>
                                 <CopyableText
-                                  :text="profile.tenantCode"
-                                  :display-text="profile.tenantCode"
+                                  :text="profile.code"
+                                  :display-text="profile.code"
                                   text-class="text-xs text-gray-500 dark:text-gray-400"
                                   :show-icon="false"
                                   variant="subtle"
                                 />
                               </div>
                               <Icon
-                                v-if="profile.tenantId === auth.currentProfile.value?.id"
+                                v-if="profile.id === auth.currentProfile.value?.id"
                                 name="material-symbols:check-circle"
                                 class="w-4 h-4 text-green-500"
                               />
@@ -428,6 +432,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import type { UserPreferences } from '~/models/userPreference'
+import type { SupplierProfile } from '~/models/supplier'
 
 definePageMeta({
   middleware: [
@@ -461,6 +466,7 @@ const auth = useAuth()
 const user = auth.user
 const pref = useUserPreferences().getPreferences()
 const loggingOut = ref(false)
+const isSwitchingProfile = ref(false)
 
 const colorMode = useColorMode ? useColorMode() : null
 const toggleTheme = () => {
@@ -475,6 +481,10 @@ const toggleTheme = () => {
 const toggleNavigation = () => {
   isNavExpanded.value = !isNavExpanded.value
 }
+
+const profileList = computed(() => {
+  return availableProfiles.value.filter((p) => p.id !== auth.currentProfile.value?.id)
+})
 
 // User menu handlers
 const handleUserProfile = () => {
@@ -500,18 +510,15 @@ const handleLogout = async () => {
 }
 
 // Organization management wrapper methods
-const confirmProfileSwitch = async (profile: {
-  tenantId: string
-  tenant: string
-  tenantCode: string
-  superUser: boolean
-}) => {
+const confirmProfileSwitch = async (profile: SupplierProfile) => {
   if (profile) {
+    isSwitchingProfile.value = true
     await switchProfile(profile)
     // Close the specific dialog
-    profileSwitchDialogs.value[profile.tenantId] = false
+    profileSwitchDialogs.value[profile.id] = false
     // Close the organization popover
     isOrganizationPopoverOpen.value = false
+    isSwitchingProfile.value = false
   }
 }
 

@@ -1,6 +1,6 @@
 import { useApiExecutor } from '~/composables/api/useApiExecutor'
 import type { SubBillerListResponse, WalletListResponse, DeactivateSubBillerReq} from '~/models/subBiller'
-import type { Supplier } from '~/models/supplier'
+import type { Supplier, SupplierProfile } from '~/models/supplier'
 import type { TransactionListResponse, WalletTransactionListResponse } from '~/models/transaction'
 import type { PgwModuleProfile } from '~~/server/model/pgw_module_api/profile'
 
@@ -21,6 +21,7 @@ import type {
 } from '~~/server/model/pgw_module_api/wallet_transactions'
 
 import type { UploadFileResponse } from '~/models/media'
+import type { BaseResponse } from '~/types/api'
 
 export const usePgwModuleApi = () => {
   const { executeV2 } = useApiExecutor()
@@ -31,6 +32,15 @@ export const usePgwModuleApi = () => {
   const getProfile = async () => {
     return await executeV2(() =>
       $fetch<PgwModuleProfile>(`/api/pgw-module/get-profile`, {
+        method: 'GET',
+        onResponseError() {},
+      })
+    )
+  }
+
+  const getOrganizationList = async () => {
+    return await executeV2(() =>
+      $fetch<BaseResponse<SupplierProfile[]>>(`/api/organization/list`, {
         method: 'GET',
         onResponseError() {},
       })
@@ -252,6 +262,7 @@ const uploadFile = async (file: File) => {
 
   return {
     getProfile,
+    getOrganizationList,
     getWalletTypes,
     getWalletBalance,
     getTopUpSummary,
