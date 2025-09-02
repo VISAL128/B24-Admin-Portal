@@ -61,7 +61,7 @@
                 </div>
                 <!-- Organization Display with Popover -->
                 <UPopover
-                  v-if="auth.currentProfile.value && false"
+                  v-if="auth.currentProfile.value && true"
                   v-model:open="isOrganizationPopoverOpen"
                   placement="bottom-end"
                   :offset="[0, 10]"

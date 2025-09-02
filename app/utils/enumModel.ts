@@ -82,6 +82,8 @@ enum BankServiceStatus {
 }
 
 
+
+
 export enum TransactionStatus {
   Cancel = 'cancel',
   // Error = 'error',
