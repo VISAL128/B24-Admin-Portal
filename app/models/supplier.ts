@@ -1,8 +1,10 @@
+import type { Organization } from '~/types/organization'
+
 export interface SupplierProfile {
   id: string
   code: string
   name: string
-  mappedRef?: string | null
+  mappedData?: Organization | null
 }
 
 export interface Supplier {

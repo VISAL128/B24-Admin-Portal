@@ -302,7 +302,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
-    enableHiding: true,
+    enableHiding: false,
     size: 50,
     maxSize: 150,
   },

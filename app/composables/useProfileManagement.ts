@@ -40,7 +40,7 @@ export const useProfileManagement = () => {
           id: tenant.id,
           code: tenant.code,
           name: tenant.name,
-          mappedRef: tenant.mappedRef || null,
+          mappedData: tenant.mappedData || null,
         }))
 
         // Filter out the current profile from available profiles
@@ -66,8 +66,9 @@ export const useProfileManagement = () => {
   const switchProfile = async (profile: SupplierProfile): Promise<void> => {
     try {
       // First, call the real API to switch organization on the server side
+      console.log('Switching to profile:', profile.mappedData?.tenantId)
       const apiResponse = await switchOrganization({
-        toTenantId: profile.mappedRef ?? '',
+        toTenantId: profile.mappedData?.tenantId ?? '',
       })
 
       if (!apiResponse.success) {
