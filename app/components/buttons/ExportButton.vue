@@ -60,8 +60,26 @@ const calculateCurrencyTotals = (data: ExportDataRow[]) => {
   const totals: Record<string, number> = {}
 
   data.forEach((item) => {
-    const amount = Number(item.total_amount || item.amount) || 0
-    const currency = String(item.currency_id || item.currency || 'USD')
+    // Try multiple possible amount field names
+    const amount =
+      Number(
+        item.total_amount ||
+          item.amount ||
+          item.totalAmount ||
+          item.transactionAmount ||
+          item.settlement_amount ||
+          item.settlementAmount ||
+          item.fee_amount ||
+          item.net_amount ||
+          // Look for any field containing 'amount' in the key
+          Object.entries(item).find(
+            ([key]) => key.toLowerCase().includes('amount') && typeof item[key] === 'number'
+          )?.[1]
+      ) || 0
+    // Try multiple possible currency field names
+    const currency = String(
+      item.currency_id || item.currency || item.currencyId || item.currencyCode || '-'
+    )
 
     if (!totals[currency]) {
       totals[currency] = 0

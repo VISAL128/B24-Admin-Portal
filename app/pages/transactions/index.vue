@@ -557,6 +557,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
         h('div', { class: 'text-left' }, row.original.currency || row.original.currencyId || '-'),
       enableColumnFilter: true,
       enableHiding: false,
+      exportValue: (row) => row.currency || row.currencyId || '-',
       filterOptions: [
         { label: t('currency.usd'), value: 'USD' },
         { label: t('currency.khr'), value: 'KHR' },
