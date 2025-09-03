@@ -233,10 +233,10 @@ function activateCurrentRoute() {
   else if (currentPath.startsWith('/organization/banks')) {
     activeStates.value.organization = true
     activeStates.value.banks = true
-  } else if (currentPath === '/organization/sub-billers') {
+  } else if (currentPath.startsWith('/organization/sub-billers')) {
     activeStates.value.organization = true
     activeStates.value.subBillers = true
-  } else if (currentPath === '/organization/users') {
+  } else if (currentPath.startsWith('/organization/users')) {
     activeStates.value.organization = true
     activeStates.value.users = true
   } else if (currentPath.startsWith('/organization')) {
