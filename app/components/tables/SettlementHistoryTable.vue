@@ -500,9 +500,14 @@ const valueClass = 'text-sm font-bold'
 
           <!-- Transaction Allocations Table -->
           <div class="flex-1 flex flex-col mt-4 gap-2 min-h-0">
-            <h4 class="text-md font-semibold flex-shrink-0">
-              {{ t('settlement.transaction_allocations') }}
-            </h4>
+            <div class="flex items-center flex-shrink-0">
+              <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
+                <UIcon name="material-symbols:receipt-long-outline" class="w-4 h-4 text-primary" />
+              </div>
+              <h4 class="text-md font-semibold">
+                {{ t('settlement.transaction_allocations') }}
+              </h4>
+            </div>
             <div
               v-if="
                 openSliderWithData.tran_allocates && openSliderWithData.tran_allocates.length > 0
