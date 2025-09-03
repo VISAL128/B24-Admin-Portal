@@ -7,7 +7,7 @@
       :message="t('pages.transaction.tip_message')"
     /> -->
     <!-- Transaction Summary Cards -->
-     
+
     <SummaryCards
       v-show="!isTableFullscreen"
       :cards="summarys"
@@ -44,8 +44,6 @@
 </template>
 
 <script setup lang="ts">
-
-
 import { computed, h, onMounted, ref, resolveComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -270,7 +268,7 @@ const fetchTransactionHistory = async (
   try {
     // Extract transactionType from filters and move to Types parameter
     let cleanedFilters = params?.filters || []
-    let transactionTypes: string[] = []
+    const transactionTypes: string[] = []
 
     // Find and extract transactionType filters
     if (cleanedFilters.length > 0) {
@@ -386,120 +384,120 @@ const handleViewDetails = (transaction: TransactionHistoryRecord) => {
 
 const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
   const cols: BaseTableColumn<TransactionHistoryRecord>[] = [
-  {
-    id: 'select',
-    header: ({ table }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all',
-      }),
-    cell: ({ row }) =>
-      h(resolveComponent('UCheckbox'), {
-        modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row',
-      }),
-    enableSorting: false,
-    enableColumnFilter: false,
-    enableHiding: false,
-  },
-  {
-    id: 'date',
-    accessorKey: 'date',
-    header: ({ column }) => createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
-    cell: ({ row }) =>
-      useFormat().formatDateTime(row.original.date),
-    enableSorting: true,
-    enableHiding: false,
-    size: 50,
-    maxSize: 150,
-  },
-  {
-    id: 'bankReference',
-    accessorKey: 'bankReference',
-    header: () => t('pages.transaction.bank_ref'),
-    cell: ({ row }) => copyCell(row.original.bankReference, t),
-    enableSorting: true,
-    enableHiding: false,
-  },
-  {
-    id: 'collectionBank',
-    accessorKey: 'collectionBank',
-    header: () => t('pages.transaction.collection_bank'),
-    cell: ({ row }) => {
-      const UAvatar = resolveComponent('UAvatar')
-      if (row.original.collectionBank) {
-        // If bank logo is available, display it
-        return h('div', { class: 'flex items-center gap-2' }, [
-          h(UAvatar, {
-            src: row.original.collectionBankLogo,
-            size: '2xs',
-          }),
-          h('div', { class: '' }, row.original.collectionBank || '-'),
-        ])
-      }
-      return h('div', { class: '' }, row.original.collectionBank || '-')
+    {
+      id: 'select',
+      header: ({ table }) =>
+        h(resolveComponent('UCheckbox'), {
+          modelValue: table.getIsSomePageRowsSelected()
+            ? 'indeterminate'
+            : table.getIsAllPageRowsSelected(),
+          'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+            table.toggleAllPageRowsSelected(!!value),
+          'aria-label': 'Select all',
+        }),
+      cell: ({ row }) =>
+        h(resolveComponent('UCheckbox'), {
+          modelValue: row.getIsSelected(),
+          'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+          'aria-label': 'Select row',
+        }),
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableHiding: false,
     },
-    enableColumnFilter: true,
-    filterType: 'select',
-    get filterOptions() {
-      return bankFilterOptions.value
+    {
+      id: 'date',
+      accessorKey: 'date',
+      header: ({ column }) =>
+        createSortableHeader(column, t('pages.transaction.created_date'), 'left'),
+      cell: ({ row }) => useFormat().formatDateTime(row.original.date),
+      enableSorting: true,
+      enableHiding: false,
+      size: 50,
+      maxSize: 150,
     },
-  },
-  {
-    id: 'settlementBank',
-    accessorKey: 'settlementBank',
-    header: () => t('pages.transaction.settlement_bank'),
-    cell: ({ row }) => {
-      const UAvatar = resolveComponent('UAvatar')
-      if (row.original.settlementBank) {
-        // If bank logo is available, display it
-        return h('div', { class: 'flex items-center gap-2' }, [
-          h(UAvatar, {
-            src: row.original.settlementBankLogo,
-            size: 'xs',
-          }),
-          h('div', { class: '' }, row.original.settlementBank || '-'),
-        ])
-      }
-      return h('div', { class: '' }, row.original.settlementBank || '-')
+    {
+      id: 'bankReference',
+      accessorKey: 'bankReference',
+      header: () => t('pages.transaction.bank_ref'),
+      cell: ({ row }) => copyCell(row.original.bankReference, t),
+      enableSorting: true,
+      enableHiding: false,
     },
-    enableColumnFilter: true,
-    filterType: 'select',
-    get filterOptions() {
-      return bankFilterOptions.value
+    {
+      id: 'collectionBank',
+      accessorKey: 'collectionBank',
+      header: () => t('pages.transaction.collection_bank'),
+      cell: ({ row }) => {
+        const UAvatar = resolveComponent('UAvatar')
+        if (row.original.collectionBank) {
+          // If bank logo is available, display it
+          return h('div', { class: 'flex items-center gap-2' }, [
+            h(UAvatar, {
+              src: row.original.collectionBankLogo,
+              size: '2xs',
+            }),
+            h('div', { class: '' }, row.original.collectionBank || '-'),
+          ])
+        }
+        return h('div', { class: '' }, row.original.collectionBank || '-')
+      },
+      enableColumnFilter: true,
+      filterType: 'select',
+      get filterOptions() {
+        return bankFilterOptions.value
+      },
     },
-  },
-  {
-    id: 'settlementType',
-    accessorKey: 'settlementType',
-    header: () => t('pages.transaction.settlement_type'),
-    cell: ({ row }) => row.original.settlementType || '-',
-    enableColumnFilter: true,
-    filterOptions: settlementTypeFilterOptions.value,
-  },
-  {
-    id: 'transactionType',
-    accessorKey: 'transactionType',
-    header: () => t('pages.transaction.transaction_type'),
-    cell: ({ row }) => {
-      const group = groupByTranType(row.original.transactionType as TransactionType)
-      if (group !== null) {
-        // Convert enum number to readable string and format it nicely
-        const groupName = TranTypeGroup[group]
-        if (groupName) {
-          // Get display text
-          let displayText = ''
-          if (groupName === 'DeeplinkCheckout') {
-            displayText = 'Deeplink/Checkout'
-          } else {
-            // Convert camelCase to readable format (e.g., "PayBill" → "Pay Bill")
-            displayText = groupName.replace(/([A-Z])/g, ' $1').trim()
-          }
+    {
+      id: 'settlementBank',
+      accessorKey: 'settlementBank',
+      header: () => t('pages.transaction.settlement_bank'),
+      cell: ({ row }) => {
+        const UAvatar = resolveComponent('UAvatar')
+        if (row.original.settlementBank) {
+          // If bank logo is available, display it
+          return h('div', { class: 'flex items-center gap-2' }, [
+            h(UAvatar, {
+              src: row.original.settlementBankLogo,
+              size: 'xs',
+            }),
+            h('div', { class: '' }, row.original.settlementBank || '-'),
+          ])
+        }
+        return h('div', { class: '' }, row.original.settlementBank || '-')
+      },
+      enableColumnFilter: true,
+      filterType: 'select',
+      get filterOptions() {
+        return bankFilterOptions.value
+      },
+    },
+    {
+      id: 'settlementType',
+      accessorKey: 'settlementType',
+      header: () => t('pages.transaction.settlement_type'),
+      cell: ({ row }) => row.original.settlementType || '-',
+      enableColumnFilter: true,
+      filterOptions: settlementTypeFilterOptions.value,
+    },
+    {
+      id: 'transactionType',
+      accessorKey: 'transactionType',
+      header: () => t('pages.transaction.transaction_type'),
+      cell: ({ row }) => {
+        const group = groupByTranType(row.original.transactionType as TransactionType)
+        if (group !== null) {
+          // Convert enum number to readable string and format it nicely
+          const groupName = TranTypeGroup[group]
+          if (groupName) {
+            // Get display text
+            let displayText = ''
+            if (groupName === 'DeeplinkCheckout') {
+              displayText = 'Deeplink/Checkout'
+            } else {
+              // Convert camelCase to readable format (e.g., "PayBill" → "Pay Bill")
+              displayText = groupName.replace(/([A-Z])/g, ' $1').trim()
+            }
 
             // Create element with icon and text
             return h('div', { class: 'flex items-center gap-2' }, [
@@ -555,7 +553,8 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
       id: 'currency',
       accessorKey: 'currency',
       header: () => t('pages.transaction.currency'),
-      cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency || '-'),
+      cell: ({ row }) =>
+        h('div', { class: 'text-left' }, row.original.currency || row.original.currencyId || '-'),
       enableColumnFilter: true,
       enableHiding: false,
       filterOptions: [
