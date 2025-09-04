@@ -139,7 +139,7 @@
                             v-for="profile in profileList"
                             :key="profile.id"
                             :model-value="!!profileSwitchDialogs[profile.id]"
-                            :title="t('organization_popup.switch_organization')"
+                            :title="t('organization_popup.switch_organization_title')"
                             :message="
                               t('organization_popup.switch_organization_confirmation', {
                                 from: auth.currentProfile.value?.name || '',
