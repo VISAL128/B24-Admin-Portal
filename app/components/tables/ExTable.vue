@@ -223,18 +223,21 @@
             <template #content>
               <div class="space-y-1 min-w-50">
                 <div class="flex items-center justify-between px-2 pt-2">
-                  <span class="text-sm font-medium">{{ t('table.column_config.columns') }}</span>
+                  <span class="text-xs font-medium">{{ t('table.column_config.columns') }}</span>
                 </div>
                 <Divider />
-
-                <!-- Column Order Section -->
                 <div class="px-2 space-y-1 max-h-96 overflow-y-auto">
                   <div
                     v-for="(item, index) in orderedColumnConfigItems"
                     :key="item.id"
-                    class="flex items-center gap-2 px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded text-xs sortable-item"
+                    class="flex items-center gap-2 px-2 py-1 rounded text-xs sortable-item"
                     :class="{
                       dragging: draggedIndex === index,
+                      'bg-neutral-100 dark:bg-neutral-700':
+                        columnConfig.find((c) => c.id === item.id)?.getCanHide() === false,
+                      'bg-neutral-50 dark:bg-neutral-800': columnConfig
+                        .find((c) => c.id === item.id)
+                        ?.getCanHide(),
                     }"
                     :data-id="item.id"
                     @dragover="handleDragOver"
@@ -279,7 +282,7 @@
                   </div>
                 </div>
                 <Divider />
-                <div class="flex justify-between px-2 pb-2">
+                <div class="flex justify-between pb-2">
                   <UButton
                     variant="link"
                     size="xs"

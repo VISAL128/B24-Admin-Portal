@@ -319,12 +319,12 @@
                 </UTooltip>
               </div>
               <!-- User Menu -->
-              <UPopover ref="popoverRef" placement="bottom-end" :offset="[0, 10]" class="z-50">
+              <UPopover v-model:open="userProfilePopover" placement="bottom-end" :offset="[0, 10]" class="z-50">
                 <UAvatar
                   :src="user?.picture"
                   :alt="String(user?.fullName || 'User')"
-                  size="sm"
-                  class="cursor-pointer hover:ring-1 hover:ring-primary transition-all"
+                  size="md"
+                  class="cursor-pointer text-xs ring-1 ring-neutral-300 dark:ring-neutral-700 hover:ring-1 hover:ring-primary transition-all"
                 />
 
                 <template #content>
@@ -335,7 +335,8 @@
                         <UAvatar
                           :src="user?.picture"
                           :alt="String(user?.fullName || 'User')"
-                          size="sm"
+                          size="md"
+                          class="ring-1 ring-neutral-300 dark:ring-neutral-700 text-xs"
                         />
                         <div class="flex flex-col">
                           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -431,7 +432,7 @@ definePageMeta({
 
 const { locale, t } = useI18n()
 const { setLanguage } = useLanguage()
-const popoverRef = ref<{ close: () => void } | null>(null)
+const userProfilePopover = ref<boolean>(false)
 // const logoutEmit = defineEmits<{ close: [boolean] }>()
 const runtimeCon = useRuntimeConfig()
 
@@ -481,6 +482,7 @@ const handleUserProfile = () => {
 
 const handleSettings = () => {
   navigateTo('/settings/generate-details')
+  userProfilePopover.value = false
 }
 
 const handleDeveloperTools = () => {
