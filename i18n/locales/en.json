@@ -128,6 +128,7 @@
     "business_organization": "Business Organization",
     "available_organizations": "Available Organizations",
     "switch_organization": "Yes, Switch",
+    "switch_organization_title": "Switch Organization",
     "no_organizations_available": "No additional organizations available",
     "loading_organizations": "Loading organizations...",
     "organization_switched": "Organization switched successfully",
@@ -194,11 +195,13 @@
     "enter_fullscreen": "Enter Fullscreen",
     "exit_fullscreen": "Exit Fullscreen",
     "column_config": {
-      "tooltip": "Hide/Show Columns",
+      "tooltip": "Customize Columns",
       "reset": "Reset",
       "apply": "Apply",
       "reset_description": "Reset columns and sorting to defaults",
-      "columns": "Columns"
+      "columns": "Columns",
+      "order": "Column Order",
+      "randomize_order": "Randomize Order"
     },
     "settlement-history": {
       "columns": {
