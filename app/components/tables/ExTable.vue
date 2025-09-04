@@ -932,7 +932,7 @@ const resolvedExportOptions = computed((): ExportOptions => {
   )
 
   allFilterableColumns.forEach((column) => {
-    if (column.id) {
+    if (column.id !='status') {
       // Get the display name for this column
       let displayName = getTranslationHeaderById(column.id)
       if (displayName.includes('table.') && displayName.includes('.columns.')) {
