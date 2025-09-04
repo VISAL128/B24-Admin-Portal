@@ -87,15 +87,15 @@
           <UModal
             v-model:open="showAddSuppliers"
             :dismissible="false"
-            :title="t('add_fee_sharing_supplier_title')"
-            :description="t('add_fee_sharing_supplier_description')"
+            :title="t('add_fee_sharing_party_title')"
+            :description="t('add_fee_sharing_party_description')"
             :ui="{
               title: 'text-lg font-semibold text-primary',
               description: 'text-sm text-gray-600',
             }"
           >
             <UButton
-              :label="t('add_supplier')"
+              :label="t('add_party')"
               color="primary"
               variant="solid"
               class="ml-4 text-xs"
@@ -117,11 +117,11 @@
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">{{
-                    t('s_supplier')
+                    t('s_party')
                   }}</label>
                   <USelectMenu
                     :items="filteredAvailableSuppliers"
-                    :placeholder="t('choose_supplier')"
+                    :placeholder="t('choose_party')"
                     :search-input="false"
                     option-attribute="label"
                     value-attribute="value"
@@ -160,7 +160,7 @@
             v-model:open="showRemoveSupplierModal"
             :dismissible="false"
             :title="t('confirm')"
-            :description="t('remove_supplier_sharing', { name: supplierToRemove?.name })"
+            :description="t('remove_party_sharing', { name: supplierToRemove?.name })"
             :ui="{
               title: 'text-lg font-semibold text-primary',
               description: 'text-sm text-gray-600',
@@ -273,7 +273,7 @@
 
           <div v-if="Object.keys(feeCalculation.distribution).length > 0">
             <p class="font-medium text-gray-500 text-sm dark:text-gray-400 mb-2">
-              {{ t('supplier_sharing_fee') }}:
+              {{ t('party_sharing_fee') }}:
             </p>
             <ul class="space-y-1 ml-4">
               <li
@@ -290,7 +290,7 @@
           </div>
 
           <div v-else class="text-gray-500 text-sm dark:text-gray-400 italic">
-            {{ t('preview_fee_calculation_no_supplier') }}
+            {{ t('preview_fee_calculation_no_parties') }}
           </div>
         </div>
       </div>
@@ -327,7 +327,6 @@ const { t } = useI18n()
 
 definePageMeta({
   auth: false,
-  // breadcrumbs: [{ label: 'settings.fee_config', active: true }],
 })
 
 const feeConfig = ref(new FeeConfiguration())
@@ -347,7 +346,11 @@ const showValidationDialog = ref(false)
 const validationDialogTitle = ref('')
 const validationDialogMessage = ref('')
 const validationDialogType = ref<'error' | 'success'>('error')
-// UI helpers for dynamic dialog icon and styles (prevent undefined name error)
+
+// Unified error state for all fields
+const fieldErrors = ref<Record<number, Record<string, string>>>({})
+const inputRefs = ref<Record<string, HTMLInputElement>>({})
+
 const dialogIconBgClass = computed(() =>
   validationDialogType.value === 'success'
     ? 'bg-green-100 dark:bg-green-900/20'
@@ -379,7 +382,6 @@ const distributionFee = computed(() => {
 const visibleSuppliers = computed(() => {
   if (!isInitialized.value || distributionFee.value.length === 0) return []
   return distributionFee.value
-  // return distributionFee.value.filter((supplier) => supplier.visible)
 })
 
 const feeCalculation = computed(() => {
@@ -387,14 +389,11 @@ const feeCalculation = computed(() => {
     return { transactionFee: 0, distribution: {} }
   }
 
-  // Use different test amounts based on currency
   const testAmount = selectedCurrency.value === Currency.USD ? 100 : 400000
   const calculation = feeConfig.value.calculateFees(selectedCurrency.value, testAmount)
 
-  // Patch distribution for correct display based on fee type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any = { ...calculation }
-  // Find the row that matches the test amount
   const row = transactionFee.value.find((r) => {
     if (r.unlimited) return true
     return (
@@ -403,7 +402,6 @@ const feeCalculation = computed(() => {
     )
   })
   if (row && row.supplier_sharings && row.supplier_sharings.length > 0) {
-    // Also update transactionFee for preview
     result.transactionFee =
       row.fee_type === FeeType.Fixed ? row.fee_amount : (row.fee_amount / 100) * testAmount
     result.distribution = {}
@@ -412,7 +410,6 @@ const feeCalculation = computed(() => {
         result.distribution[visibleSuppliers.value.find((vs) => vs.id === s.id)?.name || s.id] =
           s.value
       } else if (row.fee_type === FeeType.Percentage) {
-        // Calculate the actual amount for each supplier
         const supplierAmount = (s.value / 100) * result.transactionFee
         result.distribution[visibleSuppliers.value.find((vs) => vs.id === s.id)?.name || s.id] =
           supplierAmount
@@ -427,10 +424,8 @@ const hasUnlimitedRow = computed(() => {
   return transactionFee.value.some((row) => row.unlimited)
 })
 
-// Add a reactive key to force table re-render
 const tableKey = ref(0)
 
-// Computed property for dynamic table columns
 const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
   const staticColumns: TableColumn<TransactionFeeRow>[] = [
     {
@@ -441,17 +436,46 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
         const index = table.getRowModel().rows.findIndex((r) => r.id === row.id)
         const rowData = row.original
         const UInput = resolveComponent('UInput')
-        return h(UInput, {
+        const UTooltip = resolveComponent('UTooltip')
+        const errorMessage = fieldErrors.value[index]?.start_amount || ''
+
+        const inputComponent = h(UInput, {
           modelValue: formatAmount(rowData.start_amount || 0, selectedCurrency.value, {
             showSymbol: false,
           }),
           type: 'text',
-          class: 'w-full',
+          class: `w-full ${errorMessage ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`,
           size: 'sm',
           ui: { base: 'text-right' },
-          onInput: (event: Event) => handleAmountInput(event, index, 'start_amount'),
+          onBlur: (event: Event) => handleAmountInput(event, index, 'start_amount'),
           onKeypress: handleNumericKeyPress,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ref: (el: any) => {
+            if (el && el.$el) {
+              const input = el.$el.querySelector('input')
+              if (input) {
+                inputRefs.value[`${index}_start_amount`] = input
+              }
+            }
+          },
         })
+
+        return h('div', { class: 'relative' }, [
+          errorMessage
+            ? h(
+                UTooltip,
+                {
+                  text: errorMessage,
+                  popper: { placement: 'top' },
+                  ui: {
+                    background: 'bg-red-100 dark:bg-red-900/20',
+                    text: 'text-red-600 dark:text-red-400',
+                  },
+                },
+                { default: () => inputComponent }
+              )
+            : inputComponent,
+        ])
       },
     },
     {
@@ -459,10 +483,13 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
       header: () => h('div', { class: 'text-right' }, t('end_amount')),
       cell: ({ row, table }) => {
         const index = table.getRowModel().rows.findIndex((r) => r.id === row.id)
+        const rowData = row.original
         const UInput = resolveComponent('UInput')
         const UButton = resolveComponent('UButton')
-        const rowData = row.original
-        return h(
+        const UTooltip = resolveComponent('UTooltip')
+        const errorMessage = fieldErrors.value[index]?.end_amount || ''
+        const hasError = !!errorMessage
+        const inputComponent = h(
           UInput,
           {
             modelValue: rowData.unlimited
@@ -471,9 +498,10 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                   showSymbol: false,
                 }),
             type: 'text',
+            color: hasError ? 'error' : 'primary',
             placeholder: rowData.unlimited ? KEY_CONSTANTS.UNLIMITED : 'Enter amount',
             disabled: rowData.unlimited,
-            class: 'w-full pe-0',
+            class: `w-full pe-0 ${errorMessage ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`,
             size: 'sm',
             ui: {
               base: rowData.unlimited
@@ -481,8 +509,17 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                 : 'text-right',
               trailing: 'pe-0',
             },
-            onInput: (event: Event) => handleAmountInput(event, index, 'end_amount'),
+            onBlur: async (event: Event) => await handleAmountInput(event, index, 'end_amount'),
             onKeypress: handleNumericKeyPress,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ref: (el: any) => {
+              if (el && el.$el) {
+                const input = el.$el.querySelector('input')
+                if (input) {
+                  inputRefs.value[`${index}_end_amount`] = input
+                }
+              }
+            },
           },
           {
             trailing: () =>
@@ -493,12 +530,30 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                   variant: 'ghost',
                   size: 'sm',
                   square: true,
+                  disabled: Object.keys(fieldErrors.value || {}).length > 0 ? true : false, // Disable if any field in this row has errors
                   onClick: () => toggleUnlimited(index),
                 },
                 () => '∞'
               ),
           }
         )
+
+        return h('div', { class: 'relative' }, [
+          errorMessage
+            ? h(
+                UTooltip,
+                {
+                  text: errorMessage,
+                  popper: { placement: 'top' },
+                  ui: {
+                    background: 'bg-red-100 dark:bg-red-900/20',
+                    text: 'text-red-600 dark:text-red-400',
+                  },
+                },
+                { default: () => inputComponent }
+              )
+            : inputComponent,
+        ])
       },
     },
     {
@@ -525,9 +580,9 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
           valueAttribute: 'value',
           size: 'sm',
           class: 'transition-all duration-200 w-full',
+          disabled: Object.keys(fieldErrors.value || {}).length > 0,
           'onUpdate:modelValue': (value: { value: string }) =>
             handleFeeDetailTypeChange(index, value.value),
-          // onUpdateModelValue: (value: { value: string }) => handleFeeDetailTypeChange(index, value.value)
         })
       },
     },
@@ -538,7 +593,10 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
         const index = table.getRowModel().rows.findIndex((r) => r.id === row.id)
         const rowData = row.original
         const UInput = resolveComponent('UInput')
-        return h(
+        const UTooltip = resolveComponent('UTooltip')
+        const errorMessage = fieldErrors.value[index]?.fee_amount || ''
+
+        const inputComponent = h(
           UInput,
           {
             modelValue:
@@ -548,11 +606,20 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                   })
                 : (rowData.fee_amount || 0).toString(),
             type: 'text',
-            class: 'w-full',
+            class: `w-full ${errorMessage ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`,
             size: 'sm',
             ui: { base: 'text-right' },
-            onInput: (event: Event) => handleFeeAmountInput(event, 'fee_amount', index),
+            onBlur: (event: Event) => handleAmountInput(event, index, 'fee_amount'),
             onKeypress: handleNumericKeyPress,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ref: (el: any) => {
+              if (el && el.$el) {
+                const input = el.$el.querySelector('input')
+                if (input) {
+                  inputRefs.value[`${index}_fee_amount`] = input
+                }
+              }
+            },
           },
           {
             trailing: () =>
@@ -563,11 +630,27 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
               ),
           }
         )
+
+        return h('div', { class: 'relative' }, [
+          errorMessage
+            ? h(
+                UTooltip,
+                {
+                  text: errorMessage,
+                  popper: { placement: 'top' },
+                  ui: {
+                    background: 'bg-red-100 dark:bg-red-900/20',
+                    text: 'text-red-600 dark:text-red-400',
+                  },
+                },
+                { default: () => inputComponent }
+              )
+            : inputComponent,
+        ])
       },
     },
   ]
 
-  // Force reactivity by explicitly depending on visibleSuppliers and tableKey
   const supplierColumns: TableColumn<TransactionFeeRow>[] = visibleSuppliers.value.map(
     (supplier) => {
       return {
@@ -576,11 +659,8 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
           const UTooltip = resolveComponent('UTooltip')
           const UButton = resolveComponent('UButton')
           const UIcon = resolveComponent('UIcon')
-
-          // Build children and conditionally include remove button when supplier.isDisabled === false
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const children: any[] = [
-            // Sharing icon
             h(
               UTooltip,
               { text: t('sharing_enabled'), popper: { placement: 'top' } },
@@ -595,12 +675,11 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
             h('span', supplier.isDisabled ? `${supplier.name} (${t('you')})` : supplier.name),
           ]
 
-          // Only show remove button when supplier.isDisabled is explicitly false
           if (supplier.isDisabled === false) {
             children.push(
               h(
                 UTooltip,
-                { text: t('remove_fee_sharing_supplier'), popper: { placement: 'top' } },
+                { text: t('remove_fee_sharing_party'), popper: { placement: 'top' } },
                 {
                   default: () =>
                     h(
@@ -612,7 +691,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                         square: true,
                         class: 'ml-2',
                         onClick: (e: MouseEvent) => {
-                          e.stopPropagation() // avoid triggering header sort/resize
+                          e.stopPropagation()
                           confirmRemoveSupplier(supplier)
                         },
                       },
@@ -633,7 +712,10 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
           const rowData = row.original
           const supplierData = rowData.supplier_sharings?.find((x) => x.id === supplier.id)
           const UInput = resolveComponent('UInput')
-          return h(
+          const UTooltip = resolveComponent('UTooltip')
+          const errorMessage = fieldErrors.value[index]?.[`supplier_${supplier.id}`] || ''
+
+          const inputComponent = h(
             UInput,
             {
               modelValue:
@@ -643,11 +725,20 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                     })
                   : (supplierData?.value || 0).toString(),
               type: 'text',
-              class: 'w-full',
+              class: `w-full ${errorMessage ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`,
               size: 'sm',
               ui: { base: 'text-right' },
-              onInput: (event: Event) => handleSupplierFeeInput(event, index, supplier.id),
+              onBlur: (event: Event) => handleAmountInput(event, index, `supplier_${supplier.id}`),
               onKeypress: handleNumericKeyPress,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ref: (el: any) => {
+                if (el && el.$el) {
+                  const input = el.$el.querySelector('input')
+                  if (input) {
+                    inputRefs.value[`${index}_supplier_${supplier.id}`] = input
+                  }
+                }
+              },
             },
             {
               trailing: () =>
@@ -658,6 +749,23 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
                 ),
             }
           )
+
+          return h('div', { class: 'relative' }, [
+            errorMessage
+              ? h(
+                  UTooltip,
+                  {
+                    text: errorMessage,
+                    popper: { placement: 'top' },
+                    ui: {
+                      background: 'bg-red-100 dark:bg-red-900/20',
+                      text: 'text-red-600 dark:text-red-400',
+                    },
+                  },
+                  { default: () => inputComponent }
+                )
+              : inputComponent,
+          ])
         },
       }
     }
@@ -686,11 +794,9 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
     },
   ]
 
-  const result = [...staticColumns, ...supplierColumns, ...actionColumn]
-  return result
+  return [...staticColumns, ...supplierColumns, ...actionColumn]
 })
 
-// Computed to filter out already added suppliers
 const filteredAvailableSuppliers = computed(() => {
   const existingSupplierIds = new Set()
   distributionFee.value.forEach((supplier) => {
@@ -705,7 +811,6 @@ const filteredAvailableSuppliers = computed(() => {
     }))
 })
 
-// Initialize and cleanup
 onMounted(async () => {
   const handleClickOutside = () => {
     showSettingsDropdown.value = false
@@ -717,9 +822,7 @@ onMounted(async () => {
 
   tableKey.value++
 
-  // Wait for reactivity to update
   await nextTick()
-
   syncDistributionFeeRows()
 })
 
@@ -737,29 +840,24 @@ const TABLE_CONSTANTS = {
 
 const addRow = () => {
   feeConfig.value.addRow(selectedCurrency.value)
-  // Manually sync after adding a row
   nextTick(() => {
     syncDistributionFeeRows()
   })
 }
 
-// Options for fee type
 const feeTypeOptions = computed(() => [
   { label: selectedCurrency.value === Currency.KHR ? '៛' : '$', value: FeeType.Fixed },
   { label: '%', value: FeeType.Percentage.toString() },
 ])
 
 const handleFeeDetailTypeChange = (index: number, value: string) => {
-  console.log('Index:', index, 'Value:', value, 'FeeDetail:', transactionFee.value[index])
   const feeDetail = transactionFee.value[index]
   if (feeDetail) {
-    // Update fee type
     transactionFee.value[index] = {
       ...feeDetail,
       fee_type: value as FeeType.Percentage | FeeType.Fixed,
     }
 
-    // If switching to percentage, reset fee_amount and each supplier value to 0
     if (value === FeeType.Percentage) {
       transactionFee.value[index].fee_amount = 0
       if (transactionFee.value[index].supplier_sharings) {
@@ -769,34 +867,25 @@ const handleFeeDetailTypeChange = (index: number, value: string) => {
       }
     }
 
-    // Persist/update and refresh UI
     updateTransactionRow(index, transactionFee.value[index])
-
-    // Force re-render of table to reflect the changes immediately
     tableKey.value++
-    // allow DOM to update
     nextTick()
   }
 }
 
-// Add flag to prevent recursive calls
 const isSyncing = ref(false)
 
 const syncDistributionFeeRows = () => {
-  // Prevent recursive calls
   if (isSyncing.value) return
-
   console.log('Syncing distribution fee rows...')
   isSyncing.value = true
 
   try {
-    // Ensure each transaction fee row has supplier data for all visible suppliers
     transactionFee.value.forEach((txRow, _index) => {
       if (!txRow.supplier_sharings) {
         txRow.supplier_sharings = []
       }
 
-      // Add missing suppliers to each transaction row
       visibleSuppliers.value.forEach((supplier) => {
         const existingSupplier = txRow.supplier_sharings.find((s) => s.id === supplier.id)
         if (!existingSupplier) {
@@ -807,7 +896,6 @@ const syncDistributionFeeRows = () => {
         }
       })
 
-      // Remove suppliers that are no longer visible
       txRow.supplier_sharings = txRow.supplier_sharings.filter((supplier) =>
         visibleSuppliers.value.some((vs) => vs.id === supplier.id)
       )
@@ -822,30 +910,53 @@ const syncDistributionFeeRows = () => {
 
 const validateTableRow = (
   index: number,
-  showToast = true,
+  showToast = false,
   field: string = 'fee_amount'
 ): boolean => {
   const row = transactionFee.value[index]
-  if (!row) return false
+  if (!row) return true
 
-  // Validation 1: end_amount can't be less than start_amount
-  if (
-    field === 'end_amount' &&
-    !row.unlimited &&
-    row.end_amount !== null &&
-    row.start_amount > row.end_amount
-  ) {
+  // Initialize fieldErrors for this row if not already done
+  if (!fieldErrors.value[index]) {
+    fieldErrors.value[index] = {}
+  }
+  fieldErrors.value[index][field] = ''
+
+  // Validation 1: start_amount can't be negative
+  if (field === 'start_amount' && row.start_amount < 0) {
+    fieldErrors.value[index][field] = t('values_cannot_be_negative')
     if (showToast) {
       toast.add({
         title: t('validation_error'),
-        description: `${t('end_amount_cannot_be_less_than_start_amount')} - ${t('row_number', { row: index + 1 }) || `Row ${index + 1}`}`,
+        description: `${t('row_number', { row: index + 1 })}: ${t('values_cannot_be_negative')}`,
         color: 'error',
       })
     }
     return false
   }
 
-  // New: For fixed fee type, fee_amount must not be greater than end_amount (when end_amount applies)
+  // Validation 2: end_amount can't be less than start_amount
+  if (
+    field === 'end_amount' &&
+    !row.unlimited &&
+    row.end_amount !== null &&
+    row.end_amount !== 0 &&
+    row.start_amount > row.end_amount
+  ) {
+    fieldErrors.value[index][field] = t('end_amount_cannot_be_less_than_start_amount')
+    if (showToast) {
+      toast.add({
+        title: t('validation_error'),
+        description: `${t('row_number', { row: index + 1 })}: ${t(
+          'end_amount_cannot_be_less_than_start_amount'
+        )}`,
+        color: 'error',
+      })
+    }
+    return false
+  }
+
+  // Validation 3: For fixed fee type, fee_amount must not be greater than end_amount
   if (
     field === 'fee_amount' &&
     row.fee_type === FeeType.Fixed &&
@@ -855,51 +966,62 @@ const validateTableRow = (
     row.end_amount !== null &&
     row.fee_amount > row.end_amount
   ) {
+    fieldErrors.value[index][field] = t('fee_amount_cannot_exceed_end_amount', {
+      fee: formatAmount(row.fee_amount, selectedCurrency.value),
+      end: formatAmount(row.end_amount, selectedCurrency.value),
+      row: index + 1,
+    })
     if (showToast) {
       toast.add({
         title: t('validation_error'),
-        description: t('fee_amount_cannot_exceed_end_amount', {
-          fee: formatAmount(row.fee_amount, selectedCurrency.value),
-          end: formatAmount(row.end_amount, selectedCurrency.value),
-          row: index + 1,
-        }),
+        description: `${t('row_number', { row: index + 1 })}: ${t(
+          'fee_amount_cannot_exceed_end_amount',
+          {
+            fee: formatAmount(row.fee_amount, selectedCurrency.value),
+            end: formatAmount(row.end_amount, selectedCurrency.value),
+          }
+        )}`,
         color: 'error',
       })
     }
     return false
   }
 
+  // Validation 4: For percentage fee type, fee_amount cannot exceed 100%
   if (
     field === 'fee_amount' &&
     row.fee_type === FeeType.Percentage &&
-    row.end_amount !== null &&
     row.fee_amount !== undefined &&
-    ((row.unlimited && row.end_amount === 0) || (!row.unlimited && row.end_amount > 0)) &&
     row.fee_amount > 100
   ) {
+    fieldErrors.value[index][field] = t('fee_amount_cannot_exceed_100_percent')
     if (showToast) {
       toast.add({
         title: t('validation_error'),
-        description: t('fee_amount_cannot_exceed_100_percent'),
+        description: `${t('row_number', { row: index + 1 })}: ${t(
+          'fee_amount_cannot_exceed_100_percent'
+        )}`,
         color: 'error',
       })
     }
     return false
   }
 
-  // Validation 2: Sum of fee sharing suppliers checks
+  // Validation 5: Sum of fee sharing suppliers checks
   const totalSupplierFees =
     row.supplier_sharings?.reduce((sum, supplier) => sum + (supplier.value || 0), 0) || 0
   const feeChargeValue = row.fee_amount || 0
 
-  if (field === 'field_supplier' && row.fee_type === FeeType.Percentage) {
-    // For percentage: total supplier fees cannot exceed the fee charge percentage
+  if (field.includes('supplier_') && row.fee_type === FeeType.Percentage) {
     if (totalSupplierFees > 100) {
+      fieldErrors.value[index][field] = t('total_party_fees_exceeds_fee_charge_percentage', {
+        total: totalSupplierFees,
+      })
       if (showToast) {
         toast.add({
           title: t('validation_error'),
-          description: `${t('row_number', { row: index + 1 }) || `Row ${index + 1}`}: ${t(
-            'total_supplier_fees_exceeds_fee_charge_percentage',
+          description: `${t('row_number', { row: index + 1 })}: ${t(
+            'total_party_fees_exceeds_fee_charge_percentage',
             { total: totalSupplierFees }
           )}`,
           color: 'error',
@@ -907,14 +1029,17 @@ const validateTableRow = (
       }
       return false
     }
-  } else if (field === 'field_supplier') {
-    // For fixed amount: total supplier fees cannot exceed the fee charge amount
+  } else if (field.includes('supplier_')) {
     if (totalSupplierFees > feeChargeValue) {
+      fieldErrors.value[index][field] = t('total_party_fees_exceeds_fee_charge_fixed', {
+        total: formatAmount(totalSupplierFees, selectedCurrency.value),
+        fee: '100 %',
+      })
       if (showToast) {
         toast.add({
           title: t('validation_error'),
-          description: `${t('row_number', { row: index + 1 }) || `Row ${index + 1}`}: ${t(
-            'total_supplier_fees_exceeds_fee_charge_fixed',
+          description: `${t('row_number', { row: index + 1 })}: ${t(
+            'total_party_fees_exceeds_fee_charge_fixed',
             {
               total: formatAmount(totalSupplierFees, selectedCurrency.value),
               fee: '100 %',
@@ -927,6 +1052,7 @@ const validateTableRow = (
     }
   }
 
+  fieldErrors.value = {}
   return true
 }
 
@@ -938,16 +1064,20 @@ const validateAllRows = (): boolean => {
     isValid = false
   }
   transactionFee.value.forEach((row, index) => {
-    // Check end amount vs start amount
+    // Initialize fieldErrors for this row
+    if (!fieldErrors.value[index]) {
+      fieldErrors.value[index] = {}
+    }
+
     if (
       !row.unlimited &&
       ((row.end_amount !== null && row.start_amount > row.end_amount) || row.end_amount === 0)
     ) {
       errors.push(`• Row ${index + 1}: ${t('end_amount_cannot_be_less_than_start_amount')}`)
+      fieldErrors.value[index].end_amount = t('end_amount_cannot_be_less_than_start_amount')
       isValid = false
     }
 
-    // New: For fixed fee type ensure fee_amount not greater than end_amount
     if (
       row.fee_type === FeeType.Fixed &&
       !row.unlimited &&
@@ -961,57 +1091,92 @@ const validateAllRows = (): boolean => {
           end: formatAmount(row.end_amount, selectedCurrency.value),
         })}`
       )
+      fieldErrors.value[index].fee_amount = t('fee_amount_cannot_exceed_end_amount', {
+        fee: formatAmount(row.fee_amount, selectedCurrency.value),
+        end: formatAmount(row.end_amount, selectedCurrency.value),
+      })
       isValid = false
     }
 
-    // Check supplier fees total equality depending on fee type
     const totalSupplierFees =
       row.supplier_sharings?.reduce((sum, supplier) => sum + (supplier.value || 0), 0) || 0
     const feeChargeValue = row.fee_amount || 0
 
     const EPS = 1e-6
     if (row.fee_type === FeeType.Percentage) {
-      // Require sum of supplier percentages to equal 100%
       if (Math.abs(totalSupplierFees - 100) > EPS) {
         errors.push(
-          `• Row ${index + 1}: ${t('total_supplier_fees_must_equal_100', { total: totalSupplierFees })}`
+          `• Row ${index + 1}: ${t('total_party_fees_must_equal_100', { total: totalSupplierFees })}`
         )
+        if (Array.isArray(row.supplier_sharings)) {
+          row.supplier_sharings.forEach((supplier) => {
+            if (!fieldErrors.value[index]) {
+              fieldErrors.value[index] = {}
+            }
+            fieldErrors.value[index][`supplier_${supplier.id}`] = t(
+              'total_party_fees_must_equal_100',
+              { total: totalSupplierFees }
+            )
+          })
+        }
         isValid = false
       }
-      // keep existing check that fee_amount itself cannot exceed 100
       if (row.fee_amount > 100) {
         errors.push(`• Row ${index + 1}: ${t('fee_amount_cannot_exceed_100_percent')}`)
+        fieldErrors.value[index].fee_amount = t('fee_amount_cannot_exceed_100_percent')
         isValid = false
       }
     } else {
-      // fixed: require sum of supplier values to equal feeChargeValue
       if (Math.abs(totalSupplierFees - feeChargeValue) > EPS) {
         errors.push(
-          `• Row ${index + 1}: ${t('total_supplier_fees_must_equal_fee_charge', {
+          `• Row ${index + 1}: ${t('total_party_fees_must_equal_fee_charge', {
             total: formatAmount(totalSupplierFees, selectedCurrency.value),
             fee: formatAmount(feeChargeValue, selectedCurrency.value),
           })}`
         )
+        if (Array.isArray(row.supplier_sharings)) {
+          row.supplier_sharings.forEach((supplier) => {
+            if (!fieldErrors.value[index]) {
+              fieldErrors.value[index] = {}
+            }
+            fieldErrors.value[index][`supplier_${supplier.id}`] = t(
+              'total_party_fees_must_equal_fee_charge',
+              {
+                total: formatAmount(totalSupplierFees, selectedCurrency.value),
+                fee: formatAmount(feeChargeValue, selectedCurrency.value),
+              }
+            )
+          })
+        }
         isValid = false
       }
     }
 
-    // Additional validations
     if (
       row.start_amount < 0 ||
       (row.end_amount !== null && row.end_amount < 0) ||
       row.fee_amount < 0
     ) {
-      errors.push(`• Row ${index + 1}: ${t('values_cannot_be_negative')}`)
+      if (row.start_amount < 0) {
+        errors.push(`• Row ${index + 1}: ${t('values_cannot_be_negative')}`)
+        fieldErrors.value[index].start_amount = t('values_cannot_be_negative')
+      }
+      if (row.end_amount !== null && row.end_amount < 0) {
+        errors.push(`• Row ${index + 1}: ${t('values_cannot_be_negative')}`)
+        fieldErrors.value[index].end_amount = t('values_cannot_be_negative')
+      }
+      if (row.fee_amount < 0) {
+        errors.push(`• Row ${index + 1}: ${t('values_cannot_be_negative')}`)
+        fieldErrors.value[index].fee_amount = t('values_cannot_be_negative')
+      }
       isValid = false
     }
   })
 
   if (!isValid && errors.length > 0) {
-    // Show validation dialog instead of toast
     validationDialogTitle.value = t('validation_errors', 'Validation Errors')
     validationDialogMessage.value = `${errors.join('\n')}`
-    validationDialogType.value = 'error' // set dialog type
+    validationDialogType.value = 'error'
     showValidationDialog.value = true
   }
 
@@ -1019,32 +1184,30 @@ const validateAllRows = (): boolean => {
 }
 
 const updateTransactionRow = (index: number, _row: TransactionFeeRow, field?: string) => {
-  // Validate the row
-  if (!validateTableRow(index, true, field)) {
+  if (!validateTableRow(index, false, field)) {
     return
   }
-  // Only sync when not already syncing
   if (!isSyncing.value) {
     syncDistributionFeeRows()
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getRowTransactionFee = (index: number) => {
   const rowData = transactionFee.value[index]
   return rowData || null
 }
 
-// Fetch Data API
 const fetchSharingSuppliers = async () => {
   try {
     loading.value = true
     supplierList.value = await feeConfigApi.getAllSharingSupplier()
     showAddSuppliers.value = true
   } catch (error) {
-    console.error('Error fetching suppliers:', error)
+    console.error('Error fetching parties:', error)
     toast.add({
       title: t('error'),
-      description: t('failed_to_load_suppliers'),
+      description: t('failed_to_load_parties'),
       color: 'error',
     })
   } finally {
@@ -1053,7 +1216,6 @@ const fetchSharingSuppliers = async () => {
 }
 
 const saveFeeConfiguration = async () => {
-  // Validate all rows before saving
   if (!validateAllRows()) {
     return
   }
@@ -1061,19 +1223,13 @@ const saveFeeConfiguration = async () => {
   const data = feeConfig.value.toJSON()
   console.log('Saving fee configuration...', data)
 
-  // --- Example: preview payload logged to console and shown in modal ---
-  // This gives a short example to confirm what's being saved.
-  // const preview = JSON.stringify(data, null, 2).slice(0, 1000) // cap length
   try {
     const result = await feeConfigApi.saveSupplierFeeConfig(data)
     if (result.length === 0) return
-    // Show success dialog with small payload preview
     validationDialogTitle.value = t('success', 'Success')
     validationDialogMessage.value = t('configuration_saved_successfully')
-    validationDialogType.value = 'success' // set dialog type
+    validationDialogType.value = 'success'
     showValidationDialog.value = true
-
-    // developer console full payload for debugging
     console.log('Saved payload (full):', data)
   } catch (error: unknown) {
     errorMsg.value = (error as Error).message || 'Failed to save configuration.'
@@ -1089,25 +1245,18 @@ const confirmRemoveSupplier = (supplier: Supplier) => {
 const removeSupplier = async (supplierId: string) => {
   try {
     feeConfig.value.removeSupplier(selectedCurrency.value, supplierId)
-
-    // Force table re-render by updating the key
     tableKey.value++
-
-    // Sync distribution fee rows
     syncDistributionFeeRows()
-
-    // Force reactivity update
     await nextTick()
-
     showSettingsDropdown.value = false
     showRemoveSupplierModal.value = false
     toast.add({
       title: t('success'),
-      description: t('supplier_removed_successfully'),
+      description: t('party_removed_successfully'),
       color: 'success',
     })
   } catch (error: unknown) {
-    errorMsg.value = (error as Error).message || 'Failed to remove supplier.'
+    errorMsg.value = (error as Error).message || 'Failed to remove party.'
     errorHandler.handleApiError(error)
   }
 }
@@ -1130,43 +1279,27 @@ const addSupplier = async () => {
   if (!newSupplier.value.name || !newSupplier.value.id) return
 
   try {
-    console.log('Adding supplier:', newSupplier.value)
-    console.log('Before adding - visible suppliers:', visibleSuppliers.value.length)
-    console.log('Before adding - distribution fee:', distributionFee.value.length)
-
-    // Add supplier to the fee configuration
     feeConfig.value.addSupplier(
       selectedCurrency.value,
       newSupplier.value.id,
       newSupplier.value.name
     )
 
-    // Wait for reactivity to update
     await nextTick()
-
-    // Sync distribution fee rows to ensure data consistency
     syncDistributionFeeRows()
-
-    // Force table re-render by updating the key
     tableKey.value++
-
-    // Wait again for all updates to complete
     await nextTick()
-
-    console.log('After adding supplier - visible suppliers:', visibleSuppliers.value.length)
-    console.log('After adding supplier - distribution fee:', distributionFee.value.length)
-    console.log('After adding supplier - table columns:', tableColumns.value.length)
 
     closeModal()
 
     toast.add({
       title: t('success'),
-      description: t('supplier_added_successfully', { name: newSupplier.value.name }),
+      description: t('party_added_successfully'),
       color: 'success',
     })
   } catch (error: unknown) {
-    console.error('Error adding supplier:', error)
-    errorMsg.value = (error as Error).message || 'Failed to add supplier.'
+    console.error('Error adding party:', error)
+    errorMsg.value = (error as Error).message || 'Failed to add party.'
     errorHandler.handleApiError(error)
   }
 }
@@ -1175,7 +1308,26 @@ const toggleUnlimited = (index: number) => {
   const row = transactionFee.value[index]
   if (!row) return
 
+  // Check if there are any validation errors for this row
+  const hasRowErrors = Object.keys(fieldErrors.value[index] || {}).some(
+    (key) => fieldErrors.value[index]?.[key] !== ''
+  )
+  if (hasRowErrors) {
+    toast.add({
+      title: t('validation_error'),
+      description: t('fix_validation_errors_before_toggle_unlimited'),
+      color: 'error',
+    })
+    return
+  }
+
+  // Clear any existing end_amount errors when toggling unlimited
+  if (fieldErrors.value[index]?.end_amount) {
+    fieldErrors.value[index].end_amount = ''
+  }
+
   if (!row.unlimited) {
+    // Set this row to unlimited and disable unlimited for other rows
     transactionFee.value.forEach((r, i) => {
       if (i !== index) {
         r.unlimited = false
@@ -1188,11 +1340,16 @@ const toggleUnlimited = (index: number) => {
     row.unlimited = true
     row.end_amount = null
   } else {
+    // Disable unlimited for this row
     row.unlimited = false
-    row.end_amount = row.end_amount || 0
+    row.end_amount = row.start_amount + 1 || 0
   }
 
-  updateTransactionRow(index, row)
+  // Force table refresh to update UI
+  tableKey.value++
+  nextTick(() => {
+    updateTransactionRow(index, row, 'end_amount')
+  })
 }
 
 const getCurrencySymbol = () => {
@@ -1204,7 +1361,6 @@ const formatAmount = (
   currency?: string,
   options?: { showSymbol?: boolean }
 ) => {
-  // Handle undefined, null, or NaN values
   if (amount === undefined || amount === null || isNaN(amount)) {
     amount = 0
   }
@@ -1227,14 +1383,23 @@ const formatAmount = (
   }
 }
 
-const handleFeeAmountInput = (event: Event, field: 'fee_amount', index: number) => {
+const handleAmountInput = async (
+  event: Event,
+  index: number,
+  field: 'start_amount' | 'end_amount' | 'fee_amount' | string
+) => {
   const target = event.target as HTMLInputElement
   let value = target.value
 
-  // store cursor and original length
+  // Prevent input for end_amount if unlimited is true
+  if (field === 'end_amount' && transactionFee.value[index]?.unlimited) {
+    return
+  }
+
   const cursorPosition = target.selectionStart || 0
   const originalLength = value.length
 
+  // Clean input value
   value = value.replace(/[^\d.]/g, '')
   const parts = value.split('.')
   if (parts.length > 2) {
@@ -1243,27 +1408,29 @@ const handleFeeAmountInput = (event: Event, field: 'fee_amount', index: number) 
 
   const numValue = parseFloat(value) || 0
   const row = transactionFee.value[index]
-  if (row) {
+  if (!row) return
+
+  // Handle different field types
+  if (field === 'start_amount') {
+    row.start_amount = numValue
+  } else if (field === 'end_amount') {
+    row.end_amount = numValue
+  } else if (field === 'fee_amount') {
     row.fee_amount = numValue
 
-    // --- Auto distribute supplier sharing values ---
-    // Find suppliers for this row
+    // Auto-distribute fee_amount to suppliers
     const suppliers = row.supplier_sharings || []
     const supplierCount = suppliers.length
     if (supplierCount > 0) {
       let shareValue = 0
       if (row.fee_type === FeeType.Fixed) {
-        // Fixed: divide fee_amount equally
         shareValue = numValue / supplierCount
       } else if (row.fee_type === FeeType.Percentage) {
-        // Percentage: divide fee_amount equally
         shareValue = 100 / supplierCount
       }
-      // Set each supplier's value, last one gets the remainder for precision
       let totalAssigned = 0
       suppliers.forEach((s, i) => {
         if (i === supplierCount - 1) {
-          // Last supplier: assign remainder to ensure sum equals fee_amount
           s.value = Math.max(
             0,
             row.fee_type === FeeType.Percentage ? shareValue : numValue - totalAssigned
@@ -1274,149 +1441,103 @@ const handleFeeAmountInput = (event: Event, field: 'fee_amount', index: number) 
         }
       })
     }
-    // --- End auto distribute ---
+  } else if (field.startsWith('supplier_')) {
+    const supplierId = field.replace('supplier_', '')
+    const supplier = row.supplier_sharings?.find((s) => s.id === supplierId)
+    const oldValue = supplier?.value ?? 0
 
-    // Validate after updating fee amount
-    setTimeout(() => validateTableRow(index, true), 100)
+    // Calculate sum of other suppliers
+    const getSumSuppliers =
+      row.supplier_sharings
+        ?.filter((s) => s.id !== supplierId)
+        .reduce((sum, s) => sum + (s.value || 0), 0) || 0
 
-    updateTransactionRow(index, row)
-  }
+    const totalSupplierFees = getSumSuppliers + numValue
+    const maxValue = row.fee_type === FeeType.Percentage ? 100 : row.fee_amount || 0
 
-  if (row?.fee_type === FeeType.Fixed) {
-    const formattedValue = formatAmount(numValue, selectedCurrency.value, { showSymbol: false })
-    target.value = formattedValue
-  } else {
-    target.value = numValue.toString()
-  }
+    // Validate supplier fee
+    if (
+      (row.fee_type === FeeType.Percentage && totalSupplierFees > 100) ||
+      (row.fee_type === FeeType.Fixed && totalSupplierFees > maxValue)
+    ) {
+      const description =
+        row.fee_type === FeeType.Percentage
+          ? t('total_party_fees_must_equal_100', { total: totalSupplierFees })
+          : t('total_party_fees_must_equal_fee_charge', {
+              total: formatAmount(totalSupplierFees, selectedCurrency.value),
+              fee: formatAmount(maxValue, selectedCurrency.value),
+            })
+      if (!fieldErrors.value[index]) {
+        fieldErrors.value[index] = {}
+      }
+      fieldErrors.value[index][field] = description
+      toast.add({
+        title: t('validation_error'),
+        description: `${t('row_number', { row: index + 1 })}: ${description}`,
+        color: 'error',
+      })
 
-  // Calculate new cursor position after formatting and restore
-  const newLength = target.value.length
-  const lengthDiff = newLength - originalLength
-  const newCursorPosition = Math.max(0, Math.min(cursorPosition + lengthDiff, newLength))
-  nextTick(() => {
-    try {
-      target.setSelectionRange(newCursorPosition, newCursorPosition)
-    } catch {
-      /* empty */
+      feeConfig.value.updateSupplierFee(selectedCurrency.value, index, supplierId, oldValue)
+      target.value =
+        row.fee_type === FeeType.Fixed
+          ? formatAmount(oldValue, selectedCurrency.value, { showSymbol: false })
+          : oldValue.toString()
+
+      nextTick(() => {
+        try {
+          target.setSelectionRange(target.value.length, target.value.length)
+        } catch {
+          /* empty */
+        }
+      })
+      return
     }
-  })
-}
 
-const handleSupplierFeeInput = (event: Event, rowIndex: number, supplierId: string) => {
-  const target = event.target as HTMLInputElement
-  let value = target.value
-
-  // store cursor and original length
-  const cursorPosition = target.selectionStart || 0
-  const originalLength = value.length
-
-  value = value.replace(/[^\d.]/g, '')
-  const parts = value.split('.')
-  if (parts.length > 2) {
-    value = parts[0] + '.' + parts.slice(1).join('')
+    if (supplier) {
+      feeConfig.value.updateSupplierFee(selectedCurrency.value, index, supplierId, numValue)
+    }
   }
 
-  const numValue = parseFloat(value) || 0
-  const row = transactionFee.value[rowIndex]
-  if (!row) return
-
-  // Find the supplier's previous value
-  const supplier = row.supplier_sharings?.find((s) => s.id === supplierId)
-  const oldValue = supplier?.value ?? 0
-
-  const getSumSuppliers = row.supplier_sharings
-    .filter((s) => s.id !== supplierId)
-    .reduce((sum, s) => sum + (s.value || 0), 0)
-
-  const totalSupplierFees =
-    row.supplier_sharings?.reduce((sum, supplier) => sum + (supplier.value || 0), 0) || 0
-
-  // Validation: supplier value must not exceed fee amount (fixed) or transaction fee (percentage)
-  let maxValue = 0
-  if (row.fee_type === FeeType.Fixed) {
-    maxValue = row.fee_amount || 0
-  } else if (row.fee_type === FeeType.Percentage) {
-    // const testAmount = selectedCurrency.value === 'USD' ? 100 : 400000
-    maxValue = (row.fee_amount / 100) * totalSupplierFees
-  }
-  const newSumRowSuppliers = getSumSuppliers + numValue
-  if (row.fee_type === FeeType.Fixed && newSumRowSuppliers !== maxValue) {
-    // Use translation keys with params
-    const maxValue = row.fee_amount || 0
-    const description = t('total_supplier_fees_must_equal_fee_amount', {
-      total: formatAmount(newSumRowSuppliers, selectedCurrency.value),
-      fee: formatAmount(maxValue, selectedCurrency.value),
-    })
-
-    toast.add({
-      title: t('validation_error'),
-      description: `${t('row_number', { row: rowIndex + 1 }) || `Row ${rowIndex + 1}`}: ${description}`,
-      color: 'error',
-    })
-
-    // Restore the old value in the cell and restore cursor at end
-    feeConfig.value.updateSupplierFee(
-      selectedCurrency.value,
-      rowIndex,
-      supplierId,
-      newSumRowSuppliers > maxValue ? oldValue : numValue
-    )
-    target.value = formatAmount(oldValue, selectedCurrency.value, { showSymbol: false })
-    nextTick(() => {
-      try {
-        target.setSelectionRange(oldValue.toString().length, oldValue.toString().length)
-      } catch {
-        /* empty */
-      }
-    })
-    return
-  } else if (row.fee_type === FeeType.Percentage && newSumRowSuppliers !== 100) {
-    // Use translation keys with params
-    const description = t('total_supplier_fees_must_equal_100', {
-      total: newSumRowSuppliers,
-    })
-
-    toast.add({
-      title: t('validation_error'),
-      description: `${t('row_number', { row: rowIndex + 1 }) || `Row ${rowIndex + 1}`}: ${description}`,
-      color: 'error',
-    })
-
-    // Restore the old value in the cell and restore cursor at end
-    feeConfig.value.updateSupplierFee(
-      selectedCurrency.value,
-      rowIndex,
-      supplierId,
-      newSumRowSuppliers > 100 ? oldValue : numValue
-    )
-    target.value = (newSumRowSuppliers > 100 ? oldValue : numValue).toString()
-    nextTick(() => {
-      try {
-        target.setSelectionRange(oldValue.toString().length, oldValue.toString().length)
-      } catch {
-        /* empty */
-      }
-    })
-    return
-  }
-
-  const supplierRow = distributionFee.value?.find((supplier) => supplier.id === supplierId)
-  if (supplierRow !== null && supplierRow !== undefined) {
-    feeConfig.value.updateSupplierFee(selectedCurrency.value, rowIndex, supplierId, numValue)
-    setTimeout(() => validateTableRow(rowIndex, true), 100)
-  }
-
-  if (getRowTransactionFee(rowIndex)?.fee_type === FeeType.Fixed) {
-    const formattedValue = formatAmount(numValue, selectedCurrency.value, { showSymbol: false })
+  // Validate the row
+  const isValid = validateTableRow(index, false, field)
+  if (!isValid) {
+    const formattedValue =
+      row.fee_type === FeeType.Fixed || (field !== 'fee_amount' && !field.startsWith('supplier_'))
+        ? formatAmount(numValue || 0, selectedCurrency.value, { showSymbol: false })
+        : numValue.toString()
     target.value = formattedValue
+
+    await nextTick()
+    requestAnimationFrame(() => {
+      const inputRef = inputRefs.value[`${index}_${field}`]
+      if (inputRef) {
+        inputRef.focus()
+        inputRef.setSelectionRange(formattedValue.length, formattedValue.length)
+      } else {
+        target.focus()
+        target.setSelectionRange(formattedValue.length, formattedValue.length)
+      }
+    })
+    return
   } else {
-    target.value = numValue.toString()
+    if (fieldErrors.value[index]?.[field]) {
+      fieldErrors.value[index][field] = ''
+    }
   }
 
-  // Calculate new cursor position after formatting and restore
-  const newLength = target.value.length
+  updateTransactionRow(index, row, field)
+
+  // Format output value
+  const formattedValue =
+    row.fee_type === FeeType.Fixed || (field !== 'fee_amount' && !field.startsWith('supplier_'))
+      ? formatAmount(numValue, selectedCurrency.value, { showSymbol: false })
+      : numValue.toString()
+  target.value = formattedValue
+
+  const newLength = formattedValue.length
   const lengthDiff = newLength - originalLength
   const newCursorPosition = Math.max(0, Math.min(cursorPosition + lengthDiff, newLength))
+
   nextTick(() => {
     try {
       target.setSelectionRange(newCursorPosition, newCursorPosition)
@@ -1453,71 +1574,14 @@ const handleNumericKeyPress = (event: KeyboardEvent) => {
 
 const switchCurrency = async (currency: string) => {
   selectedCurrency.value = currency
-
-  // Force table re-render by updating the key
+  fieldErrors.value = {} // Clear errors when switching currency
   tableKey.value++
-
-  // Wait for reactivity to update
   await nextTick()
-
-  // Sync distribution fee rows for the new currency
   syncDistributionFeeRows()
-
   console.log(`Switched to ${currency}, table refreshed`)
 }
 
-const handleAmountInput = (event: Event, index: number, field: 'start_amount' | 'end_amount') => {
-  const target = event.target as HTMLInputElement
-  let value = target.value
-
-  if (field === 'end_amount' && transactionFee.value[index]?.unlimited) {
-    return
-  }
-
-  // Store cursor position before formatting
-  const cursorPosition = target.selectionStart || 0
-  const originalLength = value.length
-
-  // Remove all non-numeric characters except decimal point
-  value = value.replace(/[^\d.]/g, '')
-  const parts = value.split('.')
-  if (parts.length > 2) {
-    value = parts[0] + '.' + parts.slice(1).join('')
-  }
-
-  const numValue = parseFloat(value) || 0
-  const row = transactionFee.value[index]
-  if (row) {
-    if (field === 'start_amount') {
-      row.start_amount = numValue
-    } else if (field === 'end_amount') {
-      row.end_amount = numValue
-    }
-
-    // Validate after updating amount
-    setTimeout(() => validateTableRow(index, true), 100)
-
-    updateTransactionRow(index, row, field)
-  }
-
-  // Format the value based on currency
-  const formattedValue = formatAmount(numValue, selectedCurrency.value, { showSymbol: false })
-  target.value = formattedValue
-
-  // Calculate new cursor position after formatting
-  const newLength = formattedValue.length
-  const lengthDiff = newLength - originalLength
-  const newCursorPosition = Math.max(0, Math.min(cursorPosition + lengthDiff, newLength))
-
-  // Restore cursor position
-  nextTick(() => {
-    target.setSelectionRange(newCursorPosition, newCursorPosition)
-  })
-}
-
-// Add helper: return display name and append "(you)" when supplier.isDisabled === true
 const getDisplaySupplierName = (key: string) => {
-  // try match by id first, then by name
   const found = visibleSuppliers.value.find((s) => s.id === key || s.name === key)
   if (!found) return key
   return found.isDisabled ? `${found.name} (${t('you')})` : found.name

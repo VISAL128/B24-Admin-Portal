@@ -56,6 +56,11 @@ class FeeConfiguration {
         this.feeConfigs = data
       }
 
+      // Ensure transaction_fees are ordered by start_amount for every currency config
+      this.feeConfigs.forEach((cfg) => {
+        cfg.transaction_fees = this.sortTransactionFees(cfg.transaction_fees)
+      })
+
       this.isInitialized = true
     } catch (error) {
       console.error('Error fetching fee configuration:', error)
@@ -63,6 +68,12 @@ class FeeConfiguration {
 
       // Use default configuration as fallback
       this.feeConfigs = this.getDefaultFeeConfigs()
+
+      // Sort fallback configs as well
+      this.feeConfigs.forEach((cfg) => {
+        cfg.transaction_fees = this.sortTransactionFees(cfg.transaction_fees)
+      })
+
       this.isInitialized = true
     }
   }
@@ -102,6 +113,15 @@ class FeeConfiguration {
         allocate_details: [],
       },
     ]
+  }
+
+  // new: sort helper to keep ordering logic in one place
+  private sortTransactionFees(fees: TransactionFeeRow[] = []): TransactionFeeRow[] {
+    return fees.slice().sort((a, b) => {
+      const sa = Number(a?.start_amount ?? 0)
+      const sb = Number(b?.start_amount ?? 0)
+      return sa - sb
+    })
   }
 
   getAllConfigFees(): FeeConfig[] {
