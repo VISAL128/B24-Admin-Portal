@@ -243,8 +243,8 @@
     },
     "transaction-history-table": {
       "columns": {
-        "collectionBank": "Collection Bank",
-        "settlementBank": "Settlement Bank",
+        "collectionBankId": "Collection Bank",
+        "settlementBankId": "Settlement Bank",
         "settlementType": "Settlement Type",
         "transactionType": "Transaction Type",
         "currency": "Currency",

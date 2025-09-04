@@ -425,7 +425,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
       enableHiding: false,
     },
     {
-      id: 'collectionBank',
+      id: 'collectionBankId',
       accessorKey: 'collectionBank',
       header: () => t('pages.transaction.collection_bank'),
       cell: ({ row }) => {
@@ -449,7 +449,7 @@ const columns = computed((): BaseTableColumn<TransactionHistoryRecord>[] => {
       },
     },
     {
-      id: 'settlementBank',
+      id: 'settlementBankId',
       accessorKey: 'settlementBank',
       header: () => t('pages.transaction.settlement_bank'),
       cell: ({ row }) => {
