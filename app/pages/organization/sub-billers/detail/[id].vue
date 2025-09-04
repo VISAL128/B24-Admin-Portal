@@ -1023,19 +1023,17 @@ function buildColumns() {
       headerText: t('pages.transaction.created_date'),
       cell: ({ row }) => useFormat().formatDateTime(row.original.tranDate),
       enableSorting: true,
-      enableHiding: false,
     },
     {
       id: 'transactionNo',
       accessorKey: 'transactionNo',
       headerText: t('wallet_page.transaction_no'),
       cell: ({ row }) => copyCell(row.original.transactionNo),
-      enableHiding: false,
     },
 
     {
       id: 'bankReference',
-      accessorKey: 'bank_ref',
+      accessorKey: 'bankRefId',
       headerText: t('pages.transaction.bank_ref'),
       cell: ({ row }) => copyCell(row.original.bankRefId),
       enableSorting: true,
@@ -1051,7 +1049,7 @@ function buildColumns() {
     },
     {
       id: 'tranType',
-      accessorKey: 'transaction_type',
+      accessorKey: 'tranType',
       headerText: t('transaction_type'),
       cell: ({ row }) => {
         const group = groupByTranType(row.original.tranType as TransactionType)
@@ -1107,11 +1105,10 @@ function buildColumns() {
     },
     {
       id: 'currencyId',
-      accessorKey: 'currency_id',
+      accessorKey: 'currencyId',
       headerText: t('settlement.currency'),
       cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currencyId || '-'),
       enableColumnFilter: true,
-      enableHiding: false,
       filterOptions: [
         { label: t('currency.usd'), value: 'USD' },
         { label: t('currency.khr'), value: 'KHR' },
@@ -1119,7 +1116,7 @@ function buildColumns() {
     },
     {
       id: 'totalAmount',
-      accessorKey: 'total_amount',
+      accessorKey: 'amount',
       headerText: t('total_amount'),
       cell: ({ row }) =>
         h(
@@ -1131,7 +1128,6 @@ function buildColumns() {
       enableSorting: true,
       size: 50,
       maxSize: 150,
-      enableHiding: false,
     },
   ]
 }
