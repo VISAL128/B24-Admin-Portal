@@ -1,13 +1,11 @@
 import * as XLSX from 'xlsx'
 import {
-  getPDFTitles,
-  getPeriodText,
   getCompanyText,
   getCurrencyText,
-  getTotalText,
-  getCurrencyTotalsText,
   getFooterText,
   getPageText,
+  getPeriodText,
+  getTotalText
 } from './pdfFonts'
 // Dynamic imports for jsPDF to avoid SSR issues
 // import jsPDF from 'jspdf'
@@ -1125,28 +1123,50 @@ export async function exportToPDFWithUnicodeSupport(
 
     // Add clean total section
     if ((options.totalAmount !== undefined || options.currencyTotals) && options.t) {
-      let totalText = ''
+      htmlContent += `
+        <div style="
+          margin-top: 20px;
+          text-align: right;
+        ">
+      `
 
       if (options.currencyTotals && Object.keys(options.currencyTotals).length > 0) {
-        totalText = getCurrencyTotalsText(options.t, options.currencyTotals, options.locale || 'en')
+        // Display each currency total on separate rows with currency in label
+        const totalLabel = options.t('pdf_export.total')
+
+        Object.entries(options.currencyTotals).forEach(([currency, amount]) => {
+          const formattedAmount = amount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')
+          htmlContent += `
+            <div style="margin-bottom: 8px;">
+              <p style="
+                display: inline-block;
+                padding: 8px 15px;
+                font-weight: bold;
+                font-size: 14px;
+                color: ${KHMER_RED};
+                background: ${KHMER_BG_LIGHT};
+                border: 1px solid ${KHMER_BORDER};
+                border-right: 3px solid ${KHMER_RED};
+                border-radius: 4px;
+                font-family: ${options.locale === 'km' ? '"Noto Sans Khmer", "Khmer OS"' : '"Helvetica Neue", Arial, sans-serif'};
+                margin: 0;
+              ">
+                ${totalLabel} (${currency}): ${formattedAmount} ${currency}
+              </p>
+            </div>
+          `
+        })
       } else if (options.totalAmount !== undefined) {
-        totalText = getTotalText(
+        const totalText = getTotalText(
           options.t,
           options.totalAmount,
           options.currency || '',
           options.locale || 'en'
         )
-      }
-
-      if (totalText) {
         htmlContent += `
-          <div style="
-            margin-top: 20px;
-            text-align: right;
-          ">
-            <p style="
-              display: inline-block;
-              padding: 10px 15px;
+          <p style="
+            display: inline-block;
+            padding: 10px 15px;
             font-weight: bold;
             font-size: 14px;
             color: ${KHMER_RED};
@@ -1158,9 +1178,10 @@ export async function exportToPDFWithUnicodeSupport(
           ">
             ${totalText}
           </p>
-        </div>
-      `
+        `
       }
+
+      htmlContent += `</div>`
     }
 
     // Add clean footer
@@ -1870,53 +1891,87 @@ export async function exportToExcelWithUnicodeSupport(
   if ((options.totalAmount !== undefined || options.currencyTotals) && options.t) {
     worksheet.addRow([])
     const totalLabel = options.t('pdf_export.total')
-    let totalValue = ''
 
     if (options.currencyTotals && Object.keys(options.currencyTotals).length > 0) {
-      const totalsArray = Object.entries(options.currencyTotals).map(([currency, amount]) => {
+      // Add each currency total on separate rows with currency in label
+      Object.entries(options.currencyTotals).forEach(([currency, amount]) => {
         const formattedAmount = amount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')
-        return `${formattedAmount} ${currency}`
-      })
-      totalValue = totalsArray.join(', ')
-    } else if (options.totalAmount !== undefined) {
-      totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`
-    }
-
-    const totalRowData = Array.from({ length: headers.length }, () => '')
-    totalRowData[headers.length - 2] = totalLabel
-    totalRowData[headers.length - 1] = totalValue
-    const totalRow = worksheet.addRow(totalRowData)
-    totalRow.font = {
-      bold: true,
-      size: 12,
-      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
-    }
-    totalRow.eachCell((cell, colNumber) => {
-      // Center align empty cells, right align for total label and value
-      if (colNumber >= headers.length - 1) {
-        cell.alignment = { horizontal: 'right', vertical: 'middle' }
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFE6F3FF' },
+        const currencyRowData = Array.from({ length: headers.length }, () => '')
+        currencyRowData[headers.length - 2] = `${totalLabel} (${currency}):`
+        currencyRowData[headers.length - 1] = `${formattedAmount} ${currency}`
+        
+        const currencyRow = worksheet.addRow(currencyRowData)
+        currencyRow.font = {
+          bold: true,
+          size: 12,
+          name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
         }
-      } else {
-        cell.alignment = { horizontal: 'center', vertical: 'middle' }
+        currencyRow.eachCell((cell, colNumber) => {
+          if (colNumber >= headers.length - 1) {
+            cell.alignment = { horizontal: 'right', vertical: 'middle' }
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFE6F3FF' },
+            }
+          } else {
+            cell.alignment = { horizontal: 'center', vertical: 'middle' }
+          }
+          cell.border = {
+            top: { style: 'medium', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'medium', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } },
+          }
+        })
+
+        const totalValueCell = currencyRow.getCell(headers.length)
+        totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' }
+        totalValueCell.font = {
+          bold: true,
+          size: 12,
+          color: { argb: 'FF0066CC' },
+          name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
+        }
+      })
+    } else if (options.totalAmount !== undefined) {
+      const totalValue = `${options.totalAmount.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')} ${options.currency || ''}`
+      const totalRowData = Array.from({ length: headers.length }, () => '')
+      totalRowData[headers.length - 2] = totalLabel
+      totalRowData[headers.length - 1] = totalValue
+      const totalRow = worksheet.addRow(totalRowData)
+      totalRow.font = {
+        bold: true,
+        size: 12,
+        name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
       }
-      cell.border = {
-        top: { style: 'medium', color: { argb: 'FF000000' } },
-        left: { style: 'thin', color: { argb: 'FF000000' } },
-        bottom: { style: 'medium', color: { argb: 'FF000000' } },
-        right: { style: 'thin', color: { argb: 'FF000000' } },
+      totalRow.eachCell((cell, colNumber) => {
+        // Center align empty cells, right align for total label and value
+        if (colNumber >= headers.length - 1) {
+          cell.alignment = { horizontal: 'right', vertical: 'middle' }
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE6F3FF' },
+          }
+        } else {
+          cell.alignment = { horizontal: 'center', vertical: 'middle' }
+        }
+        cell.border = {
+          top: { style: 'medium', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'medium', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } },
+        }
+      })
+      const totalValueCell = totalRow.getCell(headers.length)
+      totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' }
+      totalValueCell.font = {
+        bold: true,
+        size: 12,
+        color: { argb: 'FF0066CC' },
+        name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
       }
-    })
-    const totalValueCell = totalRow.getCell(headers.length)
-    totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' }
-    totalValueCell.font = {
-      bold: true,
-      size: 12,
-      color: { argb: 'FF0066CC' },
-      name: options.locale === 'km' ? 'Noto Sans Khmer' : 'Arial',
     }
   }
 

@@ -79,6 +79,15 @@ export interface TransactionHistoryRecord {
     extData: string | null;
     description: string | null;
     accountNumber: string | null; 
+    details: TransactionLineDetail[];
+}
+export interface TransactionLineDetail {
+  id: string;
+  customerName: string;
+  customerCode: string;
+  billNumber: string;
+  amount: string;      
+  currency: string;
 }
 
 

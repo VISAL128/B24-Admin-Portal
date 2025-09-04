@@ -403,6 +403,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     header: () => t('settlement.currency'),
     cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currency_id || '-'),
     enableColumnFilter: true,
+    enableHiding: false,
     filterOptions: [
       { label: t('currency.usd'), value: 'USD' },
       { label: t('currency.khr'), value: 'KHR' },
@@ -414,6 +415,7 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
     accessorKey: 'total_amount',
     header: ({ column }) => createSortableHeader(column, t('total_amount'), 'right'),
     sortableHeaderAlignment: 'right',
+    enableHiding: false,
     cell: ({ row }) =>
       h(
         'div',

@@ -197,7 +197,7 @@
         <ExportButton
           :data="filteredData"
           :headers="exportHeaders"
-          :columns="filteredColumns"
+          :columns="orderedColumns"
           :export-options="resolvedExportOptions"
         />
         <div class="flex items-center gap-0">
@@ -226,27 +226,60 @@
                   <span class="text-sm font-medium">{{ t('table.column_config.columns') }}</span>
                 </div>
                 <Divider />
-                <div class="flex flex-col gap-1 px-2">
-                  <UCheckbox
-                    v-for="col in columnConfig"
-                    :id="col.id"
-                    :key="col.id"
-                    :label="getTranslationHeaderById(col.id)"
-                    :model-value="columnVisibility[col.id] ?? true"
-                    :ui="appConfig.ui.checkbox.slots"
-                    variant="list"
-                    class="text-sm px-2 py-1 w-full h-full rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                    size="sm"
-                    @update:model-value="
-                      (value) => {
-                        col.toggleVisibility(value as boolean)
-                        columnVisibility[col.id] = value as boolean
-                      }
-                    "
-                  />
+
+                <!-- Column Order Section -->
+                <div class="px-2 space-y-1 max-h-96 overflow-y-auto">
+                  <div
+                    v-for="(item, index) in orderedColumnConfigItems"
+                    :key="item.id"
+                    class="flex items-center gap-2 px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded text-xs sortable-item"
+                    :class="{
+                      dragging: draggedIndex === index,
+                    }"
+                    :data-id="item.id"
+                    @dragover="handleDragOver"
+                    @dragleave="handleDragLeave"
+                    @drop="handleDrop($event, index)"
+                  >
+                    <div
+                      class="drag-handle cursor-grab active:cursor-grabbing"
+                      draggable="true"
+                      @dragstart="handleDragStart($event, index)"
+                      @dragend="handleDragEnd"
+                    >
+                      <UIcon
+                        name="material-symbols:drag-indicator"
+                        class="text-gray-500 dark:text-gray-400 w-4 h-4"
+                      />
+                    </div>
+                    <span
+                      :class="{
+                        'text-muted':
+                          columnConfig.find((c) => c.id === item.id)?.getCanHide() === false,
+                      }"
+                      class="flex-1 text-gray-700 dark:text-gray-300"
+                    >
+                      {{ getTranslationHeaderById(item.id) }}
+                    </span>
+                    <USwitch
+                      :model-value="columnVisibility[item.id] ?? true"
+                      size="xs"
+                      color="primary"
+                      :disabled="columnConfig.find((c) => c.id === item.id)?.getCanHide() === false"
+                      @update:model-value="
+                        (value) => {
+                          // columnVisibility[item.id] = value as boolean
+                          const col = columnConfig.find((c) => c.id === item.id)
+                          if (col) {
+                            col.toggleVisibility(value as boolean)
+                          }
+                        }
+                      "
+                    />
+                  </div>
                 </div>
                 <Divider />
-                <div class="flex justify-end px-2 pb-2">
+                <div class="flex justify-between px-2 pb-2">
                   <UButton
                     variant="link"
                     size="xs"
@@ -256,7 +289,7 @@
                       ...appConfig.ui.button.slots,
                       leadingIcon: 'shrink-0 size-3 text-muted',
                     }"
-                    @click="onResetColumnVisibility"
+                    @click="onResetColumnConfig"
                   >
                     <template #default>
                       {{ t('table.column_config.reset') }}
@@ -309,7 +342,7 @@
       ref="tableRef"
       v-model:sorting="sorting"
       :data="filteredData"
-      :columns="filteredColumns"
+      :columns="orderedColumns"
       :loading="loading"
       :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
       :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
@@ -408,6 +441,7 @@ const user = auth.user
 const tableConfig = useTableConfig()
 
 const defaultColumnVisibility = ref<Record<string, boolean>>({})
+const defaultColumnOrder = ref<string[]>([])
 
 // Initialize column visibility from localStorage or defaults
 const initializeColumnVisibility = (): Record<string, boolean> => {
@@ -429,6 +463,22 @@ const initializeColumnVisibility = (): Record<string, boolean> => {
     }
   })
   return defaultVisibility
+}
+
+// Initialize column order from localStorage or defaults
+const initializeColumnOrder = (): string[] => {
+  const savedOrder = tableConfig.getColumnOrder(props.tableId)
+  if (savedOrder && savedOrder.length > 0) {
+    return savedOrder
+  }
+
+  // If no saved order, use current defaultColumnOrder
+  if (defaultColumnOrder.value.length > 0) {
+    return [...defaultColumnOrder.value]
+  }
+
+  // Fallback: create default order from all columns
+  return columnsWithRowNumber.value.map((col) => col.id).filter((id): id is string => !!id)
 }
 
 // Initialize column filters from localStorage or defaults
@@ -477,6 +527,7 @@ const initializeSorting = (): Array<{ id: string; desc: boolean }> => {
 }
 
 const columnVisibility = ref<Record<string, boolean>>({})
+const columnOrder = ref<string[]>([])
 const columnFilters = ref<Record<string, string>>({})
 const appliedColumnFilters = ref<Record<string, string>>({})
 const dateRange = ref<{ start: string; end: string }>({ start: '', end: '' })
@@ -488,6 +539,12 @@ const { createRowNumberCell, createSortableHeader } = useTable<T>(sorting)
 
 const saveColumnVisibility = () => {
   tableConfig.saveColumnConfig(props.tableId, columnVisibility.value)
+}
+
+const saveColumnOrder = () => {
+  tableConfig.saveColumnOrder(props.tableId, columnOrder.value)
+  if (import.meta.env.DEV)
+    console.log(`DEV: 💾 Saved column order for table ${props.tableId}:`, columnOrder.value)
 }
 
 const saveColumnFilters = () => {
@@ -509,17 +566,23 @@ const saveSorting = () => {
 }
 
 watch(columnVisibility, saveColumnVisibility, { deep: true })
+watch(columnOrder, saveColumnOrder, { deep: true })
 watch(dateRange, saveDateRange, { deep: true })
 watch(sorting, saveSorting, { deep: true })
 
 // Create column config based on actual columns instead of table API
 const columnConfig = computed(() => {
   const config = columnsWithRowNumber.value
-    .filter((col) => col.enableHiding !== false && col.id !== 'select' && col.id !== 'row_number')
+    .filter((col) => col.id !== 'select' && col.id !== 'row_number')
     .map((col) => ({
       id: col.id,
       getCanHide: () => col.enableHiding !== false,
       toggleVisibility: (visible: boolean) => {
+        // Only allow toggling if column can be hidden
+        if (col.enableHiding === false) {
+          return
+        }
+
         // Update our reactive state first
         if (col.id) {
           columnVisibility.value[col.id] = visible
@@ -629,7 +692,11 @@ const tableKey = computed(() => {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}:${value}`)
     .join('|')
-  return `${props.tableId}-${visibilityHash}`
+
+  // Include column order in the key to force table rebuild when order changes
+  const orderHash = columnOrder.value.join(',')
+
+  return `${props.tableId}-${visibilityHash}-${orderHash}`
 })
 
 // Use internal data if no data prop is provided
@@ -932,12 +999,176 @@ const resolvedExportOptions = computed((): ExportOptions => {
   }
 })
 
+// Column configuration related computed properties and handlers
 const tableRef = useTemplateRef('tableRef')
 const allColumnIds = computed(() =>
   columnsWithRowNumber.value.map((col) => col.id).filter((id): id is string => !!id)
 )
 
-// Computed property for sort menu items
+// Computed property for ordered column IDs (excluding system columns)
+const orderedColumnIds = computed(() => {
+  const systemColumns = ['select', 'row_number']
+  return columnOrder.value.filter((id) => !systemColumns.includes(id))
+})
+
+// Computed property for draggable items
+const orderedColumnConfigItems = computed(() => {
+  return orderedColumnIds.value.map((id) => ({ id }))
+})
+
+// HTML5 Drag and Drop state
+const draggedIndex = ref<number | null>(null)
+
+// HTML5 Drag and Drop handlers
+const handleDragStart = (event: DragEvent, index: number) => {
+  draggedIndex.value = index
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/html', 'dragging')
+  }
+  const target = event.target as HTMLElement
+  target.classList.add('drag-column')
+}
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+
+  // Get the current drop target index
+  const target = event.target as HTMLElement
+  const item = target.closest('.sortable-item') as HTMLElement
+  if (item && draggedIndex.value !== null) {
+    // Clean up previous chosen states
+    document.querySelectorAll('.sortable-item').forEach((el) => {
+      el.classList.remove('chosen-column')
+    })
+
+    const allItems = Array.from(item.parentElement?.children || [])
+    let dropIndex = allItems.indexOf(item)
+
+    // Get the mouse position relative to the item for more precise drop targeting
+    const rect = item.getBoundingClientRect()
+    const itemHeight = rect.height
+    const mouseY = event.clientY - rect.top
+
+    // If mouse is in the bottom half of the item when dragging down, target the next position
+    if (draggedIndex.value < dropIndex && mouseY > itemHeight / 2) {
+      dropIndex = Math.min(dropIndex + 1, allItems.length - 1)
+    }
+    // If mouse is in the top half of the item when dragging up, target the current position
+    else if (draggedIndex.value > dropIndex && mouseY < itemHeight / 2) {
+      // dropIndex stays the same
+    }
+
+    // Only update if it's a different position and valid
+    if (dropIndex !== draggedIndex.value && dropIndex >= 0) {
+      // Highlight the appropriate item for visual feedback
+      const targetItem = allItems[Math.min(dropIndex, allItems.length - 1)] as HTMLElement
+      if (targetItem) {
+        targetItem.classList.add('chosen-column')
+      }
+    }
+  }
+}
+
+const handleDragLeave = (event: DragEvent) => {
+  // Only clean up if we're truly leaving the item, not just moving to a child element
+  const target = event.target as HTMLElement
+  const relatedTarget = event.relatedTarget as HTMLElement
+  const item = target.closest('.sortable-item') as HTMLElement
+
+  if (item && (!relatedTarget || !item.contains(relatedTarget))) {
+    item.classList.remove('chosen-column')
+  }
+}
+
+const handleDrop = (event: DragEvent, dropIndex: number) => {
+  event.preventDefault()
+
+  if (draggedIndex.value !== null && draggedIndex.value !== dropIndex) {
+    // Add a small delay for smooth transition effect
+    const draggedElement = event.target as HTMLElement
+    const item = draggedElement.closest('.sortable-item') as HTMLElement
+
+    if (item) {
+      // Add a completion animation
+      item.style.transform = 'scale(1.1)'
+      item.style.transition = 'transform 0.2s ease-out'
+
+      setTimeout(() => {
+        item.style.transform = ''
+        item.style.transition = ''
+      }, 200)
+    }
+
+    const items = [...orderedColumnConfigItems.value]
+    const draggedItem = items[draggedIndex.value]
+
+    // Remove the dragged item
+    items.splice(draggedIndex.value, 1)
+
+    // Insert at the drop position - adjust index based on drag direction
+    let adjustedDropIndex = dropIndex
+    if (draggedIndex.value < dropIndex) {
+      // Dragging down: target index shifts up after removal
+      adjustedDropIndex = dropIndex - 1
+    }
+    // Dragging up: target index stays the same after removal
+
+    items.splice(adjustedDropIndex, 0, draggedItem!)
+
+    // Update the column order with transition
+    const newOrder = items.map((item) => item.id)
+    updateColumnOrder(newOrder)
+  }
+
+  // Clean up all drag styling with smooth transitions
+  document.querySelectorAll('.sortable-item').forEach((item) => {
+    item.classList.remove('chosen-column', 'ghost-column')
+  })
+
+  // Reset drag state
+  draggedIndex.value = null
+}
+
+const handleDragEnd = (event: DragEvent) => {
+  const target = event.target as HTMLElement
+  target.classList.remove('drag-column')
+
+  // Clean up all drag styling
+  document.querySelectorAll('.sortable-item').forEach((item) => {
+    item.classList.remove('chosen-column', 'ghost-column')
+  })
+
+  // Reset all drag states
+  draggedIndex.value = null
+}
+
+const updateColumnOrder = (newOrder: string[]) => {
+  // Preserve system columns at their original positions
+  const systemColumns = ['select', 'row_number']
+  const fullOrder = [...columnOrder.value]
+
+  // Update only the non-system columns
+  let nonSystemIndex = 0
+  for (let i = 0; i < fullOrder.length; i++) {
+    if (!systemColumns.includes(fullOrder[i]!)) {
+      fullOrder[i] = newOrder[nonSystemIndex]!
+      nonSystemIndex++
+    }
+  }
+
+  columnOrder.value = fullOrder
+
+  // Force table to rebuild with new column order
+  nextTick(() => {
+    if (import.meta.env.DEV) {
+      console.log(`📊 Column order updated for table ${props.tableId}:`, columnOrder.value)
+    }
+  })
+}
 
 // Computed property for active filter count
 const activeFilterCount = computed(() => {
@@ -962,7 +1193,7 @@ const activeFilterCount = computed(() => {
 })
 
 const exportHeaders = computed(() =>
-  filteredColumns.value
+  orderedColumns.value
     .filter((col) => {
       if (
         col.id === 'select' ||
@@ -1145,6 +1376,41 @@ const filteredColumns = computed(() => {
   })
 })
 
+// Computed property for ordered and filtered columns
+const orderedColumns = computed(() => {
+  const filtered = filteredColumns.value
+
+  // If no column order is set, return filtered columns as-is
+  if (columnOrder.value.length === 0) {
+    return filtered
+  }
+
+  // Create a map for quick lookup of columns by ID
+  const columnMap = new Map(filtered.map((col) => [col.id, col]))
+
+  // Order columns according to columnOrder, then add any remaining columns
+  const ordered: typeof filtered = []
+  const usedIds = new Set<string>()
+
+  // Add columns in the specified order
+  for (const id of columnOrder.value) {
+    const column = columnMap.get(id)
+    if (column && !usedIds.has(id)) {
+      ordered.push(column)
+      usedIds.add(id)
+    }
+  }
+
+  // Add any remaining columns that weren't in the order list
+  for (const column of filtered) {
+    if (column.id && !usedIds.has(column.id)) {
+      ordered.push(column)
+    }
+  }
+
+  return ordered
+})
+
 // Add this computed property to detect if there's a selection column
 const hasSelectionColumn = computed(() => {
   return props.columns.some((col) => col.id === 'select' || col.accessorKey === 'select')
@@ -1196,6 +1462,11 @@ onBeforeMount(() => {
     {} as Record<string, boolean>
   )
 
+  // Set up default column order
+  defaultColumnOrder.value = columnsWithRowNumber.value
+    .map((col) => col.id)
+    .filter((id): id is string => !!id)
+
   // Initialize date range from localStorage or defaults
   const initialDateRange = initializeDateRange()
   dateRange.value = initialDateRange
@@ -1211,6 +1482,10 @@ onBeforeMount(() => {
     ...initialColumnVisibility,
   }
 
+  // Initialize column order
+  const initialColumnOrder = initializeColumnOrder()
+  columnOrder.value = initialColumnOrder
+
   if (import.meta.env.DEV) {
     console.log(
       `📊 Initialized column visibility for table ${props.tableId}:`,
@@ -1220,6 +1495,8 @@ onBeforeMount(() => {
       `📊 Default column visibility for table ${props.tableId}:`,
       defaultColumnVisibility.value
     )
+    console.log(`📊 Initialized column order for table ${props.tableId}:`, columnOrder.value)
+    console.log(`📊 Default column order for table ${props.tableId}:`, defaultColumnOrder.value)
   }
 
   // Parse the date strings to set calendar values and internal date values
@@ -1384,12 +1661,16 @@ watch(modelValue, (val) => {
   }
 })
 
-const onResetColumnVisibility = () => {
-  // Reset to default visibility state
+const onResetColumnConfig = () => {
+  // Reset both visibility and order to defaults
   columnVisibility.value = { ...defaultColumnVisibility.value }
+  columnOrder.value = [...defaultColumnOrder.value]
 
   if (import.meta.env.DEV) {
-    console.log('📊 Reset column visibility to defaults:', columnVisibility.value)
+    console.log('📊 Reset column config to defaults:', {
+      visibility: columnVisibility.value,
+      order: columnOrder.value,
+    })
   }
 }
 
@@ -1435,5 +1716,218 @@ defineExpose({
 <style scoped>
 .single-line-headers :deep(th) {
   white-space: nowrap;
+}
+
+/* Drag and drop styles */
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+
+.chosen {
+  opacity: 0.9;
+}
+
+.drag {
+  opacity: 0.8;
+  transform: rotate(5deg);
+}
+
+/* Column ordering drag styles with animations */
+.sortable-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.sortable-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ghost-column {
+  opacity: 0.3;
+  background: #c8ebfb;
+  border: 2px dashed #2196f3;
+  transform: rotate(1deg) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chosen-column {
+  /* transform: scale(1.05) translateY(-2px); */
+  background: #e3f2fd;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+  border: 1px solid #2196f3;
+  z-index: 10;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* animation: pulsePreview 0.6s ease-in-out infinite alternate; */
+}
+
+.drag-column {
+  opacity: 0.9;
+  transform: rotate(3deg) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Real-time preview animation */
+@keyframes pulsePreview {
+  0% {
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+  }
+  100% {
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
+  }
+}
+
+/* Enhanced preview state for drop zones */
+.sortable-item[data-drop-preview='true'] {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  /* border: 2px solid #2196f3; */
+  transform: scale(1.02) translateY(-1px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.25);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drag-handle {
+  cursor: grab;
+  transition: all 0.2s ease-in-out;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.drag-handle:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  transform: scale(1.1);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  transform: scale(0.95);
+}
+
+/* Vue.Draggable inspired transition styles */
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px) scale(0.95);
+}
+
+.list-leave-active {
+  position: absolute;
+  right: 0;
+  left: 0;
+}
+
+/* Enhanced dragging state */
+.dragging {
+  opacity: 0.8;
+  transform: rotate(2deg) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced drop target state */
+.drop-target {
+  /* background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); */
+  /* border: 2px dashed #4caf50; */
+  transform: scale(1.03) translateY(-3px);
+  /* box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25); */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth list reordering animation */
+.sortable-item {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  transform-origin: center;
+}
+
+/* Ghost effect for smoother transitions */
+.sortable-item.list-move {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Push effect animations for dragged items displacement */
+.push-up {
+  animation: pushUpAnimation 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform: translateY(-5px);
+}
+
+.push-down {
+  animation: pushDownAnimation 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform: translateY(5px);
+}
+
+@keyframes pushUpAnimation {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(-2px);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translateY(-8px);
+    opacity: 0.8;
+  }
+  80% {
+    transform: translateY(-6px);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-5px);
+    opacity: 0.9;
+  }
+}
+
+@keyframes pushDownAnimation {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(2px);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translateY(8px);
+    opacity: 0.8;
+  }
+  80% {
+    transform: translateY(6px);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(5px);
+    opacity: 0.9;
+  }
+}
+
+/* Column push transition group animations */
+.column-push-move,
+.column-push-enter-active,
+.column-push-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.column-push-enter-from,
+.column-push-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.column-push-leave-active {
+  position: absolute;
+  right: 0;
+  left: 0;
 }
 </style>

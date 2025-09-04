@@ -132,6 +132,7 @@
     "business_organization": "ស្ថាប័ន",
     "available_organizations": "ស្ថាប័នដែលអាចប្រើបាន",
     "switch_organization": "បាទ, ប្តូរ",
+    "switch_organization_title": "ប្តូរស្ថាប័ន",
     "no_organizations_available": "មិនមានស្ថាប័នបន្ថែមទេ",
     "loading_organizations": "កំពុងទាញយកស្ថាប័ន...",
     "organization_switched": "បានប្តូរស្ថាប័នដោយជោគជ័យ",
@@ -507,10 +508,12 @@
       "created_by": "ទូទាត់ដោយ"
     },
     "column_config": {
-      "tooltip": "លាក់/បង្ហាញជួរឈរ",
+      "tooltip": "ការកំណត់ជួរឈរ",
       "reset": "កំណត់ឡើងវិញ",
       "reset_description": "កំណត់ជួរឈរ និងការតម្រៀបឡើងវិញទៅលំនាំដើម",
-      "columns": "ជួរឈរ"
+      "columns": "ជួរឈរ",
+      "order": "លំដាប់ជួរឈរ",
+      "randomize_order": "លំដាប់ចៃដន្យ"
     }
   },
   "settlement": {
@@ -1101,7 +1104,7 @@
         "pending": "កំពុងដំណើរការ"
       },
       "failed_allocation_detail": "បរាជ័យក្នុងការទាញយកព័ត៌មានលម្អិតការបែងចែក",
-       "no_settlement": "មិនមានការទូទាត់សម្រាប់ប្រតិបត្តិការនេះ"
+      "no_settlement": "មិនមានការទូទាត់សម្រាប់ប្រតិបត្តិការនេះ"
     },
     "transaction": {
       "supplier_fee": "កម្រៃសេវាអ្នកចេញវិក្កយបត្រ",

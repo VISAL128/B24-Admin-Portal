@@ -64,6 +64,47 @@ export const useTableConfig = (): TableConfigComposable => {
   }
 
   /**
+   * Save column order configuration for a specific table
+   * @param tableId - Unique identifier for the table
+   * @param columnOrder - Array of column IDs in the desired order
+   */
+  const saveColumnOrder = (tableId: string, columnOrder: string[]): boolean => {
+    try {
+      const allConfigs = getAllConfigs()
+
+      if (!allConfigs[tableId]) {
+        allConfigs[tableId] = {
+          columnVisibility: {},
+          columnOrder,
+        }
+      } else {
+        allConfigs[tableId].columnOrder = columnOrder
+      }
+
+      const success = storage.setItem(getStorageKey(), allConfigs)
+
+      return success
+    } catch (error) {
+      console.error(`❌ Failed to save column order for table ${tableId}:`, error)
+      return false
+    }
+  }
+
+  /**
+   * Get column order configuration for a specific table
+   * @param tableId - Unique identifier for the table
+   */
+  const getColumnOrder = (tableId: string): string[] | null => {
+    try {
+      const allConfigs = getAllConfigs()
+      return allConfigs[tableId]?.columnOrder || null
+    } catch (error) {
+      console.error(`❌ Failed to get column order for table ${tableId}:`, error)
+      return null
+    }
+  }
+
+  /**
    * Save column filters configuration for a specific table
    * @param tableId - Unique identifier for the table
    * @param columnFilters - Object mapping column IDs to filter values
@@ -73,9 +114,9 @@ export const useTableConfig = (): TableConfigComposable => {
       const allConfigs = getAllConfigs()
 
       if (!allConfigs[tableId]) {
-        allConfigs[tableId] = { 
+        allConfigs[tableId] = {
           columnVisibility: {},
-          columnFilters 
+          columnFilters,
         }
       } else {
         allConfigs[tableId].columnFilters = columnFilters
@@ -362,6 +403,8 @@ export const useTableConfig = (): TableConfigComposable => {
   return {
     saveColumnConfig,
     getColumnConfig,
+    saveColumnOrder,
+    getColumnOrder,
     saveColumnFilters,
     getColumnFilters,
     saveTableConfig,

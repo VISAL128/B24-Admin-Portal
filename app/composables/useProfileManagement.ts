@@ -8,6 +8,7 @@
 import type { SupplierProfile } from '~/models/supplier'
 import { useMtcApi } from '~/composables/api/useMtcApi'
 import { usePgwModuleApi } from './api/usePgwModuleApi'
+import { useWalletStore } from '~/stores/wallet'
 
 export const useProfileManagement = () => {
   const auth = useAuth()
@@ -70,6 +71,10 @@ export const useProfileManagement = () => {
       // Set the new profile locally (already in SupplierProfile format)
       auth.setProfileToCookie(profile)
 
+      // Use the new app state manager for comprehensive cleanup
+      const appStateManager = useAppStateManager()
+      await appStateManager.performOrganizationSwitch()
+
       // Show success notification
       toast.add({
         title: t('success'),
@@ -77,13 +82,9 @@ export const useProfileManagement = () => {
         color: 'success',
       })
 
-      // Clear the available profiles cache to force reload next time
       availableProfiles.value = []
+      await navigateTo('/')
 
-      // Reload the page to refresh all profile-dependent data
-      // TODO: In the future, we might want to implement a more elegant solution
-      // that updates the reactive state without a full page reload
-      // window.location.reload()
     } catch (error) {
       console.error('Failed to switch profile:', error)
       toast.add({
@@ -91,6 +92,44 @@ export const useProfileManagement = () => {
         description: error instanceof Error ? error.message : 'Failed to switch profile',
         color: 'error',
       })
+    }
+  }
+
+  /**
+   * Clear all application state and cached data after profile switch
+   * @deprecated Use useAppStateManager().performOrganizationSwitch() instead
+   */
+  const clearApplicationState = async (): Promise<void> => {
+    try {
+      // 1. Clear localStorage items except essential ones
+      const storage = useStorage()
+      const keysToPreserve = [
+        'user-preferences', // Keep user preferences
+        'nuxt-oidc-auth', // Keep authentication data
+      ]
+
+      // Get all localStorage keys and clear organization-specific data
+      const allKeys = storage.getKeys()
+      allKeys.forEach((key) => {
+        if (!keysToPreserve.some((preserveKey) => key.includes(preserveKey))) {
+          storage.removeItem(key)
+        }
+      })
+
+      // 2. Clear cached data patterns
+      storage.clearItems('cache-')
+      storage.clearItems('table-config')
+
+      // 3. Reset Pinia stores
+      const walletStore = useWalletStore()
+      walletStore.resetStore()
+
+      // 4. Clear any global reactive state
+      // Note: Nuxt's useState will be reset on navigation
+
+      console.log('✅ Application state cleared successfully after profile switch')
+    } catch (error) {
+      console.error('❌ Failed to clear application state:', error)
     }
   }
 
@@ -111,5 +150,6 @@ export const useProfileManagement = () => {
     loadAvailableProfiles,
     switchProfile,
     refreshProfiles,
+    clearApplicationState,
   }
 }
