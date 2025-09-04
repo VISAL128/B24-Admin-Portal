@@ -1069,19 +1069,18 @@ const summary = ref<RepushSummary>({
 
 // Customer Details Data - computed from transaction data or fallback to mock data
 const customerDetails = computed(() => {
-   try {
-    if (transactionData.value && transactionData.value.extData) {
-      const parsed = JSON.parse(transactionData.value.extData)
-      return (parsed.customers || []).map((c: any) => ({
-        customerName: c.customer_name || '-',
-        customerCode: c.customer_code || '-',
-        billNumber: c.bill_no || '-',
-        currency: c.currency || '-', // If available in API
+  try {
+    if (transactionData.value && transactionData.value.details) {
+      return (transactionData.value.details || []).map((c: any) => ({
+        customerName: c.customer_name || c.customerName || '-',
+        customerCode: c.customer_code || c.customerCode || '-',
+        billNumber: c.bill_no || c.billNumber || '-',
+        currency: c.currency || '-',
         amount: c.amount || 0
       }))
     }
   } catch (error) {
-    console.error('Failed to parse extData:', error)
+    console.error('Failed to get customer details:', error)
   }
   return []
 })
@@ -1109,13 +1108,13 @@ const customerColumns = [
     cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.customerCode),
     enableSorting: true,
   },
-  // {
-  //   id: 'billNumber',
-  //   header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.billNo'), 'left'),
-  //   accessorKey: 'billNumber',
-  //   cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
-  //   enableSorting: true,
-  // },
+  {
+    id: 'billNumber',
+    header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.billNo'), 'left'),
+    accessorKey: 'billNumber',
+    cell: ({ row }: any) => h('div', { class: 'text-left' }, row.original.billNumber),
+    enableSorting: true,
+  },
   {
     id: 'amount',
     header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.amount'), 'right'),
