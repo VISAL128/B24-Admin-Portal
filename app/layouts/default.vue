@@ -483,6 +483,10 @@ const handleSettings = () => {
   navigateTo('/settings/generate-details')
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const handleFeeConfigSettings = () => {
+  navigateTo('/settings/fee-configuration')
+}
 const handleDeveloperTools = () => {
   navigateTo('/settings/developer-tool')
 }
