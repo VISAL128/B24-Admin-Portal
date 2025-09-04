@@ -1120,7 +1120,7 @@ const customerColumns = [
     header: ({ column }: any) => createSortableHeader(column, t('pages.transaction_detail.amount'), 'right'),
     accessorKey: 'amount',
     cell: ({ row }: any) =>
-      h('div', { class: 'text-right' }, useCurrency().formatAmount(row.original.amount)),
+      h('div', { class: 'text-right' },row.original.amount),
     enableSorting: true,
   }
 ] as any[]
