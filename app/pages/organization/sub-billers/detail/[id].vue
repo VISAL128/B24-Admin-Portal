@@ -1033,7 +1033,7 @@ function buildColumns() {
 
     {
       id: 'bankReference',
-      accessorKey: 'bank_ref',
+      accessorKey: 'bankRefId',
       headerText: t('pages.transaction.bank_ref'),
       cell: ({ row }) => copyCell(row.original.bankRefId),
       enableSorting: true,
@@ -1049,7 +1049,7 @@ function buildColumns() {
     },
     {
       id: 'tranType',
-      accessorKey: 'transaction_type',
+      accessorKey: 'tranType',
       headerText: t('transaction_type'),
       cell: ({ row }) => {
         const group = groupByTranType(row.original.tranType as TransactionType)
@@ -1105,7 +1105,7 @@ function buildColumns() {
     },
     {
       id: 'currencyId',
-      accessorKey: 'currency_id',
+      accessorKey: 'currencyId',
       headerText: t('settlement.currency'),
       cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currencyId || '-'),
       enableColumnFilter: true,
@@ -1116,7 +1116,7 @@ function buildColumns() {
     },
     {
       id: 'totalAmount',
-      accessorKey: 'total_amount',
+      accessorKey: 'amount',
       headerText: t('total_amount'),
       cell: ({ row }) =>
         h(

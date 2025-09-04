@@ -43,7 +43,7 @@ class FeeConfiguration {
   private feeConfigs: FeeConfig[] = []
   private isInitialized: boolean = false
 
-  async initialize(): Promise<void> {
+  async initialize(defaultSupplierId?: string, defaultSupplierName?: string): Promise<void> {
     if (this.isInitialized) return
 
     try {
@@ -51,9 +51,17 @@ class FeeConfiguration {
 
       if (data.length === 0) {
         console.warn('No fee configurations returned from API, using default configuration')
-        this.feeConfigs = this.getDefaultFeeConfigs()
+        this.feeConfigs = this.getDefaultFeeConfigs(defaultSupplierId, defaultSupplierName)
       } else {
         this.feeConfigs = data
+
+        // Ensure both KHR and USD currencies exist
+        const defaultConfigs = this.getDefaultFeeConfigs(defaultSupplierId, defaultSupplierName)
+        defaultConfigs.forEach((defaultConfig) => {
+          if (!this.feeConfigs.some((config) => config.currency === defaultConfig.currency)) {
+            this.feeConfigs.push(defaultConfig)
+          }
+        })
       }
 
       // Ensure transaction_fees are ordered by start_amount for every currency config
@@ -67,7 +75,7 @@ class FeeConfiguration {
       console.warn('Using default fee configuration due to API error')
 
       // Use default configuration as fallback
-      this.feeConfigs = this.getDefaultFeeConfigs()
+      this.feeConfigs = this.getDefaultFeeConfigs(defaultSupplierId, defaultSupplierName)
 
       // Sort fallback configs as well
       this.feeConfigs.forEach((cfg) => {
@@ -78,7 +86,13 @@ class FeeConfiguration {
     }
   }
 
-  private getDefaultFeeConfigs(): FeeConfig[] {
+  private getDefaultFeeConfigs(
+    defaultSupplierId?: string,
+    defaultSupplierName?: string
+  ): FeeConfig[] {
+    const supplierId = defaultSupplierId || '3904u39fu39u090f3f3'
+    const supplierName = defaultSupplierName || 'Default Supplier'
+
     return [
       {
         currency: 'KHR',
@@ -88,13 +102,24 @@ class FeeConfiguration {
             end_amount: 0,
             fee_amount: 0,
             fee_type: 'percentage',
-            unlimited: false,
+            unlimited: true,
             supplier_rate: 0,
             customer_rate: 0,
-            supplier_sharings: [],
+            supplier_sharings: [
+              {
+                id: supplierId,
+                value: 0,
+              },
+            ],
           },
         ],
-        allocate_details: [],
+        allocate_details: [
+          {
+            id: supplierId,
+            name: `${supplierName} (You)`,
+            isDisabled: true,
+          },
+        ],
       },
       {
         currency: 'USD',
@@ -104,13 +129,24 @@ class FeeConfiguration {
             end_amount: 0,
             fee_amount: 0,
             fee_type: 'percentage',
-            unlimited: false,
+            unlimited: true,
             supplier_rate: 0,
             customer_rate: 0,
-            supplier_sharings: [],
+            supplier_sharings: [
+              {
+                id: supplierId,
+                value: 0,
+              },
+            ],
           },
         ],
-        allocate_details: [],
+        allocate_details: [
+          {
+            id: supplierId,
+            name: `${supplierName} (You)`,
+            isDisabled: true,
+          },
+        ],
       },
     ]
   }
@@ -137,15 +173,85 @@ class FeeConfiguration {
     return config.allocate_details
   }
 
+  // Add method to check if currency exists
+  hasCurrency(currency: string): boolean {
+    if (!this.isInitialized) {
+      return false
+    }
+    return this.feeConfigs.some((config) => config.currency === currency)
+  }
+
+  // Add method to initialize a currency if it doesn't exist
+  initializeCurrency(
+    currency: string,
+    defaultSupplierId?: string,
+    defaultSupplierName?: string
+  ): void {
+    if (this.hasCurrency(currency)) {
+      return // Currency already exists
+    }
+
+    const supplierId = defaultSupplierId || '3904u39fu39u090f3f3'
+    const supplierName = defaultSupplierName || 'Default Supplier'
+
+    const newCurrencyConfig: FeeConfig = {
+      currency: currency,
+      transaction_fees: [
+        {
+          start_amount: 0,
+          end_amount: 0,
+          fee_amount: 0,
+          fee_type: 'percentage',
+          unlimited: true,
+          supplier_rate: 0,
+          customer_rate: 0,
+          supplier_sharings: [
+            {
+              id: supplierId,
+              value: 0,
+            },
+          ],
+        },
+      ],
+      allocate_details: [
+        {
+          id: supplierId,
+          name: `${supplierName} (You)`,
+          isDisabled: true,
+        },
+      ],
+    }
+
+    this.feeConfigs.push(newCurrencyConfig)
+  }
+
   getCurrencyFees(currency: string): FeeConfig {
     if (!this.isInitialized) {
       throw new Error('Fee configuration not initialized. Call initialize() first.')
     }
 
-    const foundConfig = this.feeConfigs.find((cur) => cur.currency === currency)
+    let foundConfig = this.feeConfigs.find((cur) => cur.currency === currency)
+
+    if (!foundConfig) {
+      // Try to get from default configs first
+      const defaultConfigs = this.getDefaultFeeConfigs()
+      foundConfig = defaultConfigs.find((cur) => cur.currency === currency)
+
+      if (foundConfig) {
+        // Add the default config to our configs
+        this.feeConfigs.push(foundConfig)
+        return foundConfig
+      } else {
+        // Initialize the currency if it's not found
+        this.initializeCurrency(currency)
+        foundConfig = this.feeConfigs.find((cur) => cur.currency === currency)
+      }
+    }
+
     if (!foundConfig) {
       throw new Error(`Currency ${currency} not supported in selected configuration`)
     }
+
     return foundConfig
   }
 

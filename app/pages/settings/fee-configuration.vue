@@ -62,7 +62,7 @@
           }"
         >
           <template #empty>
-            <div class="py-30">
+            <div class="py-20">
               <TableEmptyState />
             </div>
           </template>
@@ -322,11 +322,14 @@ import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
 import type { TableColumn } from '@nuxt/ui'
 import { h } from 'vue'
 import { FeeType } from '~/utils/enumModel'
+import { useAuth } from '~/composables/useAuth'
 
 const { t } = useI18n()
+const auth = useAuth()
 
 definePageMeta({
   auth: false,
+  breadcrumbs: [{ label: 'settings.fee_config', active: true }],
 })
 
 const feeConfig = ref(new FeeConfiguration())
@@ -595,7 +598,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
         const UInput = resolveComponent('UInput')
         const UTooltip = resolveComponent('UTooltip')
         const errorMessage = fieldErrors.value[index]?.fee_amount || ''
-
+        const hasError = !!errorMessage
         const inputComponent = h(
           UInput,
           {
@@ -608,6 +611,7 @@ const tableColumns = computed<TableColumn<TransactionFeeRow>[]>(() => {
             type: 'text',
             class: `w-full ${errorMessage ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`,
             size: 'sm',
+            color: hasError ? 'error' : 'primary',
             ui: { base: 'text-right' },
             onBlur: (event: Event) => handleAmountInput(event, index, 'fee_amount'),
             onKeypress: handleNumericKeyPress,
@@ -817,7 +821,12 @@ onMounted(async () => {
   }
   document.addEventListener('click', handleClickOutside)
 
-  await feeConfig.value.initialize()
+  // Get default supplier info at the top level where composables can be used
+  const defaultSupplier = auth.currentProfile.value
+  const defaultSupplierId = defaultSupplier?.id || '3904u39fu39u090f3f3'
+  const defaultSupplierName = `${defaultSupplier?.name || 'Default Supplier'} (${t('you')})`
+
+  await feeConfig.value.initialize(defaultSupplierId, defaultSupplierName)
   isInitialized.value = true
 
   tableKey.value++
@@ -1573,12 +1582,35 @@ const handleNumericKeyPress = (event: KeyboardEvent) => {
 }
 
 const switchCurrency = async (currency: string) => {
-  selectedCurrency.value = currency
-  fieldErrors.value = {} // Clear errors when switching currency
-  tableKey.value++
-  await nextTick()
-  syncDistributionFeeRows()
-  console.log(`Switched to ${currency}, table refreshed`)
+  try {
+    // Get default supplier info at the top level where composables can be used
+    const defaultSupplier = auth.currentProfile.value
+    const defaultSupplierId = defaultSupplier?.id || '3904u39fu39u090f3f3'
+    const defaultSupplierName = `${defaultSupplier?.name || 'Default Supplier'} (${t('you')})`
+
+    // Ensure the currency configuration exists before switching
+    if (!feeConfig.value.hasCurrency(currency)) {
+      // Initialize the currency if it doesn't exist
+      feeConfig.value.initializeCurrency(currency, defaultSupplierId, defaultSupplierName)
+    }
+
+    selectedCurrency.value = currency
+    fieldErrors.value = {} // Clear errors when switching currency
+    tableKey.value++
+    await nextTick()
+    syncDistributionFeeRows()
+    console.log(`Switched to ${currency}, table refreshed`)
+  } catch (error) {
+    console.error('Error switching currency:', error)
+    toast.add({
+      title: t('error'),
+      description: t('failed_to_switch_currency') || `Failed to switch to ${currency}`,
+      color: 'error',
+    })
+
+    // Revert to KHR if switching failed
+    selectedCurrency.value = Currency.KHR.toString()
+  }
 }
 
 const getDisplaySupplierName = (key: string) => {

@@ -485,6 +485,10 @@ const handleSettings = () => {
   userProfilePopover.value = false
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const handleFeeConfigSettings = () => {
+  navigateTo('/settings/fee-configuration')
+}
 const handleDeveloperTools = () => {
   navigateTo('/settings/developer-tool')
 }
