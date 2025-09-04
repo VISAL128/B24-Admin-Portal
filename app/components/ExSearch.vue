@@ -125,7 +125,6 @@ const onEnter = () => {
 // Handle focus event
 const onFocus = (event: FocusEvent) => {
   emit('focus', event)
-  console.log('Input focused')
   showTooltip.value = true
 }
 

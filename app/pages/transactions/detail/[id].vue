@@ -330,8 +330,7 @@
               </div>
 
               <!-- Commented Out: Original Repush Transaction Content -->
-              <!-- 
-              <div
+              <!-- <div
                 v-show="activeTab === 'repush_transaction_summary'"
                 class="h-full"
               >
@@ -407,8 +406,7 @@
                     @select="onRepushDetailSelect"
                   />
                 </div>
-              </div>
-              -->
+              </div> -->
             </div>
           </template>
         </ExTab>
@@ -732,28 +730,33 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                   {{ t('pages.transaction_detail.customer') }}
                 </p>
-                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate" :title="allocationDetailData?.customer || '-'">
                   {{ allocationDetailData?.customer || '-' }}
                 </p>
-                <ClipboardBadge
-                  :text="allocationDetailData?.customerCode || '-'"
-                  :copied-tooltip-text="$t('clipboard.copied')"
-                  class="mt-2"
-                />
+                <div class="mt-2">
+                  <ClipboardBadge
+                    :text="allocationDetailData?.customerCode || '-'"
+                    :copied-tooltip-text="$t('clipboard.copied')"
+                    class="truncate max-w-full"
+                    :title="allocationDetailData?.customerCode || '-'"
+                  />
+                </div>
               </div>
               <div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                   {{ t('pages.transaction_allocation.allocation_party') }}
                 </p>
-                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate" :title="allocationDetailData?.allocationPartyName || '-'">
                   {{ allocationDetailData?.allocationPartyName || '-' }}
                 </p>
                 <div class="flex items-center gap-2 mt-2">
-                  <StatusBadge 
-                    :status="allocationDetailData?.status || '-'" 
-                    variant="subtle" 
-                    size="sm" 
-                  />
+                  <div class="truncate">
+                    <StatusBadge 
+                      :status="allocationDetailData?.status || '-'" 
+                      variant="subtle" 
+                      size="sm" 
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -802,7 +805,24 @@
             </div>
 
             <!-- Settlement Cards -->
+            <!-- Empty state: no settlements -->
             <div
+              v-if="!allocationDetailData?.settlements || allocationDetailData?.settlements.length === 0"
+              class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-100 dark:border-gray-700 flex items-center justify-center"
+            >
+              <div class="flex flex-col items-center text-center space-y-2">
+                <div class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                  <UIcon name="material-symbols:inbox-outline" class="w-6 h-6 text-gray-400" />
+                </div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ t('pages.transaction_allocation.no_settlement') || 'No settlements' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- List settlements when available -->
+            <div
+              v-else
               v-for="(settlement, index) in allocationDetailData?.settlements || []"
               :key="settlement.settlementId || index"
               class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
@@ -813,7 +833,7 @@
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_amount') }}</span>
                   <span class="text-lg font-bold text-gray-900 dark:text-white">{{
                     (settlement.settleAmount || 0).toLocaleString()
-                  }} {{ settlement.currency || '' }}</span>
+                  }} {{ settlement.currency || '-' }}</span>
                 </div>
 
                 <div class="flex justify-between items-center">
@@ -826,7 +846,7 @@
                       size="xs" 
                     />
                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                      settlement.bank || 'AC'
+                      settlement.bank || '-'
                     }}</span>
                   </div>
                 </div>
@@ -834,7 +854,7 @@
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction.bank_ref') }}</span>
                   <ClipboardBadge
-                    :text="settlement.bankReference || 'CC2342342'"
+                    :text="settlement.bankReference || '-'"
                     :copied-tooltip-text="$t('clipboard.copied')"
                     class="mt-2"
                   />
@@ -842,13 +862,18 @@
 
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction.status') }}</span>
-                  <StatusBadge :status="settlement.status || 'success'" variant="subtle" size="sm" />
+                  <StatusBadge :status="settlement.status || '-'" variant="subtle" size="sm" />
                 </div>
 
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('pages.transaction_detail.settlement_date') }}</span>
                   <span class="text-sm text-gray-700 dark:text-gray-300">{{
-                    allocationDetailData?.date || '-'
+                    allocationDetailData?.date 
+                      ? format.formatDateTime(allocationDetailData.date, {
+                          dateStyle: userPreferences?.dateFormat || 'medium',
+                          timeStyle: userPreferences?.timeFormat || 'short',
+                        })
+                      : '-'
                   }}</span>
                 </div>
                 <div class="flex justify-between items-center">
@@ -896,7 +921,7 @@ import type { DirectDebitSummary } from '~~/server/model/pgw_module_api/direct_d
 import { RepushStatus, RepushType, type RepushSummary } from '~~/server/model/pgw_module_api/repush/repush_summary'
 import type { TransactionAllocationDetail, TransactionAllocationModel } from '~~/server/model/pgw_module_api/transactions/transaction_allocation'
 definePageMeta({
-  auth: false,
+  auth: true,
   breadcrumbs: [
     { label: 'transactions', to: '/transactions' },
     { label: 'details', active: true },
@@ -908,7 +933,7 @@ const router = useRouter()
 const { t } = useI18n()
 const { copy } = useClipboard()
 const notification = useNotification()
-const { getTransactionById, getTransactionAllocationList, getAllocationDetail } = useTransactionApi()
+const { getTransactionById, getTransactionAllocationList, getTransactionAllocationDetail } = useTransactionApi()
 const { createRowNumberCell, createSortableHeader } = useTable()
 const format = useFormat()
 const userPreferences = useUserPreferences().getPreferences()
@@ -1111,12 +1136,12 @@ const transactionAllocateData = computed(() => {
       id: allocation.id || '-',
       customer: allocation.customer || '-',
       transactionAmount: allocation.amount || 0,
-      billerName: allocation.billerName || '-',
+      billerName: allocation.allocationPartyName || '-',
       amount: allocation.amount || 0,
       outstandingAmount: allocation.outstandingAmount || 0,
       currency: allocation.currency || '-',
       date: allocation.date || new Date().toISOString(),
-      status: allocation.outstandingAmount === 0 ? 'complete' : 'pending',
+      status: allocation.outstandingAmount === 0 ? 'completed' : 'pending',
     }))
   }
 
@@ -1656,8 +1681,8 @@ const fetchAllocationDetail = async (allocationId: string) => {
   allocationDetailError.value = null
   
   try {
-    console.log(`Fetching allocation detail for transaction ${transactionId.value}, allocation ${allocationId}`)
-    const result = await getAllocationDetail(transactionId.value, allocationId)
+    console.log(`Fetching allocation detail for transaction allocation ${allocationId}`)
+    const result = await getTransactionAllocationDetail(allocationId)
     allocationDetailData.value = result
     // Use mock data instead of API result
     //allocationDetailData.value = transactionAllocationDetail.value

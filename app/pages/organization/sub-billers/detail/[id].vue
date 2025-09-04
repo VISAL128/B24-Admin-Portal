@@ -489,92 +489,119 @@
           <!-- Form -->
           <div class="grid grid-cols-2 gap-4 w-full">
             <!-- Row 1 -->
-            <UFormGroup
-              :label="t('name')"
-              :required="true"
-              :error="formErrors.name"
-              class="min-w-0"
-            >
-              <UInput
-                v-model="editForm.name"
-                :placeholder="t('enter_name')"
-                size="md"
-                icon="i-heroicons-user-20-solid"
-                autocomplete="organization"
-                :ui="{ base: 'rounded-xl' }"
-                input-class="px-3 py-2.5 w-full"
-              />
-            </UFormGroup>
+            <div class="min-w-0">
+              <label for="edit-name" class="block text-xs font-medium mb-1">
+                {{ t('name') }} <span class="text-red-500">*</span>
+              </label>
+              <UFormGroup :error="formErrors.name" :required="true">
+                <UInput
+                  id="edit-name"
+                  v-model="editForm.name"
+                  :placeholder="t('enter_name')"
+                  size="md"
+                  icon="i-heroicons-user-20-solid"
+                  autocomplete="organization"
+                  :ui="{ base: 'rounded-xl' }"
+                  input-class="px-3 py-2.5 w-full"
+                  required
+                  aria-required="true"
+                />
+              </UFormGroup>
+            </div>
 
-            <UFormGroup
-              :label="t('code')"
-              :error="formErrors.syncCode"
-              help="Managed by system"
-              class="min-w-0"
-            >
-              <UInput
-                v-model="editForm.syncCode"
-                size="md"
-                icon="i-heroicons-hashtag-20-solid"
-                readonly
-                disabled
-                :ui="{ base: 'rounded-xl text-gray-500 dark:text-gray-400' }"
-                input-class="px-3 py-2.5 w-full"
-              >
-              </UInput>
-            </UFormGroup>
+            <div class="min-w-0">
+              <label for="edit-code" class="block text-xs font-medium mb-1">
+                {{ t('code') }}
+              </label>
+              <UFormGroup :error="formErrors.syncCode" help="Managed by system">
+                <UInput
+                  id="edit-code"
+                  v-model="editForm.syncCode"
+                  size="md"
+                  icon="i-heroicons-hashtag-20-solid"
+                  readonly
+                  disabled
+                  :ui="{ base: 'rounded-xl text-gray-500 dark:text-gray-400' }"
+                  input-class="px-3 py-2.5 w-full"
+                />
+              </UFormGroup>
+            </div>
 
             <!-- Row 2 -->
-            <UFormGroup :label="t('phone')" :error="formErrors.phone" class="min-w-0">
-              <UInput
-                v-model="editForm.phone"
-                :placeholder="t('enter_phone')"
-                size="md"
-                icon="i-heroicons-phone-20-solid"
-                inputmode="tel"
-                autocomplete="tel"
-                maxlength="20"
-                :ui="{ base: 'rounded-xl' }"
-                input-class="px-3 py-2.5 w-full"
-              />
-            </UFormGroup>
+            <div class="min-w-0">
+              <label for="edit-phone" class="block text-xs font-medium mb-1">
+                {{ t('settlement.generate.form.phone') }}
+              </label>
+              <UFormGroup :error="formErrors.phone">
+                <UInput
+                  id="edit-phone"
+                  v-model="editForm.phone"
+                  :placeholder="t('enter_phone')"
+                  size="md"
+                  icon="i-heroicons-phone-20-solid"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  maxlength="20"
+                  :ui="{ base: 'rounded-xl' }"
+                  input-class="px-3 py-2.5 w-full"
+                />
+              </UFormGroup>
+            </div>
 
-            <UFormGroup :label="t('email')" :error="formErrors.email" class="min-w-0">
-              <UInput
-                v-model="editForm.email"
-                :placeholder="t('enter_email')"
-                type="email"
-                size="md"
-                icon="i-heroicons-envelope-20-solid"
-                autocomplete="email"
-                :ui="{ base: 'rounded-xl' }"
-                input-class="px-3 py-2.5 w-full"
-              />
-            </UFormGroup>
+            <div class="min-w-0">
+              <label for="edit-email" class="block text-xs font-medium mb-1">
+                {{ t('settlement.generate.form.email') }}
+              </label>
+              <UFormGroup :error="formErrors.email">
+                <UInput
+                  id="edit-email"
+                  v-model="editForm.email"
+                  :placeholder="t('enter_email')"
+                  type="email"
+                  size="md"
+                  icon="i-heroicons-envelope-20-solid"
+                  autocomplete="email"
+                  :ui="{ base: 'rounded-xl' }"
+                  input-class="px-3 py-2.5 w-full"
+                />
+              </UFormGroup>
+            </div>
 
             <!-- Row 3 -->
-            <UFormGroup :label="t('tin')" :error="formErrors.tinNumber" class="min-w-0">
-              <UInput
-                v-model="editForm.tinNumber"
-                :placeholder="t('enter_tin')"
-                size="md"
-                icon="i-heroicons-identification-20-solid"
-                maxlength="30"
-                :ui="{ base: 'rounded-xl' }"
-                input-class="px-3 py-2.5 w-full"
-              />
-            </UFormGroup>
+            <div class="min-w-0">
+              <label for="edit-tin" class="block text-xs font-medium mb-1">
+                {{ t('tin') }}
+              </label>
+              <UFormGroup :error="formErrors.tinNumber">
+                <UInput
+                  id="edit-tin"
+                  v-model="editForm.tinNumber"
+                  :placeholder="t('enter_tin')"
+                  size="md"
+                  icon="i-heroicons-identification-20-solid"
+                  maxlength="30"
+                  :ui="{ base: 'rounded-xl' }"
+                  input-class="px-3 py-2.5 w-full"
+                />
+              </UFormGroup>
+            </div>
 
-            <UFormGroup :label="t('address')" :error="formErrors.address" class="min-w-0">
-              <UInput
-                v-model="editForm.address"
-                :placeholder="t('enter_address')"
-                size="md"
-                icon="i-heroicons-map-pin-20-solid"
-                :ui="{ base: 'rounded-xl' }"
-                input-class="px-3 py-2.5 w-full"
-              />
-            </UFormGroup>
+            <div class="min-w-0">
+              <label for="edit-address" class="block text-xs font-medium mb-1">
+                {{ t('settlement.generate.form.address') }}
+              </label>
+              <UFormGroup :error="formErrors.address">
+                <UInput
+                  id="edit-address"
+                  v-model="editForm.address"
+                  :placeholder="t('enter_address')"
+                  size="md"
+                  icon="i-heroicons-map-pin-20-solid"
+                  :ui="{ base: 'rounded-xl' }"
+                  input-class="px-3 py-2.5 w-full"
+                />
+              </UFormGroup>
+            </div>
           </div>
         </div>
       </template>
@@ -818,7 +845,13 @@ function safeParseJson<T extends object = Record<string, unknown>>(s?: string | 
 }
 
 const handleSaveEdit = async () => {
-  if (!validateEditForm()) return
+  if (!validateEditForm()) {
+    notification.showError({
+      title: t('notifications.error'),
+      description: t('name_required'),
+    })
+    return
+  }
   try {
     isSavingEdit.value = true
     const id = transactionId.value
@@ -935,10 +968,15 @@ const navigateToDetails = (rowId: string) => {
 }
 
 const transactionTypeFilterOptions = computed(() =>
-  Object.entries(TransactionType).map(([key, value]) => ({
-    label: key.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to readable format
-    value: value,
-  }))
+  Object.entries(TransactionType)
+    .filter(
+      ([key, value]) =>
+        value === TransactionType.WalletPayment || value === TransactionType.WalletTopup
+    )
+    .map(([key, value]) => ({
+      label: key.replace(/([A-Z])/g, ' $1').trim(),
+      value: value,
+    }))
 )
 
 const getTranslatedTransactionStatusLabel = (status: string) => {
@@ -972,123 +1010,127 @@ const copyCell = (text?: string | null) =>
 
 const wallets = ref<SubBillerWallet[]>([])
 
-const columns: BaseTableColumn<WalletTransaction>[] = [
-  {
-    id: 'tranDate',
-    accessorKey: 'tranDate',
-    headerText: t('pages.transaction.created_date'),
-    cell: ({ row }) => useFormat().formatDateTime(row.original.tranDate),
-    enableSorting: true,
-  },
-  {
-    id: 'transactionNo',
-    accessorKey: 'transactionNo',
-    headerText: t('wallet_page.transaction_no'),
-    cell: ({ row }) => copyCell(row.original.transactionNo),
-  },
+const walletFilterOptions = computed(() =>
+  wallets.value.map((w) => ({ label: w.accountNo ?? '-', value: w.walletId ?? '' }))
+)
+const columns = ref<BaseTableColumn<WalletTransaction>[]>([])
 
-  {
-    id: 'bankReference',
-    accessorKey: 'bank_ref',
-    headerText: t('pages.transaction.bank_ref'),
-    cell: ({ row }) => copyCell(row.original.bankRefId),
-    enableSorting: true,
-  },
-  {
-    id: 'wallet',
-    accessorKey: 'wallet',
-    headerText: t('wallet'),
-    cell: ({ row }) => row.original.wallet || '-',
-    enableColumnFilter: true,
-    filterType: 'select',
-    filterOptions: wallets.value.map((w) => ({
-      label: w.accountNo ?? '-',
-      value: w.walletId ?? '', // 👈 adjust if your API expects walletNo instead
-    })),
-  },
-  {
-    id: 'tranType',
-    accessorKey: 'transaction_type',
-    headerText: t('transaction_type'),
-    cell: ({ row }) => {
-      const group = groupByTranType(row.original.tranType as TransactionType)
-      if (group !== null) {
-        // Convert enum number to readable string and format it nicely
-        const groupName = TranTypeGroup[group]
-        if (groupName) {
-          // Get display text
-          let displayText = ''
-          if (groupName === 'DeeplinkCheckout') {
-            displayText = 'Deeplink/Checkout'
-          } else {
-            // Convert camelCase to readable format (e.g., "PayBill" → "Pay Bill")
-            displayText = groupName.replace(/([A-Z])/g, ' $1').trim()
-          }
-
-          // Create element with icon and text
-          return h('div', { class: 'flex items-center gap-2' }, [
-            h(
-              'div',
-              {
-                class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`,
-              },
-              [
-                h(resolveComponent('UIcon'), {
-                  name: getTranTypeGroupIcon(group),
-                  class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`,
-                }),
-              ]
-            ),
-            h('span', { class: 'text-sm' }, displayText),
-          ])
-        }
-      }
-      return row.original.tranType || '-'
+function buildColumns() {
+  columns.value = [
+    {
+      id: 'tranDate',
+      accessorKey: 'tranDate',
+      headerText: t('pages.transaction.created_date'),
+      cell: ({ row }) => useFormat().formatDateTime(row.original.tranDate),
+      enableSorting: true,
     },
-    enableSorting: true,
-    enableColumnFilter: true,
-    filterOptions: transactionTypeFilterOptions.value,
-  },
-  {
-    id: 'status',
-    headerText: t('status.header'),
-    cell: ({ row }) =>
-      h(StatusBadge, {
-        status: row.original.status,
-        variant: 'subtle',
-        size: 'sm',
-      }),
-    enableColumnFilter: true,
-    filterType: 'status',
-    filterOptions: transactionStatusFilterOptions.value,
-  },
-  {
-    id: 'currencyId',
-    accessorKey: 'currency_id',
-    headerText: t('settlement.currency'),
-    cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currencyId || '-'),
-    enableColumnFilter: true,
-    filterOptions: [
-      { label: t('currency.usd'), value: 'USD' },
-      { label: t('currency.khr'), value: 'KHR' },
-    ],
-  },
-  {
-    id: 'totalAmount',
-    accessorKey: 'total_amount',
-    headerText: t('total_amount'),
-    cell: ({ row }) =>
-      h(
-        'div',
-        { class: 'text-right' },
-        useCurrency().formatAmount(row.original.amount, row.original.currencyId)
-      ),
-    enableMultiSort: true,
-    enableSorting: true,
-    size: 50,
-    maxSize: 150,
-  },
-]
+    {
+      id: 'transactionNo',
+      accessorKey: 'transactionNo',
+      headerText: t('wallet_page.transaction_no'),
+      cell: ({ row }) => copyCell(row.original.transactionNo),
+    },
+
+    {
+      id: 'bankReference',
+      accessorKey: 'bank_ref',
+      headerText: t('pages.transaction.bank_ref'),
+      cell: ({ row }) => copyCell(row.original.bankRefId),
+      enableSorting: true,
+    },
+    {
+      id: 'wallet',
+      accessorKey: 'wallet',
+      headerText: t('wallet'),
+      cell: ({ row }) => row.original.wallet || '-',
+      enableColumnFilter: true,
+      filterType: 'select',
+      filterOptions: walletFilterOptions.value,
+    },
+    {
+      id: 'tranType',
+      accessorKey: 'transaction_type',
+      headerText: t('transaction_type'),
+      cell: ({ row }) => {
+        const group = groupByTranType(row.original.tranType as TransactionType)
+        if (group !== null) {
+          // Convert enum number to readable string and format it nicely
+          const groupName = TranTypeGroup[group]
+          if (groupName) {
+            // Get display text
+            let displayText = ''
+            if (groupName === 'DeeplinkCheckout') {
+              displayText = 'Deeplink/Checkout'
+            } else {
+              // Convert camelCase to readable format (e.g., "PayBill" → "Pay Bill")
+              displayText = groupName.replace(/([A-Z])/g, ' $1').trim()
+            }
+
+            // Create element with icon and text
+            return h('div', { class: 'flex items-center gap-2' }, [
+              h(
+                'div',
+                {
+                  class: `w-6 h-6 rounded-full flex items-center justify-center ${getTranTypeGroupIconStyle(group)}`,
+                },
+                [
+                  h(resolveComponent('UIcon'), {
+                    name: getTranTypeGroupIcon(group),
+                    class: `w-3 h-3 ${getTranTypeGroupIconColor(group)}`,
+                  }),
+                ]
+              ),
+              h('span', { class: 'text-sm' }, displayText),
+            ])
+          }
+        }
+        return row.original.tranType || '-'
+      },
+      enableSorting: true,
+      enableColumnFilter: true,
+      filterOptions: transactionTypeFilterOptions.value,
+    },
+    {
+      id: 'status',
+      headerText: t('status.header'),
+      cell: ({ row }) =>
+        h(StatusBadge, {
+          status: row.original.status,
+          variant: 'subtle',
+          size: 'sm',
+        }),
+      enableColumnFilter: true,
+      filterType: 'status',
+      filterOptions: transactionStatusFilterOptions.value,
+    },
+    {
+      id: 'currencyId',
+      accessorKey: 'currency_id',
+      headerText: t('settlement.currency'),
+      cell: ({ row }) => h('div', { class: 'text-left' }, row.original.currencyId || '-'),
+      enableColumnFilter: true,
+      filterOptions: [
+        { label: t('currency.usd'), value: 'USD' },
+        { label: t('currency.khr'), value: 'KHR' },
+      ],
+    },
+    {
+      id: 'totalAmount',
+      accessorKey: 'total_amount',
+      headerText: t('total_amount'),
+      cell: ({ row }) =>
+        h(
+          'div',
+          { class: 'text-right' },
+          useCurrency().formatAmount(row.original.amount, row.original.currencyId)
+        ),
+      enableMultiSort: true,
+      enableSorting: true,
+      size: 50,
+      maxSize: 150,
+    },
+  ]
+}
 
 const {
   getSubBillerById,
@@ -1393,7 +1435,10 @@ onMounted(async () => {
 
   await Promise.all([
     fetchSubBillerById().finally(() => (isLoadingSupplier.value = false)),
-    fetchWallets().finally(() => (isLoadingWallets.value = false)),
+    fetchWallets().finally(() => {
+      isLoadingWallets.value = false
+      buildColumns()
+    }),
   ])
 
   isLoadingTable.value = false

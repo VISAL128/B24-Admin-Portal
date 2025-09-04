@@ -12,7 +12,8 @@
     "preview:docker": "NODE_OPTIONS='--experimental-global-webcrypto' nuxt preview",
     "postinstall": "nuxt prepare",
     "debug": "npx --node-arg=--inspect-brk nuxi dev",
-    "lint": "eslint . --ext .js,.ts,.vue"
+    "lint": "eslint . --ext .js,.ts,.vue",
+    "start": "node .output/server/index.mjs"
   },
   "dependencies": {
     "@internationalized/date": "^3.8.2",

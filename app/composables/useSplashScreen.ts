@@ -7,7 +7,7 @@ import { useUserPreferences } from './utils/useUserPreferences'
 export const useSplashScreen = () => {
   const isAppReady = ref(false)
   const showSplash = ref(true)
-  const currentStep = ref('initializing')
+  const currentStep = ref('loading_app')
   const progress = ref(0)
   const pgwApi = usePgwModuleApi()
   const { validateProfile, handleProfileError } = useProfileValidation()
@@ -57,7 +57,7 @@ export const useSplashScreen = () => {
     checkAppReadinessPromise = (async () => {
       try {
         // Step 1: Initialize
-        updateProgress('initializing', 10)
+        updateProgress('loading_app', 10)
         await new Promise((resolve) => setTimeout(resolve, 200))
 
         // Step 2: Check authentication

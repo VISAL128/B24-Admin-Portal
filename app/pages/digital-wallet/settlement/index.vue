@@ -189,7 +189,7 @@ const fetchSettlementForTable = async (
       end_date: params?.end_date
         ? formatDateForBackendRequest(params?.end_date, 'yyyy/MM/dd')
         : undefined,
-      status: params?.statuses || [],
+      status: params?.Statuses || [],
       supplier_id: currentProfile.value?.id || '', // Use current supplier ID
       banks: [],
       currencies: params?.filters
@@ -297,12 +297,13 @@ const columns: BaseTableColumn<SettlementHistoryRecord>[] = [
   {
     id: 'created_date',
     accessorKey: 'created_date',
+    type: ColumnType.DateTime,
     header: ({ column }) => createSortableHeader(column, t('settlement.settlement_date'), 'left'),
     cell: ({ row }) =>
       // Format date to DD/MM/YYYY
       useFormat().formatDateTime(row.original.created_date),
     enableSorting: true,
-    enableHiding: true,
+    enableHiding: false,
     size: 50,
     maxSize: 150,
   },

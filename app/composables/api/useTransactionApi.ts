@@ -85,7 +85,7 @@ export const useTransactionApi = () => {
    */
   const getTransactionById = async (id: string) => {
       return await executeV2(() =>
-        $fetch<TransactionHistoryRecord>(`/api/pgw-module/transaction/${id}/v2`, {
+        $fetch<TransactionHistoryRecord>(`/api/pgw-module/transaction/details/${id}`, {
           method: 'GET',
           onResponseError() {},
         })
@@ -97,16 +97,16 @@ export const useTransactionApi = () => {
    */
   const getTransactionAllocationList = async (id: string) => {
     return await executeV2(() => 
-      $fetch<TransactionAllocationResponse>(`/api/pgw-module/transaction/${id}/allocations`)
+      $fetch<TransactionAllocationResponse>(`/api/pgw-module/transaction/allocations/${id}`)
     )
   }
 
   /**
-   * Get transaction allocation detail
+   * Get transaction transaction allocation detail
    */
-  const getAllocationDetail = async (transactionId: string, allocationId: string) => {
+  const getTransactionAllocationDetail = async (allocationId: string) => {
     return await executeV2(() =>
-      $fetch<TransactionAllocationDetail>(`/api/pgw-module/transaction/${transactionId}/allocations/${allocationId}`)
+      $fetch<TransactionAllocationDetail>(`/api/pgw-module/transaction/allocations/details/${allocationId}`)
     )
   }
 
@@ -116,6 +116,6 @@ export const useTransactionApi = () => {
     getTransactionList,
     getTransactionById,
     getTransactionAllocationList,
-    getAllocationDetail
+    getTransactionAllocationDetail
   }
 }

@@ -12,7 +12,7 @@
     </span>
     <button
       :class="[
-        'inline-flex items-center justify-center w-4 h-4 rounded transition-colors',
+        'inline-flex items-center justify-center w-4 h-4 rounded transition-colors focus:outline-none focus:ring-0',
         copied
           ? 'text-green-600 dark:text-green-400'
           : 'text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',

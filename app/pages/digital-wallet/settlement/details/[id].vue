@@ -143,7 +143,10 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center">
                 <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
-                  <UIcon name="material-symbols:contract-edit-outline-rounded" class="w-4 h-4 text-primary" />
+                  <UIcon
+                    name="material-symbols:contract-edit-outline-rounded"
+                    class="w-4 h-4 text-primary"
+                  />
                 </div>
                 <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                   {{ $t('settlement.title') }}

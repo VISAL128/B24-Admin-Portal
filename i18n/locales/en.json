@@ -127,11 +127,11 @@
     "current_organization": "Current Organization",
     "business_organization": "Business Organization",
     "available_organizations": "Available Organizations",
-    "switch_organization": "Switch Organization",
+    "switch_organization": "Yes, Switch",
     "no_organizations_available": "No additional organizations available",
     "loading_organizations": "Loading organizations...",
     "organization_switched": "Organization switched successfully",
-    "switch_organization_confirmation": "Are you sure you want to switch from '{from}' to '{to}'? This will reload the page with the new organization context.",
+    "switch_organization_confirmation": "Switching from '{from}' to '{to}'?",
     "organization_singular": "organization",
     "organization_plural": "organizations"
   },
@@ -930,6 +930,7 @@
     "powered_by": "Powered by",
     "bill24": "Bill24",
     "progress": {
+      "loading_app": "Loading application...",
       "initializing": "Initializing application...",
       "checking_auth": "Checking authentication...",
       "loading_profile": "Loading user profile...",
@@ -1081,7 +1082,8 @@
         "complete": "Complete",
         "pending": "Pending"
       },
-      "failed_allocation_detail": "Failed to load allocation detail"
+      "failed_allocation_detail": "Failed to load allocation detail",
+      "no_settlement": "No settlements available for this transaction"
     },
     "transaction": {
       "supplier_fee": "Supplier Fee",

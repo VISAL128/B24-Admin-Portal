@@ -75,6 +75,6 @@ const { user } = useAuth()
 definePageMeta({ auth: true })
 
 useHead({
-  title: `${t('dashboard')} - Bill24 Payment Portal`,
+  title: `${t('dashboard')} - Bill24 Payments Portal`,
 })
 </script>

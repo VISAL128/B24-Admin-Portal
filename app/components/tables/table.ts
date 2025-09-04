@@ -28,6 +28,11 @@ export type BaseTableColumn<T> = TableColumn<T> & {
    */
   headerText?: string
   sortableHeaderAlignment?: 'left' | 'center' | 'right'
+  /**
+   * Function to export the value of the column for a given row
+   * This is used for exporting data (e.g. CSV export)
+   */
+  exportValue?: (row: T) => string | number | boolean | null | undefined
 }
 
 export type TableFetchResult<TData> = {
