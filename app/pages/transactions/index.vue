@@ -186,20 +186,19 @@ const toYMD = (dateStr?: string): string | undefined => {
 }
 
 // Function to fetch transaction summary from API
-const fetchTransactionSummary = async (params?: {
-  FromDate?: string
-  ToDate?: string
-  PeriodType?: number
-}) => {
+// This function is called whenever the table data/filters change to keep summary in sync
+const fetchTransactionSummary = async (params?: TransactionQueryParams) => {
   try {
     isLoading.value = true
+    console.log('📊 Fetching transaction summary with params:', params)
     const response = await getTransactionSummary(params, locale.value)
     transactionSummary.value = response
     isLoading.value = false
-    console.log('✅ Frontend: Transaction summary loaded successfully')
+    console.log('✅ Frontend: Transaction summary loaded successfully and synced with table filters')
   } catch (error) {
     console.error('❌ Frontend: Error fetching transaction summary:', error)
-    // Keep loading state true to show skeleton cards when there's an error
+    isLoading.value = false
+    // Keep loading state false to show skeleton cards when there's an error
   }
 }
 
@@ -229,33 +228,113 @@ const fetchBankData = async (
   }
 }
 
-// New handler: get the exact dates used by the table fetch and apply to summary
+// New handler: get the exact parameters used by the table fetch and apply to summary
 const handleDataChanged = (result: Record<string, any>) => {
-  const FromDate = toYMD(result?.start_date)
-  const ToDate = toYMD(result?.end_date)
-  if (FromDate || ToDate) {
-    fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 })
+  console.log('📊 Table data changed, syncing summary with filters:', result)
+  
+  // Extract the exact same parameters that were used for the table fetch
+  const start_date = result?.start_date
+  const end_date = result?.end_date
+  const search = result?.search
+  const page = result?.page || 1
+  const page_size = result?.page_size || 25
+  
+  // Extract status filters (already formatted by ExTable)
+  const statuses: string[] = result?.Statuses || []
+  
+  // Check if Types are already processed by fetchTransactionHistory
+  let transactionTypes: string[] = result?.Types || []
+  console.log('🎯 Direct Types from result:', transactionTypes)
+  
+  // Extract filters from the table
+  let tableFilters = result?.filters || []
+
+  // Process transaction type filters only if Types are not already provided
+  if (transactionTypes.length === 0 && tableFilters.length > 0) {
+    console.log('🔍 Processing table filters for transaction types:', tableFilters)
+    tableFilters = tableFilters.filter((filter: any) => {
+      if (filter.field === 'transactionType') {
+        console.log('🎯 Found transaction type filter:', filter)
+        // Extract transaction type group values and convert to actual transaction types
+        if (Array.isArray(filter.value)) {
+          filter.value.forEach((groupName: string) => {
+            console.log('📋 Processing group name:', groupName)
+            const types = getTransactionTypesByGroupName(String(groupName))
+            console.log('📋 Group name', groupName, 'converted to types:', types)
+            transactionTypes.push(...types)
+          })
+        } else {
+          console.log('📋 Processing single group name:', filter.value)
+          const types = getTransactionTypesByGroupName(String(filter.value))
+          console.log('📋 Single group name', filter.value, 'converted to types:', types)
+          transactionTypes.push(...types)
+        }
+        return false // Remove from filters array
+      }
+      return true // Keep other filters
+    })
   }
+
+  console.log('🎯 Final extracted transaction types for summary:', transactionTypes)
+
+  // Build comprehensive query params that match what the table used
+  const queryParams: TransactionQueryParams = {
+    start_date,
+    end_date,
+    search,
+    page, // Use the same page as ExTable
+    page_size, // Use the same page_size as ExTable
+    Statuses: statuses.length > 0 ? statuses : undefined,
+    Types: transactionTypes.length > 0 ? transactionTypes : undefined,
+    filters: tableFilters.length > 0 ? tableFilters : [],
+    // Include sorting if needed
+    sorts: result?.sorts,
+    sortAsString: result?.sortAsString
+  }
+  
+  // Remove undefined values to clean up the request
+  Object.keys(queryParams).forEach(key => {
+    if (queryParams[key as keyof TransactionQueryParams] === undefined) {
+      delete queryParams[key as keyof TransactionQueryParams]
+    }
+  })
+
+  console.log('📊 Syncing summary with exact table parameters (including pagination):', queryParams)
+  fetchTransactionSummary(queryParams)
 }
 
 onMounted(async () => {
   console.log('🔄 Component mounted, loading data...')
 
-  // Default monthly summary (PeriodType=4) custom date range for the current month
-  const now = new Date()
-  const first = new Date(now.getFullYear(), now.getMonth(), 1)
-  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const FromDate = `${first.getFullYear()}-${pad(first.getMonth() + 1)}-${pad(first.getDate())}`
-  const ToDate = `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`
+  // Set initial loading state for summary cards
+  isLoading.value = true
 
-  // Load both transaction summary and bank data
-  await Promise.all([
-    fetchTransactionSummary({ FromDate, ToDate, PeriodType: 4 }),
-    fetchBankData(), // Load bank data
-  ])
+  // Load bank data first
+  await fetchBankData()
 
-  console.log('✅ All data loaded, bank data:', bankData.value)
+  // The ExTable will automatically call fetchData() on mount which will trigger
+  // handleDataChanged and load the summary with the correct filters
+  // However, set a timeout fallback in case the table takes too long to initialize
+  setTimeout(() => {
+    if (isLoading.value && !transactionSummary.value) {
+      console.log('⚠️ Table initialization took too long, loading default summary')
+      // Load default monthly summary as fallback
+      const now = new Date()
+      const first = new Date(now.getFullYear(), now.getMonth(), 1)
+      const last = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const start_date = `${first.getFullYear()}-${pad(first.getMonth() + 1)}-${pad(first.getDate())}`
+      const end_date = `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`
+      
+      fetchTransactionSummary({ 
+        start_date, 
+        end_date,
+        filters: []
+      })
+    }
+  }, 3000) // 3 second timeout
+  
+  console.log('✅ Initial setup complete, waiting for table to load data')
 })
 
 const fetchTransactionHistory = async (
@@ -310,9 +389,17 @@ const fetchTransactionHistory = async (
       data: response.results || [],
       total_record: response.param?.rowCount || 0,
       total_page: response.param?.pageCount || 0,
-      // pass through the dates used for this fetch so parent can sync summary
+      // Pass through all the query parameters used for this fetch so the summary can sync
       start_date: params?.start_date,
       end_date: params?.end_date,
+      search: params?.search,
+      page: params?.page,
+      page_size: params?.page_size,
+      Statuses: params?.Statuses || [],
+      Types: transactionTypes,
+      filters: cleanedFilters,
+      sorts: params?.sorts,
+      sortAsString: params?.sortAsString
     } as any
   } catch (error) {
     errorHandler.handleApiError(error)

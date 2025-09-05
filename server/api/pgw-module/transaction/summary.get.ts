@@ -2,17 +2,11 @@ import { requestToPgwModuleApi } from '~~/server/logic/pgw_module_api_logic'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Pass-through supported query params (FromDate, ToDate, PeriodType)
-    const query = getQuery(event) as Record<string, string | number | undefined>
-    const urlParams = new URLSearchParams()
+    // Use the same pattern as transaction list API for consistency
+    // The PGW module logic will automatically handle pagination and parameter formatting
+    const endpoint = '/transaction/summary'
 
-    // Only append known params to avoid noise
-    if (query.FromDate) urlParams.append('FromDate', String(query.FromDate))
-    if (query.ToDate) urlParams.append('ToDate', String(query.ToDate))
-    if (query.PeriodType !== undefined) urlParams.append('PeriodType', String(query.PeriodType))
-
-    const qs = urlParams.toString()
-    const endpoint = `/transaction/summary${qs ? `?${qs}` : ''}`
+    console.log('📊 Transaction Summary API - using automatic parameter processing like transaction list')
 
     // Get Accept-Language header from the client request
     const acceptLanguage = getHeader(event, 'accept-language')
@@ -23,12 +17,14 @@ export default defineEventHandler(async (event) => {
       headers['Accept-Language'] = acceptLanguage
     }
 
+    // Use the same approach as transaction list API with useRawQueryParams
     const response = await requestToPgwModuleApi(
       event,
       endpoint,
       'GET',
       undefined,
-      headers
+      headers,
+      true // useRawQueryParams - same as transaction list
     )
     return response
   } catch (error: any) {
