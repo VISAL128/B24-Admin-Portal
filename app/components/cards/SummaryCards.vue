@@ -56,7 +56,16 @@
 
       <!-- Values -->
       <div class="flex flex-wrap justify-between gap-x-4">
+        <!-- Display "-" when no values -->
         <div
+          v-if="!card.values || card.values.length === 0"
+          class="text-md font-bold text-gray-900 dark:text-white"
+        >
+          -
+        </div>
+        <!-- Display actual values -->
+        <div
+          v-else
           v-for="(val, idx) in card.values"
           :key="idx"
           class="text-md font-bold text-gray-900 dark:text-white flex items-baseline gap-1"
