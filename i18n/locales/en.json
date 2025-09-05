@@ -1038,6 +1038,7 @@
   },
   "pages": {
     "transaction_detail": {
+      "customers": "Customers",
       "subtitle": "View Transaction Details",
       "customer": "Customer",
       "customerCode": "Customer Code",

@@ -1056,6 +1056,7 @@
   },
   "pages": {
     "transaction_detail": {
+      "customers": "អតិថិជន",
       "subtitle": "មើលព័ត៌មានលម្អិតអំពីប្រតិបត្តិការ",
       "customer": "អតិថិជន",
       "customerCode": "លេខកូដអតិថិជន",
