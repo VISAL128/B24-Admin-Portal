@@ -11,7 +11,7 @@ export const useTransactionApi = () => {
    * Get transaction summary from transaction API
    */
   const getTransactionSummary = async (
-    query?: { FromDate?: string; ToDate?: string; PeriodType?: number },
+    query?: TransactionQueryParams,
     locale?: string
   ) => {
     const headers: Record<string, string> = {}
@@ -23,10 +23,27 @@ export const useTransactionApi = () => {
       headers['Accept-Language'] = acceptLanguage
     }
 
+    // Format the query parameters similar to transaction list
+    let formattedQuery: any = { ...query }
+    
+    // Map client-side parameters to API-specific parameters
+    if (query?.statuses && Array.isArray(query.statuses) && query.statuses.length > 0) {
+      // Remove the client-side statuses and replace with API-expected Statuses
+      delete formattedQuery.statuses
+      formattedQuery.Statuses = query.statuses
+    }
+    
+    // Types parameter is already in the correct format for the API
+    if (query?.Types && Array.isArray(query.Types) && query.Types.length > 0) {
+      formattedQuery.Types = query.Types
+    }
+
+    console.log('Final formatted query for transaction summary API:', formattedQuery)
+
     return await executeV2(() =>
       $fetch<TransactionSummaryModel>(`/api/pgw-module/transaction/summary`, {
         method: 'GET',
-        query,
+        query: formattedQuery,
         headers,
         onResponseError() {},
       })

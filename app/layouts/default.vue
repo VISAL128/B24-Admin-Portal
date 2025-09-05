@@ -319,7 +319,12 @@
                 </UTooltip>
               </div>
               <!-- User Menu -->
-              <UPopover v-model:open="userProfilePopover" placement="bottom-end" :offset="[0, 10]" class="z-50">
+              <UPopover
+                v-model:open="userProfilePopover"
+                placement="bottom-end"
+                :offset="[0, 10]"
+                class="z-50"
+              >
                 <UAvatar
                   :src="user?.picture"
                   :alt="String(user?.fullName || 'User')"

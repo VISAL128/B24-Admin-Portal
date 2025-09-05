@@ -727,8 +727,8 @@
   "table": {
     "transaction-history-table": {
       "columns": {
-        "collectionBank": "ធនាគារប្រមូលប្រាក់",
-        "settlementBank": "ធនាគារទូទាត់",
+        "collectionBankId": "ធនាគារប្រមូលប្រាក់",
+        "settlementBankId": "ធនាគារទូទាត់",
         "settlementType": "ប្រភេទទូទាត់",
         "transactionType": "ប្រភេទប្រតិបត្តិការ",
         "currency": "រូបិយប័ណ្ណ",
