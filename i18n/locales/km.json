@@ -98,6 +98,7 @@
   "end_amount": "ចំនួនបញ្ចប់",
   "fee_amount": "ចំនួនថ្លៃសេវា",
   "fee_rate": "អត្រាថ្លៃសេវា",
+  "currency_fee_details_cannot_be_empty": "ថ្លៃសេវារូបិយប័ណ្ណ({currency})មិនអាចទទេបានទេ",
   "sharing_fee": "ថ្លៃសេវាចែករំលែក",
   "enter_fee_code": "បញ្ចូលកូដ",
   "enter_fee_name": "បញ្ចូលឈ្មោះ",

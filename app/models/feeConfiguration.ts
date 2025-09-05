@@ -116,7 +116,7 @@ class FeeConfiguration {
         allocate_details: [
           {
             id: supplierId,
-            name: `${supplierName} (You)`,
+            name: supplierName,
             isDisabled: true,
           },
         ],
@@ -143,7 +143,7 @@ class FeeConfiguration {
         allocate_details: [
           {
             id: supplierId,
-            name: `${supplierName} (You)`,
+            name: supplierName,
             isDisabled: true,
           },
         ],
@@ -216,7 +216,7 @@ class FeeConfiguration {
       allocate_details: [
         {
           id: supplierId,
-          name: `${supplierName} (You)`,
+          name: supplierName,
           isDisabled: true,
         },
       ],

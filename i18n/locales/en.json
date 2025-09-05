@@ -90,6 +90,7 @@
   "fee_amount_adjusted_due_to_end_amount_change": "Fee amount adjusted due to end amount change",
   "fee_amount_cannot_exceed_end_amount": "Fee amount cannot exceed end amount",
   "percentage_cannot_exceed_100": "Percentage cannot exceed 100%",
+  "currency_fee_details_cannot_be_empty": "Currency fee details for ({currency}) cannot be empty",
   "start_amount": "Start Amount",
   "end_amount": "End Amount",
   "fee_amount": "Fee Amount",
