@@ -337,6 +337,7 @@ const columns: BaseTableColumn<Supplier>[] = [
     accessorKey: 'name',
     headerText: t('name'),
     enableSorting: true,
+    enableHiding: false
   },
   {
     id: 'address',

@@ -1029,6 +1029,7 @@ function buildColumns() {
       accessorKey: 'transactionNo',
       headerText: t('wallet_page.transaction_no'),
       cell: ({ row }) => copyCell(row.original.transactionNo),
+      enableHiding: false,
     },
 
     {
@@ -1113,6 +1114,7 @@ function buildColumns() {
         { label: t('currency.usd'), value: 'USD' },
         { label: t('currency.khr'), value: 'KHR' },
       ],
+      enableHiding: false,
     },
     {
       id: 'totalAmount',
@@ -1128,6 +1130,7 @@ function buildColumns() {
       enableSorting: true,
       size: 50,
       maxSize: 150,
+      enableHiding: false,
     },
   ]
 }
