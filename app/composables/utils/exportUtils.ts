@@ -7,10 +7,82 @@ import {
   getPeriodText,
   getTotalText
 } from './pdfFonts'
+import { useUserPreferences } from './useUserPreferences'
+import type { FormatOptions } from './useFormat'
 // Dynamic imports for jsPDF to avoid SSR issues
 // import jsPDF from 'jspdf'
 // import autoTable from 'jspdf-autotable'
 // import ExcelJS from 'exceljs'
+
+/**
+ * Format a date string or Date object to a localized datetime string
+ * This mimics the behavior of useFormat().formatDateTime() without Vue dependencies
+ */
+function formatDateTime(
+  dateInput: string | Date | null | undefined,
+  options: {
+    dateStyle?: 'full' | 'long' | 'medium' | 'short'
+    timeStyle?: 'full' | 'long' | 'medium' | 'short'
+    locale?: string
+    hour12?: boolean
+    showTime?: boolean
+  } = {}
+): string {
+  // Handle null/undefined cases
+  if (!dateInput) {
+    return '-'
+  }
+
+  try {
+
+    const userPreferences =  computed(() => useUserPreferences().getPreferences() || DEFAULT_USER_PREFERENCES)
+  
+    // Default options
+  const defaultOptions = computed((): FormatOptions => ({
+    dateStyle: userPreferences.value.dateFormat || "medium",
+    timeStyle: userPreferences.value.timeFormat || "short",
+    locale: "en-GB",
+    hour12: userPreferences.value.hour12 !== undefined ? userPreferences.value.hour12 : true,
+    showTime: true,
+  }));
+
+    // Create Date object from input
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date provided to formatDateTime:', dateInput)
+      return typeof dateInput === 'string' ? dateInput : '-'
+    }
+
+    // If only date is needed (no time)
+    if (!defaultOptions.value.showTime) {
+      return new Intl.DateTimeFormat(defaultOptions.value.locale, {
+        dateStyle: defaultOptions.value.dateStyle,
+      }).format(date)
+    }
+
+    // Format date and time separately to avoid comma
+    const dateFormatter = new Intl.DateTimeFormat(defaultOptions.locale, {
+      dateStyle: defaultOptions.value.dateStyle,
+    })
+
+    const timeFormatter = new Intl.DateTimeFormat(defaultOptions.locale, {
+      timeStyle: defaultOptions.value.timeStyle,
+      hour12: defaultOptions.value.hour12,
+    })
+
+    const formattedDate = dateFormatter.format(date)
+    const formattedTime = timeFormatter.format(date)
+
+    // Join with space instead of comma
+    return `${formattedDate} ${formattedTime}`
+  } catch (error) {
+    console.error('Error formatting datetime:', error, 'Input:', dateInput)
+    return typeof dateInput === 'string' ? dateInput : '-'
+  }
+}
+
 
 export function exportSettlementToExcel(data: any[]) {
   const exportData = data.map((item) => ({
@@ -536,11 +608,10 @@ export async function exportToPDFWithUnicodeSupport(
 
           // Format specific fields
           if (h.key.includes('date') && value) {
-            if (typeof value === 'string' || typeof value === 'number' || value instanceof Date) {
-              value = new Date(value).toLocaleDateString(
-                options.locale === 'km' ? 'km-KH' : 'en-US',
-                { year: 'numeric', month: 'short', day: 'numeric' }
-              )
+           
+            if (typeof value === 'string' || value instanceof Date) {
+              // Use the local formatDateTime function
+              value = formatDateTime(value.toString())
             }
             cellAlign = 'center'
           }
@@ -993,7 +1064,8 @@ export async function exportToExcelWithUnicodeSupport(
 
         let value = item[h.key]
         if (h.key.includes('date') && value) {
-          value = new Date(value).toLocaleDateString(options.locale === 'km' ? 'km-KH' : 'en-US')
+          // Use the local formatDateTime function
+          value = formatDateTime(value.toString())
         }
         if (h.key.includes('amount') && typeof value === 'number') {
           value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')

@@ -333,6 +333,7 @@ definePageMeta({
 })
 
 const feeConfig = ref(new FeeConfiguration())
+const { getSupplierFeeConfig } = useFeeConfigApi()
 const selectedCurrency = ref(Currency.KHR.toString())
 const showAddSuppliers = ref(false)
 const showSettingsDropdown = ref(false)
@@ -824,9 +825,9 @@ onMounted(async () => {
   // Get default supplier info at the top level where composables can be used
   const defaultSupplier = auth.currentProfile.value
   const defaultSupplierId = defaultSupplier?.id || '3904u39fu39u090f3f3'
-  const defaultSupplierName = `${defaultSupplier?.name || 'Default Supplier'} (${t('you')})`
+  const defaultSupplierName = defaultSupplier?.name || 'Default Supplier'
 
-  await feeConfig.value.initialize(defaultSupplierId, defaultSupplierName)
+  await feeConfig.value.initialize(getSupplierFeeConfig,defaultSupplierId, defaultSupplierName)
   isInitialized.value = true
 
   tableKey.value++
@@ -1181,6 +1182,18 @@ const validateAllRows = (): boolean => {
       isValid = false
     }
   })
+
+  if (isValid && errors.length === 0) {
+    //loop check transaction fee rows base on currency of feeConfig
+
+    for (const row of feeConfig.value.toJSON()) {
+      if (row.transaction_fees.length === 0) {
+        errors.push(t('currency_fee_details_cannot_be_empty', { currency: row.currency }))
+        isValid = false
+        break
+      }
+    }
+  }
 
   if (!isValid && errors.length > 0) {
     validationDialogTitle.value = t('validation_errors', 'Validation Errors')

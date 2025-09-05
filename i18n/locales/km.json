@@ -98,6 +98,7 @@
   "end_amount": "ចំនួនបញ្ចប់",
   "fee_amount": "ចំនួនថ្លៃសេវា",
   "fee_rate": "អត្រាថ្លៃសេវា",
+  "currency_fee_details_cannot_be_empty": "ថ្លៃសេវារូបិយប័ណ្ណ({currency})មិនអាចទទេបានទេ",
   "sharing_fee": "ថ្លៃសេវាចែករំលែក",
   "enter_fee_code": "បញ្ចូលកូដ",
   "enter_fee_name": "បញ្ចូលឈ្មោះ",
@@ -761,7 +762,8 @@
         "action": "សកម្មភាព",
         "currencyId": "រូបិយប័ណ្ណ",
         "tranType": "ប្រភេទប្រតិបត្តិការ",
-        "bankRefId": "លេខយោងធនាគារ"
+        "bankRefId": "លេខយោងធនាគារ",
+        "wallet_payment": "បង់ប្រាក់ពីកាបូប"
       }
     },
     "wallet-transactions-table-settlement_wallet": {
@@ -1055,6 +1057,7 @@
   },
   "pages": {
     "transaction_detail": {
+      "customers": "អតិថិជន",
       "subtitle": "មើលព័ត៌មានលម្អិតអំពីប្រតិបត្តិការ",
       "customer": "អតិថិជន",
       "customerCode": "លេខកូដអតិថិជន",
