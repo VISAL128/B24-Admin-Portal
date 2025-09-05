@@ -860,7 +860,8 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
       id: 'tranDate',
       accessorKey: 'tran_date',
       header: t('wallet_page.date'),
-      cell: ({ row }) => formatDateTime(row.original.tran_date),
+      // cell: ({ row }) => formatDateTime(row.original.tran_date),
+      cell: ({ row }) => useFormat().formatDateTime(row.original.tran_date),
       enableSorting: true,
       sortDescFirst: true,
     },
@@ -958,12 +959,7 @@ const columns = computed<BaseTableColumn<WalletTransaction>[]>(() => {
 })
 
 const fetchTransactionsForTable = async (params?: QueryParams) => {
-  console.log("fetchTransactionsForTable called with params:", params)
   lastFetchParams.value = params
-
-  console.log("Fetching transactions for wallet:", {
-    params,
-  })
 
   isLoadingTransactions.value = true
 
@@ -976,7 +972,6 @@ const fetchTransactionsForTable = async (params?: QueryParams) => {
 
   const currencyId = selectedWallet.currency
   if (params) {
-    // Initialize filters array if it doesn't exist
     if (!params.filters) {
       params.filters = []
     }

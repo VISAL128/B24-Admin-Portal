@@ -933,22 +933,24 @@ const resolvedExportOptions = computed((): ExportOptions => {
 
   allFilterableColumns.forEach((column) => {
     if (column.id !='status') {
-      // Get the display name for this column
       let displayName = getTranslationHeaderById(column.id)
       if (displayName.includes('table.') && displayName.includes('.columns.')) {
-        // Translation not found, use column label or formatted field name
         displayName = getColumnLabel(column)
       }
 
-      // Get the current filter value (from applied filters)
       const currentValue = appliedColumnFilters.value[column.id]
 
+      const displayLabel = column.filterOptions
+        ? column.filterOptions.find((opt) => opt.value==currentValue)?.label
+        : undefined
+
+      // if (displayLabel) {
+      //   autoFilter[displayName] = displayLabel
+      // }
+ 
       if (currentValue && currentValue.trim() !== '' && currentValue !== 'all') {
-        // Show the actual filter value
-        const displayValue = currentValue.charAt(0).toUpperCase() + currentValue.slice(1)
-        autoFilter[displayName] = displayValue
+        autoFilter[displayName] = displayLabel ?? t('all')
       } else {
-        // Show "All" for columns that have no filter applied
         autoFilter[displayName] = t('all')
       }
     }
@@ -1286,7 +1288,6 @@ function getSelectedFilterOption(col: BaseTableColumn<T>, selectedValue: string)
 }
 
 const handleSortChange = (newSorting: Array<{ id: string; desc: boolean }>) => {
-  console.log('🔄 handleSortChange called with:', newSorting)
   sorting.value = newSorting
 
   // Emit sort-change event for compatibility
@@ -1322,7 +1323,6 @@ const filteredColumns = computed(() => {
   // Create a fresh copy of columns to avoid mutation issues
   const columns = columnsWithRowNumber.value.map((col) => ({ ...col }))
 
-  console.log(`Processing columns: ${columns.map((col) => col.id).join(', ')}`)
   columns.forEach((col) => {
     if (
       col.id === 'select' ||

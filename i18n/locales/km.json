@@ -761,7 +761,8 @@
         "action": "សកម្មភាព",
         "currencyId": "រូបិយប័ណ្ណ",
         "tranType": "ប្រភេទប្រតិបត្តិការ",
-        "bankRefId": "លេខយោងធនាគារ"
+        "bankRefId": "លេខយោងធនាគារ",
+        "wallet_payment": "បង់ប្រាក់ពីកាបូប"
       }
     },
     "wallet-transactions-table-settlement_wallet": {
