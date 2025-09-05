@@ -1,5 +1,4 @@
 // export default FeeConfiguration;
-import { useFeeConfigApi } from '~/composables/api/useFeeConfigApi'
 
 export interface SupplierFee {
   id: string
@@ -43,11 +42,15 @@ class FeeConfiguration {
   private feeConfigs: FeeConfig[] = []
   private isInitialized: boolean = false
 
-  async initialize(defaultSupplierId?: string, defaultSupplierName?: string): Promise<void> {
+  async initialize(
+    apiFetcher: (params: { search: string }) => Promise<FeeConfig[]>,
+    defaultSupplierId?: string,
+    defaultSupplierName?: string
+  ): Promise<void> {
     if (this.isInitialized) return
 
     try {
-      const data = await useFeeConfigApi().getSupplierFeeConfig({ search: '' })
+      const data = await apiFetcher({ search: '' })
 
       if (data.length === 0) {
         console.warn('No fee configurations returned from API, using default configuration')

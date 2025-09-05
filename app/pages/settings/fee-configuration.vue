@@ -333,6 +333,7 @@ definePageMeta({
 })
 
 const feeConfig = ref(new FeeConfiguration())
+const { getSupplierFeeConfig } = useFeeConfigApi()
 const selectedCurrency = ref(Currency.KHR.toString())
 const showAddSuppliers = ref(false)
 const showSettingsDropdown = ref(false)
@@ -826,7 +827,7 @@ onMounted(async () => {
   const defaultSupplierId = defaultSupplier?.id || '3904u39fu39u090f3f3'
   const defaultSupplierName = defaultSupplier?.name || 'Default Supplier'
 
-  await feeConfig.value.initialize(defaultSupplierId, defaultSupplierName)
+  await feeConfig.value.initialize(getSupplierFeeConfig,defaultSupplierId, defaultSupplierName)
   isInitialized.value = true
 
   tableKey.value++
