@@ -277,7 +277,8 @@
         "actions": "Actions",
         "currencyId": "Currency",
         "tranType": "Transaction Type",
-        "bankRefId": "Bank Reference ID"
+        "bankRefId": "Bank Reference ID",
+        "wallet_payment": "Wallet Payment"
       }
     },
     "sub-biller-transaction-table": {
