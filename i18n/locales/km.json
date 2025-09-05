@@ -95,6 +95,7 @@
   "party_added_successfully": "បានបន្ថែមភាគីដោយជោគជ័យ",
   "configuration_saved_successfully": "បានរក្សាទុកការកំណត់ដោយជោគជ័យ",
   "start_amount": "ចំនួនចាប់ផ្តើម",
+  "amount_duplicate": "ចំនួនស្ទួងគ្នា",
   "end_amount": "ចំនួនបញ្ចប់",
   "fee_amount": "ចំនួនថ្លៃសេវា",
   "fee_rate": "អត្រាថ្លៃសេវា",

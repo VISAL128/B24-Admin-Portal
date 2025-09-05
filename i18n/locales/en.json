@@ -60,6 +60,7 @@
   "percentage_fee": "Percentage Fee",
   "sharing_fee": "Sharing Fee",
   "error_msg": "Error",
+  "amount_duplicate": "Amount range duplicate",
   "failed_to_load_partys": "Failed to load partys.",
   "transaction_fee_rows_cannot_be_empty": "Transaction fee rows cannot be empty",
   "end_amount_cannot_be_less_than_start_amount": "End amount cannot be less than start amount",
