@@ -3,9 +3,9 @@ import type { ApiResponseList } from '~/models/baseModel'
 import type { FeeModel, SharingSupplier } from '~/models/settlement'
 import { useApiExecutor } from './useApiExecutor'
 import type { FeeConfig } from '~/models/feeConfiguration'
-const toast = useToast()
 
 export const useFeeConfigApi = () => {
+  const toast = useToast()
   const { executeV2 } = useApiExecutor()
   // 1. Get settlement history with pagination
   // const getListFeeConfig = (search: string) =>

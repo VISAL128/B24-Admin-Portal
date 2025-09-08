@@ -181,7 +181,7 @@
             <div class="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center mr-2">
               <UIcon name="material-symbols:receipt-outline" class="w-4 h-4 text-primary" />
             </div>
-            {{ t('pages.transaction_detail.title') }}
+            {{ t('pages.transaction_detail.customers') }}
           </h4>
           <!-- Horizontal line below header -->
           <hr class="border-gray-200 dark:border-gray-700  mt-3 -mx-3" />

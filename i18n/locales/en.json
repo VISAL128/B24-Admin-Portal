@@ -61,6 +61,7 @@
   "percentage_fee": "Percentage Fee",
   "sharing_fee": "Sharing Fee",
   "error_msg": "Error",
+  "amount_duplicate": "Amount range duplicate",
   "failed_to_load_partys": "Failed to load partys.",
   "transaction_fee_rows_cannot_be_empty": "Transaction fee rows cannot be empty",
   "end_amount_cannot_be_less_than_start_amount": "End amount cannot be less than start amount",
@@ -91,6 +92,7 @@
   "fee_amount_adjusted_due_to_end_amount_change": "Fee amount adjusted due to end amount change",
   "fee_amount_cannot_exceed_end_amount": "Fee amount cannot exceed end amount",
   "percentage_cannot_exceed_100": "Percentage cannot exceed 100%",
+  "currency_fee_details_cannot_be_empty": "Currency fee details for ({currency}) cannot be empty",
   "start_amount": "Start Amount",
   "end_amount": "End Amount",
   "fee_amount": "Fee Amount",
@@ -1039,6 +1041,7 @@
   },
   "pages": {
     "transaction_detail": {
+      "customers": "Customers",
       "subtitle": "View Transaction Details",
       "customer": "Customer",
       "customerCode": "Customer Code",
