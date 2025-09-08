@@ -87,9 +87,14 @@
                         <div
                           class="flex items-center gap-2 mt-2 p-2 bg-primary/5 dark:bg-primary/10 rounded-lg"
                         >
-                          <Icon
+                          <!-- <Icon
                             name="material-symbols:home-work-outline"
                             class="w-4 h-4 text-primary"
+                          /> -->
+                          <UAvatar
+                            :alt="String(auth.currentProfile.value.name || 'Organization Logo')"
+                            size="sm"
+                            class="ring-1 ring-neutral-300 dark:ring-neutral-700 text-xs"
                           />
                           <div class="flex flex-col flex-1">
                             <span class="text-sm font-medium text-primary">
@@ -159,9 +164,6 @@
                               variant="ghost"
                               :class="[
                                 'w-full flex items-center gap-2 p-2 rounded-lg transition-colors text-left justify-start',
-                                profile.id === auth.currentProfile.value?.id
-                                  ? 'bg-primary/10 dark:bg-primary/20 cursor-default'
-                                  : 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
                               ]"
                               :disabled="profile.id === auth.currentProfile.value?.id"
                               @click="
@@ -170,9 +172,19 @@
                                 }
                               "
                             >
-                              <Icon
+                              <!-- <Icon
                                 name="material-symbols:home-work-outline"
                                 class="w-4 h-4 text-primary"
+                              /> -->
+                              <UAvatar
+                                :src="
+                                  profile.mappedData?.attributes.find(
+                                    (attr) => attr.code === 'LOGO'
+                                  )?.value || ''
+                                "
+                                :alt="String(profile.name || 'Organization Logo')"
+                                size="sm"
+                                class="ring-1 ring-neutral-300 dark:ring-neutral-700 text-xs"
                               />
                               <div class="flex flex-col flex-1 min-w-0">
                                 <UTooltip :text="profile.name" :delay-duration="500">
@@ -193,7 +205,7 @@
                               <Icon
                                 v-if="profile.id === auth.currentProfile.value?.id"
                                 name="material-symbols:check-circle"
-                                class="w-4 h-4 text-green-500"
+                                class="w-4 h-4 text-primary"
                               />
                             </UButton>
                           </DialogsConfirmDialog>
@@ -212,6 +224,27 @@
                             t('organization_popup.no_organizations_available')
                           }}</span>
                         </div>
+                        <!-- <Divider /> -->
+                        <UButton
+                          icon="material-symbols:business-center-rounded"
+                          variant="soft"
+                          color="primary"
+                          size="sm"
+                          class="w-full justify-center"
+                          @click="
+                            () => {
+                              navigateTo(useRuntimeConfig().public.organizationProfileUrl, {
+                                external: true,
+                                open: {
+                                  target: '_blank',
+                                },
+                              })
+                              isOrganizationPopoverOpen = false
+                            }
+                          "
+                        >
+                          {{ t('organization_popup.manage_organizations') }}
+                        </UButton>
                       </div>
                     </div>
                   </template>

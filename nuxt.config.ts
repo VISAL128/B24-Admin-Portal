@@ -83,7 +83,10 @@ export default defineNuxtConfig({
     public: {
       appVersion: process.env.APP_VERSION || 'v1.0.1',
       userProfileUrl:
-        process.env.KEYCLOAK_URL + '/realms/' + process.env.KEYCLOAK_REALM + '/account' || '',
+        process.env.USER_PROFILE_URL ||
+        process.env.KEYCLOAK_URL + '/realms/' + process.env.KEYCLOAK_REALM + '/account' ||
+        '',
+      organizationProfileUrl: process.env.ORGANIZATION_PROFILE_URL || '',
     },
   },
   // ssr: false, // Important: OIDC works better with SPA mode

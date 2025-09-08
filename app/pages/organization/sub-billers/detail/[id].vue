@@ -1033,7 +1033,7 @@ function buildColumns() {
     },
 
     {
-      id: 'bankReference',
+      id: 'bankRefId',
       accessorKey: 'bankRefId',
       headerText: t('pages.transaction.bank_ref'),
       cell: ({ row }) => copyCell(row.original.bankRefId),
@@ -1117,7 +1117,7 @@ function buildColumns() {
       enableHiding: false,
     },
     {
-      id: 'totalAmount',
+      id: 'amount',
       accessorKey: 'amount',
       headerText: t('total_amount'),
       cell: ({ row }) =>
