@@ -16,7 +16,8 @@ interface ExportOptions {
 }
 
 export const usePuppeteerPdfExport = () => {
-  const formatDateTime = (
+  
+    const formatDateTime = (
     dateInput: string | Date | null | undefined
   ): string => {
     if (!dateInput) return '-'

@@ -31,7 +31,7 @@ import { useToast } from '#imports'
 import { computed } from 'vue'
 import {
   exportToExcelWithUnicodeSupport,
-  exportToPDFWithJsPDF,
+  exportToPDFWithPuppeteerPdf,
 } from '~/composables/utils/exportUtils'
 
 import type { ExportOptions } from '~/components/tables/ExTable.vue'
@@ -249,7 +249,7 @@ const exportToPDFHandler = async () => {
       : undefined
     const currentLocale = locale.value as 'km' | 'en'
 
-    await exportToPDFWithJsPDF(
+    await exportToPDFWithPuppeteerPdf(
       dataToExport,
       pdfExportHeaders.value,
       `${props.exportOptions?.fileName || 'export'}.pdf`,

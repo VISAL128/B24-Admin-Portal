@@ -775,7 +775,7 @@ export async function exportToPDFWithUnicodeSupport(
 
 
 // Fixed Puppeteer approach with proper Khmer Unicode support
-export async function exportToPDFWithJsPDF(
+export async function exportToPDFWithPuppeteerPdf(
   data: Record<string, unknown>[],
   headers: ExportHeader[],
   filename: string,
