@@ -18,6 +18,7 @@
             @clear="debouncedFetchData"
             @keyup.enter="debouncedFetchData"
           />
+          
           <template v-if="showDateFilter">
             <UiDateRangePicker
               v-model="modelValue"
@@ -438,6 +439,7 @@ export interface ExportOptions {
   exportBy?: string
   exportDate?: string
   filter?: Record<string, string>
+  userDateFormat?: string
 }
 
 const auth = useAuth()
@@ -898,6 +900,15 @@ const resolvedExportOptions = computed((): ExportOptions => {
   // Auto-generate export options from internal table state
   const timestamp = new Date().toISOString().split('T')[0]
 
+  // Safely get user preferences with fallback
+  let userDateFormat = 'medium'
+  try {
+    const userPrefs = pref
+    userDateFormat = userPrefs?.dateFormat ?? 'medium'
+  } catch (error) {
+    console.warn('Failed to get user date format preferences:', error)
+  }
+
   // Build automatic filter display from current table state
   const autoFilter: Record<string, string> = {}
 
@@ -1000,6 +1011,7 @@ const resolvedExportOptions = computed((): ExportOptions => {
     totalAmount: props.exportOptions?.totalAmount ?? 0,
     exportDate: new Date().toISOString(),
     exportBy: (user.value?.fullName as string) || (t('system') as string),
+    userDateFormat: props.exportOptions?.userDateFormat ?? userDateFormat,
     filter: {
       ...autoFilter,
       // Allow props to override auto-generated filters if needed

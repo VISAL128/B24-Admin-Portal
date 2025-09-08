@@ -234,6 +234,7 @@ import type { BaseTableColumn } from '~/components/tables/table'
 import type { TableRow } from '@nuxt/ui'
 import { useI18n } from 'vue-i18n'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { useUserPreferences } from '~/composables/utils/useUserPreferences'
 import ExportButton from '../buttons/ExportButton.vue'
 
 export interface ExportOptions {
@@ -322,17 +323,29 @@ const props = defineProps<{
   showDateFilter?: boolean
 }>()
 
-const resolvedExportOptions = computed(() => ({
-  fileName: props.exportOptions?.fileName ?? `${props.tableId}-export`,
-  title: props.exportOptions?.title ?? props.tableId,
-  subtitle: props.exportOptions?.subtitle ?? '',
-  currency: props.exportOptions?.currency,
-  startDate: props.exportOptions?.startDate ?? startDate.value,
-  endDate: props.exportOptions?.endDate ?? endDate.value,
-  totalAmount:
-    props.exportOptions?.totalAmount ??
-    filteredData.value.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0),
-}))
+const resolvedExportOptions = computed(() => {
+  // Safely get user preferences with fallback
+  let userDateFormat = 'medium'
+  try {
+    const userPrefs = useUserPreferences().getPreferences()
+    userDateFormat = userPrefs?.dateFormat ?? 'medium'
+  } catch (error) {
+    console.warn('Failed to get user date format preferences:', error)
+  }
+  
+  return {
+    fileName: props.exportOptions?.fileName ?? `${props.tableId}-export`,
+    title: props.exportOptions?.title ?? props.tableId,
+    subtitle: props.exportOptions?.subtitle ?? '',
+    currency: props.exportOptions?.currency,
+    startDate: props.exportOptions?.startDate ?? startDate.value,
+    endDate: props.exportOptions?.endDate ?? endDate.value,
+    totalAmount:
+      props.exportOptions?.totalAmount ??
+      filteredData.value.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0),
+    userDateFormat,
+  }
+})
 
 const tableRef = ref<any>(null)
 const exportLoading = ref(false)

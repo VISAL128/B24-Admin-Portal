@@ -13,12 +13,14 @@ interface ExportOptions {
   filter?: Record<string, string>
   exportBy?: string
   exportDate?: string
+  userDateFormat?: string
 }
 
 export const usePuppeteerPdfExport = () => {
   
     const formatDateTime = (
-    dateInput: string | Date | null | undefined
+    dateInput: string | Date | null | undefined,
+    userDateFormat?: string
   ): string => {
     if (!dateInput) return '-'
     
@@ -28,8 +30,11 @@ export const usePuppeteerPdfExport = () => {
         return typeof dateInput === 'string' ? dateInput : '-'
       }
       
+      // Use user date format if provided, otherwise default to medium/short
+      const dateStyle = (userDateFormat as 'full' | 'long' | 'medium' | 'short') || 'medium'
+      
       return new Intl.DateTimeFormat('en-GB', {
-        dateStyle: 'medium',
+        dateStyle,
         timeStyle: 'short',
       }).format(date)
     } catch (error) {
@@ -386,7 +391,7 @@ export const usePuppeteerPdfExport = () => {
 
           if (header.key.includes('date') && value) {
             if (typeof value === 'string' || value instanceof Date) {
-              value = formatDateTime(value.toString())
+              value = formatDateTime(value.toString(), options.userDateFormat)
             }
             cellClass = 'cell-center'
           }

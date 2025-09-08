@@ -21,7 +21,6 @@ import { DEFAULT_USER_PREFERENCES } from '~/utils/constants'
  */
 function formatDateTime(
   dateInput: string | Date | null | undefined,
- 
 ): string {
   // Handle null/undefined cases
   if (!dateInput) {
@@ -29,16 +28,16 @@ function formatDateTime(
   }
 
   try {
-
-    const userPreferences =  computed(() => useUserPreferences().getPreferences() || DEFAULT_USER_PREFERENCES)
+    // Get user preferences directly without computed
+    const userPreferences = useUserPreferences().getPreferences() || DEFAULT_USER_PREFERENCES
   
-  const defaultOptions = computed((): FormatOptions => ({
-    dateStyle: userPreferences.value.dateFormat || "medium",
-    timeStyle: userPreferences.value.timeFormat || "short",
-    locale: "en-GB",
-    hour12: userPreferences.value.hour12 !== undefined ? userPreferences.value.hour12 : true,
-    showTime: true,
-  }));
+    const defaultOptions: FormatOptions = {
+      dateStyle: userPreferences.dateFormat || "medium",
+      timeStyle: userPreferences.timeFormat || "short",
+      locale: "en-GB",
+      hour12: userPreferences.hour12 !== undefined ? userPreferences.hour12 : true,
+      showTime: true,
+    }
 
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
     
@@ -47,19 +46,19 @@ function formatDateTime(
       return typeof dateInput === 'string' ? dateInput : '-'
     }
 
-    if (!defaultOptions.value.showTime) {
-      return new Intl.DateTimeFormat(defaultOptions.value.locale, {
-        dateStyle: defaultOptions.value.dateStyle,
+    if (!defaultOptions.showTime) {
+      return new Intl.DateTimeFormat(defaultOptions.locale, {
+        dateStyle: defaultOptions.dateStyle,
       }).format(date)
     }
 
-    const dateFormatter = new Intl.DateTimeFormat(defaultOptions.value.locale, {
-      dateStyle: defaultOptions.value.dateStyle,
+    const dateFormatter = new Intl.DateTimeFormat(defaultOptions.locale, {
+      dateStyle: defaultOptions.dateStyle,
     })
 
-    const timeFormatter = new Intl.DateTimeFormat(defaultOptions.value.locale, {
-      timeStyle: defaultOptions.value.timeStyle,
-      hour12: defaultOptions.value.hour12,
+    const timeFormatter = new Intl.DateTimeFormat(defaultOptions.locale, {
+      timeStyle: defaultOptions.timeStyle,
+      hour12: defaultOptions.hour12,
     })
 
     const formattedDate = dateFormatter.format(date)
@@ -791,9 +790,12 @@ export async function exportToPDFWithPuppeteerPdf(
     filter?: Record<string, string>
     exportBy?: string
     exportDate?: string
+    userDateFormat?: string
   } = {}
 ) {
   try {
+
+    console.log('userDateFormat', options.userDateFormat)
     // Use the new Puppeteer-based PDF export for better Khmer Unicode support
     const { usePuppeteerPdfExport } = await import('~/composables/usePuppeteerPdfExport')
     const { exportToPDF } = usePuppeteerPdfExport()

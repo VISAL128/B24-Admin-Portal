@@ -15,6 +15,7 @@ interface ExportOptions {
   filter?: Record<string, string>
   exportBy?: string
   exportDate?: string
+  userDateFormat?: string
 }
 
 interface RequestBody {
@@ -25,7 +26,10 @@ interface RequestBody {
   options?: ExportOptions
 }
 
-function formatDateTime(dateInput: string | Date | null | undefined): string {
+function formatDateTime(
+  dateInput: string | Date | null | undefined,
+  userDateFormat?: string
+): string {
   if (!dateInput) return '-'
   
   try {
@@ -34,8 +38,11 @@ function formatDateTime(dateInput: string | Date | null | undefined): string {
       return typeof dateInput === 'string' ? dateInput : '-'
     }
     
+    // Use user date format if provided, otherwise default to medium/short
+    const dateStyle = (userDateFormat as 'full' | 'long' | 'medium' | 'short') || 'medium'
+    
     return new Intl.DateTimeFormat('en-GB', {
-      dateStyle: 'medium',
+      dateStyle,
       timeStyle: 'short',
     }).format(date)
   } catch (error) {
@@ -392,7 +399,7 @@ function generateHTML(
 
         if (header.key.includes('date') && value) {
           if (typeof value === 'string' || value instanceof Date) {
-            value = formatDateTime(value.toString())
+            value = formatDateTime(value.toString(), options.userDateFormat)
           }
           cellClass = 'cell-center'
         }
@@ -536,7 +543,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       executablePath,
       args: [
         '--no-sandbox',

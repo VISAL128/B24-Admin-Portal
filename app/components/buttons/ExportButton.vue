@@ -263,6 +263,7 @@ const exportToPDFHandler = async () => {
         filter: props.exportOptions?.filter,
         exportBy: props.exportOptions?.exportBy,
         exportDate: props.exportOptions?.exportDate,
+        userDateFormat: props.exportOptions?.userDateFormat,
       }
     )
 
