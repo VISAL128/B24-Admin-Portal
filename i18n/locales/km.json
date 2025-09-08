@@ -140,7 +140,8 @@
     "organization_switched": "បានប្តូរស្ថាប័នដោយជោគជ័យ",
     "switch_organization_confirmation": "នឹងប្តូរពី '{from}' ទៅ '{to}'?",
     "organization_singular": "ស្ថាប័ន",
-    "organization_plural": "ស្ថាប័ន"
+    "organization_plural": "ស្ថាប័ន",
+    "manage_organizations": "គ្រប់គ្រងស្ថាប័ន"
   },
   "lang": {
     "english": "អង់គ្លេស",

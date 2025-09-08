@@ -136,7 +136,8 @@
     "organization_switched": "Organization switched successfully",
     "switch_organization_confirmation": "Switching from '{from}' to '{to}'?",
     "organization_singular": "organization",
-    "organization_plural": "organizations"
+    "organization_plural": "organizations",
+    "manage_organizations": "Manage Organizations"
   },
   "lang": {
     "english": "English",

@@ -7,6 +7,13 @@ export interface Organization {
   lastAccessDate: string // ISO date string
   type: string
   verified: boolean
-  attributes: unknown[] // Array of unknown attributes
+  attributes: OrganizationAttribute[]
   userId: string
+}
+export interface OrganizationAttribute {
+  value: string
+  valueDisplayName: string
+  code: 'LOGO'
+  name: string
+  valueTypeCode: string
 }
