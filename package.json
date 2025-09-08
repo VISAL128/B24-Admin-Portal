@@ -30,6 +30,7 @@
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
     "html2canvas": "^1.4.1",
+    "html2pdf.js": "^0.12.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

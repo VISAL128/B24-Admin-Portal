@@ -9,10 +9,76 @@ import {
 } from './pdfFonts'
 import { useUserPreferences } from './useUserPreferences'
 import type { FormatOptions } from './useFormat'
+import autoTable from 'jspdf-autotable'
 // Dynamic imports for jsPDF to avoid SSR issues
 // import jsPDF from 'jspdf'
 // import autoTable from 'jspdf-autotable'
 // import ExcelJS from 'exceljs'
+
+/**
+ * Add Khmer font support to jsPDF document
+ * 
+ * ## How to Add Proper Khmer Font Support:
+ * 
+ * ### Step 1: Download Khmer Font
+ * Download Noto Sans Khmer from Google Fonts:
+ * https://fonts.google.com/noto/specimen/Noto+Sans+Khmer
+ * 
+ * ### Step 2: Add Font to Your Project
+ * Put the font file in your `public/fonts/` directory:
+ * `public/fonts/NotoSansKhmer-Regular.ttf`
+ * 
+ * ### Step 3: Enable Dynamic Font Loading
+ * Uncomment the dynamic font loading section below.
+ * 
+ * ### Alternative: Use Base64 Font
+ * See `khmerFont.ts` for base64 approach.
+ */
+
+async function  setupKhmerFont(doc: any, locale?: string): Promise<string> {
+  if (locale === 'km') {
+    try {
+      const { loadKhmerFontFromUrl } = await import('./khmerFont');
+      
+      const notoSansKhmerBase64 = await loadKhmerFontFromUrl('/fonts/NotoSansKhmer-Regular.ttf');
+      doc.addFileToVFS('NotoSansKhmer.ttf', notoSansKhmerBase64);
+      doc.addFont('NotoSansKhmer.ttf', 'NotoSansKhmer', 'normal');
+      
+      let primaryFont = 'NotoSansKhmer';
+      let availableFonts = ['NotoSansKhmer', 'helvetica'];
+
+      try {
+        const khmerOSBase64 = await loadKhmerFontFromUrl('/fonts/KhmerOS.ttf');
+        doc.addFileToVFS('KhmerOS.ttf', khmerOSBase64);
+        doc.addFont('KhmerOS.ttf', 'KhmerOS', 'normal');
+        console.log('✅ Both Khmer fonts loaded successfully.');
+        primaryFont = 'KhmerOS'; // Prefer KhmerOS if available
+        availableFonts = ['KhmerOS', 'NotoSansKhmer', 'helvetica'];
+      } catch {
+        console.log('ℹ️ Khmer OS font not available, using Noto Sans Khmer only');
+      }
+      
+      // Set the primary font
+      doc.setFont('helvetica', 'normal', 'KhmerOS');
+
+      console.log(`✅ Khmer font loaded successfully. Primary: ${primaryFont}`);
+      
+      // Return all available fonts (Khmer + English fallback)
+      return availableFonts.join(',');
+
+    } catch (error) {
+      console.warn('Could not setup Khmer font:', error);
+      doc.setFont('helvetica');
+      console.log('⚠️ Using helvetica font as fallback');
+      return 'helvetica';
+    }
+  } else {
+    doc.setFont('helvetica');
+    return 'helvetica';
+  }
+}
+
+
 
 /**
  * Format a date string or Date object to a localized datetime string
@@ -20,13 +86,7 @@ import type { FormatOptions } from './useFormat'
  */
 function formatDateTime(
   dateInput: string | Date | null | undefined,
-  options: {
-    dateStyle?: 'full' | 'long' | 'medium' | 'short'
-    timeStyle?: 'full' | 'long' | 'medium' | 'short'
-    locale?: string
-    hour12?: boolean
-    showTime?: boolean
-  } = {}
+ 
 ): string {
   // Handle null/undefined cases
   if (!dateInput) {
@@ -37,7 +97,6 @@ function formatDateTime(
 
     const userPreferences =  computed(() => useUserPreferences().getPreferences() || DEFAULT_USER_PREFERENCES)
   
-    // Default options
   const defaultOptions = computed((): FormatOptions => ({
     dateStyle: userPreferences.value.dateFormat || "medium",
     timeStyle: userPreferences.value.timeFormat || "short",
@@ -46,23 +105,19 @@ function formatDateTime(
     showTime: true,
   }));
 
-    // Create Date object from input
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
     
-    // Validate date
     if (isNaN(date.getTime())) {
       console.warn('Invalid date provided to formatDateTime:', dateInput)
       return typeof dateInput === 'string' ? dateInput : '-'
     }
 
-    // If only date is needed (no time)
     if (!defaultOptions.value.showTime) {
       return new Intl.DateTimeFormat(defaultOptions.value.locale, {
         dateStyle: defaultOptions.value.dateStyle,
       }).format(date)
     }
 
-    // Format date and time separately to avoid comma
     const dateFormatter = new Intl.DateTimeFormat(defaultOptions.locale, {
       dateStyle: defaultOptions.value.dateStyle,
     })
@@ -354,12 +409,12 @@ export async function exportToPDFWithUnicodeSupport(
   } = {}
 ) {
   try {
-    console.log('-----filter-----', options.filter)
+    console.log('---export--data-----', data)
 
     // 1. Dynamic Orientation & Font Sizing Configuration
     const COLUMN_THRESHOLD_FOR_LANDSCAPE = 7
     const isLandscape = headers.length > COLUMN_THRESHOLD_FOR_LANDSCAPE
-    const orientation = isLandscape ? 'l' : 'p'
+    // const orientation = isLandscape ? 'l' : 'p'
     const containerWidth = isLandscape ? '297mm' : '210mm'
 
     // Adjust font size based on column count for readability
@@ -601,8 +656,9 @@ export async function exportToPDFWithUnicodeSupport(
 
         // Handle row number column
         if (h.key === 'row_number' || h.label === '#') {
-          value = index + 1 // Generate sequential row numbers
+          value = index + 1 // Sequential record numbering across all pages
           cellAlign = 'center'
+          cellStyle = 'font-weight: 600; color: #666; font-size: 0.9em;' // Enhanced styling for record numbers
         } else {
           value = item[h.key]
 
@@ -730,6 +786,9 @@ export async function exportToPDFWithUnicodeSupport(
     htmlContent += `</div>` // Close main wrapper
 
     container.innerHTML = htmlContent
+
+    console.log('---export--htmlContent-----', htmlContent)
+    
     document.body.appendChild(container)
 
     // Convert to canvas with high quality
@@ -744,7 +803,8 @@ export async function exportToPDFWithUnicodeSupport(
     document.body.removeChild(container)
 
     // Create PDF from canvas
-    const pdf = new jsPDF(orientation, 'mm', 'a4')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+
     const imgData = canvas.toDataURL('image/png')
 
     const pdfWidth = pdf.internal.pageSize.getWidth()
@@ -777,6 +837,306 @@ export async function exportToPDFWithUnicodeSupport(
     throw new Error('Failed to generate PDF with Unicode support. Please try again.')
   }
 }
+
+
+// Fixed jsPDF approach with proper autoTable import
+export async function exportToPDFWithJsPDF(
+  data: Record<string, unknown>[],
+  headers: ExportHeader[],
+  filename: string,
+  title: string,
+  subtitle?: string,
+  options: {
+    company?: string
+    currency?: string
+    totalAmount?: number
+    currencyTotals?: Record<string, number>
+    locale?: 'km' | 'en'
+    t?: (key: string, ...args: unknown[]) => string
+    filter?: Record<string, string>
+    exportBy?: string
+    exportDate?: string
+  } = {}
+) {
+  try {
+    
+    // Import jsPDF
+    const jsPDF = (await import('jspdf')).default
+    
+
+    const isLandscape = headers.length > 7
+    const orientation = isLandscape ? 'l' : 'p'
+    
+    // Create PDF instance with UTF-8 support
+    const doc = new jsPDF({
+      orientation: orientation,
+      unit: 'mm',
+      format: 'a4',
+      putOnlyUsedFonts: true,
+      compress: false // Disable compression to ensure UTF-8 characters are preserved
+    })
+    
+    // Add UTF-8 metadata to the PDF for proper Unicode character handling
+    // This ensures proper rendering of Khmer and other Unicode text
+    doc.setProperties({
+      title: title,
+      subject: subtitle || '',
+      creator: 'B24 Management Portal',
+      keywords: 'export, pdf, unicode, khmer'
+    })
+    
+    // Setup Khmer font support
+    console.log('Setting up Khmer font for locale:', options.locale)
+    const currentFont = await setupKhmerFont(doc, options.locale)
+    
+    // Extract the primary font (first in the list) for jsPDF's setFont
+    const fontList = currentFont.split(',').map(f => f.trim())
+    const primaryFont = fontList[0] || 'helvetica'
+    console.log('Available fonts:', fontList)
+    console.log('Using primary font for autoTable:', primaryFont)
+    
+    // Helper function to ensure proper UTF-8 text encoding
+    const ensureUTF8Text = (text: string): string => {
+      // Ensure the text is properly encoded as UTF-8
+      // This is especially important for Khmer and other Unicode characters
+      try {
+        // Convert to UTF-8 bytes and back to ensure proper encoding
+        const utf8Bytes = new TextEncoder().encode(text)
+        return new TextDecoder('utf-8').decode(utf8Bytes)
+      } catch (error) {
+        console.warn('UTF-8 encoding issue with text:', text, error)
+        return text // Fallback to original text
+      }
+    }
+    
+    // Type assertion to access autoTable method with proper typing
+    interface PDFWithAutoTable {
+      lastAutoTable: { finalY: number }
+      [key: string]: unknown
+    }
+    const pdfWithAutoTable = doc as unknown as PDFWithAutoTable
+    
+    let yPosition = 20
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 15
+    
+    // Colors
+    const KHMER_BLUE: [number, number, number] = [3, 46, 161]
+    const KHMER_RED: [number, number, number] = [218, 37, 29]
+    const LIGHT_GRAY: [number, number, number] = [85, 85, 85]
+    const LIGHT_BG: [number, number, number] = [247, 249, 252]
+    
+    // Title
+    doc.setFontSize(18)
+    doc.setTextColor(KHMER_BLUE[0], KHMER_BLUE[1], KHMER_BLUE[2])
+    doc.text(ensureUTF8Text(title), margin, yPosition)
+    yPosition += 10
+    
+    // Subtitle and metadata
+    doc.setFontSize(11)
+    doc.setTextColor(LIGHT_GRAY[0], LIGHT_GRAY[1], LIGHT_GRAY[2])
+    
+    if (subtitle) {
+      const subtitleText = `${options.t ? options.t('wallet_info') : 'Wallet Info'}: ${subtitle}`
+      doc.text(ensureUTF8Text(subtitleText), margin, yPosition)
+      yPosition += 6
+    }
+    
+    if (options.exportBy) {
+      const exportByText = `${options.t?.('exported_by') || 'Exported By'}: ${options.exportBy}`
+      doc.text(ensureUTF8Text(exportByText), margin, yPosition)
+      yPosition += 6
+    }
+    
+    if (options.exportDate) {
+      const formattedDate = new Date(options.exportDate).toLocaleDateString(
+        options.locale === 'km' ? 'km-KH' : 'en-US',
+        { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+      )
+      const exportDateText = `${options.t?.('export_date') || 'Export Date'}: ${formattedDate}`
+      doc.text(ensureUTF8Text(exportDateText), margin, yPosition)
+      yPosition += 6
+    }
+    
+    yPosition += 5
+    
+    // Add separator line
+    doc.setDrawColor(
+      KHMER_BLUE[0] ?? 0,
+      KHMER_BLUE[1] ?? 0,
+      KHMER_BLUE[2] ?? 0
+    )
+
+    doc.setLineWidth(0.5)
+    doc.line(margin, yPosition, pageWidth - margin, yPosition)
+    yPosition += 10
+    
+    // Filters section
+    if (options.filter && Object.keys(options.filter).length > 0 && options.t) {
+      doc.setFontSize(12)
+      doc.setTextColor(51, 51, 51)
+      const filtersAppliedText = ensureUTF8Text(options.t('filters_applied'))
+      doc.text(filtersAppliedText, margin, yPosition)
+      yPosition += 8
+      
+      const filterEntries = Object.entries(options.filter).filter(
+        ([key]) => !key.toLowerCase().includes('date range')
+      )
+      
+      if (filterEntries.length > 0) {
+        doc.setFontSize(9)
+        
+        // Create filter table data with UTF-8 encoding
+        const filterData = filterEntries.map(([key, value]) => [
+          ensureUTF8Text(key + ':'),
+          ensureUTF8Text(String(value || 'N/A'))
+        ])
+        
+        autoTable(doc, {
+          body: filterData,
+          startY: yPosition,
+          styles: {
+            fontSize: 9,
+            cellPadding: 2,
+            textColor: [85, 85, 85],
+            font: primaryFont // Use the configured font (Khmer or fallback)
+          },
+          columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 60 },
+            1: { cellWidth: 'auto' }
+          },
+          theme: 'plain',
+          margin: { left: margin }
+        })
+        
+        yPosition = pdfWithAutoTable.lastAutoTable.finalY + 10
+      }
+    }
+    
+    // Prepare main table data with UTF-8 encoding
+    const tableHeaders = headers.map(h => ensureUTF8Text(h.label))
+    const tableData = data.map((item, index) => {
+      return headers.map(h => {
+        if (h.key === 'row_number' || h.label === '#') {
+          return (index + 1).toString()
+        }
+        
+        let value = item[h.key]
+        
+        if (h.key.includes('date') && value) {
+          // Use your existing formatDateTime function
+          value = formatDateTime ? formatDateTime(value.toString()) : new Date(value.toString()).toLocaleDateString()
+        }
+        
+        if (h.key.includes('amount') && typeof value === 'number') {
+          value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        }
+        
+        // Ensure UTF-8 encoding for all cell values
+        return ensureUTF8Text(value?.toString() || '-')
+      })
+    })
+    
+    // Column styles configuration
+    const columnStyles: { [key: number]: { halign?: 'left' | 'center' | 'right'; cellWidth?: number } } = {}
+    
+    headers.forEach((header, index) => {
+      if (header.key === 'row_number' || header.label === '#') {
+        columnStyles[index] = { halign: 'center', cellWidth: 15 }
+      } else if (header.key.includes('amount')) {
+        columnStyles[index] = { halign: 'right' }
+      } else if (header.key.includes('status')) {
+        columnStyles[index] = { halign: 'center' }
+      } else if (header.key.includes('date')) {
+        columnStyles[index] = { halign: 'center' }
+      }
+    })
+    
+    // Generate main data table
+    autoTable(doc, {
+      head: [tableHeaders],
+      body: tableData,
+      startY: yPosition,
+      styles: {
+        fontSize: headers.length > 10 ? 7 : headers.length > 8 ? 8 : 9,
+        cellPadding: 3,
+        overflow: 'linebreak',
+        font: primaryFont // Use the configured font (Khmer or fallback)
+      },
+      headStyles: {
+        fillColor: KHMER_BLUE,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center',
+        font: primaryFont // Use the configured font (Khmer or fallback)
+      },
+      alternateRowStyles: {
+        fillColor: LIGHT_BG
+      },
+      columnStyles: columnStyles,
+      margin: { left: margin, right: margin },
+      tableWidth: 'auto',
+      theme: 'striped'
+    })
+    
+    // Get final Y position after main table
+    let finalY = pdfWithAutoTable.lastAutoTable.finalY + 15
+    
+    // Add totals section
+    if ((options.totalAmount !== undefined || options.currencyTotals) && options.t) {
+      doc.setFontSize(12)
+      doc.setTextColor(KHMER_RED[0], KHMER_RED[1], KHMER_RED[2])
+      
+      if (options.currencyTotals && Object.keys(options.currencyTotals).length > 0) {
+        const totalLabel = options.t('pdf_export.total') || 'Total'
+        
+        Object.entries(options.currencyTotals).forEach(([currency, amount]) => {
+          const formattedAmount = (amount as number).toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')
+          const totalText = ensureUTF8Text(`${totalLabel} (${currency}): ${formattedAmount} ${currency}`)
+          const textWidth = doc.getTextWidth(totalText)
+          doc.text(totalText, pageWidth - margin - textWidth, finalY)
+          finalY += 8
+        })
+      } else if (options.totalAmount !== undefined) {
+        const totalText = getTotalText ? 
+          getTotalText(options.t, options.totalAmount, options.currency || '', options.locale || 'en') :
+          `Total: ${options.totalAmount.toLocaleString()} ${options.currency || ''}`
+        
+        const encodedTotalText = ensureUTF8Text(totalText)
+        const textWidth = doc.getTextWidth(encodedTotalText)
+        doc.text(encodedTotalText, pageWidth - margin - textWidth, finalY)
+        finalY += 8
+      }
+    }
+    
+    // Add footer
+    if (options.t) {
+      const footerText = getFooterText ? 
+        getFooterText(options.t, options.locale || 'en') :
+        options.t('generated_by_system') || 'Generated by system'
+      
+      const encodedFooterText = ensureUTF8Text(footerText)
+      const pageHeight = doc.internal.pageSize.getHeight()
+      doc.setFontSize(9)
+      doc.setTextColor(LIGHT_GRAY[0], LIGHT_GRAY[1], LIGHT_GRAY[2])
+      
+      // Center the footer text
+      const footerWidth = doc.getTextWidth(encodedFooterText)
+      doc.text(encodedFooterText, (pageWidth - footerWidth) / 2, pageHeight - 15)
+    }
+    
+    // Save the PDF
+    doc.save(filename)
+    
+  } catch (error) {
+    console.error('Error generating PDF with jsPDF:', error)
+    throw new Error('Failed to generate PDF. Please try again.')
+  }
+}
+
 
 export async function exportToExcelWithUnicodeSupport(
   data: Record<string, unknown>[],
@@ -1059,7 +1419,7 @@ export async function exportToExcelWithUnicodeSupport(
       headers.map((h) => {
         // Handle row number column
         if (h.key === 'row_number' || h.label === '#') {
-          return index + 1 // Generate sequential row numbers
+          return index + 1 // Sequential record numbering across all pages
         }
 
         let value = item[h.key]

@@ -23,6 +23,7 @@ import { useToast } from '#imports'
 import { computed } from 'vue'
 import {
   exportToExcelWithUnicodeSupport,
+  exportToPDFWithJsPDF,
   exportToPDFWithUnicodeSupport,
 } from '~/composables/utils/exportUtils'
 
@@ -219,7 +220,7 @@ const exportToPDFHandler = async () => {
       : undefined
     const currentLocale = locale.value as 'km' | 'en'
 
-    await exportToPDFWithUnicodeSupport(
+    await exportToPDFWithJsPDF(
       dataToExport,
       pdfExportHeaders.value,
       `${props.exportOptions?.fileName || 'export'}.pdf`,
