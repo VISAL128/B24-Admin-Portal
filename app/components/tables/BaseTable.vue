@@ -67,7 +67,7 @@
                           value-attribute="value"
                           class="w-full"
                           :search-input="false"
-                          @update:modelValue="
+                          @update:model-value="
                             (val) => {
                               columnFilters[col.id] = val?.value || ''
                               emit('filter-change', col.id, columnFilters[col.id] || '')
@@ -120,6 +120,9 @@
           :data="filteredData"
           :headers="exportHeaders"
           :export-options="resolvedExportOptions"
+          :loading="exportLoading"
+          @export-start="() => exportLoading = true"
+          @export-end="() => exportLoading = false"
         />
 
         <UPopover>
@@ -136,17 +139,17 @@
                 class="flex items-center gap-2"
               >
                 <input
-                  type="checkbox"
                   :id="`col-${option.value}`"
-                  :value="option.value"
                   v-model="visibleColumnIds"
-                />
+                  type="checkbox"
+                  :value="option.value"
+                >
                 <label :for="`col-${option.value}`">{{ option.label }}</label>
               </div>
               <button
                 class="mt-2 text-xs text-blue-600 underline"
-                @click="resetColumns"
                 type="button"
+                @click="resetColumns"
               >
                 Reset Columns
               </button>
@@ -164,17 +167,17 @@
         :data="filteredData"
         :columns="filteredColumns"
         :sort="sortState"
-        @update:sort="handleSortChange"
         sticky
         class="min-w-[800px] single-line-headers"
         :class="borderClass"
-        @select="onSelect"
         :ui="{
           td: 'px-2 py-3 whitespace-nowrap align-top',
           th: 'tb-h-text py-2 whitespace-nowrap text-left',
           thead: 'whitespace-nowrap',
           tbody: 'whitespace-nowrap',
         }"
+        @update:sort="handleSortChange"
+        @select="onSelect"
       >
         <template #cell="{ row, column }">
           <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
@@ -210,7 +213,7 @@
             ]"
             class="w-24"
             :search-input="false"
-            @update:modelValue="(val) => emit('update:pageSize', val.value)"
+            @update:model-value="(val) => emit('update:pageSize', val.value)"
           />
           <UPagination
             :model-value="props.page"
@@ -226,6 +229,13 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
+import type { BaseTableColumn } from '~/components/tables/table'
+import type { TableRow } from '@nuxt/ui'
+import { useI18n } from 'vue-i18n'
+import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import ExportButton from '../buttons/ExportButton.vue'
+
 export interface ExportOptions {
   fileName?: string
   title?: string
@@ -235,13 +245,6 @@ export interface ExportOptions {
   endDate?: string
   totalAmount?: number
 }
-
-import { ref, computed, onMounted, watch } from 'vue'
-import type { BaseTableColumn } from '~/components/tables/table'
-import type { TableRow } from '@nuxt/ui'
-import { useI18n } from 'vue-i18n'
-import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import ExportButton from '../buttons/ExportButton.vue'
 
 const selectedSortFieldLabel = computed(() => {
   return (
@@ -332,6 +335,7 @@ const resolvedExportOptions = computed(() => ({
 }))
 
 const tableRef = ref<any>(null)
+const exportLoading = ref(false)
 const storageKey = computed(() => `base-table-columns:${props.tableId}`)
 const allColumnIds = computed(() =>
   props.columns.map((col) => col.id).filter((id): id is string => !!id)

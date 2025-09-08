@@ -1,17 +1,25 @@
 <template>
-  <UButtonGroup>
+  <UButtonGroup :loading="isAnyExportLoading">
     <UButton
+     :loading="isAnyExportLoading"
       color="neutral"
       size="sm"
       variant="subtle"
       icon="tabler:file-excel"
       label="Excel"
+      :disabled="isAnyExportLoading"
       :ui="appConfig.ui.button.slots"
       @click="exportToExcelHandler"
     />
 
     <UDropdownMenu :items="exportItems" size="sm" :ui="appConfig.ui.dropdownMenu.slots">
-      <UButton size="sm" color="neutral" variant="outline" icon="i-lucide-chevron-down" />
+      <UButton 
+        size="sm" 
+        color="neutral" 
+        variant="outline" 
+        icon="i-lucide-chevron-down"
+        :disabled="isAnyExportLoading"
+      />
     </UDropdownMenu>
   </UButtonGroup>
 </template>
@@ -24,13 +32,21 @@ import { computed } from 'vue'
 import {
   exportToExcelWithUnicodeSupport,
   exportToPDFWithJsPDF,
-  exportToPDFWithUnicodeSupport,
 } from '~/composables/utils/exportUtils'
 
 import type { ExportOptions } from '~/components/tables/ExTable.vue'
 import appConfig from '~~/app.config'
+
 const { t, locale } = useI18n()
 const toast = useToast()
+
+const emit = defineEmits<{
+  'export-start': []
+  'export-end': []
+}>()
+
+// Use loading state from parent
+const isAnyExportLoading = computed(() => props.loading || false)
 
 type ExportDataRow = {
   [key: string]: string | number | boolean | null | undefined
@@ -41,6 +57,7 @@ const props = defineProps<{
   headers: { key: string; label: string }[]
   columns?: unknown[]
   exportOptions?: ExportOptions
+  loading?: boolean
 }>()
 
 const pdfExportHeaders = computed(() => props.headers)
@@ -125,10 +142,11 @@ const transformedData = computed(() => {
 //   if (item.click) item.click()
 // }
 
-const exportItems: DropdownMenuItem[] = [
+const exportItems = computed((): DropdownMenuItem[] => [
   {
     label: t('excel'),
     icon: 'tabler:file-excel',
+    disabled: isAnyExportLoading.value,
     onSelect() {
       exportToExcelHandler()
     },
@@ -136,14 +154,19 @@ const exportItems: DropdownMenuItem[] = [
   {
     label: t('pdf'),
     icon: 'tabler:file-type-pdf',
+    disabled: isAnyExportLoading.value,
     onSelect() {
       exportToPDFHandler()
     },
   },
-]
+])
 
 const exportToExcelHandler = async () => {
+  if (isAnyExportLoading.value) return // Prevent multiple simultaneous exports
+  
   try {
+    emit('export-start')
+    
     if (!props.data.length) {
       toast.add({
         title: t('no_data_to_export'),
@@ -196,12 +219,18 @@ const exportToExcelHandler = async () => {
       description: t('failed_to_export_to_excel'),
       color: 'error',
     })
+  } finally {
+    emit('export-end')
   }
 }
 
 const exportToPDFHandler = async () => {
+  if (isAnyExportLoading.value) return // Prevent multiple simultaneous exports
+  
   try {
+    emit('export-start')
     console.log('Starting PDF export...')
+    
     if (!props.data.length) {
       toast.add({
         title: t('no_data_to_export'),
@@ -249,6 +278,8 @@ const exportToPDFHandler = async () => {
       description: t('failed_to_export_to_pdf'),
       color: 'error',
     })
+  } finally {
+    emit('export-end')
   }
 }
 </script>

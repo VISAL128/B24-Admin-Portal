@@ -627,7 +627,7 @@ const { formatCurrency } = useCurrency()
 const { copy } = useClipboard()
 const { showSuccess } = useNotification()
 const { getWalletTypes, getWalletBalance, getTopUpSummary, getFeeSummary, getSettlementWalletTransactions, getTopUpWalletTransactions } = usePgwModuleApi()
-const { formatDateTime } = useFormat()
+useFormat()
 const { t } = useI18n()
 const errorHandler = useErrorHandler()
 const { 

@@ -199,6 +199,9 @@
           :headers="exportHeaders"
           :columns="orderedColumns"
           :export-options="resolvedExportOptions"
+          :loading="exportLoading"
+          @export-start="() => exportLoading = true"
+          @export-end="() => exportLoading = false"
         />
         <div class="flex items-center gap-0">
           <!-- Column Configuration -->
@@ -687,6 +690,7 @@ const internalPage = ref(1)
 const internalTotal = ref(0)
 const internalTotalPage = ref(0)
 const loading = ref(false)
+const exportLoading = ref(false)
 
 // Table key to force rebuild when needed
 const tableKey = computed(() => {
