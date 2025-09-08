@@ -1094,6 +1094,12 @@ export async function exportToExcelWithUnicodeSupport(
         }
 
         let value = item[h.key]
+        
+        // Handle null, undefined, empty string values
+        if (value === null || value === undefined || value === '') {
+          return '-'
+        }
+        
         if (h.key.includes('date') && value) {
           // Use the local formatDateTime function
           value = formatDateTime(value.toString())
@@ -1101,7 +1107,9 @@ export async function exportToExcelWithUnicodeSupport(
         if (h.key.includes('amount') && typeof value === 'number') {
           value = value.toLocaleString(options.locale === 'km' ? 'km-KH' : 'en-US')
         }
-        return value
+        
+        // Return the value, or '-' if it's still null/undefined after processing
+        return value ?? '-'
       })
     )
     currentRow++ // Increment for each data row
