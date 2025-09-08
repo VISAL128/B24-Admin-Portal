@@ -827,7 +827,7 @@ onMounted(async () => {
   const defaultSupplierId = defaultSupplier?.id || '3904u39fu39u090f3f3'
   const defaultSupplierName = defaultSupplier?.name || 'Default Supplier'
 
-  await feeConfig.value.initialize(getSupplierFeeConfig,defaultSupplierId, defaultSupplierName)
+  await feeConfig.value.initialize(getSupplierFeeConfig, defaultSupplierId, defaultSupplierName)
   isInitialized.value = true
 
   tableKey.value++
@@ -965,6 +965,21 @@ const validateTableRow = (
     }
     return false
   }
+
+  // //check start and end amount not same data in transactionFee
+  // if (field === 'start_amount' && row.start_amount !== 0) {
+  //   const duplicate = transactionFee.value.find((x) => x.start_amount === row.start_amount)
+  //   if (duplicate) {
+  //     fieldErrors.value[index][field] = t('amount_duplicate')
+  //     return false
+  //   }
+  // } else if (field === 'end_amount' && !row.unlimited && row.end_amount !== 0) {
+  //   const duplicate = transactionFee.value.find((x) => x.end_amount === row.end_amount)
+  //   if (duplicate) {
+  //     fieldErrors.value[index][field] = t('amount_duplicate')
+  //     return false
+  //   }
+  // }
 
   // Validation 3: For fixed fee type, fee_amount must not be greater than end_amount
   if (
@@ -1181,6 +1196,20 @@ const validateAllRows = (): boolean => {
       }
       isValid = false
     }
+
+    //check start and end amount not same data in transactionFee
+    const startDuplicates = transactionFee.value.filter((x) => x.start_amount === row.start_amount)
+    if (startDuplicates.length > 1) {
+      errors.push(`• Row ${index + 1}: ${t('amount_duplicate')}`)
+      fieldErrors.value[index].start_amount = t('amount_duplicate')
+      isValid = false
+    }
+    const endDuplicates = transactionFee.value.filter((x) => x.end_amount === row.end_amount)
+    if (endDuplicates.length > 1) {
+      errors.push(`• Row ${index + 1}: ${t('amount_duplicate')}`)
+      fieldErrors.value[index].end_amount = t('amount_duplicate')
+      isValid = false
+    }
   })
 
   if (isValid && errors.length === 0) {
@@ -1196,6 +1225,7 @@ const validateAllRows = (): boolean => {
   }
 
   if (!isValid && errors.length > 0) {
+    //check errors duplicate rows
     validationDialogTitle.value = t('validation_errors', 'Validation Errors')
     validationDialogMessage.value = `${errors.join('\n')}`
     validationDialogType.value = 'error'
