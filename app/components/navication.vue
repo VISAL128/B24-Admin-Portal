@@ -24,7 +24,12 @@ const items = computed(() => [
   //   ],
   // },
   {
-    label: 'Banks',
+    label: t('suppliers'),
+    icon: 'i-heroicons-building-storefront',
+    to: '/suppliers',
+  },
+  {
+    label: t('banks_list'),
     icon: 'i-heroicons-building-library',
     to: '/banks',
   },

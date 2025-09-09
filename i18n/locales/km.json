@@ -1258,5 +1258,6 @@
     "service_status_updated_successfully": "បានធ្វើឱ្យស្ថានភាពសេវាកម្មអាប់ដេតដោយជោគជ័យ",
     "failed_to_update_service_status": "បានបរាជ័យក្នុងការអាប់ដេតស្ថានភាពសេវាកម្ម"
   },
-  "supplier": "អ្នកផ្គត់ផ្គង់"
+  "suppliers": "អ្នកផ្គត់ផ្គង់",
+  "banks_list":"ធនាគារ"
 }

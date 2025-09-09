@@ -40,7 +40,7 @@ onMounted(() => {
 <template>
   <div class="flex h-full flex-col">
     <!-- Navigation -->
-    <nav class="flex-1 space-y-1">
+    <nav class="flex-1 space-y-0">
       <div v-for="item in items" :key="item.label" class="flex justify-center">
         <!-- Standard Link -->
         <NuxtLink
