@@ -26,20 +26,26 @@ watch(
 
 <template>
   <ClientOnly>
-    <div :class="isNavExpanded ? 'px-6 pt-4' : 'flex justify-center mt-4 max-h-10'" v-bind="attrs">
+    <div
+      :class="
+        isNavExpanded
+          ? 'px-8 pt-4 flex items-center justify-center gap-2'
+          : 'flex justify-center mt-4 max-h-10'
+      "
+      v-bind="attrs"
+      class="cursor-pointer"
+      @click="navigateTo('/')"
+    >
       <img
-        :src="
-          isNavExpanded
-            ? colorMode.value === 'dark'
-              ? '/images/payment-logo-dark.png'
-              : '/images/payment-logo.png'
-            : '/images/Bill24 logo.png'
-        "
+        :src="isNavExpanded ? '/images/Bill24 logo.png' : '/images/Bill24 logo.png'"
         alt="Bill24 Logo"
-        :class="isNavExpanded ? 'w-full h-auto scale-80' : 'w-10 h-10 scale-80'"
-        class="cursor-pointer"
-        @click="navigateTo('/')"
+        :class="isNavExpanded ? 'h-7' : 'w-10 h-10'"
       />
+      <span
+        v-if="isNavExpanded"
+        class="text-xl font-bold whitespace-nowrap text-gradient"
+        >Internal Portal</span
+      >
     </div>
   </ClientOnly>
 </template>

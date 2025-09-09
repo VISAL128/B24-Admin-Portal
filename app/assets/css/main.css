@@ -36,6 +36,10 @@
     /* @apply text-sm font-semibold text-gray-700 dark:text-gray-300; */
   }
 
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyan-500 to-blue-800 bg-clip-text text-transparent;
+  }
+
   .dark .tb-h-text {
     color: var(--color-gray-300);
   }

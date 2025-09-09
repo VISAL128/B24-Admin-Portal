@@ -1236,5 +1236,6 @@
     "warning": "Warning",
     "service_status_updated_successfully": "Service status updated successfully",
     "failed_to_update_service_status": "Failed to update service status"
-  }
+  },
+  "supplier": "Supplier"
 }
