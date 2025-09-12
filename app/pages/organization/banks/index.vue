@@ -84,7 +84,7 @@ const summarys = computed<SummaryCard[]>(() => [
 ])
 
 // Define table ID
-const TABLE_ID = 'banks-list'
+const TABLE_ID = 'banks-list-b24'
 
 // Fetch banks data from API
 const fetchBanks = async (params?: QueryParams): Promise<BankListTableFetchResult | undefined> => {

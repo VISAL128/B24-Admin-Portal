@@ -1,4 +1,5 @@
 import type { Organization } from '~/types/organization'
+import type { PaginationParam } from './subBiller'
 
 export interface SupplierProfile {
   id: string
@@ -35,4 +36,20 @@ export interface Supplier {
   directDebitResponse?: string | null
   checkoutPageConfig?: unknown | null // Unknown structure
   extData?: string | null // JSON string
+}
+
+export interface SupplierListQuery {
+  param: PaginationParam
+  result: SupplierResponseModel[]
+}
+
+export interface SupplierResponseModel {
+  id: string
+  logo: string | null
+  code: string
+  name: string
+  nameKh: string
+  phone?: string | null
+  email?: string | null
+  address?: string | null
 }

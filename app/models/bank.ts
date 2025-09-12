@@ -1,4 +1,5 @@
 import type { BankServiceStatus } from '#imports'
+import type { PaginationParam } from './subBiller'
 
 export interface Bank {
   id: string
@@ -74,4 +75,19 @@ export interface ActivatedBankResponse {
 export interface ConnectedService {
   serviceName: string
   activatedDate: string
+}
+
+export interface BankListQuery {
+  param: PaginationParam
+  result: BankResponseModel[]
+}
+
+export interface BankResponseModel {
+  id: string
+  logo: string
+  code: string
+  name: string
+  name_kh: string
+  scope: string
+  hubScope: string
 }

@@ -24,15 +24,16 @@ const items = computed(() => [
   //   ],
   // },
   {
-    label: t('suppliers'),
-    icon: 'i-heroicons-building-storefront',
-    to: '/suppliers',
-  },
-  {
     label: t('banks_list'),
     icon: 'i-heroicons-building-library',
     to: '/banks',
   },
+  {
+    label: t('suppliers'),
+    icon: 'i-heroicons-building-storefront',
+    to: '/suppliers',
+  },
+  
 ])
 
 // Get version from runtime config
@@ -46,7 +47,7 @@ const appVersion = ref($config.public.appVersion || 'v1.0.0')
 
     <!-- Version Footer -->
     <div v-if="!props.isCollapsed" class="mt-auto p-4">
-      <p class="text-xs font-semibold text-gray-400 dark:text-gray-400">
+      <p class="text-xs text-center font-semibold text-gray-400 dark:text-gray-400">
         {{ t('splash.version') }}
         <span>
           {{ appVersion }}

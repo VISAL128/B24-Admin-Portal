@@ -36,12 +36,18 @@
     /* @apply text-sm font-semibold text-gray-700 dark:text-gray-300; */
   }
 
-  .text-gradient {
-    @apply bg-gradient-to-r from-cyan-500 to-blue-800 bg-clip-text text-transparent;
+  .text-primary-color {
+    color: #1a9bb5 !important; /* Primary color */
+  }
+  .bg-primary-light {
+    background-color: #44b0c51a; /* #44B0C5 with ~10% opacity */
   }
 
   .dark .tb-h-text {
     color: var(--color-gray-300);
+  }
+  .dark .bg-primary-dark {
+    background-color: #44b0c533; /* #44B0C5 with ~20% opacity */
   }
 }
 

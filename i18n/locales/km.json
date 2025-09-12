@@ -823,9 +823,35 @@
         "created_by": "ទូទាត់ដោយ"
       }
     },
+    "banks-list-table": {
+      "columns": {
+        "logo": "រូបតំណាង",
+        "code": "លេខកូដធនាគារ",
+        "name": "ឈ្មោះធនាគារ",
+        "nameKh": "ឈ្មោះធនាគារ (ខ្មែរ)",
+        "scope": "Scope",
+        "hubScope": "Hub Scope"
+      }
+    },
+
+    "suppliers-list-table": {
+      "columns": {
+        "logo": "រូបតំណាង",
+        "code": "លេខកូដម្ចាស់អាជីវកម្ម",
+        "name": "ឈ្មោះម្ចាស់អាជីវកម្ម",
+        "nameKh": "ឈ្មោះម្ចាស់អាជីវកម្ម (ខ្មែរ)",
+        "phone": "ទូរស័ព្ទ",
+        "email": "អ៊ីមែល",
+        "address": "អាសយដ្ឋាន"
+      }
+    },
+
     "banks-list": {
       "title": "បញ្ជីធនាគារ",
       "columns": {
+        "scope": "Scope",
+        "hubScope": "Hub Scope",
+        "code": "លេខកូដធនាគារ",
         "name": "ឈ្មោះធនាគារ",
         "nameKh": "ឈ្មោះធនាគារ (ខ្មែរ)",
         "currency": "រូបិយប័ណ្ណ",
@@ -1258,6 +1284,8 @@
     "service_status_updated_successfully": "បានធ្វើឱ្យស្ថានភាពសេវាកម្មអាប់ដេតដោយជោគជ័យ",
     "failed_to_update_service_status": "បានបរាជ័យក្នុងការអាប់ដេតស្ថានភាពសេវាកម្ម"
   },
-  "suppliers": "អ្នកផ្គត់ផ្គង់",
-  "banks_list":"ធនាគារ"
+  "suppliers": {
+    "search_placeholder": "ស្វែងរកតាមឈ្មោះអ្នកផ្គត់ផ្គង់"
+  },
+  "banks_list": "ធនាគារ"
 }

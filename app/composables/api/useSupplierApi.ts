@@ -13,7 +13,8 @@ import type {
   SettlementHistoryDetailResponse,
 } from '~/models/settlement'
 // import type { TransactionHistory } from '~/models/transactionHistory'
-import type { ApiResponseList } from '~/models/baseModel'
+import type { ApiResponseList, QueryParams } from '~/models/baseModel'
+import type { SupplierListQuery } from '~/models/supplier'
 
 export const useSupplierApi = () => {
   const { execute } = useApiExecutor()
@@ -123,6 +124,20 @@ export const useSupplierApi = () => {
     return rep.data
   }
 
+  const getSupplierList = async (
+    query?: QueryParams
+  ): Promise<ApiResponseList<SupplierListQuery>> => {
+    const response = await execute<SupplierListQuery>(() =>
+      $fetch<ApiResponseList<SupplierListQuery>>('/api/management/suppliers', {
+        method: 'GET',
+        query,
+      })
+    )
+    console.log('Bank list response:', response)
+
+    return response
+  }
+
   return {
     getSuppliers,
     getListCPOApi,
@@ -131,5 +146,6 @@ export const useSupplierApi = () => {
     confirmSettlementAPI,
     getSettlementHistory,
     getSettlementHistoryById,
+    getSupplierList,
   }
 }

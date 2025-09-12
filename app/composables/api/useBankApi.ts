@@ -5,11 +5,14 @@ import type {
   BankAccount,
   BankDetailsResponse,
   BankListResponse,
+  BankListQuery,
+  BankResponseModel,
 } from '~/models/bank'
 import type { ApiResponseList, QueryParams } from '~/models/baseModel'
 
 export const useBankApi = () => {
   const { execute } = useApiExecutor()
+  const { executeV2 } = useApiExecutor()
 
   /**
    * Get list of banks with optional filtering and pagination (Legacy endpoint)
@@ -215,6 +218,18 @@ export const useBankApi = () => {
     return response.data
   }
 
+  const getBankList = async (query?: QueryParams): Promise<ApiResponseList<BankListQuery>> => {
+    const response = await execute<BankListQuery>(() =>
+      $fetch<ApiResponseList<BankListQuery>>('/api/management/banks', {
+        method: 'GET',
+        query,
+      })
+    )
+    console.log('Bank list response:', response)
+
+    return response
+  }
+
   return {
     getBanks,
     getTBanks,
@@ -225,5 +240,6 @@ export const useBankApi = () => {
     getSettlementBanks,
     getCollectionBanks,
     getAccountsBySupplierBankServiceId,
+    getBankList,
   }
 }

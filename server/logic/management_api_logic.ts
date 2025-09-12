@@ -1,5 +1,4 @@
 import type {
-  FeeModel,
   SettlementHistoryDetailQuery,
   SettlementHistoryQuery,
   SettlementHistoryResponse,
@@ -8,6 +7,10 @@ import type { SettlementInquiryRequest } from '~~/server/model/management_api/se
 import type { H3Event } from 'h3'
 import type { ApiResponseList } from '~/models/baseModel'
 import { MANAGEMENT_API_ENDPOINTS } from '../utils/management-api-endpoints'
+import type { MgtResponseList } from '../model/management_api/base'
+import type { BankResponseModel } from '~/models/bank'
+import type { PaginationParam } from '~/models/subBiller'
+import type { SupplierResponseModel } from '~/models/supplier'
 
 let token: string | PromiseLike<string | null> | null = null
 let tokenExpireTime: string | number | Date | null = null
@@ -129,6 +132,102 @@ export async function requestToManagementApi<T>(
       data: errorData,
     })
   }
+  console.log('Response Headers:', response.headers)
+  console.log('Response Status:', response.status)
+  console.log('Response Status Text:', response.statusText)
+  console.log('Response URL:', response.url)
+  console.log('Response Body:', await response.clone().json()) // Clone to avoid consuming the body
+
+  return response.json()
+}
+
+export async function requestToManagementApiWithQuery<T>(
+  endpoint: string,
+  method: string = 'POST',
+  body: unknown = null,
+  event?: H3Event,
+  queryParams?: Record<string, string | number | boolean | undefined>
+): Promise<T> {
+  const token = await getToken()
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Authentication failed or token not received',
+      data: {
+        showNotification: true,
+        notificationType: 'error',
+        title: 'Authentication Error',
+        description: 'Failed to authenticate with the server. Please try logging in again.',
+      },
+    })
+  }
+
+  let url = `${useRuntimeConfig(event).managementApiUrl}${endpoint}`
+
+  // Handle query params
+  if (queryParams && Object.keys(queryParams).length > 0) {
+    const searchParams = new URLSearchParams()
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value))
+      }
+    }
+    url += `?${searchParams.toString()}`
+  }
+
+  console.log('Query PARAM UrL:', url)
+
+  const options: RequestInit = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  }
+
+  // Only add body for non-GET/HEAD
+  if (body && method !== 'GET' && method !== 'HEAD') {
+    options.body = JSON.stringify(body)
+  }
+
+  const response = await fetch(url, options)
+
+  if (response.status >= 500) {
+    console.error(`Internal Server Error: ${response.status} ${response.statusText}`)
+    throw createError({
+      statusCode: response.status,
+      statusMessage: response.statusText || 'Internal Server Error',
+      data: {
+        showNotification: true,
+        notificationType: 'error',
+        title: 'Server Error',
+        description: `The server encountered an error (${response.status}). Please try again later.`,
+        statusCode: response.status,
+      },
+    })
+  }
+
+  if (!response.ok) {
+    const errorData = {
+      showNotification: true,
+      notificationType: 'error',
+      title: 'Request Failed',
+      description: `Request failed with status ${response.status}`,
+      statusCode: response.status,
+    }
+
+    throw createError({
+      statusCode: response.status,
+      statusMessage: response.statusText || 'Request Failed',
+      data: errorData,
+    })
+  }
+
+  console.log('Response Headers:', response.headers)
+  console.log('Response Status:', response.status)
+  console.log('Response Status Text:', response.statusText)
+  console.log('Response URL:', response.url)
+  console.log('Response Body:', await response.clone().json())
 
   return response.json()
 }
@@ -159,17 +258,48 @@ export async function getSettlementHistoryById(
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.SETTLEMENT.HISTORY_DETAILS, 'POST', body)
 }
 
+export async function getListBanks(
+  query?: PaginationParam
+): Promise<MgtResponseList<BankResponseModel>> {
+  return requestToManagementApiWithQuery(
+    MANAGEMENT_API_ENDPOINTS.BANK.LIST,
+    'GET',
+    null, // body
+    undefined, // event
+    {
+      pageIndex: query?.pageIndex || 1,
+      pageSize: query?.pageSize || 25,
+    }
+  )
+}
+
+export async function getListSupplier(
+  query?: PaginationParam
+): Promise<MgtResponseList<SupplierResponseModel>> {
+  return requestToManagementApiWithQuery(
+    MANAGEMENT_API_ENDPOINTS.SUPPLIER.LIST,
+    'GET',
+    null,
+    undefined,
+    {
+      pageIndex: query?.pageIndex || 1,
+      pageSize: query?.pageSize || 25,
+    }
+  )
+}
+
 export async function getListFeeConfig(body: {
   search: string
 }): Promise<ApiResponseList<unknown>> {
   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.LIST, 'POST', body)
 }
-export async function createFeeConfig(body: FeeModel): Promise<ApiResponseList<unknown>> {
-  return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.CREATE, 'POST', body)
-}
-export async function updateFeeConfig(body: FeeModel): Promise<any> {
-  return requestToManagementApi('/update_fee_config', 'PUT', body)
-}
-export async function findFeeConfigById(body: any): Promise<any> {
-  return requestToManagementApi('/get_fee_config_by_id', 'POST', body)
-}
+
+// export async function createFeeConfig(body: FeeModel): Promise<ApiResponseList<unknown>> {
+//   return requestToManagementApi(MANAGEMENT_API_ENDPOINTS.FEE_CONFIG.CREATE, 'POST', body)
+// }
+// export async function updateFeeConfig(body: FeeModel): Promise<any> {
+//   return requestToManagementApi('/update_fee_config', 'PUT', body)
+// }
+// export async function findFeeConfigById(body: any): Promise<any> {
+//   return requestToManagementApi('/get_fee_config_by_id', 'POST', body)
+// }

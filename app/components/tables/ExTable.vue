@@ -10,7 +10,7 @@
       <div class="flex gap-2 flex-wrap items-center">
         <div class="flex flex-wrap items-center gap-2">
           <!-- <UInput v-model="search" :placeholder="t('table.search_placeholder')" class="w-64" /> -->
-          <ExSearch
+          <ExSearch 
             v-model="search"
             :search-tooltip="props.searchTooltip"
             size="sm"
@@ -18,7 +18,7 @@
             @clear="debouncedFetchData"
             @keyup.enter="debouncedFetchData"
           />
-          
+
           <template v-if="showDateFilter">
             <UiDateRangePicker
               v-model="modelValue"
@@ -201,8 +201,8 @@
           :columns="orderedColumns"
           :export-options="resolvedExportOptions"
           :loading="exportLoading"
-          @export-start="() => exportLoading = true"
-          @export-end="() => exportLoading = false"
+          @export-start="() => (exportLoading = true)"
+          @export-end="() => (exportLoading = false)"
         />
         <div class="flex items-center gap-0">
           <!-- Column Configuration -->
@@ -308,7 +308,7 @@
           </UPopover>
 
           <!-- More Options Dropdown -->
-          <UPopover v-model:open="showMoreOptionsPopup">
+          <!-- <UPopover v-model:open="showMoreOptionsPopup">
             <template #default>
               <UTooltip :text="t('table.more_options')" :delay-duration="200" placement="top">
                 <UButton variant="ghost" class="p-2">
@@ -319,9 +319,9 @@
                   />
                 </UButton>
               </UTooltip>
-            </template>
+            </template> -->
 
-            <template #content>
+          <!-- <template #content>
               <div class="py-1 min-w-40">
                 <UButton
                   variant="ghost"
@@ -337,8 +337,8 @@
                   {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
                 </UButton>
               </div>
-            </template>
-          </UPopover>
+            </template> -->
+          <!-- </UPopover> -->
         </div>
       </div>
     </div>
@@ -947,7 +947,7 @@ const resolvedExportOptions = computed((): ExportOptions => {
   )
 
   allFilterableColumns.forEach((column) => {
-    if (column.id !='status') {
+    if (column.id != 'status') {
       let displayName = getTranslationHeaderById(column.id)
       if (displayName.includes('table.') && displayName.includes('.columns.')) {
         displayName = getColumnLabel(column)
@@ -956,13 +956,13 @@ const resolvedExportOptions = computed((): ExportOptions => {
       const currentValue = appliedColumnFilters.value[column.id]
 
       const displayLabel = column.filterOptions
-        ? column.filterOptions.find((opt) => opt.value==currentValue)?.label
+        ? column.filterOptions.find((opt) => opt.value == currentValue)?.label
         : undefined
 
       // if (displayLabel) {
       //   autoFilter[displayName] = displayLabel
       // }
- 
+
       if (currentValue && currentValue.trim() !== '' && currentValue !== 'all') {
         autoFilter[displayName] = displayLabel ?? t('all')
       } else {

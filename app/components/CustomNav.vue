@@ -49,7 +49,7 @@ onMounted(() => {
           class="group flex items-center rounded-md text-sm font-medium"
           :class="[
             isItemActive(item)
-              ? 'bg-green-50 text-green-600 dark:bg-green-900/50 dark:text-green-400'
+              ? 'bg-primary-light text-primary-color dark:bg-primary-dark dark:text-primary-color'
               : `text-gray-500 dark:text-gray-400 ${isCollapsed ? 'hover:bg-primary-100 dark:hover:bg-primary-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'} hover:text-gray-900 dark:hover:text-white`,
             isCollapsed ? 'p-2' : 'w-full gap-3 px-3 py-3',
           ]"
@@ -65,7 +65,7 @@ onMounted(() => {
             class="group flex items-center rounded-md text-left text-sm font-medium"
             :class="[
               isItemActive(item)
-                ? 'bg-green-50 text-green-600 dark:bg-green-900/50 dark:text-green-400'
+                ? 'bg-primary-light text-primary-color dark:bg-primary-dark dark:text-primary-color'
                 : `text-gray-500 dark:text-gray-400 ${isCollapsed ? 'hover:bg-primary-100 dark:hover:bg-primary-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'} hover:text-gray-900 dark:hover:text-white`,
               isCollapsed ? 'p-2' : 'w-full gap-3 px-3 py-3',
             ]"
@@ -88,7 +88,7 @@ onMounted(() => {
               class="group flex items-center gap-3 rounded-md py-2 pl-5 pr-3 text-sm font-medium"
               :class="
                 isItemActive(child)
-                  ? 'bg-green-50 text-green-600 dark:bg-green-900/50 dark:text-green-400'
+                  ? 'bg-primary-light text-primary-color dark:bg-primary-dark dark:text-primary-color'
                   : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
               "
             >

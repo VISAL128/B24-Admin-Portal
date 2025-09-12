@@ -161,10 +161,10 @@ const fetchSubBiller = async (
   }
 }
 
-const onPageSizeChange = () => {
-  page.value = 1
-  // fetchSettlementHistory()
-}
+// const onPageSizeChange = () => {
+//   page.value = 1
+//   // fetchSettlementHistory()
+// }
 
 onBeforeMount(() => {
   // Get last day of current month

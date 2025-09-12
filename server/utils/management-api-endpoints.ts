@@ -23,6 +23,16 @@ export const MANAGEMENT_API_ENDPOINTS = {
     SUPPLIERS_CPO: '/dynamic/suppliers-cpo',
   },
 
+  // Bank endpoints
+  BANK: {
+    LIST: '/bank/bank-list',
+  },
+
+  //Supplier endpoints
+  SUPPLIER: {
+    LIST: '/merchant/bank-list',
+  },
+
   // Fee configuration endpoints
   FEE_CONFIG: {
     LIST: '/get_list_fee_config',

@@ -42,7 +42,7 @@ watch(
       />
       <span
         v-if="isNavExpanded"
-        class="text-xl font-bold whitespace-nowrap text-gradient"
+        class="text-xl font-bold whitespace-nowrap text-primary-color"
         >Internal Portal</span
       >
     </div>

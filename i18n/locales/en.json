@@ -220,9 +220,35 @@
         "created_by": "Settled By"
       }
     },
+
+    "banks-list-table": {
+      "columns": {
+        "logo": "Logo",
+        "code": "Bank Code",
+        "name": "Bank Name",
+        "nameKh": "Bank Name (Khmer)",
+        "scope": "Scope",
+        "hubScope": "Hub Scope"
+      }
+    },
+    "suppliers-list-table": {
+      "columns": {
+        "logo": "Logo",
+        "code": "Code",
+        "name": "Name",
+        "nameKh": "Name (Khmer)",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address"
+      }
+    },
+
     "banks-list": {
       "title": "Bank List",
       "columns": {
+        "scope": "Scope",
+        "hubScope": "Hub Scope",
+        "code": "Bank Code",
         "name": "Bank Name",
         "nameKh": "Bank Name (Khmer)",
         "currency": "Currency",
@@ -1237,6 +1263,8 @@
     "service_status_updated_successfully": "Service status updated successfully",
     "failed_to_update_service_status": "Failed to update service status"
   },
-  "suppliers": "Suppliers",
-  "banks_list":"Banks"
+  "suppliers": {
+    "search_placeholder": "Search by supplier name"
+  },
+  "banks_list": "Banks"
 }

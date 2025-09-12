@@ -1,5 +1,11 @@
 export default defineAppConfig({
   ui: {
+    breadcrumb: {
+      slots: {
+        linkLabel: 'text-xl font-medium text-primary-color',
+        
+      },
+    },
     theme: {
       colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'],
       transitions: true,
@@ -237,7 +243,7 @@ export default defineAppConfig({
       slots: {
         leadingIcon: 'shrink-0 size-4 text-muted',
         trailingIcon: 'shrink-0 size-4 text-muted',
-        base: 'min-w-16 justify-center',
+        base: 'min-w-16 justify-center py-2.5 ',
       },
     },
     input: {
@@ -246,6 +252,7 @@ export default defineAppConfig({
         leadingIcon: 'shrink-0 size-4 text-gray-400',
         trailing: 'pe-2',
         trailingIcon: 'shrink-0 size-4 text-muted',
+        base: 'py-2.5',
       },
     },
     modal: {
