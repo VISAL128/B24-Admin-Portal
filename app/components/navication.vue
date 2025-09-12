@@ -25,15 +25,14 @@ const items = computed(() => [
   // },
   {
     label: t('banks_list'),
-    icon: 'i-heroicons-building-library',
+    icon: 'mdi:bank-outline',
     to: '/banks',
   },
   {
-    label: t('suppliers'),
-    icon: 'i-heroicons-building-storefront',
+    label: t('suppliers.title'),
+    icon: 'mdi:storefront-outline',
     to: '/suppliers',
   },
-  
 ])
 
 // Get version from runtime config

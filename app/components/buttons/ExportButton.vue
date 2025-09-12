@@ -1,22 +1,22 @@
 <template>
   <UButtonGroup :loading="isAnyExportLoading">
     <UButton
-     :loading="isAnyExportLoading"
+      :loading="isAnyExportLoading"
       color="neutral"
       size="sm"
-      variant="subtle"
-      icon="tabler:file-excel"
-      label="Excel"
+      variant="outline"
+      icon="i-lucide-file-down"
+      :label="t('export')"
       :disabled="isAnyExportLoading"
       :ui="appConfig.ui.button.slots"
       @click="exportToExcelHandler"
     />
 
     <UDropdownMenu :items="exportItems" size="sm" :ui="appConfig.ui.dropdownMenu.slots">
-      <UButton 
-        size="sm" 
-        color="neutral" 
-        variant="outline" 
+      <UButton
+        size="sm"
+        color="neutral"
+        variant="outline"
         icon="i-lucide-chevron-down"
         :disabled="isAnyExportLoading"
       />
@@ -163,10 +163,10 @@ const exportItems = computed((): DropdownMenuItem[] => [
 
 const exportToExcelHandler = async () => {
   if (isAnyExportLoading.value) return // Prevent multiple simultaneous exports
-  
+
   try {
     emit('export-start')
-    
+
     if (!props.data.length) {
       toast.add({
         title: t('no_data_to_export'),
@@ -226,11 +226,11 @@ const exportToExcelHandler = async () => {
 
 const exportToPDFHandler = async () => {
   if (isAnyExportLoading.value) return // Prevent multiple simultaneous exports
-  
+
   try {
     emit('export-start')
     console.log('Starting PDF export...')
-    
+
     if (!props.data.length) {
       toast.add({
         title: t('no_data_to_export'),

@@ -223,7 +223,6 @@
 
     "banks-list-table": {
       "columns": {
-        "logo": "Logo",
         "code": "Bank Code",
         "name": "Bank Name",
         "nameKh": "Bank Name (Khmer)",
@@ -1264,6 +1263,7 @@
     "failed_to_update_service_status": "Failed to update service status"
   },
   "suppliers": {
+    "title": "Billers",
     "search_placeholder": "Search by supplier name"
   },
   "banks_list": "Banks"

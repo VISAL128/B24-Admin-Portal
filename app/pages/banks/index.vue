@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { h, onMounted, ref } from 'vue'
 import { useBankApi } from '~/composables/api/useBankApi'
-import type {BankResponseModel } from '~/models/bank'
+import type { BankResponseModel } from '~/models/bank'
 import { useI18n } from 'vue-i18n'
 import type { BaseTableColumn, TableFetchResult } from '~/components/tables/table'
 import ExTable from '~/components/tables/ExTable.vue'
@@ -77,30 +77,57 @@ onMounted(() => {
 // }
 
 const columns: BaseTableColumn<BankResponseModel>[] = [
-  {
-    id: 'logo',
-    accessorKey: 'logo',
-    header: () => t('table.banks-list-table.columns.logo'),
-    cell: ({ row }) => {
-      const UAvatar = resolveComponent('UAvatar')
-      const defaultLogo = '/images/icon/default-bank.png'
-      // If bank logo is available, display it
-      return h('div', { class: 'flex items-center gap-2' }, [
-        h(UAvatar, {
-          src: row.original.logo || defaultLogo,
-          size: 'lg',
-        }),
-      ])
-    },
-    enableSorting: false,
-    size: 50,
-  },
+  // {
+  //   id: 'logo',
+  //   accessorKey: 'logo',
+  //   header: () => t('table.banks-list-table.columns.logo'),
+  //   cell: ({ row }) => {
+  //     const UAvatar = resolveComponent('UAvatar')
+  //     const defaultLogo = '/images/icon/default-bank.png'
+  //     return h('div', { class: 'flex items-center gap-2' }, [
+  //       h(UAvatar, {
+  //         src: row.original.logo || defaultLogo,
+  //         size: 'lg',
+  //         style: {
+  //           border: '1px solid #1a9bb580',
+  //           borderRadius: '50%',
+  //           objectFit: 'cover',
+  //           boxShadow: '0 0 3px rgba(26, 155, 181, 0.6)', // shadow with same color
+  //         },
+  //       }),
+  //     ])
+  //   },
+  //   enableSorting: false,
+  //   size: 50,
+  // },
   {
     id: 'code',
     accessorKey: 'code',
     header: () => t('table.banks-list-table.code'),
-    cell: ({ row }) => h('div', { class: 'font-medium justify-center' }, row.original.code || '-'),
+    //cell: ({ row }) => h('div', { class: 'font-medium justify-center' }, row.original.code || '-'),
+    cell: ({ row }) => {
+      const UAvatar = resolveComponent('UAvatar')
+      const defaultLogo = '/images/icon/default-bank.png'
+      if (row.original.name) {
+        // If bank logo is available, display it
+        return h('div', { class: 'flex items-center gap-2' }, [
+          h(UAvatar, {
+            src: row.original.logo || defaultLogo,
+            size: 'lg',
+            style: {
+              border: '1px solid #DDDDDD80',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              boxShadow: '0 0 3px #DDDDDD99', // shadow with same color
+            },
+          }),
+          h('div', { class: '' }, row.original.name || '-'),
+        ])
+      }
+      return h('div', { class: '' }, row.original.name || '-')
+    },
     enableSorting: true,
+    enableHiding: false,
     size: 150,
   },
   {
@@ -109,6 +136,7 @@ const columns: BaseTableColumn<BankResponseModel>[] = [
     header: () => t('table.banks-list-table.columns.name'),
     cell: ({ row }) => h('div', { class: 'font-medium' }, row.original.name || '-'),
     enableSorting: true,
+    enableHiding: false,
     size: 200,
   },
   {

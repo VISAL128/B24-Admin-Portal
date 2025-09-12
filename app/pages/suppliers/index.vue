@@ -78,29 +78,50 @@ onMounted(() => {
 // }
 
 const columns: BaseTableColumn<SupplierResponseModel>[] = [
-  {
-    id: 'logo',
-    accessorKey: 'logo',
-    header: () => t('table.suppliers-list-table.columns.logo'),
-    cell: ({ row }) => {
-      const UAvatar = resolveComponent('UAvatar')
-      const defaultLogo = '/images/icon/default-supplier.png'
-      // If bank logo is available, display it
-      return h('div', { class: 'flex items-center gap-2' }, [
-        h(UAvatar, {
-          src: row.original.logo || defaultLogo,
-          size: 'lg',
-        }),
-      ])
-    },
-    enableSorting: false,
-    size: 50,
-  },
+  // {
+  //   id: 'logo',
+  //   accessorKey: 'logo',
+  //   header: () => t('table.suppliers-list-table.columns.logo'),
+  //   cell: ({ row }) => {
+  //     const UAvatar = resolveComponent('UAvatar')
+  //     const defaultLogo = '/images/icon/default-supplier.png'
+  //     // If bank logo is available, display it
+  //     return h('div', { class: 'flex items-center gap-2' }, [
+  //       h(UAvatar, {
+  //         src: row.original.logo || defaultLogo,
+  //         size: 'lg',
+  //       }),
+  //     ])
+  //   },
+  //   enableSorting: false,
+  //   size: 50,
+  // },
   {
     id: 'code',
     accessorKey: 'code',
     header: () => t('table.suppliers-list-table.columns.code'),
-    cell: ({ row }) => h('div', { class: 'font-medium justify-center' }, row.original.code || '-'),
+    //cell: ({ row }) => h('div', { class: 'font-medium justify-center' }, row.original.code || '-'),
+    cell: ({ row }) => {
+      const UAvatar = resolveComponent('UAvatar')
+      const defaultLogo = '/images/icon/default-supplier.png'
+      if (row.original.name) {
+        // If supplier logo is available, display it
+        return h('div', { class: 'flex items-center gap-2' }, [
+          h(UAvatar, {
+            src: row.original.logo || defaultLogo,
+            size: 'lg',
+            style: {
+              border: '1px solid #DDDDDD80',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              boxShadow: '0 0 3px #DDDDDD99', // shadow with same color
+            },
+          }),
+          h('div', { class: '' }, row.original.code || '-'),
+        ])
+      }
+      return h('div', { class: '' }, row.original.code || '-')
+    },
     enableSorting: true,
     size: 150,
   },

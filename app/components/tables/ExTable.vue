@@ -1,16 +1,14 @@
-<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <template>
   <!-- Unified Card Container -->
   <div
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-default shadow p-0 flex flex-col h-full overflow-auto"
+    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm flex flex-col h-full"
   >
-    <!-- Filter / Sort / Column Configuration -->
-    <div class="flex justify-between flex-wrap items-start gap-4 flex-shrink-0 mb-2 pt-2 px-3">
-      <!-- 🔍 Filter Buttons -->
-      <div class="flex gap-2 flex-wrap items-center">
-        <div class="flex flex-wrap items-center gap-2">
-          <!-- <UInput v-model="search" :placeholder="t('table.search_placeholder')" class="w-64" /> -->
-          <ExSearch 
+    <!-- Header: Filters & Actions -->
+    <div class="px-4 py-3 flex-shrink-0">
+      <div class="flex justify-between items-start gap-4">
+        <!-- Left side: Search and Filters -->
+        <div class="flex gap-3 flex-wrap items-center">
+          <ExSearch
             v-model="search"
             :search-tooltip="props.searchTooltip"
             size="sm"
@@ -35,11 +33,12 @@
             @update:open="onFilterPopoverToggle"
           >
             <UTooltip :text="t('table.filters')" :delay-duration="200">
-              <UButton variant="ghost" class="p-2 relative">
-                <UIcon name="i-lucide:filter" size="sm" class="text-gray-900 dark:text-white" />
+              <UButton variant="outline" color="neutral" class="relative">
+                <UIcon name="i-lucide:filter" class="w-4 h-4" />
+                <span>{{ t('table.filters') }}</span>
                 <span
                   v-if="activeFilterCount > 0"
-                  class="absolute -top-0.5 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
+                  class="absolute -top-1.5 -right-1.5 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
                 >
                   {{ activeFilterCount }}
                 </span>
@@ -52,7 +51,7 @@
                 <!-- Column Filters -->
                 <div class="space-y-2 flex flex-col min-h-48 h-full">
                   <h4 class="flex flex-wrap text-sm font-medium px-2 text-gray-900 dark:text-white">
-                    {{ t('table.filters') }}
+                    {{ t('table.how') }}
                   </h4>
                   <div class="flex flex-col flex-1 gap-2">
                     <Divider />
@@ -155,57 +154,20 @@
               </div>
             </template>
           </UPopover>
-          <!-- Auto Refresh -->
-          <div v-if="props.enabledAutoRefresh" class="flex items-center gap-1">
-            <USwitch
-              v-model="autoRefresh"
-              :label="t('settlement.auto_refresh')"
-              :disabled="isDateRangeExceedsWeek"
-              checked-icon="material-symbols:sync"
-              unchecked-icon="material-symbols:sync-disabled"
-              size="sm"
-              :class="isDateRangeExceedsWeek ? 'opacity-80 cursor-not-allowed' : ''"
-            />
-            <UTooltip
-              :text="
-                isDateRangeExceedsWeek
-                  ? t('settlement.auto_refresh_disabled_long_range')
-                  : `${t('settlement.auto_refresh_desc')} (${autoRefreshIntervalMs / 1000} ${t('seconds')})`
-              "
-              :delay-duration="200"
-              placement="top"
-            >
-              <UIcon name="material-symbols:info-outline" class="size-3.5" />
-            </UTooltip>
-          </div>
-          <UTooltip v-if="props.enabledAutoRefresh && !autoRefresh" :text="t('settlement.refresh')">
-            <UButton variant="ghost" class="p-2 relative" @click="fetchData(true)">
-              <UIcon
-                name="material-symbols:sync"
-                :class="[
-                  'w-4 h-4 cursor-pointer text-primary hover:text-primary-dark transition-transform duration-200',
-                  { 'animate-spin': isRefreshing },
-                ]"
-              />
-            </UButton>
-          </UTooltip>
         </div>
-      </div>
 
-      <!-- ⚙️ Trailing Header -->
-      <div class="flex justify-end items-center gap-2">
-        <slot name="trailingHeader" />
-        <ExportButton
-          :data="filteredData"
-          :headers="exportHeaders"
-          :columns="orderedColumns"
-          :export-options="resolvedExportOptions"
-          :loading="exportLoading"
-          @export-start="() => (exportLoading = true)"
-          @export-end="() => (exportLoading = false)"
-        />
-        <div class="flex items-center gap-0">
-          <!-- Column Configuration -->
+        <!-- Right side: Actions -->
+        <div class="flex justify-end items-center gap-3">
+          <slot name="trailingHeader" />
+          <ExportButton
+            :data="filteredData"
+            :headers="exportHeaders"
+            :columns="orderedColumns"
+            :export-options="resolvedExportOptions"
+            :loading="exportLoading"
+            @export-start="() => (exportLoading = true)"
+            @export-end="() => (exportLoading = false)"
+          />
           <UPopover>
             <template #default>
               <UTooltip
@@ -214,12 +176,9 @@
                 :delay-duration="200"
                 placement="top"
               >
-                <UButton variant="ghost" class="p-2">
-                  <UIcon
-                    name="icon-park-outline:setting-config"
-                    size="sm"
-                    class="text-gray-900 dark:text-white"
-                  />
+                <UButton variant="outline" color="neutral">
+                  <UIcon name="i-lucide:columns" class="w-4 h-4" />
+                  <!-- <span>{{ t('table.column_config.columns') }}</span> -->
                 </UButton>
               </UTooltip>
             </template>
@@ -306,106 +265,139 @@
               </div>
             </template>
           </UPopover>
-
-          <!-- More Options Dropdown -->
-          <!-- <UPopover v-model:open="showMoreOptionsPopup">
-            <template #default>
-              <UTooltip :text="t('table.more_options')" :delay-duration="200" placement="top">
-                <UButton variant="ghost" class="p-2">
-                  <UIcon
-                    name="material-symbols:more-vert"
-                    size="sm"
-                    class="text-gray-900 dark:text-white"
-                  />
-                </UButton>
-              </UTooltip>
-            </template> -->
-
-          <!-- <template #content>
-              <div class="py-1 min-w-40">
-                <UButton
-                  variant="ghost"
-                  size="sm"
-                  :icon="
-                    isFullscreen
-                      ? 'material-symbols:fullscreen-exit'
-                      : 'material-symbols:fullscreen'
-                  "
-                  class="w-full justify-start px-3 py-2 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                  @click="onToggleFullscreen"
-                >
-                  {{ isFullscreen ? t('table.exit_fullscreen') : t('table.enter_fullscreen') }}
-                </UButton>
-              </div>
-            </template> -->
-          <!-- </UPopover> -->
         </div>
+      </div>
+
+      <!-- Auto Refresh Section -->
+      <div v-if="props.enabledAutoRefresh" class="flex items-center gap-4 mt-3">
+        <div class="flex items-center gap-1">
+          <USwitch
+            v-model="autoRefresh"
+            :label="t('settlement.auto_refresh')"
+            :disabled="isDateRangeExceedsWeek"
+            checked-icon="material-symbols:sync"
+            unchecked-icon="material-symbols:sync-disabled"
+            size="sm"
+            :class="isDateRangeExceedsWeek ? 'opacity-80 cursor-not-allowed' : ''"
+          />
+          <UTooltip
+            :text="
+              isDateRangeExceedsWeek
+                ? t('settlement.auto_refresh_disabled_long_range')
+                : `${t('settlement.auto_refresh_desc')} (${autoRefreshIntervalMs / 1000} ${t('seconds')})`
+            "
+            :delay-duration="200"
+            placement="top"
+          >
+            <UIcon name="material-symbols:info-outline" class="size-3.5 text-gray-400" />
+          </UTooltip>
+        </div>
+        <UTooltip v-if="!autoRefresh" :text="t('settlement.refresh')">
+          <UButton
+            variant="ghost"
+            color="neutral"
+            size="sm"
+            class="p-2"
+            :loading="isRefreshing"
+            @click="fetchData(true)"
+          >
+            <UIcon name="material-symbols:sync" class="w-4 h-4" />
+          </UButton>
+        </UTooltip>
       </div>
     </div>
 
-    <!-- 📋 Main Table -->
-    <UTable
-      :key="tableKey"
-      ref="tableRef"
-      v-model:sorting="sorting"
-      :data="filteredData"
-      :columns="orderedColumns"
-      :loading="loading"
-      :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
-      :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
-      sticky
-      class="single-line-headers w-full h-full bg-default border-y border-gray-200 dark:border-gray-700"
-      :ui="{ ...appConfig.ui.table.slots, tbody: 'bg-default' }"
-      @update:sorting="handleSortChange"
-      @select="onSelect"
-    >
-      <template #cell="{ row, column }">
-        <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
-          <span class="block">
-            {{ (row.original as T)[column.id as keyof T] }}
-          </span>
-        </div>
-      </template>
+    <!-- Table & Pagination Container -->
+    <div class="flex flex-col h-full overflow-hidden">
+      <div class="flex-grow overflow-auto border-t border-gray-200 dark:border-gray-700">
+        <UTable
+          :key="tableKey"
+          ref="tableRef"
+          v-model:sorting="sorting"
+          :data="filteredData"
+          :columns="orderedColumns"
+          :loading="loading"
+          :loading-animation="TABLE_CONSTANTS.LOADING_ANIMATION"
+          :loading-color="TABLE_CONSTANTS.LOADING_COLOR"
+          sticky
+          class="w-full h-full"
+          :ui="{
+            ...appConfig.ui.table.slots,
+            thead: 'bg-gray-50 dark:bg-gray-800',
+            tbody: 'bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800',
+            th: {
+              color: 'text-gray-500 dark:text-gray-400',
+              font: 'font-semibold uppercase tracking-wider text-xs',
+              size: 'text-xs',
+            },
+            td: {
+              color: 'text-gray-700 dark:text-gray-200',
+              font: 'text-xs',
+              size: 'text-xs',
+            },
+            tr: {
+              base: 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+              font: 'text-xs',
+              size: 'text-xs',
+            },
+          }"
+          @update:sorting="handleSortChange"
+          @select="onSelect"
+        >
+          <template #cell="{ row, column }">
+            <div class="max-w-[200px] truncate whitespace-nowrap overflow-hidden">
+              <span class="block">
+                {{ (row.original as T)[column.id as keyof T] }}
+              </span>
+            </div>
+          </template>
 
-      <template #empty>
-        <TableEmptyState class="h-full" />
-      </template>
-    </UTable>
-
-    <!-- 📄 Pagination and Page Size -->
-    <div
-      class="flex items-center justify-between py-1 text-sm text-muted flex-shrink-0 mt-2 pb-2 px-3"
-      :class="{
-        'justify-between':
-          (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0,
-        'justify-end': (tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length <= 0,
-      }"
-    >
-      <div v-if="(tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0">
-        <span>
-          {{ tableRef?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-          {{ tableRef?.tableApi?.getFilteredRowModel().rows.length || 0 }} {{ t('row_selected') }}
-        </span>
+          <template #empty>
+            <TableEmptyState class="h-full" />
+          </template>
+        </UTable>
       </div>
 
-      <div class="flex items-center gap-4">
-        <USelectMenu
-          v-model="pageSize"
-          :items="DEFAULT_PAGE_SIZE_OPTIONS"
-          size="sm"
-          class="w-24"
-          :search-input="false"
-          @update:model-value="(val) => (pageSize = val)"
-        />
-        <UPagination
-          :model-value="internalPage"
-          :page-count="internalTotalPage"
-          :items-per-page="pageSize.value"
-          :total="internalTotal"
-          size="sm"
-          :ui="appConfig.ui.pagination.slots"
-          @update:page="handlePageChange"
-        />
+      <!-- Footer: Pagination -->
+      <div
+        class="flex items-center justify-between py-2 px-4 text-sm text-muted flex-shrink-0 border-t border-gray-200 dark:border-gray-700"
+      >
+        <div
+          v-if="(tableRef?.tableApi?.getFilteredSelectedRowModel()?.rows ?? []).length > 0"
+          class="text-sm text-gray-600 dark:text-gray-300"
+        >
+          <span>
+            {{ tableRef?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+            {{ tableRef?.tableApi?.getFilteredRowModel().rows.length || 0 }}
+            {{ t('row_selected') }}
+          </span>
+        </div>
+        <div v-else>
+          <!-- Empty div to maintain layout -->
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-gray-600 dark:text-gray-300">{{ t('table.rows_per_page') }}:</span>
+            <USelectMenu
+              v-model="pageSize"
+              :items="DEFAULT_PAGE_SIZE_OPTIONS"
+              size="sm"
+              class="w-20"
+              :search-input="false"
+              @update:model-value="(val) => (pageSize = val)"
+            />
+          </div>
+          <UPagination
+            :model-value="internalPage"
+            :page-count="internalTotalPage"
+            :items-per-page="pageSize.value"
+            :total="internalTotal"
+            size="sm"
+            :ui="appConfig.ui.pagination.slots"
+            @update:page="handlePageChange"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -427,6 +419,7 @@ import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS, TABLE_CONSTANTS } from '~
 import { ColumnType, FilterOperatorPgwModule } from '~/utils/enumModel'
 import appConfig from '~~/app.config'
 import ExportButton from '../buttons/ExportButton.vue'
+import type { fontFamily } from 'html2canvas/dist/types/css/property-descriptors/font-family'
 
 export interface ExportOptions {
   fileName?: string
@@ -671,7 +664,7 @@ const autoRefresh = ref(false)
 const isRefreshing = ref(false)
 
 const showColumnFilterPopup = ref(false)
-const showMoreOptionsPopup = ref(false)
+// const showMoreOptionsPopup = ref(false)
 
 const emit = defineEmits<{
   (e: 'filter-change', columnId: string, value: string): void
@@ -1713,10 +1706,10 @@ const toggleFullscreen = () => {
 }
 
 // Fullscreen toggle function that also closes the popup
-const onToggleFullscreen = () => {
-  toggleFullscreen()
-  showMoreOptionsPopup.value = false
-}
+// const onToggleFullscreen = () => {
+//   toggleFullscreen()
+//   showMoreOptionsPopup.value = false
+// }
 
 defineExpose({
   tableRef,

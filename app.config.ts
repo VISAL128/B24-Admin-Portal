@@ -3,7 +3,6 @@ export default defineAppConfig({
     breadcrumb: {
       slots: {
         linkLabel: 'text-xl font-medium text-primary-color',
-        
       },
     },
     theme: {

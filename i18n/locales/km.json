@@ -825,7 +825,6 @@
     },
     "banks-list-table": {
       "columns": {
-        "logo": "រូបតំណាង",
         "code": "លេខកូដធនាគារ",
         "name": "ឈ្មោះធនាគារ",
         "nameKh": "ឈ្មោះធនាគារ (ខ្មែរ)",
@@ -1285,6 +1284,7 @@
     "failed_to_update_service_status": "បានបរាជ័យក្នុងការអាប់ដេតស្ថានភាពសេវាកម្ម"
   },
   "suppliers": {
+    "title": "ម្ចាស់អាជីវកម្ម",
     "search_placeholder": "ស្វែងរកតាមឈ្មោះអ្នកផ្គត់ផ្គង់"
   },
   "banks_list": "ធនាគារ"

@@ -53,13 +53,13 @@
 
 :root {
   /* Bill24 Primary Color Configuration */
-  --ui-primary: #00b4db;
+  --ui-primary: #1a9bb5;
   font-family: 'Noto Sans Khmer', 'Kantumruy Pro', 'DM Sans', sans-serif;
 }
 
 .dark {
   /* Bill24 Dark Mode Primary Color Configuration */
-  --ui-primary: #00b4db;
+  --ui-primary: #1a9bb5;
 }
 
 button {
